@@ -156,8 +156,8 @@ export default function LoginPage() {
         </div>
 
         {/* Google button (full width, larger). No extra caption. */}
-        <div className="mt-4 max-w-md items-center">
-          <div ref={gsiRef} className="w-full items-center" />
+        <div className="mt-4 max-w-md">
+          <div ref={gsiRef} className="w-full" />
         </div>
       </CardBody>
     </Card>
