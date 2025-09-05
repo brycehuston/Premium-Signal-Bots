@@ -1,0 +1,19 @@
+services:
+  trend_rider:
+    container_name: trend_rider_bot
+    build:
+      context: ./bots/trend_rider
+      dockerfile: ../../Dockerfile.bot
+    restart: unless-stopped
+  scalper:
+    container_name: scalper_bot
+    build:
+      context: ./bots/scalper
+      dockerfile: ../../Dockerfile.bot
+    restart: unless-stopped
+  reversal:
+    container_name: reversal_bot
+    build:
+      context: ./bots/reversal
+      dockerfile: ../../Dockerfile.bot
+    restart: unless-stopped
