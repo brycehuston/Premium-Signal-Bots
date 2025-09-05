@@ -105,7 +105,7 @@ create_runtime_tables()
 ensure_waitlist_schema()
 ensure_users_schema()
 
-
+app = FastAPI(title="SaaS Hub — Crypto Only")
 # CORS
 origin_list = [
     o.strip()
