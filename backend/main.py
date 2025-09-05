@@ -106,13 +106,18 @@ ensure_waitlist_schema()
 ensure_users_schema()
 
 
-app = FastAPI(title="SaaS Hub — Crypto Only")
+# CORS
+origin_list = [
+    o.strip()
+    for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
+]
+origin_regex = os.getenv("ALLOWED_ORIGIN_REGEX")
 
-_allowed = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
-allow_origins = [o.strip() for o in _allowed.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,
+    allow_origins=origin_list,
+    allow_origin_regex=origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
