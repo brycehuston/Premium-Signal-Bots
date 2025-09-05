@@ -1,14 +1,29 @@
 // app/dashboard/page.tsx
 "use client";
 
+/**
+ * Expects /me to return at least:
+ * {
+ *   email: string,
+ *   tier?: number,                         // optional; we fall back to entitlements length
+ *   entitlements?: SignalKey[],            // ["ema_tracker", "whaleflow", ...]
+ * }
+ */
+
 import { useEffect, useRef, useState } from "react";
 import BtcMiniChart from "@/components/BtcMiniChart";
 import { api } from "@/lib/api";
 
 /* ---------- Types ---------- */
-type Me = { email: string; plan?: string | null; is_active?: boolean };
-type BotKey = "trend_rider" | "scalper" | "reversal";
 type SignalKey = "ema_tracker" | "whaleflow" | "signal_plus" | "liq_guard" | "divergence";
+type BotKey = "trend_rider" | "scalper" | "reversal";
+
+type Me = {
+  email: string;
+  tier?: number | null;
+  entitlements?: SignalKey[] | null;
+};
+
 type BotStatus = { bot: string; status: string };
 
 /* ---------- Small UI helpers ---------- */
@@ -33,8 +48,7 @@ function Btn({
   disabled?: boolean;
   variant?: "primary" | "ghost" | "danger";
 }) {
-  const base =
-    "inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm transition disabled:opacity-50";
+  const base = "inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm transition disabled:opacity-50";
   const style =
     variant === "primary"
       ? "bg-brand-600 hover:bg-brand-500 text-black"
@@ -62,20 +76,15 @@ const SIGNAL_LABELS: Record<SignalKey, string> = {
   liq_guard: "Liq Guard",
   divergence: "Div Scan",
 };
-const SIGNAL_ORDER: SignalKey[] = [
-  "ema_tracker",
-  "whaleflow",
-  "signal_plus",
-  "liq_guard",
-  "divergence",
-];
+
+const SIGNAL_ORDER: SignalKey[] = ["ema_tracker", "whaleflow", "signal_plus", "liq_guard", "divergence"];
 
 /* ---------- Utils ---------- */
 function logsWsUrl(channel: string) {
   const base = new URL(process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000");
   base.protocol = base.protocol === "https:" ? "wss:" : "ws:";
   base.pathname = "/ws/logs";
-  base.search = `?bot=${encodeURIComponent(channel)}`;
+  base.search = `?bot=${encodeURIComponent(channel)}`; // server can treat this as a channel key
   return base.toString();
 }
 
@@ -88,32 +97,31 @@ export default function Dashboard() {
   // Signals only for the log viewer
   const [activeSignal, setActiveSignal] = useState<SignalKey>("ema_tracker");
   const [logs, setLogs] = useState<string[]>([]);
-  const [wsState, setWsState] =
-    useState<"idle" | "connecting" | "open" | "closed" | "reconnecting">("idle");
+  const [wsState, setWsState] = useState<"idle" | "connecting" | "open" | "closed" | "reconnecting">("idle");
   const [busy, setBusy] = useState<"start" | "stop" | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef({ tries: 0, timer: 0 });
 
-async function refresh() {
-  try {
-    const _me = await api("/me");     // requires Bearer token
-    setMe(_me as Me);
-
-    // /bot/status may 403 for inactive accounts — that's fine
+  async function refresh() {
     try {
-      const s = await api("/bot/status");
-      setStatus((s?.bots || []) as BotStatus[]);
+      const _me = await api("/me"); // requires Bearer token from api() helper
+      setMe(_me as Me);
+
+      // /bot/status may 403 for inactive accounts — that's fine
+      try {
+        const s = await api("/bot/status");
+        setStatus((s?.bots || []) as BotStatus[]);
+      } catch {
+        setStatus([]);
+      }
     } catch {
-      setStatus([]);
+      // 401 / CORS / network — show Not Authorized instead of hanging
+      setMe(null);
+    } finally {
+      setLoading(false);
     }
-  } catch (e) {
-    // 401 / CORS / network — show Not Authorized instead of hanging
-    setMe(null);
-  } finally {
-    setLoading(false);
   }
-}
 
   function connectLogs(channel: string) {
     try {
@@ -144,7 +152,7 @@ async function refresh() {
     const scheduleReconnect = () => {
       setWsState("reconnecting");
       reconnectRef.current.tries += 1;
-      const delay = Math.min(30_000, 1000 * 2 ** (reconnectRef.current.tries - 1));
+      const delay = Math.min(30_000, 1000 * 2 ** (reconnectRef.current.tries - 1)); // 1s, 2s, 4s … cap 30s
       reconnectRef.current.timer = window.setTimeout(() => connectLogs(channel), delay);
     };
     sock.onclose = () => {
@@ -206,15 +214,19 @@ async function refresh() {
   if (loading) return <div className="text-white/70">Loading…</div>;
   if (!me) return <div className="text-red-400">Not Authorized</div>;
 
+  // entitlement/tier logic
+  const entSet = new Set<SignalKey>(me.entitlements ?? []);
+  const computedTier = (me.tier ?? undefined) ?? entSet.size;
+
   return (
     <div className="space-y-6">
-      {/* Top row */}
+      {/* Top row: Account + Chart */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Account */}
         <Card className="lg:col-span-1">
           <CardBody className="space-y-4">
             <div className="flex items-start justify-between gap-4">
-              {/* smaller text + reserved space for the button */}
+              {/* email (trim so Sign Out never squishes) */}
               <div className="max-w-[72%] break-all text-base sm:text-lg font-semibold leading-6">
                 {me.email}
               </div>
@@ -226,31 +238,45 @@ async function refresh() {
               </button>
             </div>
 
+            {/* Tier */}
+            <div className="text-sm">
+              <span className="text-white/60">TIER:</span>{" "}
+              <span className="rounded-md border border-edge/70 bg-white/5 px-2 py-0.5 text-white/80">
+                {String(computedTier)}
+              </span>
+            </div>
+
+            <div className="h-px bg-white/10" />
+
+            {/* Signals list: label left, pill right (perfectly aligned) */}
             <div className="space-y-2">
-              <div className="text-sm">
-                <span className="text-white/60">TIER:</span>{" "}
-                <span className="rounded-md border border-edge/70 bg-white/5 px-2 py-0.5 text-white/80">
-                  {String(me.plan ?? "0")}
-                </span>
-              </div>
+              {SIGNAL_ORDER.map((key) => {
+                const active = entSet.has(key);
+                return (
+                  <div key={key} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-white/80">
+                      <span className="inline-block h-2 w-2 rounded-full bg-white/40" />
+                      <span>{SIGNAL_LABELS[key]}</span>
+                      <span className="text-white/60">— Access</span>
+                    </div>
 
-              <div className="h-px bg-white/10" />
-
-              {/* Signals + Access rows */}
-              {SIGNAL_ORDER.map((key) => (
-                <div key={key} className="text-sm text-white/80">
-                  <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 rounded-full bg-white/40" />
-                  {SIGNAL_LABELS[key]} <span className="text-white/60">— Access:</span>{" "}
-                  <span className="rounded-md border border-red-400/30 bg-red-500/10 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-red-300">
-                    INACTIVE
-                  </span>
-                </div>
-              ))}
+                    <span
+                      className={`rounded-md border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide ${
+                        active
+                          ? "border-green-400/30 bg-green-500/10 text-green-300"
+                          : "border-red-400/30 bg-red-500/10 text-red-300"
+                      }`}
+                    >
+                      {active ? "ACTIVE" : "INACTIVE"}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </CardBody>
         </Card>
 
-        {/* Chart */}
+        {/* Live BTC chart */}
         <Card className="lg:col-span-2">
           <CardBody>
             <div className="mb-3">
@@ -267,17 +293,13 @@ async function refresh() {
         {/* Alpha Bot */}
         <Card>
           <CardBody className="space-y-4">
-            <div className="text-lg font-semibold">Alpha Bot</div>
+            <div className="text-lg font-semibold">{BOT_LABELS.trend_rider}</div>
             <div className="text-white/60">
               Status: <span className="text-white/80">Coming Soon</span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <Btn disabled onClick={() => start("trend_rider")}>
-                Start
-              </Btn>
-              <Btn disabled variant="ghost" onClick={() => stop("trend_rider")}>
-                Stop
-              </Btn>
+              <Btn disabled onClick={() => start("trend_rider")}>Start</Btn>
+              <Btn disabled variant="ghost" onClick={() => stop("trend_rider")}>Stop</Btn>
               <Btn variant="ghost">Logs</Btn>
             </div>
           </CardBody>
@@ -286,17 +308,13 @@ async function refresh() {
         {/* Scalper Bot */}
         <Card>
           <CardBody className="space-y-4">
-            <div className="text-lg font-semibold">Scalper Bot</div>
+            <div className="text-lg font-semibold">{BOT_LABELS.scalper}</div>
             <div className="text-white/60">
               Status: <span className="text-white/80">Coming Soon</span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <Btn disabled onClick={() => start("scalper")}>
-                Start
-              </Btn>
-              <Btn disabled variant="ghost" onClick={() => stop("scalper")}>
-                Stop
-              </Btn>
+              <Btn disabled onClick={() => start("scalper")}>Start</Btn>
+              <Btn disabled variant="ghost" onClick={() => stop("scalper")}>Stop</Btn>
               <Btn variant="ghost">Logs</Btn>
             </div>
           </CardBody>
@@ -306,7 +324,7 @@ async function refresh() {
         <Card>
           <CardBody className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="text-lg font-semibold">Master Bot</div>
+              <div className="text-lg font-semibold">{BOT_LABELS.reversal}</div>
               <span className="rounded-md border border-yellow-400/30 bg-yellow-500/10 px-2 py-0.5 text-xs text-yellow-300">
                 Limited spots available.
               </span>
@@ -316,9 +334,7 @@ async function refresh() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <Btn disabled>Start</Btn>
-              <Btn disabled variant="ghost">
-                Stop
-              </Btn>
+              <Btn disabled variant="ghost">Stop</Btn>
               <a
                 href="/pricing"
                 className="inline-flex h-10 items-center justify-center rounded-xl border border-edge/70 bg-white/5 px-4 text-sm text-white hover:bg-white/10"

@@ -18,12 +18,13 @@ export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
-  const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
-  const MAX_GSI_WIDTH = 400;     // cap to align with your input width
-  const MIN_GSI_WIDTH = 240;     // reasonable minimum on very small devices
+  // Support either env key
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "";
 
-  const containerRef = useRef<HTMLDivElement>(null); // wraps inputs + google
+  const containerRef = useRef<HTMLDivElement>(null);
   const gsiRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
 
@@ -48,20 +49,19 @@ export default function LoginPage() {
     }
   }
 
-  // Initialize + render the Google button at the container's current width
+  // Render official Google button sized to the container
   useEffect(() => {
     const src = "https://accounts.google.com/gsi/client";
+    const MIN = 240;
+    const MAX = 400;
 
-    const renderAtContainerWidth = () => {
+    const renderAtWidth = () => {
       if (!window.google || !gsiRef.current || !containerRef.current) return;
-
-      // width = container width, clamped to [MIN, MAX]
-      const available = Math.floor(containerRef.current.clientWidth);
-      const width = Math.max(MIN_GSI_WIDTH, Math.min(MAX_GSI_WIDTH, available));
-
-      // Clear any previous render before re-rendering
+      const w = Math.max(
+        MIN,
+        Math.min(MAX, Math.floor(containerRef.current.clientWidth))
+      );
       gsiRef.current.innerHTML = "";
-
       window.google.accounts.id.renderButton(gsiRef.current, {
         type: "standard",
         theme: "outline",
@@ -69,7 +69,7 @@ export default function LoginPage() {
         text: "continue_with",
         shape: "pill",
         logo_alignment: "left",
-        width, // 👈 responsive width
+        width: w,
       });
     };
 
@@ -77,7 +77,7 @@ export default function LoginPage() {
       if (!window.google) return;
       if (!initializedRef.current) {
         window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
           callback: async (resp: any) => {
             try {
               setBusy(true);
@@ -88,7 +88,7 @@ export default function LoginPage() {
               });
               if (!r.ok) throw new Error(await r.text());
               const data = await r.json();
-              localStorage.setItem("token", data.access_token);
+              localStorage.setItem("token", data.access_token || data.token);
               router.push("/dashboard");
             } catch (e: any) {
               setErr(e.message ?? "Google sign-in failed");
@@ -99,10 +99,9 @@ export default function LoginPage() {
         });
         initializedRef.current = true;
       }
-      renderAtContainerWidth();
+      renderAtWidth();
     };
 
-    // Load the script once
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
     if (existing) {
       if (window.google) initAndRender();
@@ -116,18 +115,16 @@ export default function LoginPage() {
       document.head.appendChild(s);
     }
 
-    // Re-render the GSI button responsively on viewport size changes
-    const onResize = () => renderAtContainerWidth();
+    const onResize = () => renderAtWidth();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [API_BASE, GOOGLE_CLIENT_ID, router]);
+  }, [router, API_BASE]);
 
   return (
     <Card>
       <CardBody>
         <H2>Login</H2>
 
-        {/* Shared container ensures inputs and Google button have the same width */}
         <div ref={containerRef} className="mt-4 w-full max-w-md">
           <form onSubmit={handle} className="grid gap-3">
             <input
@@ -173,14 +170,12 @@ export default function LoginPage() {
             {err && <p className="text-red-400 text-sm">{err}</p>}
           </form>
 
-          {/* Divider */}
           <div className="mt-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-white/10" />
             <span className="text-xs text-white/50">or</span>
             <div className="h-px flex-1 bg-white/10" />
           </div>
 
-          {/* Google button: same width as the inputs above, responsive on mobile */}
           <div className="mt-4">
             <div ref={gsiRef} className="w-full" />
           </div>

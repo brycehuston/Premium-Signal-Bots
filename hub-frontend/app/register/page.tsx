@@ -1,8 +1,15 @@
+// app/register/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardBody, H2 } from "@/components/ui";
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -10,7 +17,16 @@ export default function RegisterPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
+
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
+  const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
+
+  // Keep the Google button the same width as the inputs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const gsiRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
+  const MAX_GSI_WIDTH = 400;
+  const MIN_GSI_WIDTH = 240;
 
   async function handle(e: React.FormEvent) {
     e.preventDefault();
@@ -34,69 +50,124 @@ export default function RegisterPage() {
     }
   }
 
-  function registerWithGoogle() {
-    window.location.href = `${API_BASE}/auth/google/start`;
-  }
+  useEffect(() => {
+    const src = "https://accounts.google.com/gsi/client";
+
+    const renderAtContainerWidth = () => {
+      if (!window.google || !gsiRef.current || !containerRef.current) return;
+
+      const available = Math.floor(containerRef.current.clientWidth);
+      const width = Math.max(MIN_GSI_WIDTH, Math.min(MAX_GSI_WIDTH, available));
+
+      // Clear before re-render to avoid duplicates
+      gsiRef.current.innerHTML = "";
+
+      window.google.accounts.id.renderButton(gsiRef.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: "continue_with",
+        shape: "pill",
+        logo_alignment: "left",
+        width, // responsive width matches inputs
+      });
+    };
+
+    const initAndRender = () => {
+      if (!window.google) return;
+      if (!initializedRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: async (resp: any) => {
+            try {
+              setBusy(true);
+              const r = await fetch(`${API_BASE}/auth/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_token: resp.credential }),
+              });
+              if (!r.ok) throw new Error(await r.text());
+              const data = await r.json();
+              localStorage.setItem("token", data.access_token);
+              router.push("/dashboard");
+            } catch (e: any) {
+              setErr(e.message ?? "Google sign-in failed");
+            } finally {
+              setBusy(false);
+            }
+          },
+        });
+        initializedRef.current = true;
+      }
+      renderAtContainerWidth();
+    };
+
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
+    if (existing) {
+      if (window.google) initAndRender();
+      else existing.addEventListener("load", initAndRender, { once: true });
+    } else {
+      const s = document.createElement("script");
+      s.src = src;
+      s.async = true;
+      s.defer = true;
+      s.onload = initAndRender;
+      document.head.appendChild(s);
+    }
+
+    const onResize = () => renderAtContainerWidth();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [API_BASE, GOOGLE_CLIENT_ID, router]);
 
   return (
     <Card>
       <CardBody>
         <H2>Create account</H2>
 
-        {/* Email / password form */}
-        <form onSubmit={handle} className="mt-4 grid gap-3 max-w-md">
-          <input
-            className="rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-          />
+        {/* Shared container ensures inputs and Google button have the same width */}
+        <div ref={containerRef} className="mt-4 w-full max-w-md">
+          <form onSubmit={handle} className="grid gap-3">
+            <input
+              className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
+              placeholder="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+            <input
+              className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
+              placeholder="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+            />
 
-          <input
-            className="rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="new-password"
-          />
+            <button
+              disabled={busy}
+              className="h-11 w-full rounded-xl bg-brand-600 text-black font-medium hover:bg-brand-500 disabled:opacity-50 transition"
+            >
+              {busy ? "…" : "Create account"}
+            </button>
 
-          <button
-            disabled={busy}
-            className="h-11 w-full rounded-xl bg-brand-600 text-black font-medium hover:bg-brand-500 disabled:opacity-50 transition"
-          >
-            {busy ? "…" : "Create account"}
-          </button>
+            {err && <p className="text-red-400 text-sm">{err}</p>}
+          </form>
 
-          {err && <p className="text-red-400 text-sm">{err}</p>}
-        </form>
+          {/* Divider */}
+          <div className="mt-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-xs text-white/50">or</span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
 
-        {/* Divider matches same width */}
-        <div className="mt-6 flex items-center gap-3 max-w-md">
-          <div className="h-px flex-1 bg-white/10" />
-          <span className="text-white/50 text-xs">or</span>
-          <div className="h-px flex-1 bg-white/10" />
-        </div>
-
-        {/* Google register button: same width & height as blue button */}
-        <div className="mt-4 max-w-md">
-          <button
-            type="button"
-            onClick={registerWithGoogle}
-            className="h-11 w-full rounded-xl bg-white text-black px-4 font-medium hover:bg-white/90 transition shadow-md hover:shadow-lg flex items-center justify-center gap-3"
-          >
-            <svg width="20" height="20" viewBox="0 0 533.5 544.3" aria-hidden="true">
-              <path fill="#4285f4" d="M533.5 278.4c0-18.5-1.7-36.4-5-53.6H272.1v101.5h146.9c-6.3 34-25 62.8-53.4 82v68h86.5c50.6-46.6 81.4-115.3 81.4-198z"/>
-              <path fill="#34a853" d="M272.1 544.3c72.5 0 133.4-24 177.8-65.1l-86.5-68c-24 16.1-54.6 25.6-91.3 25.6-70.1 0-129.5-47.3-150.8-110.7h-89.3v69.6c44 87.2 134.5 148.6 239.9 148.6z"/>
-              <path fill="#fbbc04" d="M121.3 326.1c-10.1-30-10.1-62.1 0-92.1v-69.6H32C11.5 205.5 0 240.2 0 278.4s11.5 72.9 32 114.1l89.3-66.4z"/>
-              <path fill="#ea4335" d="M272.1 107.7c39.4-.6 77.2 13.9 106.2 40.8l79.4-79.4C405.4 24.1 344.6 0 272.1 0 166.6 0 76.1 61.4 32 148.6l89.3 69.6C142.6 154.8 202 107.7 272.1 107.7z"/>
-            </svg>
-            Continue with Google
-          </button>
+          {/* Google button: same width as inputs */}
+          <div className="mt-4">
+            <div ref={gsiRef} className="w-full" />
+          </div>
 
           <p className="mt-3 text-sm text-white/60">
             Already have an account?{" "}

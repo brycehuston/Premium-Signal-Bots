@@ -1,39 +1,23 @@
-// lib/api.ts
-const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
-
-function absolute(path: string) {
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${BASE}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-async function withTimeout<T>(p: Promise<T>, ms = 10000): Promise<T> {
-  return await Promise.race<T>([
-    p,
-    new Promise<T>((_, r) => setTimeout(() => r(new Error("Request timed out")), ms)),
-  ]);
-}
-
+// hub-frontend/lib/api.ts
 export async function api(path: string, init: RequestInit = {}) {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const base = process.env.NEXT_PUBLIC_API_BASE!;
+  const url = path.startsWith("http") ? path : `${base}${path}`;
 
-  const res = await withTimeout(
-    fetch(absolute(path), {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(init.headers || {}),
-      },
-      cache: "no-store",
-      credentials: "omit",
-    })
-  );
+  const headers = new Headers(init.headers);
+  if (!headers.has("Content-Type") && init.body) {
+    headers.set("Content-Type", "application/json");
+  }
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
 
+  const res = await fetch(url, { ...init, headers, credentials: "include" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`API ${res.status} ${res.statusText} at ${path}\n${text}`);
+    throw new Error(text || `HTTP ${res.status}`);
   }
-  // handle 204
-  const type = res.headers.get("content-type") || "";
-  return type.includes("application/json") ? res.json() : null;
+  if (res.status === 204) return null;
+  return res.json();
 }
