@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html, body { @apply bg-bg text-white min-h-screen; }
+
+a { @apply text-brand-600 hover:text-brand-500 transition-colors; }
+
+/* Glow everywhere */
+@layer components {
+  .card {
+    @apply bg-card rounded-2xl border border-edge/40 shadow-glow relative overflow-hidden;
+  }
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(60% 80% at 50% -10%, rgba(82,215,255,.14), transparent 60%);
+    pointer-events: none;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 bg-brand-600 hover:bg-brand-500 active:scale-[.99] transition shadow-glow relative overflow-hidden;
+  }
+  .btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: radial-gradient(80% 120% at 50% -40%, rgba(255,255,255,.12), transparent 60%);
+    pointer-events: none;
+  }
+  .input {
+    @apply w-full rounded-xl bg-[#0b0d13] border border-edge/50 px-3 py-2 outline-none focus:border-brand-600 shadow-glow;
+  }
+  .chip {
+    @apply rounded-xl px-4 py-2 bg-brand-600/20 border border-brand-600/30 shadow-glow;
+  }
+}
+
+/* --- Gold lightning flicker ------------------------------------------- */
+@keyframes bolt-flicker {
+  0%   { opacity: .75; filter: drop-shadow(0 0 0px rgba(251,215,90,0)); }
+  8%   { opacity: 1;   filter: drop-shadow(0 0 16px rgba(251,215,90,.9)); }
+  12%  { opacity: .85; filter: drop-shadow(0 0 6px rgba(251,215,90,.5)); }
+  20%  { opacity: 1;   filter: drop-shadow(0 0 18px rgba(251,215,90,.9)); }
+  22%  { opacity: .8;  filter: drop-shadow(0 0 8px rgba(251,215,90,.4)); }
+  100% { opacity: .9;  filter: drop-shadow(0 0 10px rgba(251,215,90,.55)); }
+}
+.animate-bolt {
+  animation: bolt-flicker 2.4s infinite;
+}
+/* ---------------------------------------------------------------------- */
+
