@@ -1,71 +1,30 @@
-import docker
+import time
+import threading
+from collections import defaultdict
 
-BOT_CONTAINERS = {
-    "trend_rider": "trend_rider_bot",
-    "scalper": "scalper_bot",
-    "reversal": "reversal_bot"
-}
-
-_client = None
+_status = defaultdict(lambda: "stopped")
+_lock = threading.Lock()
 
 
-def client():
-    global _client
-    if _client is None:
-        _client = docker.from_env()
-    return _client
+def start_bot(name: str):
+    with _lock:
+        _status[name] = "running"
+    return {"ok": True, "bot": name, "status": "running"}
 
 
-def _name(bot: str) -> str:
-    if bot not in BOT_CONTAINERS:
-        raise ValueError("unknown bot")
-    return BOT_CONTAINERS[bot]
+def stop_bot(name: str):
+    with _lock:
+        _status[name] = "stopped"
+    return {"ok": True, "bot": name, "status": "stopped"}
 
 
-def start_bot(bot: str) -> dict:
-    c = client()
-    n = _name(bot)
-    try:
-        ctr = c.containers.get(n)
-        ctr.start()
-        ctr.reload()
-        return {"bot": bot, "container": n, "status": ctr.status}
-    except docker.errors.NotFound:
-        return {"bot": bot, "container": n, "status": "not_found"}
-    except Exception as e:
-        return {"bot": bot, "container": n, "status": "error", "detail": str(e)}
+def bot_status(name: str):
+    return {"name": name, "status": _status[name]}
 
 
-def stop_bot(bot: str) -> dict:
-    c = client()
-    n = _name(bot)
-    try:
-        ctr = c.containers.get(n)
-        ctr.stop(timeout=10)
-        ctr.reload()
-        return {"bot": bot, "container": n, "status": ctr.status}
-    except docker.errors.NotFound:
-        return {"bot": bot, "container": n, "status": "not_found"}
-    except Exception as e:
-        return {"bot": bot, "container": n, "status": "error", "detail": str(e)}
-
-
-def bot_status(bot: str) -> dict:
-    c = client()
-    n = _name(bot)
-    try:
-        ctr = c.containers.get(n)
-        ctr.reload()
-        return {"bot": bot, "container": n, "status": ctr.status}
-    except docker.errors.NotFound:
-        return {"bot": bot, "container": n, "status": "not_found"}
-    except Exception as e:
-        return {"bot": bot, "container": n, "status": "error", "detail": str(e)}
-
-
-def stream_logs(bot: str):
-    c = client()
-    n = _name(bot)
-    ctr = c.containers.get(n)
-    for line in ctr.logs(stream=True, follow=True, tail=50):
-        yield line.decode(errors="ignore")
+def stream_logs(name: str):
+    i = 0
+    while True:
+        yield f"[{name}] status={_status[name]} tick={i}\n"
+        time.sleep(1)
+        i += 1
