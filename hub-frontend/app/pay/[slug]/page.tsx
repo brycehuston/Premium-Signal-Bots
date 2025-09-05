@@ -1,108 +1,98 @@
 // app/pay/[slug]/page.tsx
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PLANS, BUNDLE } from "@/lib/plans";
+import SubmitTxForm from "@/components/SubmitTxForm";
 
-// Helper to coerce the period query param
-function normalizePeriod(v: unknown): "monthly" | "annual" {
-  return v === "annual" ? "annual" : "monthly";
-}
+type SP = Record<string, string | string[] | undefined>;
 
 export default async function PayPage({
   params,
   searchParams,
 }: {
-  // ✅ Next 15 expects Promise-like props for App Router pages
-  params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ period?: string }>;
+  params: { slug: string } | Promise<{ slug: string }>;
+  searchParams?: Promise<SP>;
 }) {
-  // Await both props to satisfy PageProps constraint
-  const { slug } = await params;
-  const qp = (await searchParams) ?? {};
-  const period = normalizePeriod(qp.period);
+  const p = await Promise.resolve(params);
+  const sp = (await searchParams) ?? {};
+  const raw = Array.isArray(sp.period) ? sp.period[0] : sp.period;
+  const period = raw === "annual" ? "annual" : "monthly";
 
-  const plan =
-    PLANS.find((p) => p.slug === slug) || (slug === BUNDLE.slug ? BUNDLE : null);
+  const allPlans = [...PLANS, BUNDLE];
+  const plan = allPlans.find((pl) => pl.slug === p.slug);
+  if (!plan) return notFound();
 
-  if (!plan) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-xl font-semibold">Plan not found</h1>
-        <p className="text-white/70">
-          The plan <code className="text-white/90">{slug}</code> doesn’t exist.
-        </p>
-        <Link href="/pricing" className="btn">
-          Back to pricing
-        </Link>
-      </div>
-    );
-  }
-
-  const price =
-    period === "annual" ? plan.priceAnnual : plan.priceMonthly;
+  const price = period === "annual" ? plan.priceAnnual : plan.priceMonthly;
+  const chain = "Solana";
+  const token = "USDC";
+  const address = process.env.NEXT_PUBLIC_SOLANA_ADDRESS || "YOUR_SOL_OR_USDC_ADDRESS_HERE";
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="rounded-2xl border border-edge bg-card/80 p-6 shadow-glow">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Checkout — {plan.title}
-        </h1>
-        <p className="mt-1 text-white/70">
-          You chose <span className="font-medium">{period}</span> billing.
-        </p>
+    <div className="mx-auto max-w-2xl py-10 px-5">
+      <h1 className="text-2xl font-semibold tracking-tight">
+        Subscribe — <span className="opacity-70">{plan.title}</span>
+      </h1>
+      <p className="mt-2 text-white/70">
+        You selected <span className="font-medium">{period}</span> billing.
+      </p>
 
-        <div className="mt-4 rounded-xl border border-edge/70 bg-black/30 p-4">
-          <div className="text-sm text-white/70">Amount</div>
-          <div className="text-3xl font-semibold mt-1">${price}</div>
+      <div className="mt-6 rounded-2xl border border-edge bg-card/80 p-6 shadow-glow">
+        <div className="text-lg font-semibold">
+          {plan.emoji} {plan.title}
+        </div>
+        <div className="mt-1 text-white/60">
+          Price: <span className="text-white font-medium">${price}</span> / {period === "annual" ? "year" : "month"}
         </div>
 
-        <div className="mt-6 space-y-3 text-white/80">
-          <p>
-            For now we’re doing manual crypto payments (USDC on Solana or SOL).
-            Send the funds to the address below and paste the transaction link /
-            screenshot. You’ll receive the private Telegram invite automatically
-            after confirmation.
+        <div className="mt-6 space-y-3 text-sm">
+          <p className="text-white/80">
+            1) Send <span className="font-semibold">${price} {token}</span> on <span className="font-semibold">{chain}</span> to:
+          </p>
+          <div className="rounded-lg border border-edge bg-black/30 p-3 font-mono text-white/90 break-all">
+            {address}
+          </div>
+
+          <p className="text-white/80">
+            2) In the transaction memo (if available), include your email: <span className="font-mono">{`<your@email>`}</span>.
           </p>
 
-          <div className="rounded-xl border border-edge/60 bg-white/5 p-4">
-            <div className="text-sm text-white/70">USDC (Solana) address</div>
-            <div className="mt-1 select-all font-mono text-sm">
-              YOUR_SOLANA_USDC_ADDRESS_HERE
-            </div>
+          <p className="text-white/80">
+            3) After confirmation, send the <span className="font-medium">TX link or screenshot</span> to our Telegram or email. We’ll reply with your private Telegram invite.
+          </p>
+
+          <div className="mt-4">
+            <Link href="/pricing" className="inline-flex h-10 items-center rounded-xl bg-white/5 px-4 text-white hover:bg-white/10">
+              Back to pricing
+            </Link>
           </div>
 
-          <div className="rounded-xl border border-edge/60 bg-white/5 p-4">
-            <div className="text-sm text-white/70">SOL address (optional)</div>
-            <div className="mt-1 select-all font-mono text-sm">
-              YOUR_SOL_ADDRESS_HERE
-            </div>
-          </div>
-
-          <ol className="list-decimal pl-5 space-y-1 text-sm text-white/70">
-            <li>Send exactly ${price} {period === "annual" ? "(annual)" : "(monthly)"}.</li>
-            <li>Copy the Solscan link (or a screenshot) of your tx.</li>
-            <li>
-              DM{" "}
-              <a
-                href="https://t.me/your_handle"
-                target="_blank"
-                className="underline"
-              >
-                @your_handle
-              </a>{" "}
-              in Telegram with your email and tx proof.
-            </li>
-          </ol>
+          <SubmitTxForm plan={plan.slug} price={price} />
         </div>
+      </div>
 
-        <div className="mt-6 flex gap-2">
-          <Link href="/pricing" className="btn bg-white/5 hover:bg-white/10">
-            Choose another plan
-          </Link>
-          <Link href="/dashboard" className="btn">
-            Go to dashboard
-          </Link>
-        </div>
+      <div className="mt-8 rounded-2xl border border-edge/60 bg-white/5 p-4 text-sm text-white/70">
+        <p className="font-medium text-white/80">What happens next?</p>
+        <ul className="mt-2 list-disc pl-5 space-y-1">
+          <li>We verify the payment on-chain.</li>
+          <li>You’ll receive a private Telegram link for <span className="font-medium">{plan.title}</span>.</li>
+          <li>For bundles, you’ll get invites to all included channels.</li>
+          <li>Renewals: just repeat the same payment when due.</li>
+        </ul>
       </div>
     </div>
   );
+}
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: { slug: string } | Promise<{ slug: string }>;
+  searchParams?: Promise<SP>;
+}) {
+  const p = await Promise.resolve(params);
+  const sp = (await searchParams) ?? {};
+  const raw = Array.isArray(sp.period) ? sp.period[0] : sp.period;
+  const period = raw === "annual" ? "annual" : "monthly";
+  return { title: `Subscribe — ${p.slug} (${period})` };
 }
