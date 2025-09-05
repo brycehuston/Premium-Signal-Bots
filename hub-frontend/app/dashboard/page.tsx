@@ -195,7 +195,7 @@ export default function Dashboard() {
   }, [activeSignal]);
 
   if (loading) return <div className="text-white/70">Loading…</div>;
-  if (!me) return <div className="text-red-400">Not authorized</div>;
+  if (!me) return <div className="text-red-400">Not Authorized</div>;
 
   return (
     <div className="space-y-6">
