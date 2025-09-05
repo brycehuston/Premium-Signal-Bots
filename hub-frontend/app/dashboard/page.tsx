@@ -219,9 +219,9 @@ export default function Dashboard() {
 
             <div className="space-y-2">
               <div className="text-sm">
-                <span className="text-white/60">Plan:</span>{" "}
+                <span className="text-white/60">TIER:</span>{" "}
                 <span className="rounded-md border border-edge/70 bg-white/5 px-2 py-0.5 text-white/80">
-                  {String(me.plan ?? "FREE")}
+                  {String(me.plan ?? "0")}
                 </span>
               </div>
 
@@ -354,7 +354,7 @@ export default function Dashboard() {
                     wsState === "open"
                       ? "border-green-400/30 bg-green-500/10 text-green-300"
                       : wsState === "reconnecting" || wsState === "connecting"
-                      ? "border-yellow-400/30 bg-yellow-500/10 text-yellow-300"
+                      ? "border-green bg-green-500/10 text-green-300"
                       : "border-red-400/30 bg-red-500/10 text-red-300"
                   }`}
                 >

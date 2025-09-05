@@ -19,6 +19,8 @@ export default function LoginPage() {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
   const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
+  const GSI_WIDTH = 400; // <= Google’s max width; we’ll size the whole block to this
+
   const gsiRef = useRef<HTMLDivElement>(null);
 
   async function handle(e: React.FormEvent) {
@@ -42,13 +44,12 @@ export default function LoginPage() {
     }
   }
 
-  // Render the official Google button, full-width & large
   useEffect(() => {
     const src = "https://accounts.google.com/gsi/client";
 
-    function renderButton() {
+    const renderButton = () => {
       if (!window.google || !gsiRef.current) return;
-
+      gsiRef.current.innerHTML = "";
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: async (resp: any) => {
@@ -71,7 +72,6 @@ export default function LoginPage() {
         },
       });
 
-      // Big, pill, full-width; shows "Continue with Google"
       window.google.accounts.id.renderButton(gsiRef.current, {
         type: "standard",
         theme: "outline",
@@ -79,11 +79,10 @@ export default function LoginPage() {
         text: "continue_with",
         shape: "pill",
         logo_alignment: "left",
-        width: 460, // px; button will clamp to container if smaller
+        width: GSI_WIDTH, // <= exact width match
       });
-    }
+    };
 
-    // Load script once
     if (!document.querySelector(`script[src="${src}"]`)) {
       const s = document.createElement("script");
       s.src = src;
@@ -101,63 +100,63 @@ export default function LoginPage() {
       <CardBody>
         <H2>Login</H2>
 
-        {/* Email / password form */}
-        <form onSubmit={handle} className="mt-4 grid max-w-md gap-3">
-          <input
-            className="rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-          />
+        {/* Fixed-width wrapper so inputs and Google button align perfectly */}
+        <div className="mt-4 w-[400px] max-w-full">
+          <form onSubmit={handle} className="grid gap-3">
+            <input
+              className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
+              placeholder="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+            <input
+              className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
+              placeholder="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
 
-          <input
-            className="rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
+            <div className="flex gap-2">
+              <Button variant="primary" disabled={busy}>
+                {busy ? "…" : "Login"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => localStorage.removeItem("token")}
+                className="rounded-xl border border-edge bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
+              >
+                Clear token
+              </button>
+            </div>
 
-          <div className="flex gap-2">
-            <Button variant="primary" disabled={busy}>
-              {busy ? "…" : "Login"}
-            </Button>
+            <p className="mt-1 text-sm text-white/60">
+              Don’t have an account?{" "}
+              <a href="/register" className="text-brand-500 hover:underline">
+                Create one
+              </a>
+              .
+            </p>
 
-            <button
-              type="button"
-              onClick={() => localStorage.removeItem("token")}
-              className="rounded-xl border border-edge bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
-            >
-              Clear token
-            </button>
+            {err && <p className="text-red-400 text-sm">{err}</p>}
+          </form>
+
+          {/* Divider */}
+          <div className="mt-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-xs text-white/50">or</span>
+            <div className="h-px flex-1 bg-white/10" />
           </div>
 
-          <p className="mt-3 text-sm text-white/60">
-            Don’t have an account?{" "}
-            <a href="/register" className="text-brand-500 hover:underline">
-              Create one
-            </a>
-            .
-          </p>
-
-          {err && <p className="text-red-400 text-sm">{err}</p>}
-        </form>
-
-        {/* Divider */}
-        <div className="mt-6 flex max-w-md items-center gap-3">
-          <div className="h-px flex-1 bg-white/10" />
-          <span className="text-xs text-white/50">or</span>
-          <div className="h-px flex-1 bg-white/10" />
-        </div>
-
-        {/* Google button (full width, larger). No extra caption. */}
-        <div className="mt-4 max-w-md">
-          <div ref={gsiRef} className="w-full" />
+          {/* Google button (exact same width as inputs) */}
+          <div className="mt-4 w-[400px] max-w-full">
+            <div ref={gsiRef} className="w-full" />
+          </div>
         </div>
       </CardBody>
     </Card>
