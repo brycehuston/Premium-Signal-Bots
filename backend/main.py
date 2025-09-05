@@ -108,6 +108,7 @@ ensure_users_schema()
 app = FastAPI(title="SaaS Hub — Crypto Only")
 
 # CORS
+
 origin_list = [
     o.strip()
     for o in os.getenv(
@@ -117,13 +118,16 @@ origin_list = [
     if o.strip()
 ]
 
+# TEMP: open it up to any origin to confirm CORS is the issue.
 origin_regex = os.getenv("ALLOWED_ORIGIN_REGEX", r"https://.*\.vercel\.app$")
+
+print("CORS allow_origins:", origin_list)
+print("CORS allow_origin_regex:", origin_regex)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origin_list,       # exact matches
-    allow_origin_regex=origin_regex,  # preview branches etc.
-    # fine (you aren’t sending credentials now)
+    allow_origins=origin_list,
+    allow_origin_regex=origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
