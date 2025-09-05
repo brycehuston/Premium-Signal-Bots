@@ -106,21 +106,28 @@ ensure_waitlist_schema()
 ensure_users_schema()
 
 app = FastAPI(title="SaaS Hub — Crypto Only")
+
 # CORS
 origin_list = [
     o.strip()
-    for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    for o in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000,https://premium-signal-bots.vercel.app"
+    ).split(",")
     if o.strip()
 ]
-origin_regex = os.getenv("ALLOWED_ORIGIN_REGEX")
+
+origin_regex = os.getenv("ALLOWED_ORIGIN_REGEX", r"https://.*\.vercel\.app$")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origin_list,
-    allow_origin_regex=origin_regex,
+    allow_origins=origin_list,       # exact matches
+    allow_origin_regex=origin_regex,  # preview branches etc.
+    # fine (you aren’t sending credentials now)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
