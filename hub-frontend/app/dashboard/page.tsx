@@ -1,22 +1,17 @@
+// app/dashboard/page.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { api } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
 import BtcMiniChart from "@/components/BtcMiniChart";
+import { api } from "@/lib/api";
 
 /* ---------- Types ---------- */
-type Me = {
-  email: string;
-  plan?: string;
-  is_active?: boolean;
-};
+type Me = { email: string; plan?: string | null; is_active?: boolean };
+type BotKey = "trend_rider" | "scalper" | "reversal";
+type SignalKey = "ema_tracker" | "whaleflow" | "signal_plus" | "liq_guard" | "divergence";
+type BotStatus = { bot: string; status: string };
 
-type BotStatus = {
-  bot: string;
-  status: string; // e.g. "running", "stopped", etc.
-};
-
-/* ---------- UI helpers ---------- */
+/* ---------- Small UI helpers ---------- */
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`rounded-2xl border border-edge/70 bg-card/80 backdrop-blur shadow-glow ${className}`}>
@@ -38,14 +33,14 @@ function Btn({
   disabled?: boolean;
   variant?: "primary" | "ghost" | "danger";
 }) {
-  const base = "inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm transition disabled:opacity-50";
+  const base =
+    "inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm transition disabled:opacity-50";
   const style =
     variant === "primary"
       ? "bg-brand-600 hover:bg-brand-500 text-black"
       : variant === "danger"
       ? "bg-red-500/80 hover:bg-red-500 text-white"
       : "bg-white/5 hover:bg-white/10 text-white";
-
   return (
     <button className={`${base} ${style}`} onClick={onClick} disabled={disabled}>
       {children}
@@ -53,24 +48,49 @@ function Btn({
   );
 }
 
+/* ---------- Labels ---------- */
+const BOT_LABELS: Record<BotKey, string> = {
+  trend_rider: "Alpha Bot",
+  scalper: "Scalper Bot",
+  reversal: "Master Bot",
+};
+
+const SIGNAL_LABELS: Record<SignalKey, string> = {
+  ema_tracker: "EMA Tracker",
+  whaleflow: "WhaleFlow",
+  signal_plus: "Signal Plus",
+  liq_guard: "Liq Guard",
+  divergence: "Div Scan",
+};
+const SIGNAL_ORDER: SignalKey[] = [
+  "ema_tracker",
+  "whaleflow",
+  "signal_plus",
+  "liq_guard",
+  "divergence",
+];
+
 /* ---------- Utils ---------- */
-function logsWsUrl(bot: string) {
+function logsWsUrl(channel: string) {
   const base = new URL(process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000");
   base.protocol = base.protocol === "https:" ? "wss:" : "ws:";
   base.pathname = "/ws/logs";
-  base.search = `?bot=${encodeURIComponent(bot)}`;
+  base.search = `?bot=${encodeURIComponent(channel)}`;
   return base.toString();
 }
 
+/* ---------- Page ---------- */
 export default function Dashboard() {
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<BotStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [activeBot, setActiveBot] = useState<string>("trend_rider");
+  // Signals only for the log viewer
+  const [activeSignal, setActiveSignal] = useState<SignalKey>("ema_tracker");
   const [logs, setLogs] = useState<string[]>([]);
-  const [wsState, setWsState] = useState<"idle" | "connecting" | "open" | "closed" | "reconnecting">("idle");
-  const [busy, setBusy] = useState<"start" | "stop" | null>(null); // to disable buttons during requests
+  const [wsState, setWsState] =
+    useState<"idle" | "connecting" | "open" | "closed" | "reconnecting">("idle");
+  const [busy, setBusy] = useState<"start" | "stop" | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef({ tries: 0, timer: 0 });
@@ -86,9 +106,7 @@ export default function Dashboard() {
     }
   }
 
-  // WebSocket connect with backoff
-  function connectLogs(bot: string) {
-    // cleanup any existing
+  function connectLogs(channel: string) {
     try {
       wsRef.current?.close();
     } catch {}
@@ -96,7 +114,7 @@ export default function Dashboard() {
     setLogs([]);
     setWsState("connecting");
 
-    const sock = new WebSocket(logsWsUrl(bot));
+    const sock = new WebSocket(logsWsUrl(channel));
     wsRef.current = sock;
 
     sock.onopen = () => {
@@ -107,7 +125,6 @@ export default function Dashboard() {
         reconnectRef.current.timer = 0;
       }
     };
-
     sock.onmessage = (ev) => {
       setLogs((prev) => {
         const next = [...prev, ev.data];
@@ -115,14 +132,12 @@ export default function Dashboard() {
         return next;
       });
     };
-
     const scheduleReconnect = () => {
       setWsState("reconnecting");
       reconnectRef.current.tries += 1;
-      const delay = Math.min(30_000, 1000 * 2 ** (reconnectRef.current.tries - 1)); // 1s, 2s, 4s … cap 30s
-      reconnectRef.current.timer = window.setTimeout(() => connectLogs(bot), delay);
+      const delay = Math.min(30_000, 1000 * 2 ** (reconnectRef.current.tries - 1));
+      reconnectRef.current.timer = window.setTimeout(() => connectLogs(channel), delay);
     };
-
     sock.onclose = () => {
       setWsState("closed");
       scheduleReconnect();
@@ -134,7 +149,7 @@ export default function Dashboard() {
     };
   }
 
-  async function start(bot: string) {
+  async function start(bot: BotKey) {
     try {
       setBusy("start");
       await api("/bot/start", { method: "POST", body: JSON.stringify({ bot_name: bot }) });
@@ -143,7 +158,7 @@ export default function Dashboard() {
       setBusy(null);
     }
   }
-  async function stop(bot: string) {
+  async function stop(bot: BotKey) {
     try {
       setBusy("stop");
       await api("/bot/stop", { method: "POST", body: JSON.stringify({ bot_name: bot }) });
@@ -152,9 +167,11 @@ export default function Dashboard() {
       setBusy(null);
     }
   }
-  async function portal() {
-    const res = await api("/billing/create-portal-session", { method: "POST", body: JSON.stringify({}) });
-    if (res?.url) window.location.href = res.url;
+  function signOut() {
+    try {
+      localStorage.removeItem("token");
+    } catch {}
+    window.location.href = "/login";
   }
 
   useEffect(() => {
@@ -167,120 +184,191 @@ export default function Dashboard() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   useEffect(() => {
-    connectLogs(activeBot);
+    connectLogs(activeSignal);
     return () => {
       try {
         wsRef.current?.close();
       } catch {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeBot]);
+  }, [activeSignal]);
 
   if (loading) return <div className="text-white/70">Loading…</div>;
   if (!me) return <div className="text-red-400">Not authorized</div>;
 
-  const isActive = !!me.is_active;
-
   return (
     <div className="space-y-6">
-      {/* Top row: account + live BTC mini chart */}
+      {/* Top row */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Account card */}
+        {/* Account */}
         <Card className="lg:col-span-1">
-          <CardBody className="flex items-center justify-between">
-            <div>
-              <div className="text-xl font-semibold">{me.email}</div>
-              <div className="mt-1 text-sm text-white/60">
-                Plan:{" "}
-                <span className="inline-flex items-center rounded-md border border-edge/70 bg-white/5 px-2 py-0.5 text-white/80">
-                  {me.plan ?? "free"}
-                </span>{" "}
-                • Active:{" "}
-                <span
-                  className={`inline-flex items-center rounded-md px-2 py-0.5 ${
-                    isActive
-                      ? "bg-green-500/15 text-green-300 border border-green-400/30"
-                      : "bg-red-500/15 text-red-300 border border-red-400/30"
-                  }`}
-                >
-                  {isActive ? "yes" : "no"}
+          <CardBody className="space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              {/* smaller text + reserved space for the button */}
+              <div className="max-w-[72%] break-all text-base sm:text-lg font-semibold leading-6">
+                {me.email}
+              </div>
+              <button
+                onClick={signOut}
+                className="shrink-0 mt-0.5 inline-flex h-9 items-center justify-center rounded-xl border border-edge/70 bg-white/5 px-3 text-sm text-white hover:bg-white/10"
+              >
+                Sign Out
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-sm">
+                <span className="text-white/60">Plan:</span>{" "}
+                <span className="rounded-md border border-edge/70 bg-white/5 px-2 py-0.5 text-white/80">
+                  {String(me.plan ?? "FREE")}
                 </span>
               </div>
+
+              <div className="h-px bg-white/10" />
+
+              {/* Signals + Access rows */}
+              {SIGNAL_ORDER.map((key) => (
+                <div key={key} className="text-sm text-white/80">
+                  <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 rounded-full bg-white/40" />
+                  {SIGNAL_LABELS[key]} <span className="text-white/60">— Access:</span>{" "}
+                  <span className="rounded-md border border-red-400/30 bg-red-500/10 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-red-300">
+                    INACTIVE
+                  </span>
+                </div>
+              ))}
             </div>
-            <Btn onClick={portal}>Manage Billing</Btn>
           </CardBody>
         </Card>
 
-        {/* Live BTC chart */}
+        {/* Chart */}
         <Card className="lg:col-span-2">
           <CardBody>
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <div className="text-lg font-semibold">Live BTC (1m)</div>
-                <div className="text-sm text-white/60">Binance feed · updates in real-time</div>
-              </div>
+            <div className="mb-3">
+              <div className="text-lg font-semibold">Live BTC (1m)</div>
+              <div className="text-sm text-white/60">Binance feed · updates in real-time</div>
             </div>
             <BtcMiniChart height={300} />
           </CardBody>
         </Card>
       </div>
 
-      {/* Bot controls */}
+      {/* Three bot tiles */}
       <div className="grid gap-6 md:grid-cols-3">
-        {["trend_rider", "scalper", "reversal"].map((b) => {
-          const bs = status.find((x) => x.bot === b) || ({} as BotStatus);
-          const running = (bs.status || "").toLowerCase().includes("running");
-          return (
-            <Card key={b}>
-              <CardBody className="space-y-4">
-                <div className="text-lg font-semibold capitalize">{b.replace("_", " ")}</div>
-                <div className="text-white/60">
-                  Status: <span className={`${running ? "text-green-400" : "text-white/70"}`}>{bs.status || "unknown"}</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <Btn onClick={() => start(b)} disabled={!isActive || busy !== null}>
-                    {busy === "start" ? "Starting…" : "Start"}
-                  </Btn>
-                  <Btn onClick={() => stop(b)} disabled={!isActive || busy !== null} variant="ghost">
-                    {busy === "stop" ? "Stopping…" : "Stop"}
-                  </Btn>
-                  <Btn onClick={() => setActiveBot(b)} variant="ghost">
-                    Logs
-                  </Btn>
-                </div>
-              </CardBody>
-            </Card>
-          );
-        })}
+        {/* Alpha Bot */}
+        <Card>
+          <CardBody className="space-y-4">
+            <div className="text-lg font-semibold">Alpha Bot</div>
+            <div className="text-white/60">
+              Status: <span className="text-white/80">Coming Soon</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Btn disabled onClick={() => start("trend_rider")}>
+                Start
+              </Btn>
+              <Btn disabled variant="ghost" onClick={() => stop("trend_rider")}>
+                Stop
+              </Btn>
+              <Btn variant="ghost">Logs</Btn>
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Scalper Bot */}
+        <Card>
+          <CardBody className="space-y-4">
+            <div className="text-lg font-semibold">Scalper Bot</div>
+            <div className="text-white/60">
+              Status: <span className="text-white/80">Coming Soon</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Btn disabled onClick={() => start("scalper")}>
+                Start
+              </Btn>
+              <Btn disabled variant="ghost" onClick={() => stop("scalper")}>
+                Stop
+              </Btn>
+              <Btn variant="ghost">Logs</Btn>
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Master Bot */}
+        <Card>
+          <CardBody className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-semibold">Master Bot</div>
+              <span className="rounded-md border border-yellow-400/30 bg-yellow-500/10 px-2 py-0.5 text-xs text-yellow-300">
+                Limited spots available.
+              </span>
+            </div>
+            <div className="text-white/60">
+              Status: <span className="text-white/80">Coming Next Year</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Btn disabled>Start</Btn>
+              <Btn disabled variant="ghost">
+                Stop
+              </Btn>
+              <a
+                href="/pricing"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-edge/70 bg-white/5 px-4 text-sm text-white hover:bg-white/10"
+              >
+                Get Updates
+              </a>
+            </div>
+          </CardBody>
+        </Card>
       </div>
 
-      {/* Live logs */}
+      {/* Live logs — signals only */}
       <Card>
         <CardBody>
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="text-lg font-semibold">
-              Live logs: <span className="capitalize">{activeBot.replace("_", " ")}</span>
+              Live logs: <span>{SIGNAL_LABELS[activeSignal]}</span>
             </div>
-            <div className="flex items-center gap-3">
-              <span
-                className={`inline-flex items-center gap-2 rounded-md border px-2 py-0.5 text-xs ${
-                  wsState === "open"
-                    ? "border-green-400/30 bg-green-500/10 text-green-300"
-                    : wsState === "reconnecting" || wsState === "connecting"
-                    ? "border-yellow-400/30 bg-yellow-500/10 text-yellow-300"
-                    : "border-red-400/30 bg-red-500/10 text-red-300"
-                }`}
-              >
-                <span className="h-2 w-2 rounded-full bg-current" />
-                {wsState}
-              </span>
-              <Btn variant="ghost" onClick={() => setLogs([])}>
-                Clear
-              </Btn>
+
+            {/* non-wrapping, scrollable row so Clear stays on the same line */}
+            <div className="overflow-x-auto">
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                {SIGNAL_ORDER.map((key) => {
+                  const isActive = activeSignal === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setActiveSignal(key)}
+                      className={`rounded-lg border px-3 py-1.5 text-sm ${
+                        isActive
+                          ? "border-brand-600 bg-brand-600/20 text-white"
+                          : "border-edge/70 bg-white/5 text-white/80 hover:bg-white/10"
+                      }`}
+                    >
+                      {SIGNAL_LABELS[key]}
+                    </button>
+                  );
+                })}
+
+                <span
+                  className={`ml-2 inline-flex items-center gap-2 rounded-md border px-2 py-0.5 text-xs ${
+                    wsState === "open"
+                      ? "border-green-400/30 bg-green-500/10 text-green-300"
+                      : wsState === "reconnecting" || wsState === "connecting"
+                      ? "border-yellow-400/30 bg-yellow-500/10 text-yellow-300"
+                      : "border-red-400/30 bg-red-500/10 text-red-300"
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-current" />
+                  {wsState}
+                </span>
+
+                <Btn variant="ghost" onClick={() => setLogs([])}>
+                  Clear
+                </Btn>
+              </div>
             </div>
           </div>
+
           <div className="h-72 overflow-auto rounded-xl border border-edge/50 bg-[#0b0d13] p-3 font-mono text-sm text-white/90">
             {logs.length === 0 ? "Waiting for logs..." : logs.join("\n")}
           </div>

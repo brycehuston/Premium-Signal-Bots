@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card, CardBody, H2 } from "@/components/ui";
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +18,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
+  const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
+  const gsiRef = useRef<HTMLDivElement>(null);
 
   async function handle(e: React.FormEvent) {
     e.preventDefault();
@@ -25,8 +33,7 @@ export default function LoginPage() {
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      const token = data.access_token || data.token;
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", data.access_token || data.token);
       router.push("/dashboard");
     } catch (e: any) {
       setErr(e.message ?? "Login failed");
@@ -35,10 +42,59 @@ export default function LoginPage() {
     }
   }
 
-  function loginWithGoogle() {
-    // Redirect to your backend’s OAuth start route
-    window.location.href = `${API_BASE}/auth/google/start`;
-  }
+  // Render the official Google button, full-width & large
+  useEffect(() => {
+    const src = "https://accounts.google.com/gsi/client";
+
+    function renderButton() {
+      if (!window.google || !gsiRef.current) return;
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (resp: any) => {
+          try {
+            setBusy(true);
+            const r = await fetch(`${API_BASE}/auth/google`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_token: resp.credential }),
+            });
+            if (!r.ok) throw new Error(await r.text());
+            const data = await r.json();
+            localStorage.setItem("token", data.access_token);
+            router.push("/dashboard");
+          } catch (e: any) {
+            setErr(e.message ?? "Google sign-in failed");
+          } finally {
+            setBusy(false);
+          }
+        },
+      });
+
+      // Big, pill, full-width; shows "Continue with Google"
+      window.google.accounts.id.renderButton(gsiRef.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: "continue_with",
+        shape: "pill",
+        logo_alignment: "left",
+        width: 460, // px; button will clamp to container if smaller
+      });
+    }
+
+    // Load script once
+    if (!document.querySelector(`script[src="${src}"]`)) {
+      const s = document.createElement("script");
+      s.src = src;
+      s.async = true;
+      s.defer = true;
+      s.onload = renderButton;
+      document.head.appendChild(s);
+    } else {
+      renderButton();
+    }
+  }, [API_BASE, GOOGLE_CLIENT_ID, router]);
 
   return (
     <Card>
@@ -46,7 +102,7 @@ export default function LoginPage() {
         <H2>Login</H2>
 
         {/* Email / password form */}
-        <form onSubmit={handle} className="mt-4 grid gap-3 max-w-md">
+        <form onSubmit={handle} className="mt-4 grid max-w-md gap-3">
           <input
             className="rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
             placeholder="Email"
@@ -72,7 +128,6 @@ export default function LoginPage() {
               {busy ? "…" : "Login"}
             </Button>
 
-            {/* simple native button so we don't depend on Button props */}
             <button
               type="button"
               onClick={() => localStorage.removeItem("token")}
@@ -81,46 +136,28 @@ export default function LoginPage() {
               Clear token
             </button>
           </div>
-          
-{/* under the buttons, before the error message */}
-<p className="mt-3 text-sm text-white/60">
-  Don’t have an account?{" "}
-  <a href="/register" className="text-brand-500 hover:underline">
-    Create one
-  </a>
-  {" "}or{" "}
-  <button
-    type="button"
-    onClick={() => (window.location.href = `${process.env.NEXT_PUBLIC_API_BASE}/auth/google/start`)}
-    className="text-white/80 hover:underline"
-  >
-    continue with Google
-  </button>
-  .
-</p>
+
+          <p className="mt-3 text-sm text-white/60">
+            Don’t have an account?{" "}
+            <a href="/register" className="text-brand-500 hover:underline">
+              Create one
+            </a>
+            .
+          </p>
 
           {err && <p className="text-red-400 text-sm">{err}</p>}
         </form>
 
         {/* Divider */}
-        <div className="mt-6 flex items-center gap-3 max-w-md">
+        <div className="mt-6 flex max-w-md items-center gap-3">
           <div className="h-px flex-1 bg-white/10" />
-          <span className="text-white/50 text-xs">or</span>
+          <span className="text-xs text-white/50">or</span>
           <div className="h-px flex-1 bg-white/10" />
         </div>
 
-        {/* Google login */}
-        <div className="mt-4 max-w-md">
-          <button
-            type="button"
-            onClick={loginWithGoogle}
-            className="w-full rounded-xl bg-white text-black px-4 py-2 font-medium hover:bg-white/90 transition"
-          >
-            Continue with Google
-          </button>
-          <p className="mt-2 text-xs text-white/50">
-            We’ll redirect you to Google, then back here.
-          </p>
+        {/* Google button (full width, larger). No extra caption. */}
+        <div className="mt-4 max-w-md items-center">
+          <div ref={gsiRef} className="w-full items-center" />
         </div>
       </CardBody>
     </Card>

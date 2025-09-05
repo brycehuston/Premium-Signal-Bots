@@ -25,7 +25,7 @@ export default async function PayPage({
   const price = period === "annual" ? plan.priceAnnual : plan.priceMonthly;
   const chain = "Solana";
   const token = "USDC";
-  const address = process.env.NEXT_PUBLIC_SOLANA_ADDRESS || "YOUR_SOL_OR_USDC_ADDRESS_HERE";
+  const address = process.env.NEXT_PUBLIC_SOLANA_ADDRESS || "4tDVS6pJKirFnXtM3btbP2VfCQbombUotCqtPjoEXkHm";
 
   return (
     <div className="mx-auto max-w-2xl py-10 px-5">

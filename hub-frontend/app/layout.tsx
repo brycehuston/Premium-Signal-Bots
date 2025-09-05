@@ -4,9 +4,9 @@ import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import Link from "next/link";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
-
 const BRAND = process.env.NEXT_PUBLIC_BRAND || "AlphaAlerts";
 
 export const metadata: Metadata = {
@@ -24,7 +24,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-bg text-neutral-100 antialiased">
         {/* decorative bg layers */}
         <div className="pointer-events-none fixed inset-0 -z-10">
-          {/* subtle grid */}
           <div
             className="absolute inset-0 opacity-[0.08]"
             style={{
@@ -33,7 +32,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               backgroundSize: "24px 24px",
             }}
           />
-          {/* brand glow */}
           <div className="absolute -top-40 right-10 h-[32rem] w-[32rem] rounded-full bg-brand-600/15 blur-[120px]" />
           <div className="absolute bottom-0 left-10 h-[24rem] w-[24rem] rounded-full bg-[#a78bfa]/10 blur-[100px]" />
         </div>
@@ -49,30 +47,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <span className="ml-1 text-white/50">— Hub</span>
               </Link>
               <nav className="flex items-center gap-1.5">
-                <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
-                  href="/pricing"
-                >
-                  Pricing
-                </Link>
-                <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
-                  href="/dashboard"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
-                  href="/billing"
-                >
-                  Billing
-                </Link>
-                <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
-                  href="/login"
-                >
-                  Login
-                </Link>
+                <Link className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white" href="/pricing">Pricing</Link>
+                <Link className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white" href="/dashboard">Dashboard</Link>
+                <Link className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white" href="/billing">Billing</Link>
+                <Link className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white" href="/login">Login</Link>
               </nav>
             </div>
           </Container>
@@ -84,11 +62,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <footer className="mt-14 border-t border-edge/70">
           <Container>
-            <div className="py-8 text-sm text-white/50">
-              © {new Date().getFullYear()} Huston Solutions
-            </div>
+            <div className="py-8 text-sm text-white/50">© {new Date().getFullYear()} HUSTON SOLUTIONS</div>
           </Container>
         </footer>
+
+        {/* Google Identity Services */}
+        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       </body>
     </html>
   );
