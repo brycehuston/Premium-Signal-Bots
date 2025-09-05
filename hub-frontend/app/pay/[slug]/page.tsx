@@ -82,3 +82,17 @@ export default async function PayPage({
     </div>
   );
 }
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: { slug: string } | Promise<{ slug: string }>;
+  searchParams?: Promise<SP>;
+}) {
+  const p = await Promise.resolve(params);
+  const sp = (await searchParams) ?? {};
+  const raw = Array.isArray(sp.period) ? sp.period[0] : sp.period;
+  const period = raw === "annual" ? "annual" : "monthly";
+  return { title: `Subscribe — ${p.slug} (${period})` };
+}
