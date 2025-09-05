@@ -1,37 +1,39 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8000";
+// lib/api.ts
+const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
 
-export function getToken() {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+function absolute(path: string) {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${BASE}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-export function setToken(token: string | null) {
-  if (typeof window === "undefined") return;
-  if (token) localStorage.setItem("token", token);
-  else localStorage.removeItem("token");
+async function withTimeout<T>(p: Promise<T>, ms = 10000): Promise<T> {
+  return await Promise.race<T>([
+    p,
+    new Promise<T>((_, r) => setTimeout(() => r(new Error("Request timed out")), ms)),
+  ]);
 }
 
-export async function api<T = any>(path: string, opts: RequestInit = {}) {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(opts.headers as Record<string, string> || {}),
-  };
-  const token = getToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
+export async function api(path: string, init: RequestInit = {}) {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...opts,
-    headers,
-    cache: "no-store",
-  });
+  const res = await withTimeout(
+    fetch(absolute(path), {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(init.headers || {}),
+      },
+      cache: "no-store",
+      credentials: "omit",
+    })
+  );
 
   if (!res.ok) {
-    let txt = await res.text().catch(() => "");
-    throw new Error(`${res.status} ${res.statusText} - ${txt}`);
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status} ${res.statusText} at ${path}\n${text}`);
   }
-  // try json, else text
-  const ct = res.headers.get("content-type") || "";
-  if (ct.includes("application/json")) return res.json() as Promise<T>;
-  // @ts-ignore
-  return res.text() as Promise<T>;
+  // handle 204
+  const type = res.headers.get("content-type") || "";
+  return type.includes("application/json") ? res.json() : null;
 }

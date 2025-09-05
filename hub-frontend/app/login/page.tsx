@@ -1,3 +1,4 @@
+// app/login/page.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -19,9 +20,12 @@ export default function LoginPage() {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
   const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
-  const GSI_WIDTH = 400; // <= Google’s max width; we’ll size the whole block to this
+  const MAX_GSI_WIDTH = 400;     // cap to align with your input width
+  const MIN_GSI_WIDTH = 240;     // reasonable minimum on very small devices
 
+  const containerRef = useRef<HTMLDivElement>(null); // wraps inputs + google
   const gsiRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
 
   async function handle(e: React.FormEvent) {
     e.preventDefault();
@@ -44,33 +48,19 @@ export default function LoginPage() {
     }
   }
 
+  // Initialize + render the Google button at the container's current width
   useEffect(() => {
     const src = "https://accounts.google.com/gsi/client";
 
-    const renderButton = () => {
-      if (!window.google || !gsiRef.current) return;
+    const renderAtContainerWidth = () => {
+      if (!window.google || !gsiRef.current || !containerRef.current) return;
+
+      // width = container width, clamped to [MIN, MAX]
+      const available = Math.floor(containerRef.current.clientWidth);
+      const width = Math.max(MIN_GSI_WIDTH, Math.min(MAX_GSI_WIDTH, available));
+
+      // Clear any previous render before re-rendering
       gsiRef.current.innerHTML = "";
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: async (resp: any) => {
-          try {
-            setBusy(true);
-            const r = await fetch(`${API_BASE}/auth/google`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id_token: resp.credential }),
-            });
-            if (!r.ok) throw new Error(await r.text());
-            const data = await r.json();
-            localStorage.setItem("token", data.access_token);
-            router.push("/dashboard");
-          } catch (e: any) {
-            setErr(e.message ?? "Google sign-in failed");
-          } finally {
-            setBusy(false);
-          }
-        },
-      });
 
       window.google.accounts.id.renderButton(gsiRef.current, {
         type: "standard",
@@ -79,20 +69,57 @@ export default function LoginPage() {
         text: "continue_with",
         shape: "pill",
         logo_alignment: "left",
-        width: GSI_WIDTH, // <= exact width match
+        width, // 👈 responsive width
       });
     };
 
-    if (!document.querySelector(`script[src="${src}"]`)) {
+    const initAndRender = () => {
+      if (!window.google) return;
+      if (!initializedRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: async (resp: any) => {
+            try {
+              setBusy(true);
+              const r = await fetch(`${API_BASE}/auth/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_token: resp.credential }),
+              });
+              if (!r.ok) throw new Error(await r.text());
+              const data = await r.json();
+              localStorage.setItem("token", data.access_token);
+              router.push("/dashboard");
+            } catch (e: any) {
+              setErr(e.message ?? "Google sign-in failed");
+            } finally {
+              setBusy(false);
+            }
+          },
+        });
+        initializedRef.current = true;
+      }
+      renderAtContainerWidth();
+    };
+
+    // Load the script once
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
+    if (existing) {
+      if (window.google) initAndRender();
+      else existing.addEventListener("load", initAndRender, { once: true });
+    } else {
       const s = document.createElement("script");
       s.src = src;
       s.async = true;
       s.defer = true;
-      s.onload = renderButton;
+      s.onload = initAndRender;
       document.head.appendChild(s);
-    } else {
-      renderButton();
     }
+
+    // Re-render the GSI button responsively on viewport size changes
+    const onResize = () => renderAtContainerWidth();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, [API_BASE, GOOGLE_CLIENT_ID, router]);
 
   return (
@@ -100,8 +127,8 @@ export default function LoginPage() {
       <CardBody>
         <H2>Login</H2>
 
-        {/* Fixed-width wrapper so inputs and Google button align perfectly */}
-        <div className="mt-4 w-[400px] max-w-full">
+        {/* Shared container ensures inputs and Google button have the same width */}
+        <div ref={containerRef} className="mt-4 w-full max-w-md">
           <form onSubmit={handle} className="grid gap-3">
             <input
               className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
@@ -153,8 +180,8 @@ export default function LoginPage() {
             <div className="h-px flex-1 bg-white/10" />
           </div>
 
-          {/* Google button (exact same width as inputs) */}
-          <div className="mt-4 w-[400px] max-w-full">
+          {/* Google button: same width as the inputs above, responsive on mobile */}
+          <div className="mt-4">
             <div ref={gsiRef} className="w-full" />
           </div>
         </div>

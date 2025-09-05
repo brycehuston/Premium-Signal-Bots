@@ -95,16 +95,25 @@ export default function Dashboard() {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef({ tries: 0, timer: 0 });
 
-  async function refresh() {
+async function refresh() {
+  try {
+    const _me = await api("/me");     // requires Bearer token
+    setMe(_me as Me);
+
+    // /bot/status may 403 for inactive accounts — that's fine
     try {
-      const _me = await api("/me");
-      setMe(_me as Me);
       const s = await api("/bot/status");
-      setStatus((s.bots || []) as BotStatus[]);
-    } finally {
-      setLoading(false);
+      setStatus((s?.bots || []) as BotStatus[]);
+    } catch {
+      setStatus([]);
     }
+  } catch (e) {
+    // 401 / CORS / network — show Not Authorized instead of hanging
+    setMe(null);
+  } finally {
+    setLoading(false);
   }
+}
 
   function connectLogs(channel: string) {
     try {
@@ -354,7 +363,7 @@ export default function Dashboard() {
                     wsState === "open"
                       ? "border-green-400/30 bg-green-500/10 text-green-300"
                       : wsState === "reconnecting" || wsState === "connecting"
-                      ? "border-green bg-green-500/10 text-green-300"
+                      ? "border-green-700 bg-green-500/10 text-green-300"
                       : "border-red-400/30 bg-red-500/10 text-red-300"
                   }`}
                 >
