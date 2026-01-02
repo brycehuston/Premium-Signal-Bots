@@ -1,7 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import { Inter } from "next/font/google";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import Link from "next/link";
 import Script from "next/script";
@@ -11,21 +11,37 @@ import BottomTickerBar from "@/components/BottomTickerBar";
 const inter = Inter({ subsets: ["latin"] });
 const BRAND = process.env.NEXT_PUBLIC_BRAND || "AlphaAlerts";
 
+// Optional but nice: tell mobile browsers your theme color
+export const viewport: Viewport = {
+  themeColor: "#05070B",
+};
+
 export const metadata: Metadata = {
   title: `${BRAND} — Pro`,
   description: "Latency-optimized crypto signals, smart alerts, and bot control.",
 
-  // ✅ FAVICON (App Router way)
-  // Make sure favicon.ico exists at: /app/favicon.ico
+  // ✅ Force favicon paths (App Router)
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: [
+      // main favicon
+      { url: "/favicon.ico" },
+    ],
+    shortcut: [
+      { url: "/favicon.ico" },
+    ],
+    apple: [
+      // if you later add /public/apple-touch-icon.png it will use it
+      // { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 
 function Container({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">{children}</div>;
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+      {children}
+    </div>
+  );
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -87,10 +103,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Container>
         </header>
 
-        {/* 
+        {/*
           IMPORTANT:
           - pb-16 reserves space for the fixed BottomTickerBar
-          - Without this, the last part of your pages will be hidden behind the bar
         */}
         <div className="pb-16">
           <main className="py-10">
