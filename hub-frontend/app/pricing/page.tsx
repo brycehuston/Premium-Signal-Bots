@@ -141,7 +141,7 @@ export default function PricingPage() {
             </svg>
 
             <h3 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-              ALPHA BOT
+              ALPHA-X
             </h3>
             <div className="mt-1 text-[15px] font-semibold uppercase tracking-widest text-white/70">
               (Coming Soon)

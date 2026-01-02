@@ -1,0 +1,195 @@
+// components/BottomTickerBar.tsx
+"use client";
+
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Send, ArrowUpRight, ArrowDownRight } from "lucide-react";
+
+type Sym = "BTC" | "ETH" | "SOL";
+type PriceState = Record<Sym, number | null>;
+type DirState = Record<Sym, "up" | "down" | "flat">;
+
+function formatCompactUsd(n: number) {
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(2)}B`;
+  if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
+  return `$${n.toFixed(2)}`;
+}
+
+function computeDir(prev: number | null, next: number | null): "up" | "down" | "flat" {
+  if (prev == null || next == null) return "flat";
+  if (next > prev) return "up";
+  if (next < prev) return "down";
+  return "flat";
+}
+
+function Chip({
+  symbol,
+  price,
+  dir,
+  flash,
+}: {
+  symbol: Sym;
+  price: number | null;
+  dir: "up" | "down" | "flat";
+  flash: "up" | "down" | null;
+}) {
+  const Icon =
+    dir === "up" ? ArrowUpRight : dir === "down" ? ArrowDownRight : null;
+
+  return (
+    <div
+      className={[
+        "relative flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm",
+        "bg-black/35 backdrop-blur border-white/10",
+        flash === "up" ? "tick-flash-up" : "",
+        flash === "down" ? "tick-flash-down" : "",
+      ].join(" ")}
+    >
+      <span className="text-white/70">{symbol}</span>
+
+      <span className="font-semibold text-white tabular-nums">
+        {price == null ? "—" : formatCompactUsd(price)}
+      </span>
+
+      {Icon ? (
+        <Icon
+          className={[
+            "h-4 w-4",
+            dir === "up" ? "text-emerald-400" : "text-rose-400",
+          ].join(" ")}
+        />
+      ) : (
+        <span className="h-4 w-4" />
+      )}
+    </div>
+  );
+}
+
+export default function BottomTickerBar({
+  telegramUrl,
+  xUrl,
+  refreshMs = 8000,
+}: {
+  telegramUrl: string;
+  xUrl: string;
+  refreshMs?: number;
+}) {
+  const [prices, setPrices] = useState<PriceState>({ BTC: null, ETH: null, SOL: null });
+  const [dirs, setDirs] = useState<DirState>({ BTC: "flat", ETH: "flat", SOL: "flat" });
+  const [flash, setFlash] = useState<Record<Sym, "up" | "down" | null>>({
+    BTC: null,
+    ETH: null,
+    SOL: null,
+  });
+
+  const timerRef = useRef<number | null>(null);
+  const inFlightRef = useRef<boolean>(false);
+
+  const url = useMemo(() => {
+    const ids = "bitcoin,ethereum,solana";
+    return `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
+  }, []);
+
+  async function fetchPrices() {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      const j = await res.json();
+
+      const next: PriceState = {
+        BTC: j?.bitcoin?.usd ?? null,
+        ETH: j?.ethereum?.usd ?? null,
+        SOL: j?.solana?.usd ?? null,
+      };
+
+      (["BTC", "ETH", "SOL"] as Sym[]).forEach((sym) => {
+        const d = computeDir(prices[sym], next[sym]);
+        if (d !== "flat") {
+          setFlash((p) => ({ ...p, [sym]: d }));
+          setTimeout(() => {
+            setFlash((p) => ({ ...p, [sym]: null }));
+          }, 600);
+        }
+      });
+
+      setDirs({
+        BTC: computeDir(prices.BTC, next.BTC),
+        ETH: computeDir(prices.ETH, next.ETH),
+        SOL: computeDir(prices.SOL, next.SOL),
+      });
+
+      setPrices(next);
+    } catch {
+      // ignore errors, keep last prices
+    } finally {
+      inFlightRef.current = false;
+    }
+  }
+
+  useEffect(() => {
+    fetchPrices();
+    timerRef.current = window.setInterval(fetchPrices, refreshMs);
+    return () => {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshMs]);
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50">
+      <div className="h-px w-full bg-white/10" />
+
+      <div className="relative flex items-center justify-center px-4 py-2 bg-black/55 backdrop-blur">
+        {/* CENTERED TICKERS */}
+        <div className="flex items-center gap-2 md:gap-3">
+          <Chip symbol="BTC" price={prices.BTC} dir={dirs.BTC} flash={flash.BTC} />
+          <Chip symbol="ETH" price={prices.ETH} dir={dirs.ETH} flash={flash.ETH} />
+          <Chip symbol="SOL" price={prices.SOL} dir={dirs.SOL} flash={flash.SOL} />
+        </div>
+
+        {/* RIGHT SOCIAL ICONS */}
+        <div className="absolute right-4 flex items-center gap-2">
+          <a
+            href={telegramUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Telegram"
+            title="Telegram"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-black/35 text-white/80 hover:text-white hover:border-white/20 transition"
+          >
+            <Send className="h-4 w-4" />
+          </a>
+
+          <a
+            href={xUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="X"
+            title="X"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-black/35 text-white/80 hover:text-white hover:border-white/20 transition"
+          >
+            {/* Custom X logo using text, not the ❌ icon */}
+            <span className="text-sm font-bold leading-none">𝕏</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Flash styles */}
+      <style jsx global>{`
+        .tick-flash-up {
+          box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35),
+            0 0 24px rgba(16, 185, 129, 0.18);
+          border-color: rgba(16, 185, 129, 0.35) !important;
+        }
+        .tick-flash-down {
+          box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.35),
+            0 0 24px rgba(244, 63, 94, 0.18);
+          border-color: rgba(244, 63, 94, 0.35) !important;
+        }
+      `}</style>
+    </div>
+  );
+}
