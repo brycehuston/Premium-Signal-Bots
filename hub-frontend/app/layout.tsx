@@ -1,6 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
 
 const inter = Inter({ subsets: ["latin"] });
+const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
 const BRAND = process.env.NEXT_PUBLIC_BRAND || "AlphaAlerts";
 
 // Optional but nice: tell mobile browsers your theme color
@@ -46,7 +47,7 @@ function Container({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="en" className={`${inter.className} ${display.variable}`}>
       <body className="min-h-screen bg-bg text-neutral-100 antialiased">
         {/* decorative bg layers */}
         <div className="pointer-events-none fixed inset-0 -z-10">
@@ -77,24 +78,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link
                   className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
                   href="/pricing"
+                  data-no-link-style
                 >
                   Pricing
                 </Link>
                 <Link
                   className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
                   href="/dashboard"
+                  data-no-link-style
                 >
                   Dashboard
                 </Link>
                 <Link
                   className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
                   href="/billing"
+                  data-no-link-style
                 >
                   Billing
                 </Link>
                 <Link
                   className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
                   href="/login"
+                  data-no-link-style
                 >
                   Login
                 </Link>

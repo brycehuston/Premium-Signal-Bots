@@ -64,7 +64,7 @@ export function Button({
   // base + sizing kept clean; variants should NOT re-define height/padding
   const base =
     "inline-flex items-center justify-center rounded-lg whitespace-nowrap select-none antialiased " +
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-0";
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/70 focus-visible:ring-offset-0";
   const sizes =
     size === "lg"
       ? "h-12 px-6 text-[15px] leading-[1.15]"
@@ -104,7 +104,7 @@ export function Button({
 
   if (href) {
     return (
-      <Link href={href} className={classes} aria-disabled={disabled}>
+      <Link href={href} className={classes} aria-disabled={disabled} data-no-link-style>
         {children}
       </Link>
     );

@@ -38,7 +38,7 @@ export default function WaitlistPage() {
     <div className="mx-auto max-w-md">
       <div className="rounded-2xl border border-edge bg-card/80 p-6 shadow-glow">
         <h2 className="mb-4 text-center text-2xl font-semibold">
-          Join the Alpha Bot Waitlist
+          Join the Alpha-X Waitlist
         </h2>
         <form onSubmit={submit} className="grid gap-3">
           <input
@@ -57,7 +57,7 @@ export default function WaitlistPage() {
           />
           <textarea
             className="min-h-[90px] rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
-            placeholder="Got an idea for an elite signal bot? Share it here…"
+            placeholder="Got an idea? Share it here…"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />

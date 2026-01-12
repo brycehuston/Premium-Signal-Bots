@@ -158,6 +158,7 @@ export default function BottomTickerBar({
             rel="noreferrer"
             aria-label="Telegram"
             title="Telegram"
+            data-no-link-style
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-black/35 text-white/80 hover:text-white hover:border-white/20 transition"
           >
             <Send className="h-4 w-4" />
@@ -169,6 +170,7 @@ export default function BottomTickerBar({
             rel="noreferrer"
             aria-label="X"
             title="X"
+            data-no-link-style
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-black/35 text-white/80 hover:text-white hover:border-white/20 transition"
           >
             {/* Custom X logo using text, not the ❌ icon */}

@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Timer, Webhook, Bell } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
+import { Button } from "@/components/ui";
 
 declare global {
   interface Window {
@@ -164,7 +165,7 @@ function SmoothCounter({
   return (
     <span
       ref={spanRef}
-      className="tabular-nums text-base md:text-lg font-semibold tracking-tight text-white"
+      className="font-display tabular-nums text-base md:text-lg font-semibold tracking-tight text-white"
       style={{ display: "inline-block", transform: "translateZ(0)" }}
     />
   );
@@ -240,7 +241,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
           filter: "blur(34px)",
         }}
       />
-      <h3 className="relative mb-2 inline-block pb-1 text-lg font-semibold tracking-tight after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-gradient-to-r after:from-sky-400/80 after:via-sky-400/40 after:to-transparent">
+      <h3 className="font-display relative mb-2 inline-block pb-1 text-lg font-semibold tracking-tight after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-gradient-to-r after:from-sky-400/80 after:via-sky-400/40 after:to-transparent">
         {title}
       </h3>
       <p className="text-sm leading-relaxed text-white/70">{children}</p>
@@ -295,23 +296,46 @@ export default function Page() {
   }, [statsInView, step]);
 
   return (
-    <div className="flex flex-col gap-6 md:gap-7">
+    <div className="flex flex-col gap-8 md:gap-10">
       {/* HERO */}
       <section className="grid grid-cols-12 items-center gap-10 md:gap-16">
         {/* LEFT */}
         <div ref={featuresScope as any} className="col-span-12 md:col-span-6 md:pr-10">
           {/* Titles back to “big”, but keep safe gap from chart via gap+pr */}
-          <h1 className="text-white text-[33px] md:text-[42px] leading-[1.06] font-extrabold">
+          <h1 className="font-display text-white text-[33px] md:text-[42px] leading-[1.06] font-extrabold tracking-tight">
             Your Market Edge with
           </h1>
 
-          <div className="text-brand-500 text-[72px] md:text-[92px] leading-[1.02] font-extrabold">
+          <div className="font-display text-brand-500 text-[72px] md:text-[92px] leading-[1.02] font-extrabold tracking-tight">
             AlphaAlerts
           </div>
 
           <p className="mt-3 max-w-[56ch] text-[15px] md:text-base text-white/75">
-            Real-time scans, smart filters, and pro alerts. Built for serious traders who need reliability.
+            Real-time scans, smart filters, and pro alerts.
+            <span className="hidden sm:inline"> Built for serious traders who need reliability.</span>
           </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button
+              href="/pricing#plans"
+              size="lg"
+              className={[
+                "!bg-brand-600",
+                "!text-black",
+                "hover:!bg-black hover:!text-white",
+              ].join(" ")}
+            >
+              Get Alerts
+            </Button>
+            <Button
+              href="#sample-alerts"
+              variant="ghost"
+              size="lg"
+              className="!bg-white/[0.04] !text-white/90 hover:!bg-white/10 hover:!text-white"
+            >
+              View Sample Alerts
+            </Button>
+          </div>
 
           {/* Pills now sit lower (mt-6) and stay in ONE row on desktop */}
           <FeatureRow active={featuresInView} />
@@ -320,6 +344,45 @@ export default function Page() {
         {/* RIGHT */}
         <div className="col-span-12 md:col-span-6 md:pl-4">
           <HeroChart height={340} />
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+        <div className="text-xs uppercase tracking-[0.3em] text-white/50">How it works</div>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <div className="flex gap-3">
+            <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-brand-600/20 text-brand-500 text-sm font-semibold">
+              1
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">Pick your tier</div>
+              <div className="text-sm text-white/60">
+                Choose Early, Trend, Runner, or the Bundle.
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-brand-600/20 text-brand-500 text-sm font-semibold">
+              2
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">Pay and connect</div>
+              <div className="text-sm text-white/60">
+                Manual USDC payment, then we invite you to Telegram.
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-brand-600/20 text-brand-500 text-sm font-semibold">
+              3
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">Get alerts live</div>
+              <div className="text-sm text-white/60">
+                Clean signals with links, filters, and scoring in real time.
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -335,29 +398,113 @@ export default function Page() {
         </Card>
       </section>
 
-      <div ref={statsRef as any} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-[0_0_0_1px_rgba(255,255,255,.06)]">
-        <div className="grid grid-cols-12 items-center gap-4">
-          <div className="col-span-12 md:col-span-9">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="space-y-1.5">
-                <StatCard id="median" label="Median alert time" start={step >= 1} target={120} suffix="ms" onDone={() => setTimeout(() => setStep(2), 600)} />
-              </div>
-              <div className="space-y-1.5">
-                <StatCard id="pairs" label="Pairs watched" start={step >= 2} target={100} suffix="+" onDone={() => setTimeout(() => setStep(3), 600)} />
-              </div>
-              <div className="space-y-1.5">
-                <StatCard id="uptime" label="Uptime" start={step >= 3} target={99.9} decimals={1} suffix="%" />
-              </div>
-            </div>
+      <section id="sample-alerts" className="grid items-start gap-6 md:grid-cols-2">
+        <div>
+          <div className="text-xs uppercase tracking-[0.3em] text-white/50">Sample alerts</div>
+          <h2 className="font-display mt-2 text-2xl font-semibold tracking-tight text-white">
+            See what hits your Telegram
+          </h2>
+          <p className="mt-2 text-white/70">
+            One clean message with entry links, safety checks, and clear market state labels.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3 text-xs text-white/60">
+            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+              120ms median latency
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+              99.9% uptime
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+              100+ pairs watched
+            </span>
           </div>
-
-          <div className="col-span-12 md:col-span-3 flex md:justify-end">
-            <a href="/pricing" className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-600 px-6 font-semibold text-black transition-colors hover:bg-black">
-              See Pricing
-            </a>
+          <div className="mt-5">
+            <Button
+              href="/pricing#plans"
+              size="md"
+              className={[
+                "!bg-brand-600",
+                "!text-black",
+                "hover:!bg-black hover:!text-white",
+              ].join(" ")}
+            >
+              Get Alerts
+            </Button>
           </div>
         </div>
-      </div>
+
+        <div className="rounded-2xl border border-white/10 bg-[#0b0d13] p-5 font-mono text-sm text-white/80 shadow-[0_0_0_1px_rgba(255,255,255,.05)]">
+          <div className="flex items-center justify-between text-xs text-white/50">
+            <span>AlphaAlerts • TREND</span>
+            <span>now</span>
+          </div>
+          <div className="mt-3 space-y-2">
+            <div className="text-white font-semibold">SOL/USDC • 5m</div>
+            <div className="text-white/80">Signal: BREAKING • Momentum + Volume</div>
+            <div className="text-white/70">
+              Entry: 96.20 • SL: 92.80 • TP1: 101.40 • TP2: 108.00
+            </div>
+            <div className="text-white/60">
+              Filters: Mint Renounced • Liquidity Locked • Holders 1,240
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2 text-[11px] text-white/70">
+            <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-center">
+              Chart
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-center">
+              Dex
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-center">
+              Wallet
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section ref={statsRef as any} className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Performance</div>
+            <h2 className="font-display mt-1 text-xl font-semibold tracking-tight text-white">
+              Speed and transparency
+            </h2>
+          </div>
+          <div className="text-xs text-white/50">Live metrics from recent activity</div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-[0_0_0_1px_rgba(255,255,255,.06)]">
+          <div className="grid grid-cols-12 items-center gap-4">
+            <div className="col-span-12 md:col-span-9">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="space-y-1.5">
+                  <StatCard id="median" label="Median alert time" start={step >= 1} target={120} suffix="ms" onDone={() => setTimeout(() => setStep(2), 600)} />
+                </div>
+                <div className="space-y-1.5">
+                  <StatCard id="pairs" label="Pairs watched" start={step >= 2} target={100} suffix="+" onDone={() => setTimeout(() => setStep(3), 600)} />
+                </div>
+                <div className="space-y-1.5">
+                  <StatCard id="uptime" label="Uptime" start={step >= 3} target={99.9} decimals={1} suffix="%" />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-span-12 md:col-span-3 flex md:justify-end">
+              <Button
+                href="/pricing#plans"
+                size="md"
+                className={[
+                  "!bg-brand-600",
+                  "!text-black",
+                  "hover:!bg-black hover:!text-white",
+                ].join(" ")}
+              >
+                Get Alerts
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <style jsx global>{`
         @keyframes rotateCW { to { transform: rotate(360deg) } }
