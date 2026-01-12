@@ -1,4 +1,4 @@
-// app/login/page.tsx
+﻿// app/login/page.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -23,7 +23,7 @@ export default function LoginPage() {
   const gsiRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
 
-  // Warm the API to reduce “first-hit” latency (cold start)
+  // Warm the API to reduce first-hit latency (cold start)
   useEffect(() => { fetch(`${API_BASE}/health`).catch(() => {}); }, [API_BASE]);
 
   async function handle(e: React.FormEvent) {
@@ -121,39 +121,39 @@ export default function LoginPage() {
         <div ref={containerRef} className="mt-4 w-full max-w-md">
           <form onSubmit={handle} className="grid gap-3">
             <input
-              className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
+              className="input"
               placeholder="Email" type="email" value={email}
               onChange={(e) => setEmail(e.target.value)} required autoComplete="email"
             />
             <input
-              className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
+              className="input"
               placeholder="Password" type="password" value={password}
               onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password"
             />
 
             <div className="flex gap-2">
-              <Button variant="primary" disabled={busy}>{busy ? "…" : "Login"}</Button>
-              <button
+              <Button type="submit" variant="primary" disabled={busy}>{busy ? "Working..." : "Login"}</Button>
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => localStorage.removeItem("token")}
-                className="rounded-xl border border-edge bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
               >
                 Clear token
-              </button>
+              </Button>
             </div>
 
-            <p className="mt-1 text-sm text-white/60">
-              Don’t have an account?{" "}
-              <a href="/register" className="text-brand-500 hover:underline">Create one</a>.
+            <p className="mt-1 text-sm text-muted">
+              Don't have an account?{" "}
+              <a href="/register" className="text-gold hover:underline">Create one</a>.
             </p>
 
             {err && <p className="text-red-400 text-sm">{err}</p>}
           </form>
 
           <div className="mt-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-white/10" />
-            <span className="text-xs text-white/50">or</span>
-            <div className="h-px flex-1 bg-white/10" />
+            <div className="h-px flex-1 bg-stroke/70" />
+            <span className="text-xs text-muted/70">or</span>
+            <div className="h-px flex-1 bg-stroke/70" />
           </div>
 
           <div className="mt-4"><div ref={gsiRef} className="w-full" /></div>

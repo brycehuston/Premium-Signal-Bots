@@ -1,4 +1,4 @@
-// lib/api.ts
+﻿// lib/api.ts
 export async function api(path: string, init: RequestInit = {}) {
   const base = process.env.NEXT_PUBLIC_API_URL!;
   const controller = new AbortController();
@@ -36,7 +36,7 @@ export async function api(path: string, init: RequestInit = {}) {
   try {
     return await doFetch(controller.signal);
   } catch (e) {
-    // one quick retry (often fixes “first request after sleep”)
+    // one quick retry (often fixes first request after sleep)
     try {
       return await doFetch();
     } finally {
@@ -46,3 +46,4 @@ export async function api(path: string, init: RequestInit = {}) {
     clearTimeout(t);
   }
 }
+

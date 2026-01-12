@@ -3,28 +3,106 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
-html, body { @apply bg-bg text-white min-h-screen; }
+:root {
+  color-scheme: dark;
+
+  /* Core tokens (RGB triplets for alpha support) */
+  --bg: 5 5 6;
+  --surface: 12 13 16;
+  --surface2: 16 18 23;
+  --text: 229 230 234;
+  --muted: 165 168 176;
+  --stroke: 44 46 53;
+  --stroke2: 60 64 73;
+
+  /* Brand metals */
+  --silver: 215 217 222;
+  --silver-strong: 243 244 246;
+  --gold: 200 163 81;
+  --gold2: 217 180 96;
+  --gold3: 170 132 58;
+
+  /* Plan tones */
+  --tone-bronze: 205 150 90;
+  --tone-bronze-2: 226 176 120;
+  --tone-bronze-3: 140 88 54;
+  --tone-bronze-4: 240 195 128;
+
+  --tone-platinum: 195 205 222;
+  --tone-platinum-2: 235 240 250;
+  --tone-platinum-3: 122 132 150;
+  --tone-platinum-4: 255 255 255;
+
+  --tone-gold: 246 196 83;
+  --tone-gold-2: 255 219 130;
+  --tone-gold-3: 175 118 38;
+  --tone-gold-4: 255 240 185;
+
+  /* Shadows + radii */
+  --shadow-soft: 0 0 0 1px rgb(var(--stroke) / 0.7), 0 12px 36px -24px rgb(0 0 0 / 0.7);
+  --shadow-hover: 0 0 0 1px rgb(var(--gold) / 0.35), 0 22px 60px -30px rgb(var(--gold) / 0.35);
+  --radius-card: 20px;
+  --radius-pill: 999px;
+
+  /* Metallic gradients */
+  --grad-silver: linear-gradient(135deg,
+    rgb(var(--silver) / 0.95) 0%,
+    rgb(var(--silver-strong) / 0.95) 45%,
+    rgb(var(--silver) / 0.9) 100%
+  );
+  --grad-gold: linear-gradient(135deg,
+    rgb(var(--gold2) / 0.98) 0%,
+    rgb(var(--gold) / 0.9) 55%,
+    rgb(var(--gold3) / 0.95) 100%
+  );
+  --grad-bronze: linear-gradient(135deg,
+    rgb(var(--tone-bronze-2) / 0.96) 0%,
+    rgb(var(--tone-bronze) / 0.92) 55%,
+    rgb(var(--tone-bronze-3) / 0.95) 100%
+  );
+  --grad-platinum: linear-gradient(135deg,
+    rgb(var(--tone-platinum-2) / 0.96) 0%,
+    rgb(var(--tone-platinum) / 0.9) 55%,
+    rgb(var(--tone-platinum-3) / 0.95) 100%
+  );
+
+  /* Subtle atmosphere */
+  --vignette: radial-gradient(1200px 700px at 50% -20%, rgb(var(--silver) / 0.08), transparent 55%),
+              radial-gradient(900px 600px at 80% 20%, rgb(var(--gold) / 0.08), transparent 60%);
+}
+
+html, body { @apply min-h-screen bg-bg text-text; }
+body { background-color: rgb(var(--bg)); color: rgb(var(--text)); }
 
 .font-display {
   font-family: var(--font-display), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   letter-spacing: -0.01em;
 }
 
-a:not([data-no-link-style]) { @apply text-brand-600 hover:text-brand-500 transition-colors; }
+a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-colors; }
 
-/* ============================================================
-   WARM WHITE GLOW (brighter + nicer than pure white)
-   - This overrides your "shadow-glow" utility everywhere
-   ============================================================ */
 @layer utilities {
-  .shadow-glow {
-    /* CHANGED: brighter + warm */
-    box-shadow:
-      0 0 0 1px rgba(255,255,255,0.085),
-      0 10px 34px -18px rgba(255,248,235,0.28),
-      0 26px 90px -40px rgba(255,235,200,0.22);
+  .shadow-glow { box-shadow: var(--shadow-soft); }
+  .shadow-hover { box-shadow: var(--shadow-hover); }
+
+  .text-metal-silver {
+    background-image: var(--grad-silver);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
+
+  .text-metal-gold {
+    background-image: var(--grad-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-metal-silver { background-image: var(--grad-silver); }
+  .bg-metal-gold { background-image: var(--grad-gold); }
+  .bg-metal-bronze { background-image: var(--grad-bronze); }
+  .bg-metal-platinum { background-image: var(--grad-platinum); }
 
   .btn-text-shadow {
     text-shadow:
@@ -33,10 +111,9 @@ a:not([data-no-link-style]) { @apply text-brand-600 hover:text-brand-500 transit
   }
 }
 
-/* Glow everywhere */
 @layer components {
   .card {
-    @apply bg-card rounded-2xl border border-edge/40 shadow-glow relative overflow-hidden;
+    @apply bg-surface/90 rounded-2xl border border-stroke/70 shadow-glow relative overflow-hidden;
   }
 
   .card::after {
@@ -44,20 +121,17 @@ a:not([data-no-link-style]) { @apply text-brand-600 hover:text-brand-500 transit
     position: absolute;
     inset: 0;
     border-radius: inherit;
-
-    /* CHANGED: brighter warm top aura */
     background: radial-gradient(
       70% 90% at 50% -12%,
-      rgba(255,248,235,0.22),
-      rgba(255,248,235,0.10) 35%,
-      transparent 70%
+      rgb(var(--silver) / 0.14),
+      rgb(var(--silver) / 0.06) 40%,
+      transparent 72%
     );
-
     pointer-events: none;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 bg-brand-600 hover:bg-brand-500 active:scale-[.99] transition shadow-glow relative overflow-hidden;
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 bg-gold/90 text-black border border-gold/50 shadow-glow relative overflow-hidden transition;
   }
 
   .btn::after {
@@ -65,81 +139,72 @@ a:not([data-no-link-style]) { @apply text-brand-600 hover:text-brand-500 transit
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-
-    /* CHANGED: warm highlight for buttons */
     background: radial-gradient(
       85% 130% at 50% -45%,
-      rgba(255,248,235,0.18),
+      rgb(var(--gold2) / 0.2),
       transparent 62%
     );
-
     pointer-events: none;
   }
 
   .input {
-    @apply w-full rounded-xl bg-[#0b0d13] border border-edge/50 px-3 py-2 outline-none focus:border-brand-600 shadow-glow;
+    @apply w-full rounded-xl bg-surface2/90 border border-stroke/70 px-3 py-2 outline-none focus:border-gold/70 shadow-glow text-text placeholder:text-muted/70;
   }
 
   .chip {
-    @apply rounded-xl px-4 py-2 bg-brand-600/20 border border-brand-600/30 shadow-glow;
+    @apply rounded-xl px-4 py-2 bg-gold/10 border border-gold/30 shadow-glow text-gold;
   }
 }
 
 /* --- Gold lightning flicker ------------------------------------------- */
 @keyframes bolt-flicker {
-  0%   { opacity: .75; filter: drop-shadow(0 0 0px rgba(251,215,90,0)); }
-  8%   { opacity: 1;   filter: drop-shadow(0 0 16px rgba(251,215,90,.9)); }
-  12%  { opacity: .85; filter: drop-shadow(0 0 6px rgba(251,215,90,.5)); }
-  20%  { opacity: 1;   filter: drop-shadow(0 0 18px rgba(251,215,90,.9)); }
-  22%  { opacity: .8;  filter: drop-shadow(0 0 8px rgba(251,215,90,.4)); }
-  100% { opacity: .9;  filter: drop-shadow(0 0 10px rgba(251,215,90,.55)); }
+  0%   { opacity: .75; filter: drop-shadow(0 0 0px rgba(218,179,96,0)); }
+  8%   { opacity: 1;   filter: drop-shadow(0 0 16px rgba(218,179,96,.75)); }
+  12%  { opacity: .85; filter: drop-shadow(0 0 6px rgba(218,179,96,.35)); }
+  20%  { opacity: 1;   filter: drop-shadow(0 0 18px rgba(218,179,96,.75)); }
+  22%  { opacity: .8;  filter: drop-shadow(0 0 8px rgba(218,179,96,.35)); }
+  100% { opacity: .9;  filter: drop-shadow(0 0 10px rgba(218,179,96,.5)); }
 }
-.animate-bolt {
-  animation: bolt-flicker 2.4s infinite;
-}
+.animate-bolt { animation: bolt-flicker 2.4s infinite; }
 /* ---------------------------------------------------------------------- */
 
-
 /* --- Shimmer sequence: EARLY -> TREND -> RUNNER -> idle -> repeat ------ */
-:root { --aa-cycle: 9.35s; }
+:root { --aa-cycle: 10.8s; }
 
 .shimmer-text {
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-
   background-size: 100% 100%, 360% 100%;
   background-position: 0% 50%, -220% 50%;
   background-repeat: no-repeat;
-
   display: inline-block;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 @keyframes aaCadenceEarly {
-  0%        { background-position: 0% 50%, -220% 50%; }
-  13.3690%  { background-position: 0% 50%,  220% 50%; }
-  13.3691%  { background-position: 0% 50%, -220% 50%; }
-  100%      { background-position: 0% 50%, -220% 50%; }
+  0%   { background-position: 0% 50%, -220% 50%; }
+  14%  { background-position: 0% 50%,  220% 50%; }
+  34%  { background-position: 0% 50%,  220% 50%; }
+  100% { background-position: 0% 50%,  220% 50%; }
 }
 @keyframes aaCadenceTrend {
-  0%        { background-position: 0% 50%, -220% 50%; }
-  16.5775%  { background-position: 0% 50%, -220% 50%; }
-  29.9465%  { background-position: 0% 50%,  220% 50%; }
-  29.9466%  { background-position: 0% 50%, -220% 50%; }
-  100%      { background-position: 0% 50%, -220% 50%; }
+  0%   { background-position: 0% 50%, -220% 50%; }
+  34%  { background-position: 0% 50%, -220% 50%; }
+  48%  { background-position: 0% 50%,  220% 50%; }
+  68%  { background-position: 0% 50%,  220% 50%; }
+  100% { background-position: 0% 50%,  220% 50%; }
 }
 @keyframes aaCadenceRunner {
-  0%        { background-position: 0% 50%, -220% 50%; }
-  33.1551%  { background-position: 0% 50%, -220% 50%; }
-  46.5241%  { background-position: 0% 50%,  220% 50%; }
-  46.5242%  { background-position: 0% 50%, -220% 50%; }
-  100%      { background-position: 0% 50%, -220% 50%; }
+  0%   { background-position: 0% 50%, -220% 50%; }
+  68%  { background-position: 0% 50%, -220% 50%; }
+  82%  { background-position: 0% 50%,  220% 50%; }
+  100% { background-position: 0% 50%,  220% 50%; }
 }
 
 .shimmer-1, .shimmer-2, .shimmer-3 {
   animation-duration: var(--aa-cycle);
-  animation-timing-function: linear;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   animation-iteration-count: infinite;
   animation-fill-mode: both;
   animation-direction: normal;
@@ -153,60 +218,60 @@ a:not([data-no-link-style]) { @apply text-brand-600 hover:text-brand-500 transit
 .shimmer-bronze {
   background-image:
     linear-gradient(90deg,
-      rgba(167, 106, 62, 0.95) 0%,
-      rgba(221, 165, 95, 0.98) 28%,
-      rgba(140, 84, 46, 0.95) 55%,
-      rgba(240, 195, 128, 0.98) 78%,
-      rgba(160, 98, 55, 0.95) 100%
+      rgb(var(--tone-bronze) / 0.95) 0%,
+      rgb(var(--tone-bronze-2) / 0.98) 28%,
+      rgb(var(--tone-bronze-3) / 0.95) 55%,
+      rgb(var(--tone-bronze-4) / 0.98) 78%,
+      rgb(var(--tone-bronze) / 0.95) 100%
     ),
     linear-gradient(90deg,
       rgba(255,255,255,0.00) 0%,
-      rgba(255,245,220,0.95) 40%,
-      rgba(255,255,255,1.00) 50%,
-      rgba(255,245,220,0.95) 60%,
+      rgba(255,245,220,0.8) 40%,
+      rgba(255,255,255,0.9) 50%,
+      rgba(255,245,220,0.8) 60%,
       rgba(255,255,255,0.00) 100%
     );
-  filter: drop-shadow(0 0 18px rgba(221,165,95,0.25));
+  filter: drop-shadow(0 0 16px rgba(205,150,90,0.2));
 }
 
 /* TREND = PLATINUM */
 .shimmer-platinum {
   background-image:
     linear-gradient(90deg,
-      rgba(145,155,175,0.92) 0%,
-      rgba(245,248,255,0.98) 18%,
-      rgba(165,176,198,0.95) 45%,
-      rgba(255,255,255,0.98) 62%,
-      rgba(135,145,165,0.92) 100%
+      rgb(var(--tone-platinum) / 0.92) 0%,
+      rgb(var(--tone-platinum-2) / 0.98) 18%,
+      rgb(var(--tone-platinum-3) / 0.95) 45%,
+      rgb(var(--tone-platinum-4) / 0.98) 62%,
+      rgb(var(--tone-platinum) / 0.92) 100%
     ),
     linear-gradient(90deg,
       rgba(255,255,255,0.00) 0%,
-      rgba(235,245,255,0.95) 40%,
-      rgba(255,255,255,1.00) 50%,
-      rgba(235,245,255,0.95) 60%,
+      rgba(235,245,255,0.85) 40%,
+      rgba(255,255,255,0.95) 50%,
+      rgba(235,245,255,0.85) 60%,
       rgba(255,255,255,0.00) 100%
     );
-  filter: drop-shadow(0 0 18px rgba(220,235,255,0.22));
+  filter: drop-shadow(0 0 16px rgba(220,235,255,0.2));
 }
 
 /* RUNNER = GOLD */
 .shimmer-gold {
   background-image:
     linear-gradient(90deg,
-      rgba(180,120,35,0.92) 0%,
-      rgba(255,219,130,0.98) 30%,
-      rgba(205,145,45,0.94) 55%,
-      rgba(255,240,185,0.98) 78%,
-      rgba(175,118,38,0.92) 100%
+      rgb(var(--tone-gold-3) / 0.92) 0%,
+      rgb(var(--tone-gold-2) / 0.98) 30%,
+      rgb(var(--tone-gold) / 0.94) 55%,
+      rgb(var(--tone-gold-4) / 0.98) 78%,
+      rgb(var(--tone-gold-3) / 0.92) 100%
     ),
     linear-gradient(90deg,
       rgba(255,255,255,0.00) 0%,
-      rgba(255,250,230,0.95) 40%,
+      rgba(255,250,230,0.9) 40%,
       rgba(255,255,255,1.00) 50%,
-      rgba(255,250,230,0.95) 60%,
+      rgba(255,250,230,0.9) 60%,
       rgba(255,255,255,0.00) 100%
     );
-  filter: drop-shadow(0 0 18px rgba(246,196,83,0.25));
+  filter: drop-shadow(0 0 16px rgba(217,180,96,0.25));
 }
 
 @media (prefers-reduced-motion: reduce) {

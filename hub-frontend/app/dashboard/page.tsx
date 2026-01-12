@@ -1,4 +1,4 @@
-// app/dashboard/page.tsx
+﻿// app/dashboard/page.tsx
 "use client";
 
 /**
@@ -29,7 +29,7 @@ type BotStatus = { bot: string; status: string };
 /* ---------- Small UI helpers ---------- */
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-edge/70 bg-card/80 backdrop-blur shadow-glow ${className}`}>
+    <div className={`rounded-2xl border border-stroke/70 bg-surface/80 backdrop-blur shadow-glow ${className}`}>
       {children}
     </div>
   );
@@ -48,13 +48,13 @@ function Btn({
   disabled?: boolean;
   variant?: "primary" | "ghost" | "danger";
 }) {
-  const base = "inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm transition disabled:opacity-50";
+  const base = "inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm transition disabled:opacity-50 border border-transparent";
   const style =
     variant === "primary"
-      ? "bg-brand-600 hover:bg-brand-500 text-black"
+      ? "bg-metal-gold text-black border border-gold/60 shadow-glow hover:brightness-[1.05]"
       : variant === "danger"
-      ? "bg-red-500/80 hover:bg-red-500 text-white"
-      : "bg-white/5 hover:bg-white/10 text-white";
+      ? "bg-red-500/80 hover:bg-red-500 text-silver border border-red-400/40"
+      : "bg-surface2/60 hover:bg-surface2/80 text-silver border border-stroke/70";
   return (
     <button className={`${base} ${style}`} onClick={onClick} disabled={disabled}>
       {children}
@@ -108,7 +108,7 @@ export default function Dashboard() {
       const _me = await api("/me"); // requires Bearer token from api() helper
       setMe(_me as Me);
 
-      // /bot/status may 403 for inactive accounts — that's fine
+      // /bot/status may 403 for inactive accounts - that's fine
       try {
         const s = await api("/bot/status");
         setStatus((s?.bots || []) as BotStatus[]);
@@ -116,7 +116,7 @@ export default function Dashboard() {
         setStatus([]);
       }
     } catch {
-      // 401 / CORS / network — show Not Authorized instead of hanging
+      // 401 / CORS / network - show Not Authorized instead of hanging
       setMe(null);
     } finally {
       setLoading(false);
@@ -152,7 +152,7 @@ export default function Dashboard() {
     const scheduleReconnect = () => {
       setWsState("reconnecting");
       reconnectRef.current.tries += 1;
-      const delay = Math.min(30_000, 1000 * 2 ** (reconnectRef.current.tries - 1)); // 1s, 2s, 4s … cap 30s
+      const delay = Math.min(30_000, 1000 * 2 ** (reconnectRef.current.tries - 1)); // 1s, 2s, 4s ... cap 30s
       reconnectRef.current.timer = window.setTimeout(() => connectLogs(channel), delay);
     };
     sock.onclose = () => {
@@ -211,7 +211,7 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSignal]);
 
-  if (loading) return <div className="text-white/70">Loading…</div>;
+  if (loading) return <div className="text-muted">Loading...</div>;
   if (!me) return <div className="text-red-400">Not Authorized</div>;
 
   // entitlement/tier logic
@@ -227,12 +227,12 @@ export default function Dashboard() {
           <CardBody className="space-y-4">
             <div className="flex items-start justify-between gap-4">
               {/* email (trim so Sign Out never squishes) */}
-              <div className="max-w-[72%] break-all text-base sm:text-lg font-semibold leading-6">
+              <div className="max-w-[72%] break-all text-base sm:text-lg font-semibold leading-6 text-silver">
                 {me.email}
               </div>
               <button
                 onClick={signOut}
-                className="shrink-0 mt-0.5 inline-flex h-9 items-center justify-center rounded-xl border border-edge/70 bg-white/5 px-3 text-sm text-white hover:bg-white/10"
+                className="shrink-0 mt-0.5 inline-flex h-9 items-center justify-center rounded-xl border border-stroke/70 bg-surface/70 px-3 text-sm text-silver hover:bg-surface/80"
               >
                 Sign Out
               </button>
@@ -240,13 +240,13 @@ export default function Dashboard() {
 
             {/* Tier */}
             <div className="text-sm">
-              <span className="text-white/60">TIER:</span>{" "}
-              <span className="rounded-md border border-edge/70 bg-white/5 px-2 py-0.5 text-white/80">
+              <span className="text-muted">TIER:</span>{" "}
+              <span className="rounded-md border border-stroke/70 bg-surface/70 px-2 py-0.5 text-silver">
                 {String(computedTier)}
               </span>
             </div>
 
-            <div className="h-px bg-white/10" />
+            <div className="h-px bg-stroke/70" />
 
             {/* Signals list: label left, pill right (perfectly aligned) */}
             <div className="space-y-2">
@@ -254,10 +254,10 @@ export default function Dashboard() {
                 const active = entSet.has(key);
                 return (
                   <div key={key} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-white/80">
-                      <span className="inline-block h-2 w-2 rounded-full bg-white/40" />
+                    <div className="flex items-center gap-2 text-silver">
+                      <span className="inline-block h-2 w-2 rounded-full bg-silver/40" />
                       <span>{SIGNAL_LABELS[key]}</span>
-                      <span className="text-white/60">— Access</span>
+                      <span className="text-muted">- Access</span>
                     </div>
 
                     <span
@@ -280,8 +280,8 @@ export default function Dashboard() {
         <Card className="lg:col-span-2">
           <CardBody>
             <div className="mb-3">
-              <div className="text-lg font-semibold">Live BTC (1m)</div>
-              <div className="text-sm text-white/60">Binance feed · updates in real-time</div>
+              <div className="text-lg font-semibold text-silver">Live BTC (1m)</div>
+              <div className="text-sm text-muted">Binance feed - updates in real-time</div>
             </div>
             <BtcMiniChart height={300} />
           </CardBody>
@@ -293,9 +293,9 @@ export default function Dashboard() {
         {/* Alpha Bot */}
         <Card>
           <CardBody className="space-y-4">
-            <div className="text-lg font-semibold">{BOT_LABELS.trend_rider}</div>
-            <div className="text-white/60">
-              Status: <span className="text-white/80">Coming Soon</span>
+            <div className="text-lg font-semibold text-silver">{BOT_LABELS.trend_rider}</div>
+            <div className="text-muted">
+              Status: <span className="text-silver">Coming Soon</span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <Btn disabled onClick={() => start("trend_rider")}>Start</Btn>
@@ -308,9 +308,9 @@ export default function Dashboard() {
         {/* Scalper Bot */}
         <Card>
           <CardBody className="space-y-4">
-            <div className="text-lg font-semibold">{BOT_LABELS.scalper}</div>
-            <div className="text-white/60">
-              Status: <span className="text-white/80">Coming Soon</span>
+            <div className="text-lg font-semibold text-silver">{BOT_LABELS.scalper}</div>
+            <div className="text-muted">
+              Status: <span className="text-silver">Coming Soon</span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <Btn disabled onClick={() => start("scalper")}>Start</Btn>
@@ -324,20 +324,20 @@ export default function Dashboard() {
         <Card>
           <CardBody className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="text-lg font-semibold">{BOT_LABELS.reversal}</div>
-              <span className="rounded-md border border-yellow-400/30 bg-yellow-500/10 px-2 py-0.5 text-xs text-yellow-300">
+              <div className="text-lg font-semibold text-silver">{BOT_LABELS.reversal}</div>
+              <span className="rounded-md border border-gold/40 bg-gold/15 px-2 py-0.5 text-xs text-gold">
                 Limited spots available.
               </span>
             </div>
-            <div className="text-white/60">
-              Status: <span className="text-white/80">Coming Next Year</span>
+            <div className="text-muted">
+              Status: <span className="text-silver">Coming Next Year</span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <Btn disabled>Start</Btn>
               <Btn disabled variant="ghost">Stop</Btn>
               <a
                 href="/pricing"
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-edge/70 bg-white/5 px-4 text-sm text-white hover:bg-white/10"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-stroke/70 bg-surface/70 px-4 text-sm text-silver hover:bg-surface/80"
               >
                 Get Updates
               </a>
@@ -346,11 +346,11 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Live logs — signals only */}
+      {/* Live logs - signals only */}
       <Card>
         <CardBody>
           <div className="mb-3 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="text-lg font-semibold">
+            <div className="text-lg font-semibold text-silver">
               Live logs: <span>{SIGNAL_LABELS[activeSignal]}</span>
             </div>
 
@@ -365,8 +365,8 @@ export default function Dashboard() {
                       onClick={() => setActiveSignal(key)}
                       className={`rounded-lg border px-3 py-1.5 text-sm ${
                         isActive
-                          ? "border-brand-600 bg-brand-600/20 text-white"
-                          : "border-edge/70 bg-white/5 text-white/80 hover:bg-white/10"
+                          ? "border-gold/50 bg-gold/15 text-gold"
+                          : "border-stroke/70 bg-surface/70 text-silver hover:bg-surface/80"
                       }`}
                     >
                       {SIGNAL_LABELS[key]}
@@ -394,7 +394,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="h-72 overflow-auto rounded-xl border border-edge/50 bg-[#0b0d13] p-3 font-mono text-sm text-white/90">
+          <div className="h-72 overflow-auto rounded-xl border border-stroke/50 bg-surface2/80 p-3 font-mono text-sm text-silver">
             {logs.length === 0 ? "Waiting for logs..." : logs.join("\n")}
           </div>
         </CardBody>

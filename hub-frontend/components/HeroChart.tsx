@@ -19,12 +19,12 @@ export default function HeroChart({ height = 340 }: { height?: number }) {
 
   return (
     <div
-      className="rounded-2xl border border-edge/70 bg-card/60 backdrop-blur shadow-glow"
+      className="rounded-2xl border border-stroke/70 bg-surface/60 backdrop-blur shadow-glow"
       style={{ minHeight: minH }}
     >
       <div className="p-4 h-full">
         {!mounted ? (
-          <div className="w-full rounded-xl bg-white/5 animate-pulse" style={{ height }} />
+          <div className="w-full rounded-xl bg-surface/70 animate-pulse" style={{ height }} />
         ) : (
           <BtcMiniChart height={height} />
         )}

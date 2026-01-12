@@ -16,10 +16,25 @@ export default function BtcMiniChart({ height = 280 }: Props) {
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const rootStyles = getComputedStyle(document.documentElement);
+    const textVar = rootStyles.getPropertyValue('--text').trim() || '229 230 234';
+    const strokeVar = rootStyles.getPropertyValue('--stroke').trim() || '44 46 53';
+    const toRgb = (value: string, alpha?: number) => {
+      const cleaned = value.replace(/rgba?\(|\)|%/g, '').trim();
+      const parts = cleaned.split(/[\s,]+/).filter(Boolean).map((n) => Number(n));
+      if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) {
+        return alpha != null ? `rgba(255, 255, 255, ${alpha})` : 'rgb(255, 255, 255)';
+      }
+      const [r, g, b] = parts;
+      return alpha != null ? `rgba(${r}, ${g}, ${b}, ${alpha})` : `rgb(${r}, ${g}, ${b})`;
+    };
+    const textColor = toRgb(textVar);
+    const gridColor = toRgb(strokeVar);
+
     const chart = createChart(containerRef.current, {
       height,
-      layout: { background: { color: 'transparent' }, textColor: '#D1D5DB' },
-      grid: { vertLines: { color: '#202531' }, horzLines: { color: '#202531' } },
+      layout: { background: { color: 'transparent' }, textColor },
+      grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
       rightPriceScale: { borderVisible: false },
       timeScale: { borderVisible: false },
       crosshair: { mode: 0 },

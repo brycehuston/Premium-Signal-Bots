@@ -1,4 +1,4 @@
-// filename: app/pricing/page.tsx
+﻿// filename: app/pricing/page.tsx
 "use client";
 
 import React from "react";
@@ -8,10 +8,10 @@ import { Card, CardBody, Button } from "@/components/ui";
 function Check({ tone }: { tone: PlanTone }) {
   const colorClass =
     tone === "bronze"
-      ? "text-[#D9A06A]"
+      ? "text-bronze"
       : tone === "platinum"
-      ? "text-[#D8E6FF]"
-      : "text-[#F6C453]";
+      ? "text-platinum"
+      : "text-gold";
   return (
     <svg
       viewBox="0 0 20 20"
@@ -45,51 +45,48 @@ function shimmerWordClass(tone: PlanTone, index: 1 | 2 | 3) {
       ? "shimmer-platinum"
       : "shimmer-gold";
 
-  // Bigger + bolder so it ƒ?opopsƒ??
-  return `shimmer-text ${cadence} ${toneClass} font-extrabold text-[1.22em] tracking-wide`;
+  // Bigger + bolder so it pops.
+  return `shimmer-text ${cadence} ${toneClass} font-black text-[1.3em] tracking-[0.015em]`;
 }
 
 function cardGlowClass(tone: PlanTone) {
   // Border tint + subtle glow on hover
   if (tone === "bronze") {
-    return "border-[#D9A06A33] hover:shadow-[0_0_0_1px_rgba(217,160,106,0.18),0_26px_90px_-26px_rgba(217,160,106,0.25)]";
+    return "border-bronze/20 hover:shadow-[0_0_0_1px_rgb(var(--tone-bronze)/0.18),0_26px_90px_-26px_rgb(var(--tone-bronze)/0.25)]";
   }
   if (tone === "platinum") {
-    return "border-[#D8E6FF33] hover:shadow-[0_0_0_1px_rgba(216,230,255,0.18),0_26px_90px_-26px_rgba(216,230,255,0.22)]";
+    return "border-platinum/20 hover:shadow-[0_0_0_1px_rgb(var(--tone-platinum)/0.18),0_26px_90px_-26px_rgb(var(--tone-platinum)/0.22)]";
   }
   // gold
-  return "border-[#F6C45333] hover:shadow-[0_0_0_1px_rgba(246,196,83,0.18),0_26px_90px_-26px_rgba(246,196,83,0.28)]";
+  return "border-gold/25 hover:shadow-[0_0_0_1px_rgb(var(--gold)/0.18),0_26px_90px_-26px_rgb(var(--gold)/0.28)]";
 }
 
 function tonePrimaryButtonClass(tone: PlanTone) {
-  const base = "text-white hover:text-white btn-text-shadow";
+  const base = "text-black hover:text-black btn-text-shadow !border";
   if (tone === "bronze") {
     return [
       base,
-      "!bg-[linear-gradient(180deg,rgba(214,160,106,0.9),rgba(88,56,34,0.98))]",
-      "!border !border-[#D9A06A]/65",
-      "!shadow-[0_6px_18px_rgba(217,160,106,0.35),inset_0_1px_0_rgba(255,255,255,0.18)]",
-      "hover:!bg-[linear-gradient(180deg,rgba(226,174,118,0.98),rgba(102,64,38,0.98))]",
-      "hover:!shadow-[0_8px_24px_rgba(217,160,106,0.5),inset_0_1px_0_rgba(255,255,255,0.22)]",
+      "!bg-metal-bronze",
+      "!border-bronze/60",
+      "!shadow-[0_6px_18px_rgb(var(--tone-bronze)/0.35)]",
+      "hover:!brightness-[1.06]",
     ].join(" ");
   }
   if (tone === "platinum") {
     return [
       base,
-      "!bg-[linear-gradient(180deg,rgba(214,224,238,0.92),rgba(72,82,98,0.98))]",
-      "!border !border-[#C8D6EE]/65",
-      "!shadow-[0_6px_18px_rgba(216,230,255,0.3),inset_0_1px_0_rgba(255,255,255,0.18)]",
-      "hover:!bg-[linear-gradient(180deg,rgba(226,234,245,0.98),rgba(86,96,114,0.98))]",
-      "hover:!shadow-[0_8px_24px_rgba(216,230,255,0.45),inset_0_1px_0_rgba(255,255,255,0.22)]",
+      "!bg-metal-platinum",
+      "!border-platinum/60",
+      "!shadow-[0_6px_18px_rgb(var(--tone-platinum)/0.28)]",
+      "hover:!brightness-[1.04]",
     ].join(" ");
   }
   return [
     base,
-    "!bg-[linear-gradient(180deg,rgba(236,194,108,0.94),rgba(112,74,24,0.98))]",
-    "!border !border-[#F6C453]/70",
-    "!shadow-[0_6px_18px_rgba(246,196,83,0.38),inset_0_1px_0_rgba(255,255,255,0.18)]",
-    "hover:!bg-[linear-gradient(180deg,rgba(246,206,122,0.98),rgba(126,82,26,0.98))]",
-    "hover:!shadow-[0_8px_24px_rgba(246,196,83,0.55),inset_0_1px_0_rgba(255,255,255,0.22)]",
+    "!bg-metal-gold",
+    "!border-gold/70",
+    "!shadow-[0_6px_18px_rgb(var(--gold)/0.35)]",
+    "hover:!brightness-[1.06]",
   ].join(" ");
 }
 
@@ -99,21 +96,21 @@ function auraStyle(tone: PlanTone): React.CSSProperties {
   if (tone === "bronze") {
     return {
       background:
-        "radial-gradient(70% 70% at 50% 0%, rgba(217,160,106,0.18) 0%, rgba(217,160,106,0.07) 40%, rgba(0,0,0,0) 72%)",
+        "radial-gradient(70% 70% at 50% 0%, rgb(var(--tone-bronze)/0.18) 0%, rgb(var(--tone-bronze)/0.07) 40%, rgba(0,0,0,0) 72%)",
       filter: "blur(34px)",
     };
   }
   if (tone === "platinum") {
     return {
       background:
-        "radial-gradient(70% 70% at 50% 0%, rgba(225,235,255,0.16) 0%, rgba(225,235,255,0.06) 40%, rgba(0,0,0,0) 72%)",
+        "radial-gradient(70% 70% at 50% 0%, rgb(var(--tone-platinum)/0.16) 0%, rgb(var(--tone-platinum)/0.06) 40%, rgba(0,0,0,0) 72%)",
       filter: "blur(34px)",
     };
   }
   // gold
   return {
     background:
-      "radial-gradient(70% 70% at 50% 0%, rgba(246,196,83,0.18) 0%, rgba(246,196,83,0.07) 40%, rgba(0,0,0,0) 72%)",
+      "radial-gradient(70% 70% at 50% 0%, rgb(var(--gold)/0.18) 0%, rgb(var(--gold)/0.07) 40%, rgba(0,0,0,0) 72%)",
     filter: "blur(34px)",
   };
 }
@@ -132,7 +129,7 @@ function PlanTitle({
   cadenceIndex: 1 | 2 | 3;
 }) {
   return (
-    <h3 className="font-display text-lg font-semibold tracking-tight text-white">
+    <h3 className="font-display text-lg font-semibold tracking-tight text-silver">
       <span className="opacity-95">{left} </span>
       <span className={shimmerWordClass(tone, cadenceIndex)}>{emphasis}</span>
       <span className="opacity-95"> {right}</span>
@@ -151,7 +148,7 @@ function renderBullet(b: string) {
 
   return (
     <>
-      <strong className="font-semibold text-white">{prefix}</strong>
+      <strong className="font-semibold text-silver">{prefix}</strong>
       {rest}
     </>
   );
@@ -170,42 +167,33 @@ export default function PricingPage() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-10">
       <h1 className="font-display text-2xl font-semibold tracking-tight">
-        {brand} — <span className="opacity-70">Pricing</span>
+        {brand} - <span className="opacity-70">Pricing</span>
       </h1>
 
-      <p className="mt-2 text-white/70">
+      <p className="mt-2 text-muted">
         Choose the alerts you want. Payments are manual for now via USDC on Solana.
       </p>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-white/60">
-        <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted">
+        <span className="rounded-full border border-stroke/70 bg-surface/70 px-3 py-1.5">
           120ms median alerts
         </span>
-        <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+        <span className="rounded-full border border-stroke/70 bg-surface/70 px-3 py-1.5">
           99.9% uptime
         </span>
-        <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+        <span className="rounded-full border border-stroke/70 bg-surface/70 px-3 py-1.5">
           Telegram-first delivery
         </span>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-3">
-        <Button
-          href="#plans"
-          size="md"
-          className={[
-            "!bg-brand-600",
-            "!text-black",
-            "hover:!bg-black hover:!text-white",
-          ].join(" ")}
-        >
+        <Button href="#plans" size="md">
           Get Alerts
         </Button>
         <Button
           href="/#sample-alerts"
-          variant="ghost"
+          variant="outline"
           size="md"
-          className="!bg-white/[0.04] !text-white/90 hover:!bg-white/10 hover:!text-white"
         >
           View Sample Alerts
         </Button>
@@ -229,7 +217,7 @@ export default function PricingPage() {
 
             <CardBody className="space-y-5">
               <div className="flex items-center gap-2">
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-white/[0.06]">
+                <div className="grid h-8 w-8 place-items-center rounded-full border border-stroke/60 bg-surface/70">
                   <span className="text-[18px]">{p.emoji}</span>
                 </div>
 
@@ -247,12 +235,12 @@ export default function PricingPage() {
                   <div className="font-display text-[32px] font-semibold leading-none">
                     ${p.priceMonthly}
                   </div>
-                  <div className="text-white/55 text-sm">/ month</div>
+                  <div className="text-muted text-sm">/ month</div>
                 </div>
-                <div className="text-white/50 text-sm">or ${p.priceAnnual} / year</div>
+                <div className="text-muted/80 text-sm">or ${p.priceAnnual} / year</div>
               </div>
 
-              <ul className="space-y-2.5 text-[15px] text-white/85">
+              <ul className="space-y-2.5 text-[15px] text-muted">
                 {p.bullets.map((b: string, i: number) => (
                   <li key={i} className="flex gap-2.5">
                     <Check tone={p.tone} />
@@ -272,7 +260,7 @@ export default function PricingPage() {
                   Choose Monthly
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="lg"
                   full
                   href={`/pay/${p.slug}?period=annual`}
@@ -288,14 +276,14 @@ export default function PricingPage() {
         <Card
           className={[
             "group relative lg:col-span-3 overflow-hidden border transition-all duration-200 will-change-transform",
-            "bg-[linear-gradient(135deg,rgba(246,196,83,0.18),rgba(11,14,21,0.98)_42%,rgba(246,196,83,0.2))]",
-            "ring-1 ring-[#F6C453]/25",
+            "bg-[linear-gradient(135deg,rgb(var(--gold)_/_0.16),rgb(var(--surface)_/_0.98)_42%,rgb(var(--gold)_/_0.2))]",
+            "ring-1 ring-gold/30",
             "hover:-translate-y-1 hover:scale-[1.01]",
-            "hover:shadow-[0_0_0_1px_rgba(255,222,140,0.55),0_30px_90px_rgba(246,196,83,0.45)]",
+            "hover:shadow-[0_0_0_1px_rgb(var(--gold)/0.55),0_30px_90px_rgb(var(--gold)/0.45)]",
             "before:content-[''] before:absolute before:inset-x-6 before:top-0 before:h-px before:z-0",
-            "before:bg-[linear-gradient(90deg,rgba(255,223,150,0),rgba(255,223,150,0.85),rgba(255,223,150,0))]",
+            "before:bg-[linear-gradient(90deg,rgb(var(--gold)_/_0),rgb(var(--gold)_/_0.85),rgb(var(--gold)_/_0))]",
             "after:content-[''] after:absolute after:-right-16 after:-top-16 after:h-48 after:w-48 after:z-0",
-            "after:bg-[radial-gradient(closest-side,rgba(255,220,130,0.3),rgba(255,220,130,0))]",
+            "after:bg-[radial-gradient(closest-side,rgb(var(--gold)_/_0.28),rgba(0,0,0,0))]",
             "after:opacity-0 after:transition-opacity after:duration-200 group-hover:after:opacity-100",
             cardGlowClass("gold"),
           ].join(" ")}
@@ -308,13 +296,13 @@ export default function PricingPage() {
           <CardBody className="relative z-10 space-y-5 md:space-y-0 md:flex md:items-center md:justify-between md:gap-10">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-[#F6C453]/15 text-[#F6C453]">
+                <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold">
                   <span className="text-[18px]">{BUNDLE.emoji}</span>
                 </div>
-                <h3 className="font-display text-lg font-semibold tracking-tight text-white">
+                <h3 className="font-display text-lg font-semibold tracking-tight text-silver">
                   {BUNDLE.title}
                 </h3>
-                <span className="rounded-full border border-[#F6C453]/45 bg-[#F6C453]/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#F6C453]">
+                <span className="rounded-full border border-gold/50 bg-gold/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-gold">
                   Best Value
                 </span>
               </div>
@@ -324,12 +312,12 @@ export default function PricingPage() {
                   <div className="font-display text-[32px] font-semibold leading-none">
                     ${BUNDLE.priceMonthly}
                   </div>
-                  <div className="text-white/55 text-sm">/ month</div>
+                  <div className="text-muted text-sm">/ month</div>
                 </div>
-                <div className="text-white/50 text-sm">or ${BUNDLE.priceAnnual} / year</div>
+                <div className="text-muted/80 text-sm">or ${BUNDLE.priceAnnual} / year</div>
               </div>
 
-              <ul className="space-y-2.5 text-[15px] text-white/85">
+              <ul className="space-y-2.5 text-[15px] text-muted">
                 {BUNDLE.bullets.map((b: string, i: number) => (
                   <li key={i} className="flex gap-2.5">
                     <Check tone="gold" />
@@ -350,7 +338,7 @@ export default function PricingPage() {
                 Bundle Monthly
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="lg"
                 full
                 href={`/pay/${BUNDLE.slug}?period=annual`}
@@ -363,68 +351,68 @@ export default function PricingPage() {
       </div>
 
       <section className="mt-10 grid gap-6 lg:grid-cols-2">
-        <Card className="border-white/10 bg-white/[0.03]">
+        <Card className="border-stroke/70 bg-surface/70">
           <CardBody className="space-y-4">
-            <div className="text-xs uppercase tracking-[0.3em] text-white/50">
+            <div className="text-xs uppercase tracking-[0.3em] text-muted/80">
               What happens after you pay
             </div>
             <div className="space-y-3">
               <div className="flex gap-3">
-                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-[#F6C453]/15 text-[#F6C453] text-sm font-semibold">
+                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
                   1
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">We confirm your payment</div>
-                  <div className="text-sm text-white/60">
+                  <div className="text-sm font-semibold text-silver">We confirm your payment</div>
+                  <div className="text-sm text-muted">
                     Manual USDC on Solana, verified by the team.
                   </div>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-[#F6C453]/15 text-[#F6C453] text-sm font-semibold">
+                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
                   2
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">You get your invite</div>
-                  <div className="text-sm text-white/60">
+                  <div className="text-sm font-semibold text-silver">You get your invite</div>
+                  <div className="text-sm text-muted">
                     We add your Telegram and send channel access.
                   </div>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-[#F6C453]/15 text-[#F6C453] text-sm font-semibold">
+                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
                   3
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">Alerts start flowing</div>
-                  <div className="text-sm text-white/60">
+                  <div className="text-sm font-semibold text-silver">Alerts start flowing</div>
+                  <div className="text-sm text-muted">
                     Live signals, links, and filters straight to Telegram.
                   </div>
                 </div>
               </div>
             </div>
-            <div className="text-xs text-white/50">
+            <div className="text-xs text-muted/80">
               Need help? Message us after purchase and we will onboard you.
             </div>
           </CardBody>
         </Card>
 
         <div className="space-y-3">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-sm font-semibold text-white">How delivery works</div>
-            <div className="mt-1 text-sm text-white/60">
+          <div className="rounded-2xl border border-stroke/70 bg-surface/70 p-4">
+            <div className="text-sm font-semibold text-silver">How delivery works</div>
+            <div className="mt-1 text-sm text-muted">
               Alerts are delivered in Telegram channels tied to your plan.
             </div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-sm font-semibold text-white">Payment method</div>
-            <div className="mt-1 text-sm text-white/60">
+          <div className="rounded-2xl border border-stroke/70 bg-surface/70 p-4">
+            <div className="text-sm font-semibold text-silver">Payment method</div>
+            <div className="mt-1 text-sm text-muted">
               Manual USDC on Solana for now. We confirm and invite you quickly.
             </div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-sm font-semibold text-white">Cancellation</div>
-            <div className="mt-1 text-sm text-white/60">
+          <div className="rounded-2xl border border-stroke/70 bg-surface/70 p-4">
+            <div className="text-sm font-semibold text-silver">Cancellation</div>
+            <div className="mt-1 text-sm text-muted">
               Cancel any time by messaging support before your next cycle.
             </div>
           </div>
@@ -438,15 +426,15 @@ export default function PricingPage() {
           className="pointer-events-none absolute inset-0 -z-10 rounded-[20px]"
           style={{
             background:
-              "radial-gradient(60% 60% at 50% 0%, rgba(246,196,83,0.18) 0%, rgba(246,196,83,0.08) 35%, rgba(0,0,0,0) 70%)",
+              "radial-gradient(60% 60% at 50% 0%, rgb(var(--gold) / 0.18) 0%, rgb(var(--gold) / 0.08) 35%, rgba(0,0,0,0) 70%)",
             filter: "blur(40px)",
           }}
         />
 
-        <Card className="border-[#F6C45333] bg-[linear-gradient(180deg,#0B0E15_0%,#0A0C12_100%)] shadow-[0_0_0_1px_rgba(246,196,83,.15)] hover:shadow-[0_0_0_1px_rgba(246,196,83,.18),0_20px_60px_rgba(246,196,83,.30)]">
+        <Card className="border-gold/25 bg-[linear-gradient(180deg,rgb(var(--surface2)_/_0.95)_0%,rgb(var(--surface)_/_0.98)_100%)] shadow-[0_0_0_1px_rgb(var(--gold)/0.2)] hover:shadow-[0_0_0_1px_rgb(var(--gold)/0.25),0_20px_60px_rgb(var(--gold)/0.3)]">
           <CardBody className="px-6 py-10 text-center sm:px-10 sm:py-14">
             <svg
-              className="mx-auto mb-4 h-8 w-8 text-[#FBD75A] animate-bolt"
+              className="mx-auto mb-4 h-8 w-8 text-gold animate-bolt"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -457,49 +445,43 @@ export default function PricingPage() {
               <path d="M13 2L3 14h7l-2 8 10-12h-7l2-8z" />
             </svg>
 
-            <h3 className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+            <h3 className="font-display text-4xl font-extrabold tracking-tight text-silver sm:text-5xl">
               ALPHA-X
             </h3>
-            <div className="mt-1 text-[15px] font-semibold uppercase tracking-widest text-white/70">
+            <div className="mt-1 text-[15px] font-semibold uppercase tracking-widest text-muted/80">
               (Coming Soon)
             </div>
 
-            <p className="mx-auto mt-6 max-w-3xl text-balance text-[15px] leading-relaxed text-white/80">
+            <p className="mx-auto mt-6 max-w-3xl text-balance text-[15px] leading-relaxed text-muted">
               A hands-free auto-trader that hunts high-probability setups, sizes risk, and manages
               exits for you while you sleep.
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-[13px] text-white/75">
-              <span className="after:ml-4 after:text-white/30 after:content-['•']">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-[13px] text-muted">
+              <span className="after:ml-4 after:text-muted/50 after:content-['/']">
                 Auto entries + SL/TP
               </span>
-              <span className="after:ml-4 after:text-white/30 after:content-['•']">
+              <span className="after:ml-4 after:text-muted/50 after:content-['/']">
                 Strict EMA / RSI / Volume / Trend
               </span>
               <span>Breakeven & trailing stops</span>
-              <span className="hidden sm:inline after:ml-4 after:text-white/30 after:content-['•']"></span>
+              <span className="hidden sm:inline after:ml-4 after:text-muted/50 after:content-['/']"></span>
               <span className="sm:ml-0">24/7 Telegram alerts</span>
             </div>
 
-            <button
-              onClick={() => (window.location.href = "/waitlist")}
-              className={`
-                group mx-auto mt-8 inline-flex h-12 items-center justify-center
-                rounded-xl px-8 font-bold uppercase tracking-wider
-                bg-gradient-to-r from-[#FFD966] to-[#F6C453]
-                text-black
-                border border-[#FFE27A]
-                shadow-[0_6px_25px_rgba(246,196,83,.55)]
-                hover:shadow-[0_8px_35px_rgba(246,196,83,.75)]
-                hover:scale-[1.05]
-                transition-all duration-150
-              `}
+            <Button
+              href="/waitlist"
+              size="lg"
+              className="mx-auto mt-8 px-8 font-bold uppercase tracking-wider shadow-[0_8px_30px_rgb(var(--gold)/0.45)] hover:shadow-[0_10px_36px_rgb(var(--gold)/0.55)]"
             >
               Join Waitlist
-            </button>
+            </Button>
           </CardBody>
         </Card>
       </div>
     </div>
   );
 }
+
+
+

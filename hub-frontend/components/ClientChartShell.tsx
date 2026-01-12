@@ -8,7 +8,7 @@ const BtcMiniChart = dynamic(() => import('@/components/BtcMiniChart'), {
 
 export default function ClientChartShell({ height = 280 }: { height?: number }) {
   return (
-    <div className="rounded-2xl border border-edge/70 bg-card/60 backdrop-blur shadow-glow">
+    <div className="rounded-2xl border border-stroke/70 bg-surface/60 backdrop-blur shadow-glow">
       <div className="p-4">
         <BtcMiniChart height={height} />
       </div>

@@ -13,8 +13,11 @@ export default function FeatureCard({
   return (
     <Card className="h-full">
       <div className="p-6">
-        <div className="mb-3 flex items-center gap-2">{icon}<h3 className="text-lg font-semibold">{title}</h3></div>
-        <p className="text-white/70">{desc}</p>
+        <div className="mb-3 flex items-center gap-2">
+          {icon}
+          <h3 className="text-lg font-semibold text-silver">{title}</h3>
+        </div>
+        <p className="text-muted">{desc}</p>
       </div>
     </Card>
   );

@@ -1,6 +1,7 @@
 // components/ui.tsx
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 /* --------------------------- Card primitives --------------------------- */
 export function Card({
@@ -12,13 +13,13 @@ export function Card({
 }) {
   return (
     <div
-      className={[
-        "rounded-2xl border bg-card/85 backdrop-blur",
-        "border-edge shadow-glow",
-        "bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent)]",
-        "transition-all duration-200 hover:-translate-y-[1.5px] hover:shadow-[0_0_0_1px_rgba(110,231,255,.18),0_20px_60px_rgba(2,6,23,.35)]",
-        className,
-      ].join(" ")}
+      className={cn(
+        "rounded-2xl border border-stroke/70 bg-surface/90 backdrop-blur",
+        "shadow-[var(--shadow-soft)]",
+        "transition-transform duration-200 hover:-translate-y-0.5",
+        "hover:shadow-[var(--shadow-hover)]",
+        className
+      )}
     >
       {children}
     </div>
@@ -32,11 +33,62 @@ export function CardBody({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`p-6 sm:p-7 ${className}`}>{children}</div>;
+  return <div className={cn("p-6 sm:p-7", className)}>{children}</div>;
 }
 
 export function H2({ children }: { children: ReactNode }) {
-  return <h2 className="text-lg font-semibold tracking-tight">{children}</h2>;
+  return <h2 className="text-lg font-semibold tracking-tight text-silver">{children}</h2>;
+}
+
+export function SectionHeading({
+  title,
+  subtitle,
+  className,
+}: {
+  title: string;
+  subtitle?: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn("mb-5", className)}>
+      <h2 className="text-xl font-semibold tracking-tight text-silver">{title}</h2>
+      {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+    </div>
+  );
+}
+
+export function Badge({
+  children,
+  tone = "neutral",
+  className,
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "live" | "next" | "build" | "planned";
+  className?: string;
+}) {
+  const toneClass =
+    tone === "live"
+      ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
+      : tone === "next"
+      ? "border-gold/50 bg-gold/10 text-gold"
+      : tone === "build"
+      ? "border-sky-400/40 bg-sky-400/10 text-sky-200"
+      : tone === "planned"
+      ? "border-stroke/70 bg-surface2/60 text-muted"
+      : "border-stroke/70 bg-surface2/60 text-muted";
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em]",
+        "backdrop-blur",
+        toneClass,
+        className
+      )}
+    >
+      {children}
+    </span>
+  );
 }
 
 /* ------------------------------ Button -------------------------------- */
@@ -44,6 +96,7 @@ type ButtonProps = {
   children: ReactNode;
   onClick?: () => void;
   href?: string;
+  type?: "button" | "submit" | "reset";
   variant?: "primary" | "ghost" | "outline" | "gold";
   size?: "md" | "lg";
   className?: string;
@@ -55,52 +108,39 @@ export function Button({
   children,
   onClick,
   href,
+  type,
   variant = "primary",
   size = "md",
   className = "",
   disabled,
   full,
 }: ButtonProps) {
-  // base + sizing kept clean; variants should NOT re-define height/padding
   const base =
-    "inline-flex items-center justify-center rounded-lg whitespace-nowrap select-none antialiased " +
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/70 focus-visible:ring-offset-0";
+    "relative inline-flex items-center justify-center rounded-xl whitespace-nowrap select-none antialiased overflow-hidden " +
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-0 " +
+    "transition-all duration-200";
+
   const sizes =
     size === "lg"
       ? "h-12 px-6 text-[15px] leading-[1.15]"
       : "h-11 px-5 text-[15px] leading-[1.15]";
 
-  let styles = "";
-  if (variant === "primary") {
-    styles =
-      "font-semibold text-white " +
-      "bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#60A5FA] " +
-      "border border-[#3B82F6]/60 " +
-      "shadow-[0_4px_15px_rgba(59,130,246,.55),inset_0_1px_2px_rgba(255,255,255,.25)] " +
-      "hover:shadow-[0_6px_25px_rgba(59,130,246,.8),inset_0_1px_4px_rgba(255,255,255,.35)] " +
-      "transition-all duration-200 ease-out hover:scale-[1.05]";
-  } else if (variant === "gold") {
-    styles =
-      "font-bold text-black uppercase tracking-[0.02em] " +
-      "bg-gradient-to-r from-[#FFD966] via-[#F6C453] to-[#FFB800] " +
-      "border border-[#FFE27A] " +
-      "shadow-[0_6px_25px_rgba(246,196,83,.55),inset_0_1px_2px_rgba(255,255,255,.25)] " +
-      "hover:shadow-[0_8px_40px_rgba(246,196,83,.9),inset_0_1px_4px_rgba(255,255,255,.35)] " +
-      "transition-all duration-200 ease-out hover:scale-[1.08]";
-  } else if (variant === "outline") {
-    styles =
-      "font-semibold text-white border border-white/15 " +
-      "hover:bg-white hover:text-black transition-colors";
-  } else {
-    styles =
-      "font-semibold text-white bg-white/[0.06] " +
-      "hover:bg-white hover:text-black transition-colors";
-  }
+  const styles =
+    variant === "primary" || variant === "gold"
+      ? "font-bold tracking-[0.02em] text-black bg-metal-gold border border-gold/70 " +
+        "shadow-[0_10px_30px_rgb(var(--gold)/0.35)] " +
+        "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/60 before:opacity-70 " +
+        "after:absolute after:inset-0 after:bg-[radial-gradient(80%_120%_at_50%_-40%,rgba(255,255,255,0.35),transparent_60%)] after:opacity-0 " +
+        "hover:after:opacity-100 after:transition-opacity after:duration-200 " +
+        "hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgb(var(--gold)/0.45)]"
+      : variant === "outline"
+      ? "font-semibold tracking-[0.02em] text-silver border border-silver/40 bg-surface/30 " +
+        "hover:bg-surface2/70 hover:border-silver/60"
+      : "font-semibold text-silver/80 bg-surface/30 border border-stroke/60 " +
+        "hover:text-silver hover:bg-surface2/60";
 
   const width = full ? "w-full" : "";
-  const classes = [base, sizes, styles, width, "disabled:opacity-60", className]
-    .filter(Boolean)
-    .join(" ");
+  const classes = cn(base, sizes, styles, width, "disabled:opacity-60", className);
 
   if (href) {
     return (
@@ -110,7 +150,7 @@ export function Button({
     );
   }
   return (
-    <button className={classes} onClick={onClick} disabled={disabled}>
+    <button className={classes} onClick={onClick} disabled={disabled} type={type}>
       {children}
     </button>
   );
@@ -129,10 +169,7 @@ export function Section({
   return (
     <Card>
       <CardBody>
-        <div className="mb-5">
-          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-          {subtitle && <p className="mt-1 text-white/60">{subtitle}</p>}
-        </div>
+        <SectionHeading title={title} subtitle={subtitle} />
         {children}
       </CardBody>
     </Card>

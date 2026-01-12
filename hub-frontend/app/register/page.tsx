@@ -1,9 +1,9 @@
-// app/register/page.tsx
+﻿// app/register/page.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardBody, H2 } from "@/components/ui";
+import { Button, Card, CardBody, H2 } from "@/components/ui";
 
 declare global {
   interface Window {
@@ -129,7 +129,7 @@ export default function RegisterPage() {
         <div ref={containerRef} className="mt-4 w-full max-w-md">
           <form onSubmit={handle} className="grid gap-3">
             <input
-              className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
+              className="input"
               placeholder="Email"
               type="email"
               value={email}
@@ -138,7 +138,7 @@ export default function RegisterPage() {
               autoComplete="email"
             />
             <input
-              className="w-full rounded-xl bg-white/5 border border-edge px-3 py-2 outline-none focus:border-brand-600"
+              className="input"
               placeholder="Password"
               type="password"
               value={password}
@@ -147,21 +147,18 @@ export default function RegisterPage() {
               autoComplete="new-password"
             />
 
-            <button
-              disabled={busy}
-              className="h-11 w-full rounded-xl bg-brand-600 text-black font-medium hover:bg-brand-500 disabled:opacity-50 transition"
-            >
-              {busy ? "…" : "Create account"}
-            </button>
+            <Button type="submit" disabled={busy}>
+              {busy ? "Working..." : "Create account"}
+            </Button>
 
             {err && <p className="text-red-400 text-sm">{err}</p>}
           </form>
 
           {/* Divider */}
           <div className="mt-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-white/10" />
-            <span className="text-xs text-white/50">or</span>
-            <div className="h-px flex-1 bg-white/10" />
+            <div className="h-px flex-1 bg-stroke/70" />
+            <span className="text-xs text-muted/70">or</span>
+            <div className="h-px flex-1 bg-stroke/70" />
           </div>
 
           {/* Google button: same width as inputs */}
@@ -169,9 +166,9 @@ export default function RegisterPage() {
             <div ref={gsiRef} className="w-full" />
           </div>
 
-          <p className="mt-3 text-sm text-white/60">
+          <p className="mt-3 text-sm text-muted">
             Already have an account?{" "}
-            <a href="/login" className="text-brand-500 hover:underline">
+            <a href="/login" className="text-gold hover:underline">
               Log in
             </a>
             .

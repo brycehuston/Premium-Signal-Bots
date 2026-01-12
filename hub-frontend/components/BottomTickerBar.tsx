@@ -1,4 +1,4 @@
-// components/BottomTickerBar.tsx
+﻿// components/BottomTickerBar.tsx
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -41,15 +41,15 @@ function Chip({
     <div
       className={[
         "relative flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm",
-        "bg-black/35 backdrop-blur border-white/10",
+        "bg-surface/70 backdrop-blur border-stroke/60",
         flash === "up" ? "tick-flash-up" : "",
         flash === "down" ? "tick-flash-down" : "",
       ].join(" ")}
     >
-      <span className="text-white/70">{symbol}</span>
+      <span className="text-muted">{symbol}</span>
 
-      <span className="font-semibold text-white tabular-nums">
-        {price == null ? "—" : formatCompactUsd(price)}
+      <span className="font-semibold text-silver tabular-nums">
+        {price == null ? "--" : formatCompactUsd(price)}
       </span>
 
       {Icon ? (
@@ -140,9 +140,9 @@ export default function BottomTickerBar({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="h-px w-full bg-white/10" />
+      <div className="h-px w-full bg-stroke/70" />
 
-      <div className="relative flex items-center justify-center px-4 py-2 bg-black/55 backdrop-blur">
+      <div className="relative flex items-center justify-center px-4 py-2 bg-bg/75 backdrop-blur">
         {/* CENTERED TICKERS */}
         <div className="flex items-center gap-2 md:gap-3">
           <Chip symbol="BTC" price={prices.BTC} dir={dirs.BTC} flash={flash.BTC} />
@@ -159,7 +159,7 @@ export default function BottomTickerBar({
             aria-label="Telegram"
             title="Telegram"
             data-no-link-style
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-black/35 text-white/80 hover:text-white hover:border-white/20 transition"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-stroke/60 bg-surface/70 text-muted hover:text-text hover:border-gold/40 transition"
           >
             <Send className="h-4 w-4" />
           </a>
@@ -171,10 +171,10 @@ export default function BottomTickerBar({
             aria-label="X"
             title="X"
             data-no-link-style
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-black/35 text-white/80 hover:text-white hover:border-white/20 transition"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-stroke/60 bg-surface/70 text-muted hover:text-text hover:border-gold/40 transition"
           >
-            {/* Custom X logo using text, not the ❌ icon */}
-            <span className="text-sm font-bold leading-none">𝕏</span>
+            {/* Custom X logo using text, not the icon */}
+            <span className="text-sm font-bold leading-none">X</span>
           </a>
         </div>
       </div>

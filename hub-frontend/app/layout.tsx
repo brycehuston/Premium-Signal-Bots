@@ -11,29 +11,38 @@ import BottomTickerBar from "@/components/BottomTickerBar";
 const inter = Inter({ subsets: ["latin"] });
 const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
 const BRAND = process.env.NEXT_PUBLIC_BRAND || "AlphaAlerts";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 // Optional but nice: tell mobile browsers your theme color
 export const viewport: Viewport = {
-  themeColor: "#05070B",
+  themeColor: "#060606",
 };
 
 export const metadata: Metadata = {
-  title: `${BRAND} — Pro`,
-  description: "Latency-optimized crypto signals, smart alerts, and bot control.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${BRAND} Pro`,
+    template: `%s | ${BRAND}`,
+  },
+  description: "Premium crypto alerts with clean signals, smart filters, and fast delivery.",
+  openGraph: {
+    title: `${BRAND} Pro`,
+    description: "Premium crypto alerts with clean signals, smart filters, and fast delivery.",
+    url: SITE_URL,
+    siteName: BRAND,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${BRAND} Pro`,
+    description: "Premium crypto alerts with clean signals, smart filters, and fast delivery.",
+  },
 
-  // ✅ Force favicon paths (App Router)
+  // Force favicon paths (App Router)
   icons: {
-    icon: [
-      // main favicon
-      { url: "/favicon.ico" },
-    ],
-    shortcut: [
-      { url: "/favicon.ico" },
-    ],
-    apple: [
-      // if you later add /public/apple-touch-icon.png it will use it
-      // { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
+    icon: [{ url: "/favicon.ico" }],
+    shortcut: [{ url: "/favicon.ico" }],
+    apple: [],
   },
 };
 
@@ -48,56 +57,50 @@ function Container({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.className} ${display.variable}`}>
-      <body className="min-h-screen bg-bg text-neutral-100 antialiased">
+      <body className="min-h-screen bg-bg text-text antialiased">
         {/* decorative bg layers */}
         <div className="pointer-events-none fixed inset-0 -z-10">
-          <div
-            className="absolute inset-0 opacity-[0.08]"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0)",
-              backgroundSize: "24px 24px",
-            }}
-          />
-          <div className="absolute -top-40 right-10 h-[32rem] w-[32rem] rounded-full bg-brand-600/15 blur-[120px]" />
-          <div className="absolute bottom-0 left-10 h-[24rem] w-[24rem] rounded-full bg-[#a78bfa]/10 blur-[100px]" />
+          <div className="absolute inset-0" style={{ backgroundImage: "var(--vignette)" }} />
+          <div className="absolute inset-0 opacity-[0.05] bg-hero-grid bg-grid" />
+          <div className="absolute -top-56 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-gold/10 blur-[140px]" />
+          <div className="absolute bottom-0 right-10 h-[22rem] w-[22rem] rounded-full bg-silver/10 blur-[120px]" />
         </div>
 
         <Toaster richColors position="top-center" />
 
         {/* navbar */}
-        <header className="sticky top-0 z-30 border-b border-edge/70 bg-bg/70 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-stroke/60 bg-bg/80 backdrop-blur">
           <Container>
             <div className="flex h-14 items-center justify-between">
               <Link href="/" className="font-semibold tracking-tight">
-                <span className="text-white">{BRAND}</span>
-                <span className="ml-1 text-white/50">— Pro</span>
+                <span className="text-metal-silver">{BRAND}</span>
+                <span className="ml-1 text-muted">Pro</span>
               </Link>
 
               <nav className="flex items-center gap-1.5">
                 <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
+                  className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface2/60 hover:text-text"
                   href="/pricing"
                   data-no-link-style
                 >
                   Pricing
                 </Link>
                 <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
+                  className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface2/60 hover:text-text"
                   href="/dashboard"
                   data-no-link-style
                 >
                   Dashboard
                 </Link>
                 <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
+                  className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface2/60 hover:text-text"
                   href="/billing"
                   data-no-link-style
                 >
                   Billing
                 </Link>
                 <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/80 hover:bg-white/5 hover:text-white"
+                  className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface2/60 hover:text-text"
                   href="/login"
                   data-no-link-style
                 >
@@ -117,10 +120,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Container>{children}</Container>
           </main>
 
-          <footer className="mt-14 border-t border-edge/70">
+          <footer className="mt-14 border-t border-stroke/60">
             <Container>
-              <div className="py-8 text-sm text-white/50">
-                © {new Date().getFullYear()} HUSTON SOLUTIONS
+              <div className="py-8 text-sm text-muted">
+                (c) {new Date().getFullYear()} HUSTON SOLUTIONS
               </div>
             </Container>
           </footer>

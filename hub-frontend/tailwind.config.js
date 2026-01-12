@@ -8,19 +8,35 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: "#09090f",
-        card: "#0f1117",
-        edge: "#1a1d29",
-        brand: { 500: "#6ee7ff", 600: "#52d7ff", 700: "#2ab3e6" }
+        bg: "rgb(var(--bg) / <alpha-value>)",
+        card: "rgb(var(--surface) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        surface2: "rgb(var(--surface2) / <alpha-value>)",
+        edge: "rgb(var(--stroke) / <alpha-value>)",
+        stroke: "rgb(var(--stroke) / <alpha-value>)",
+        stroke2: "rgb(var(--stroke2) / <alpha-value>)",
+        text: "rgb(var(--text) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        silver: "rgb(var(--silver) / <alpha-value>)",
+        "silver-strong": "rgb(var(--silver-strong) / <alpha-value>)",
+        gold: "rgb(var(--gold) / <alpha-value>)",
+        gold2: "rgb(var(--gold2) / <alpha-value>)",
+        bronze: "rgb(var(--tone-bronze) / <alpha-value>)",
+        platinum: "rgb(var(--tone-platinum) / <alpha-value>)",
+        brand: {
+          500: "rgb(var(--gold) / <alpha-value>)",
+          600: "rgb(var(--gold2) / <alpha-value>)",
+          700: "rgb(var(--gold3) / <alpha-value>)",
+        }
       },
       backgroundImage: {
-        "hero-grid": "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0)"
+        "hero-grid": "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)"
       },
       backgroundSize: { grid: "24px 24px" },
-      borderRadius: { xl: "1rem", "2xl": "1.25rem" },
+      borderRadius: { xl: "1rem", "2xl": "var(--radius-card)" },
       boxShadow: {
-        glass: "0 0 0 1px rgba(255,255,255,.06), 0 6px 24px rgba(0,0,0,.28)",
-        glow: "0 0 0 1px rgba(110,231,255,.10), 0 10px 30px rgba(82,215,255,.10), 0 30px 60px rgba(82,215,255,.05)"
+        glass: "var(--shadow-soft)",
+        glow: "var(--shadow-hover)"
       }
     }
   },

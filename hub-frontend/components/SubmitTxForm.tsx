@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { Button } from "@/components/ui";
 
 export default function SubmitTxForm({
   plan,
@@ -37,7 +38,7 @@ export default function SubmitTxForm({
           telegram_username: telegram.trim(),
         }),
       });
-      setOk("Submitted! We’ll review and approve shortly.");
+      setOk("Submitted! We'll review and approve shortly.");
       setTxHash("");
       setTelegram("");
     } catch (e: any) {
@@ -49,37 +50,34 @@ export default function SubmitTxForm({
 
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-3">
-      <label className="block text-sm text-white/80">
+      <label className="block text-sm text-muted">
         TX hash / explorer link
         <input
           required
           value={txHash}
           onChange={e => setTxHash(e.target.value)}
-          className="mt-1 w-full rounded-xl border border-edge bg-black/30 p-2 text-white/90"
+          className="input mt-1"
           placeholder="https://solscan.io/tx/..."
         />
       </label>
 
-      <label className="block text-sm text-white/80">
+      <label className="block text-sm text-muted">
         Telegram username (optional)
         <input
           value={telegram}
           onChange={e => setTelegram(e.target.value)}
-          className="mt-1 w-full rounded-xl border border-edge bg-black/30 p-2 text-white/90"
+          className="input mt-1"
           placeholder="@yourname"
         />
       </label>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="inline-flex h-10 items-center rounded-xl bg-brand-600 px-4 text-black hover:bg-brand-500 disabled:opacity-50"
-      >
+      <Button type="submit" disabled={loading}>
         {loading ? "Submitting..." : "Submit for approval"}
-      </button>
+      </Button>
 
       {ok && <div className="text-green-400 text-sm">{ok}</div>}
       {err && <div className="text-red-400 text-sm">{err}</div>}
     </form>
   );
 }
+

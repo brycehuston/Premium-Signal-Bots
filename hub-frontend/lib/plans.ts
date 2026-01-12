@@ -20,7 +20,7 @@ export type Plan = {
 export const PLANS: Plan[] = [
   {
     slug: "alpha-early-alerts",
-    emoji: "⚡",
+    emoji: "A",
     titleLeft: "ALPHA",
     titleEmphasis: "EARLY",
     titleRight: "ALERTS",
@@ -39,7 +39,7 @@ export const PLANS: Plan[] = [
   },
   {
     slug: "alpha-trend-alerts",
-    emoji: "📈",
+    emoji: "T",
     titleLeft: "ALPHA",
     titleEmphasis: "TREND",
     titleRight: "ALERTS",
@@ -58,7 +58,7 @@ export const PLANS: Plan[] = [
   },
   {
     slug: "alpha-runner-alerts",
-    emoji: "🏃",
+    emoji: "R",
     titleLeft: "ALPHA",
     titleEmphasis: "RUNNER",
     titleRight: "ALERTS",
@@ -79,7 +79,7 @@ export const PLANS: Plan[] = [
 
 export const BUNDLE = {
   slug: "alpha-bundle",
-  emoji: "💫",
+  emoji: "B",
   title: "ALPHA BUNDLE",
   priceMonthly: 149,
   priceAnnual: 1299,
