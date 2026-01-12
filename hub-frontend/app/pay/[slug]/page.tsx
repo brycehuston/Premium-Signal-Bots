@@ -1,4 +1,4 @@
-// app/pay/[slug]/page.tsx
+// filename: app/pay/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PLANS, BUNDLE } from "@/lib/plans";
@@ -9,6 +9,28 @@ type SearchParams = Record<string, string | string[] | undefined>;
 function normalizePeriod(sp: SearchParams) {
   const raw = Array.isArray(sp.period) ? sp.period[0] : sp.period;
   return raw === "annual" ? "annual" : "monthly";
+}
+
+/**
+ * Your plans now come in 2 shapes:
+ * - NEW (Plan): titleLeft/titleEmphasis/titleRight
+ * - BUNDLE: title
+ *
+ * This builds a safe display title for either shape.
+ */
+function getPlanTitle(plan: any): string {
+  if (plan && typeof plan.title === "string") {
+    // Bundle case
+    return plan.title;
+  }
+
+  // Plan case
+  const left = typeof plan?.titleLeft === "string" ? plan.titleLeft : "";
+  const emphasis = typeof plan?.titleEmphasis === "string" ? plan.titleEmphasis : "";
+  const right = typeof plan?.titleRight === "string" ? plan.titleRight : "";
+
+  const built = `${left} ${emphasis} ${right}`.replace(/\s+/g, " ").trim();
+  return built || "Subscription";
 }
 
 export default async function PayPage({
@@ -22,9 +44,12 @@ export default async function PayPage({
   const sp = (await searchParams) ?? {};
   const period = normalizePeriod(sp);
 
+  // Combine: 3 plans + bundle
   const allPlans = [...PLANS, BUNDLE];
   const plan = allPlans.find((pl) => pl.slug === slug);
   if (!plan) return notFound();
+
+  const title = getPlanTitle(plan);
 
   const price = period === "annual" ? plan.priceAnnual : plan.priceMonthly;
   const chain = "Solana";
@@ -36,16 +61,18 @@ export default async function PayPage({
   return (
     <div className="mx-auto max-w-2xl py-10 px-5">
       <h1 className="text-2xl font-semibold tracking-tight">
-        Subscribe — <span className="opacity-70">{plan.title}</span>
+        Subscribe — <span className="opacity-70">{title}</span>
       </h1>
+
       <p className="mt-2 text-white/70">
         You selected <span className="font-medium">{period}</span> billing.
       </p>
 
       <div className="mt-6 rounded-2xl border border-edge bg-card/80 p-6 shadow-glow">
         <div className="text-lg font-semibold">
-          {plan.emoji} {plan.title}
+          {plan.emoji} {title}
         </div>
+
         <div className="mt-1 text-white/60">
           Price: <span className="text-white font-medium">${price}</span> /{" "}
           {period === "annual" ? "year" : "month"}
@@ -56,6 +83,7 @@ export default async function PayPage({
             1) Send <span className="font-semibold">${price} {token}</span> on{" "}
             <span className="font-semibold">{chain}</span> to:
           </p>
+
           <div className="rounded-lg border border-edge bg-black/30 p-3 font-mono text-white/90 break-all">
             {address}
           </div>
@@ -67,8 +95,8 @@ export default async function PayPage({
 
           <p className="text-white/80">
             3) After confirmation, send the{" "}
-            <span className="font-medium">TX link or screenshot</span> to our
-            Telegram or email. We’ll reply with your private Telegram invite.
+            <span className="font-medium">TX link or screenshot</span> to our Telegram or email.
+            We’ll reply with your private Telegram invite.
           </p>
 
           <div className="mt-4">
@@ -90,7 +118,7 @@ export default async function PayPage({
           <li>We verify the payment on-chain.</li>
           <li>
             You’ll receive a private Telegram link for{" "}
-            <span className="font-medium">{plan.title}</span>.
+            <span className="font-medium">{title}</span>.
           </li>
           <li>For bundles, you’ll get invites to all included channels.</li>
           <li>Renewals: just repeat the same payment when due.</li>
