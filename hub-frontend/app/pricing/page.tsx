@@ -1,7 +1,8 @@
 ﻿// filename: app/pricing/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { PLANS, BUNDLE, PlanTone } from "@/lib/plans";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
 
@@ -135,9 +136,60 @@ function renderBullet(b: string) {
   );
 }
 
+function PricingDivider() {
+  const prefersReduced = useReducedMotion();
+  const dividerRef = useRef<HTMLDivElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: dividerRef,
+    offset: ["start end", "end start"],
+  });
+  const travel = useTransform(scrollYProgress, [0, 1], ["12%", "88%"]);
+  const glow = useTransform(scrollYProgress, [0, 0.5, 1], [0.6, 1, 0.6]);
+  const sweep = useTransform(scrollYProgress, [0, 1], ["10%", "90%"]);
+  const sweepGlow = useTransform(scrollYProgress, [0, 0.5, 1], [0.35, 0.95, 0.35]);
+
+  return (
+    <div ref={dividerRef} aria-hidden className="relative flex items-center justify-center py-10 md:py-14">
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-stroke/70 to-transparent" />
+      <motion.div
+        className="pointer-events-none absolute top-1/2 h-px w-36 -translate-y-1/2 bg-gradient-to-r from-transparent via-gold/80 to-transparent shadow-[0_0_16px_rgb(var(--gold)/0.4)] md:w-52"
+        style={{
+          left: prefersReduced ? "50%" : sweep,
+          opacity: prefersReduced ? 0.6 : sweepGlow,
+          translateX: "-50%",
+        }}
+      />
+      <motion.div
+        className="pointer-events-none absolute top-1/2 flex items-center gap-2 -translate-y-1/2"
+        style={{
+          left: prefersReduced ? "50%" : travel,
+          opacity: prefersReduced ? 1 : glow,
+          translateX: "-50%",
+        }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_10px_rgb(var(--gold)/0.45)]" />
+        <span className="h-1 w-1 rounded-full bg-gold/40" />
+        <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_10px_rgb(var(--gold)/0.45)]" />
+      </motion.div>
+    </div>
+  );
+}
+
 export default function PricingPage() {
-  const brand = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+  const bundleTitle = BUNDLE.title;
+  const bundleKey = "ALERTS";
+  const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
+  const bundleTitleNode =
+    bundleKeyIndex === -1 ? (
+      bundleTitle
+    ) : (
+      <>
+        {bundleTitle.slice(0, bundleKeyIndex)}
+        <span className="bundle-alerts-marble">{bundleKey}</span>
+        {bundleTitle.slice(bundleKeyIndex + bundleKey.length)}
+      </>
+    );
 
   // We want the cadence to be EARLY -> TREND -> RUNNER always
   const cadenceMap: Record<string, 1 | 2 | 3> = {
@@ -148,34 +200,16 @@ export default function PricingPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-12">
-      <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">Pricing</div>
-      <h1 className="font-display text-h2 font-semibold tracking-tight text-silver">
-        {brand} Pricing
-      </h1>
-
-      <p className="mt-3 text-body text-muted">
-        Choose the alerts you want. Payments are manual for now via USDC on Solana.
-      </p>
-
-      <div className="mt-4 flex flex-wrap gap-3">
-        <Pill>120ms median alerts</Pill>
-        <Pill>99.9% uptime</Pill>
-        <Pill>Telegram-first delivery</Pill>
+      <div className="text-center">
+        <h1 className="font-display text-[112px] font-semibold tracking-tight text-silver leading-none md:text-[160px]">
+          PRICING
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-xs text-muted">
+          Choose the alerts you want. Payments are manual for now via USDC on Solana.
+        </p>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button href="#plans" size="md">
-          Go Alpha
-        </Button>
-        <Button href="/#sample-alerts" variant="outline" size="md">
-          View Sample Alerts
-        </Button>
-      </div>
-
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="text-small text-muted">
-          Choose your billing cadence. Annual unlocks the lowest effective rate.
-        </div>
+      <div className="mt-10 flex justify-center">
         <div
           className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 p-1"
           role="group"
@@ -211,7 +245,7 @@ export default function PricingPage() {
       </div>
 
       {/* 3 main plans */}
-      <div id="plans" className="mt-8 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
+      <div id="plans" className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
         {PLANS.map((p) => (
           <Card
             key={p.slug}
@@ -270,7 +304,7 @@ export default function PricingPage() {
               <div className="pt-2">
                 <Button
                   variant="primary"
-                  size="lg"
+                  size="sm"
                   full
                   className={tonePrimaryButtonClass(p.tone)}
                   href={`/pay/${p.slug}?period=${billing}`}
@@ -281,6 +315,10 @@ export default function PricingPage() {
             </CardBody>
           </Card>
         ))}
+
+        <div className="md:col-span-2 lg:col-span-3">
+          <PricingDivider />
+        </div>
 
         {/* Bundle as a clean full-width panel */}
         <Card
@@ -311,9 +349,12 @@ export default function PricingPage() {
                   <span className="text-[18px]">{BUNDLE.emoji}</span>
                 </div>
                 <h3 className="font-display text-title-lg font-semibold tracking-tight text-silver">
-                  {BUNDLE.title}
+                  {bundleTitleNode}
                 </h3>
-                <Pill tone="accent" className="text-[11px] font-semibold uppercase tracking-[0.25em]">
+                <Pill
+                  tone="accent"
+                  className="ml-2 best-value-pulse text-[11px] font-semibold uppercase tracking-[0.25em]"
+                >
                   Best Value
                 </Pill>
               </div>
@@ -347,7 +388,7 @@ export default function PricingPage() {
             <div className="md:min-w-[320px]">
               <Button
                 variant="primary"
-                size="lg"
+                size="sm"
                 full
                 className={tonePrimaryButtonClass("gold")}
                 href={`/pay/${BUNDLE.slug}?period=${billing}`}
@@ -357,16 +398,20 @@ export default function PricingPage() {
             </div>
           </CardBody>
         </Card>
+
+        <div className="md:col-span-2 lg:col-span-3">
+          <PricingDivider />
+        </div>
       </div>
 
-      <section className="mt-12 grid gap-6 lg:grid-cols-2">
+      <section className="mt-12 grid items-start gap-8 lg:grid-cols-2">
         <Card className="h-full">
-          <CardBody className="flex h-full flex-col">
+          <CardBody className="space-y-6">
             <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">
               What happens after you pay
             </div>
-            <ol className="mt-5 flex flex-1 flex-col justify-between">
-              <li className="flex gap-3">
+            <ol className="space-y-5">
+              <li className="flex gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
                 <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
                   1
                 </div>
@@ -379,7 +424,7 @@ export default function PricingPage() {
                   </div>
                 </div>
               </li>
-              <li className="flex gap-3">
+              <li className="flex gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
                 <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
                   2
                 </div>
@@ -390,7 +435,7 @@ export default function PricingPage() {
                   </div>
                 </div>
               </li>
-              <li className="flex gap-3">
+              <li className="flex gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
                 <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
                   3
                 </div>
@@ -402,38 +447,39 @@ export default function PricingPage() {
                 </div>
               </li>
             </ol>
-            <div className="mt-5 text-small text-muted/80 leading-relaxed">
+            <div className="text-small text-muted/80 leading-relaxed">
               Need help? Message us after purchase and we will onboard you.
             </div>
           </CardBody>
         </Card>
 
-        <div className="grid gap-4">
-          <Card>
-            <CardBody className="space-y-2">
-              <div className="text-small font-semibold text-silver">How delivery works</div>
-              <div className="text-small text-muted">
-                Alerts are delivered in Telegram channels tied to your plan.
+        <Card className="h-full">
+          <CardBody className="space-y-4">
+            <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">
+              Details
+            </div>
+            <div className="divide-y divide-stroke/60 rounded-card border border-stroke/60 bg-surface/70">
+              <div className="p-4">
+                <div className="text-small font-semibold text-silver">How delivery works</div>
+                <div className="mt-2 text-small text-muted leading-relaxed">
+                  Alerts are delivered in Telegram channels tied to your plan.
+                </div>
               </div>
-            </CardBody>
-          </Card>
-          <Card>
-            <CardBody className="space-y-2">
-              <div className="text-small font-semibold text-silver">Payment method</div>
-              <div className="text-small text-muted">
-                Manual USDC on Solana for now. We confirm and invite you quickly.
+              <div className="p-4">
+                <div className="text-small font-semibold text-silver">Payment method</div>
+                <div className="mt-2 text-small text-muted leading-relaxed">
+                  Manual USDC on Solana for now. We confirm and invite you quickly.
+                </div>
               </div>
-            </CardBody>
-          </Card>
-          <Card>
-            <CardBody className="space-y-2">
-              <div className="text-small font-semibold text-silver">Cancellation</div>
-              <div className="text-small text-muted">
-                Cancel any time by messaging support before your next cycle.
+              <div className="p-4">
+                <div className="text-small font-semibold text-silver">Cancellation</div>
+                <div className="mt-2 text-small text-muted leading-relaxed">
+                  Cancel any time by messaging support before your next cycle.
+                </div>
               </div>
-            </CardBody>
-          </Card>
-        </div>
+            </div>
+          </CardBody>
+        </Card>
       </section>
 
       {/* --- ALPHA-X promo --------------------------------------------------- */}
@@ -457,7 +503,7 @@ export default function PricingPage() {
               <path d="M13 2L3 14h7l-2 8 10-12h-7l2-8z" />
             </svg>
 
-            <h3 className="font-display text-4xl font-extrabold tracking-tight text-silver sm:text-5xl">
+            <h3 className="font-sans text-4xl font-extrabold tracking-tight text-silver sm:text-5xl">
               ALPHA-X
             </h3>
             <div className="mt-1 text-small font-semibold uppercase tracking-widest text-muted/80">
@@ -486,7 +532,7 @@ export default function PricingPage() {
               size="lg"
               className="mx-auto mt-8 px-8 font-bold uppercase tracking-wider shadow-[0_8px_30px_rgb(var(--gold)/0.45)] hover:shadow-[0_10px_36px_rgb(var(--gold)/0.55)]"
             >
-              Join ALPHA-X Waitlist
+              JOIN WAITLIST
             </Button>
           </CardBody>
         </Card>

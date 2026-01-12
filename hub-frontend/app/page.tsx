@@ -2,8 +2,8 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { Timer, Webhook, Bell } from "lucide-react";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { Webhook } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
 import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
 
@@ -174,20 +174,23 @@ function SmoothCounter({
 
 function ClockIcon({ active }: { active: boolean }) {
   return (
-    <div className="relative h-5 w-5 text-silver/80">
-      <Timer className="absolute inset-0 h-5 w-5" />
+    <div className="relative h-5 w-5">
       <svg
-        className={`absolute inset-0 ${active ? "clock-hand-rotate" : ""}`}
-        viewBox="0 0 16 16"
+        className="absolute inset-0 h-5 w-5"
+        viewBox="0 0 20 20"
         fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        style={{ transformOrigin: "50% 50%" }}
+        aria-hidden="true"
       >
-        <g transform="translate(8 8)">
-          <line x1="0" y1="0" x2="0" y2="-4.6" />
-          <circle cx="0" cy="0" r="0.75" fill="currentColor" stroke="none" />
+        <circle cx="10" cy="10" r="8.25" className="clock-face" strokeWidth="1.5" />
+        <g className="clock-ticks" strokeWidth="1.2" strokeLinecap="round">
+          <line x1="10" y1="2.6" x2="10" y2="4.2" />
+          <line x1="17.4" y1="10" x2="15.8" y2="10" />
+          <line x1="10" y1="17.4" x2="10" y2="15.8" />
+          <line x1="2.6" y1="10" x2="4.2" y2="10" />
+        </g>
+        <g className={active ? "clock-hand-rotate" : ""} style={{ transformOrigin: "50% 50%" }}>
+          <line x1="10" y1="10" x2="10" y2="4.8" className="clock-hand" strokeWidth="1.6" />
+          <circle cx="10" cy="10" r="1.1" className="clock-center" />
         </g>
       </svg>
     </div>
@@ -195,14 +198,142 @@ function ClockIcon({ active }: { active: boolean }) {
 }
 
 function WebhookIconSpin({ active }: { active: boolean }) {
-  return <Webhook className={`h-5 w-5 text-silver/80 ${active ? "spin-slow" : ""}`} />;
+  return (
+    <div className={`relative h-5 w-5 webhook-wrap ${active ? "webhook-wind" : ""}`}>
+      <span className={`webhook-rays ${active ? "webhook-rays-active" : ""}`} aria-hidden="true" />
+      <span className={`webhook-blast ${active ? "webhook-blast-on" : ""}`} aria-hidden="true" />
+      <Webhook
+        className={`h-5 w-5 webhook-icon ${active ? "webhook-spin" : ""}`}
+        strokeWidth={2.2}
+      />
+    </div>
+  );
 }
 
-function BellIconDing({ active }: { active: boolean }) {
-  return <Bell className={`h-5 w-5 text-silver/80 ${active ? "bell-ding" : ""}`} />;
+function BellIconDing({ active, heavy }: { active: boolean; heavy: boolean }) {
+  const swingClass = active ? (heavy ? "bell-ding-heavy" : "bell-ding") : "";
+  return (
+    <div className="relative h-6 w-6">
+      <svg
+        className="absolute inset-0 h-6 w-6"
+        viewBox="0 0 20 20"
+        fill="none"
+        aria-hidden="true"
+      >
+        <g className={swingClass} style={{ transformOrigin: "50% 20%" }}>
+          <path
+            d="M10 3.6c-2.6 0-4.6 2.1-4.6 5v2.7L4.3 13.6h11.4l-1.1-2.3V8.6c0-2.9-2-5-4.6-5z"
+            className="bell-shell"
+            strokeWidth="1.9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M10 3.6c-2.6 0-4.6 2.1-4.6 5v2.7L4.3 13.6h11.4l-1.1-2.3V8.6c0-2.9-2-5-4.6-5z"
+            className="bell-highlight"
+            strokeWidth="0.9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M7.6 14.6c.4 1.2 1.3 1.9 2.4 1.9s2-.7 2.4-1.9"
+            className="bell-base"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
+          <circle cx="10" cy="13.3" r="1.2" className="bell-clapper" />
+        </g>
+        <g className={`bell-rings ${active ? "bell-ringing" : ""} ${heavy ? "bell-ringing-heavy" : ""}`}>
+          <path
+            d="M3.4 7.1c-.9 1-.9 2.6 0 3.6"
+            className="bell-ring bell-ring-left"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          />
+          <path
+            d="M16.6 7.1c.9 1 .9 2.6 0 3.6"
+            className="bell-ring bell-ring-right"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function SectionDivider() {
+  const prefersReduced = useReducedMotion();
+  const dividerRef = useRef<HTMLDivElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: dividerRef,
+    offset: ["start end", "end start"],
+  });
+  const travel = useTransform(scrollYProgress, [0, 1], ["15%", "85%"]);
+  const glow = useTransform(scrollYProgress, [0, 0.5, 1], [0.7, 1, 0.7]);
+  const sweep = useTransform(scrollYProgress, [0, 1], ["6%", "94%"]);
+  const sweepGlow = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 1, 0.4]);
+
+  return (
+    <div ref={dividerRef} aria-hidden className="relative flex items-center justify-center py-12 md:py-20">
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-stroke/70 to-transparent" />
+      <motion.div
+        className="pointer-events-none absolute top-1/2 h-px w-40 -translate-y-1/2 bg-gradient-to-r from-transparent via-gold/80 to-transparent shadow-[0_0_18px_rgb(var(--gold)/0.45)] md:w-56"
+        style={{
+          left: prefersReduced ? "50%" : sweep,
+          opacity: prefersReduced ? 0.6 : sweepGlow,
+          translateX: "-50%",
+        }}
+      />
+      <motion.div
+        className="pointer-events-none absolute top-1/2 flex items-center gap-2 -translate-y-1/2"
+        style={{
+          left: prefersReduced ? "50%" : travel,
+          opacity: prefersReduced ? 1 : glow,
+          translateX: "-50%",
+        }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_12px_rgb(var(--gold)/0.55)]" />
+        <span className="h-1 w-1 rounded-full bg-gold/40" />
+        <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_12px_rgb(var(--gold)/0.55)]" />
+      </motion.div>
+    </div>
+  );
 }
 
 function FeatureRow({ active }: { active: boolean }) {
+  const [heavyRing, setHeavyRing] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      setHeavyRing(false);
+      return;
+    }
+
+    let triggerId: number | undefined;
+    let resetId: number | undefined;
+    let cancelled = false;
+
+    const schedule = () => {
+      triggerId = window.setTimeout(() => {
+        if (cancelled) return;
+        setHeavyRing(true);
+        resetId = window.setTimeout(() => {
+          if (cancelled) return;
+          setHeavyRing(false);
+          schedule();
+        }, 2000);
+      }, 5000);
+    };
+
+    schedule();
+    return () => {
+      cancelled = true;
+      if (triggerId) window.clearTimeout(triggerId);
+      if (resetId) window.clearTimeout(resetId);
+    };
+  }, [active]);
+
   return (
     <div className="mt-6 flex flex-wrap gap-3 md:flex-nowrap">
       <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
@@ -218,7 +349,10 @@ function FeatureRow({ active }: { active: boolean }) {
         </div>
       </div>
       <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
-        <BellIconDing active={active} />
+        <span className="relative inline-flex overflow-visible">
+          <BellIconDing active={active} heavy={heavyRing} />
+          <span className="bell-dust-shower bell-dust-loop bell-dust-local" aria-hidden="true" />
+        </span>
         <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           24/7 Alerts
         </div>
@@ -227,21 +361,169 @@ function FeatureRow({ active }: { active: boolean }) {
   );
 }
 
+type AlertReelTone = "bronze" | "platinum" | "gold";
+
+type AlertReelItem = {
+  id: string;
+  tone: AlertReelTone;
+  label: string;
+  pair: string;
+  signal: string;
+  score: string;
+  meta: string[];
+};
+
+const ALERT_REEL_ITEMS: AlertReelItem[] = [
+  {
+    id: "early",
+    tone: "bronze",
+    label: "EARLY",
+    pair: "SOL/USDC",
+    signal: "New pool detected + safety clear",
+    score: "Score 86",
+    meta: ["Liq 17k", "Holders 114", "Age 2m"],
+  },
+  {
+    id: "trend",
+    tone: "platinum",
+    label: "TREND",
+    pair: "SOL/USDC",
+    signal: "Momentum + continuation setup",
+    score: "Score 91",
+    meta: ["Tx 1.4k", "Vol +38%", "State BREAKING"],
+  },
+  {
+    id: "runner",
+    tone: "gold",
+    label: "RUNNER",
+    pair: "SOL/USDC",
+    signal: "Second-leg breakout confirmed",
+    score: "Score 88",
+    meta: ["Vol +52%", "Liq 410k", "Trend strong"],
+  },
+];
+
+const ALERT_REEL_TONES: Record<
+  AlertReelTone,
+  { text: string; dot: string; chip: string; scan: string }
+> = {
+  bronze: {
+    text: "text-bronze",
+    dot: "bg-bronze/80 shadow-[0_0_12px_rgb(var(--tone-bronze)/0.6)]",
+    chip: "border-bronze/40 text-bronze bg-bronze/10",
+    scan: "rgb(var(--tone-bronze) / 0.35)",
+  },
+  platinum: {
+    text: "text-platinum",
+    dot: "bg-platinum/80 shadow-[0_0_12px_rgb(var(--tone-platinum)/0.55)]",
+    chip: "border-platinum/40 text-platinum bg-platinum/10",
+    scan: "rgb(var(--tone-platinum) / 0.35)",
+  },
+  gold: {
+    text: "text-gold",
+    dot: "bg-gold/80 shadow-[0_0_12px_rgb(var(--gold)/0.55)]",
+    chip: "border-gold/40 text-gold bg-gold/10",
+    scan: "rgb(var(--gold) / 0.35)",
+  },
+};
+
+function HeroAlertReel() {
+  const prefersReduced = useReducedMotion();
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (prefersReduced) return;
+    const id = window.setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % ALERT_REEL_ITEMS.length);
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, [prefersReduced]);
+
+  return (
+    <div className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-muted/80">
+          <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_10px_rgb(var(--gold)/0.55)]" />
+          Alert Reel
+        </div>
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted/70">
+          <span
+            className={[
+              "h-2 w-2 rounded-full",
+              prefersReduced ? "bg-muted/60" : "bg-success/80 animate-pulse",
+              "shadow-[0_0_10px_rgb(var(--success)/0.55)]",
+            ].join(" ")}
+          />
+          Live
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-3">
+        {ALERT_REEL_ITEMS.map((item, index) => {
+          const tone = ALERT_REEL_TONES[item.tone];
+          const isActive = index === activeIndex;
+          return (
+            <div
+              key={item.id}
+              className={[
+                "alert-reel-item",
+                isActive ? "alert-reel-item--active" : "opacity-70",
+              ].join(" ")}
+              style={{ ["--reel-color" as any]: tone.scan }}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2.5 w-2.5 rounded-full ${tone.dot}`} />
+                  <span className={`text-[11px] font-semibold tracking-[0.35em] ${tone.text}`}>
+                    {item.label}
+                  </span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.2em] text-muted/70">
+                  {item.pair}
+                </span>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-4 text-small">
+                <span className="text-silver">{item.signal}</span>
+                <span className="text-muted">{item.score}</span>
+              </div>
+
+              <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                {item.meta.map((meta) => (
+                  <span
+                    key={meta}
+                    className={`rounded-pill border px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${tone.chip}`}
+                  >
+                    {meta}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 type StepItemProps = {
   step: number;
+  order: 1 | 2 | 3;
   title: string;
   description: string;
 };
 
-function StepItem({ step, title, description }: StepItemProps) {
+function StepItem({ step, order, title, description }: StepItemProps) {
   return (
-    <li className="flex gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4 shadow-soft md:p-5">
-      <div className="mt-0.5 grid h-9 w-9 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
+    <li
+      className={`how-step how-step-${order} flex gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4 shadow-soft md:p-5`}
+    >
+      <div className="how-step-badge mt-0.5 grid h-9 w-9 place-items-center rounded-full text-sm font-semibold">
         {step}
       </div>
       <div>
-        <div className="text-small font-semibold text-silver">{title}</div>
-        <div className="text-small text-muted">{description}</div>
+        <div className="how-step-title text-small font-semibold">{title}</div>
+        <div className="how-step-desc text-small">{description}</div>
       </div>
     </li>
   );
@@ -635,15 +917,42 @@ const RoadmapSection = memo(function RoadmapSection() {
 export default function Page() {
   const { ref: featuresScope, inView: featuresInView } = useInView({ threshold: 0.2, once: true });
   const { ref: statsRef, inView: statsInView } = useInView({ threshold: 0.35, once: true });
+  const { ref: howRef, inView: howInView } = useInView({ threshold: 0.35, once: false });
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll();
+  const glowDrift = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const glowDriftAlt = useTransform(scrollYProgress, [0, 1], [0, -120]);
+  const glowOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.35, 0.7, 0.35]);
 
+  const [heroView, setHeroView] = useState<"chart" | "reel">("chart");
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   useEffect(() => {
     if (statsInView && step === 0) setStep(1);
   }, [statsInView, step]);
 
+  const revealProps = {
+    initial: shouldReduceMotion
+      ? { opacity: 1, y: 0, filter: "blur(0px)" }
+      : { opacity: 0, y: 20, filter: "blur(6px)" },
+    whileInView: { opacity: 1, y: 0, filter: "blur(0px)" },
+    viewport: { once: true, amount: 0.18 },
+    transition: { duration: shouldReduceMotion ? 0 : 0.85, ease: "easeOut" },
+  };
+
   return (
-    <div className="flex flex-col gap-10 md:gap-14">
-      <section className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16">
+    <div className="relative flex flex-col gap-8 md:gap-12">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <motion.div
+          className="absolute -top-36 left-10 h-[26rem] w-[26rem] rounded-full bg-gold/10 blur-[140px]"
+          style={{ y: glowDrift, opacity: glowOpacity }}
+        />
+        <motion.div
+          className="absolute top-[38%] right-0 h-[30rem] w-[30rem] rounded-full bg-silver/10 blur-[160px]"
+          style={{ y: glowDriftAlt, opacity: glowOpacity }}
+        />
+      </div>
+
+      <motion.section {...revealProps} className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16">
         <div ref={featuresScope as any} className="md:col-span-6 md:pr-10">
           <div className="space-y-5">
             <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">AlphaAlerts</div>
@@ -654,17 +963,16 @@ export default function Page() {
               <span className="block text-hero font-black text-metal-silver">AlphaAlerts</span>
             </h1>
             <p className="max-w-[56ch] text-body text-muted">
-              AI-powered crypto alerts for SOL, BSC, and ETH. Catch new tokens, trends, and
-              runners before the crowd.
+              AI-powered Solana alerts. Catch new tokens, trends, and runners before the crowd.
             </p>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button href="/pricing#plans" size="lg">
-              Go Alpha
+            <Button href="/pricing#plans" size="lg" className="min-w-[180px]">
+              GO ALPHA
             </Button>
-            <Button href="#sample-alerts" variant="outline" size="lg">
-              View Sample Alerts
+            <Button href="#sample-alerts" variant="outline" size="lg" className="min-w-[180px]">
+              SAMPLE ALERTS
             </Button>
           </div>
 
@@ -672,41 +980,108 @@ export default function Page() {
         </div>
 
         <div className="md:col-span-6 md:pl-4">
-          <HeroChart height={340} />
-        </div>
-      </section>
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex justify-end">
+              <div
+                className="flex items-center gap-2 rounded-full border border-stroke/60 bg-surface/60 px-2 py-1"
+                role="tablist"
+                aria-label="Hero view"
+              >
+                <button
+                  type="button"
+                  onClick={() => setHeroView("chart")}
+                  aria-pressed={heroView === "chart"}
+                  aria-label="Show chart"
+                  className={[
+                    "h-2.5 w-2.5 rounded-full transition",
+                    heroView === "chart"
+                      ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
+                      : "bg-stroke/70 hover:bg-silver/40",
+                  ].join(" ")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setHeroView("reel")}
+                  aria-pressed={heroView === "reel"}
+                  aria-label="Show alert reel"
+                  className={[
+                    "h-2.5 w-2.5 rounded-full transition",
+                    heroView === "reel"
+                      ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
+                      : "bg-stroke/70 hover:bg-silver/40",
+                  ].join(" ")}
+                />
+              </div>
+            </div>
 
-      <section className="rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft md:p-8">
+            <div className="relative isolate min-h-[360px] md:min-h-[380px] overflow-visible">
+              <div
+                aria-hidden={heroView !== "chart"}
+                className={[
+                  "absolute inset-0 z-0 transition-opacity duration-300",
+                  heroView === "chart" ? "opacity-100 z-10" : "opacity-0 pointer-events-none",
+                ].join(" ")}
+              >
+                <HeroChart height={340} />
+              </div>
+              <div
+                aria-hidden={heroView !== "reel"}
+                className={[
+                  "absolute inset-0 z-0 flex items-center justify-center transition-opacity duration-300",
+                  heroView === "reel" ? "opacity-100 z-10" : "opacity-0 pointer-events-none",
+                ].join(" ")}
+              >
+                <div className="w-full max-w-[520px]">
+                  <HeroAlertReel />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      <SectionDivider />
+
+      <motion.section
+        {...revealProps}
+        ref={howRef as any}
+        className={`how-it-works ${howInView ? "how-it-works--active" : ""} rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft md:p-8`}
+      >
         <SectionHeading
           eyebrow="How it works"
-          title="Three steps to go live"
+          title="Three Steps To Go Live"
           subtitle="Pick a tier, pay in USDC, and get clean alerts in Telegram."
         />
         <ol className="mt-6 grid gap-4 md:grid-cols-3">
           <StepItem
             step={1}
-            title="Pick your tier"
+            order={1}
+            title="Pick Your Tier"
             description="Choose Early, Trend, Runner, or the Alpha Alerts Bundle."
           />
           <StepItem
             step={2}
-            title="Pay and connect"
+            order={2}
+            title="Pay and Connect"
             description="Manual USDC payment, then we invite you to Telegram."
           />
           <StepItem
             step={3}
-            title="Get alerts live"
+            order={3}
+            title="Get Alerts Live"
             description="Clean signals with links, filters, and scoring in real time."
           />
         </ol>
-      </section>
+      </motion.section>
 
-      <section className="space-y-6">
+      <SectionDivider />
+
+      <motion.section {...revealProps} className="space-y-6">
         <SectionHeading
           align="center"
           eyebrow="Built to keep you early"
           title="Early, safe, and in control"
-          subtitle="Cleaner signals, fewer rugs, and a simple way to stay early across SOL, BSC, and ETH."
+          subtitle="Cleaner signals, fewer rugs, and a simple way to stay early on Solana."
         />
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="relative overflow-hidden">
@@ -752,9 +1127,15 @@ export default function Page() {
             </CardBody>
           </Card>
         </div>
-      </section>
+      </motion.section>
 
-      <section id="sample-alerts" className="grid items-start gap-8 md:grid-cols-2">
+      <SectionDivider />
+
+      <motion.section
+        {...revealProps}
+        id="sample-alerts"
+        className="grid items-start gap-8 md:grid-cols-2"
+      >
         <div className="space-y-4">
           <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">Sample alerts</div>
           <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
@@ -770,7 +1151,7 @@ export default function Page() {
           </div>
           <div>
             <Button href="/pricing#plans" size="md">
-              Go Alpha
+              GO ALPHA
             </Button>
           </div>
         </div>
@@ -834,9 +1215,11 @@ export default function Page() {
             </div>
           </CardBody>
         </Card>
-      </section>
+      </motion.section>
 
-      <section ref={statsRef as any} className="space-y-6">
+      <SectionDivider />
+
+      <motion.section ref={statsRef as any} {...revealProps} className="space-y-6">
         <SectionHeading
           eyebrow="Performance"
           title="Speed and transparency"
@@ -870,13 +1253,16 @@ export default function Page() {
         </div>
         <div className="flex justify-center">
           <Button href="/pricing#plans" size="md">
-            Go Alpha
+            GO ALPHA
           </Button>
         </div>
-      </section>
+      </motion.section>
 
-      <RoadmapSection />
+      <SectionDivider />
 
+      <motion.div {...revealProps}>
+        <RoadmapSection />
+      </motion.div>
     </div>
   );
 }

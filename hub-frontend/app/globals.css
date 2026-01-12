@@ -181,17 +181,653 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 /* ---------------------------------------------------------------------- */
 
 @keyframes rotateCW { to { transform: rotate(360deg); } }
-@keyframes spin360 { to { transform: rotate(360deg); } }
+@keyframes webhookSurge {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(2400deg); }
+  40% { transform: rotate(4100deg); }
+  60% { transform: rotate(5200deg); }
+  80% { transform: rotate(6000deg); }
+  100% { transform: rotate(6600deg); }
+}
+@keyframes webhookBreeze {
+  0% { opacity: 0; transform: translate(0, -50%) scaleX(0.4); }
+  10% { opacity: 0.7; transform: translate(10px, -50%) scaleX(1.1); }
+  22% { opacity: 0.3; transform: translate(18px, -50%) scaleX(1.25); }
+  100% { opacity: 0; transform: translate(22px, -50%) scaleX(1.25); }
+}
+@keyframes webhookBlast {
+  0% { opacity: 0; transform: translate(0, -50%) scale(0.6); }
+  2% { opacity: 1; transform: translate(12px, -50%) scale(1); }
+  6% { opacity: 0.75; transform: translate(32px, -50%) scale(1.2); }
+  10% { opacity: 0.2; transform: translate(52px, -50%) scale(1.35); }
+  100% { opacity: 0; transform: translate(52px, -50%) scale(1.35); }
+}
+@keyframes webhookRays {
+  0% { opacity: 0; transform: scale(0.7); }
+  8% { opacity: 0.75; transform: scale(1); }
+  24% { opacity: 0; transform: scale(1.25); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
 @keyframes bellDing {
   0% { transform: rotate(0); }
-  20% { transform: rotate(-12deg); }
-  45% { transform: rotate(8deg); }
-  70% { transform: rotate(-4deg); }
+  18% { transform: rotate(-12deg); }
+  36% { transform: rotate(8deg); }
+  54% { transform: rotate(-6deg); }
+  72% { transform: rotate(3deg); }
   100% { transform: rotate(0); }
 }
-.clock-hand-rotate { animation: rotateCW 3s linear infinite; }
-.spin-slow { animation: spin360 3.2s linear infinite; transform-origin: 50% 50%; }
-.bell-ding { animation: bellDing 1.8s ease-in-out infinite; transform-origin: 70% 15%; }
+@keyframes bellRing {
+  0% { opacity: 0; transform: scale(0.9); }
+  20% { opacity: 0.6; transform: scale(1); }
+  55% { opacity: 0; transform: scale(1.08); }
+  100% { opacity: 0; transform: scale(1.08); }
+}
+@keyframes bellDingHeavy {
+  0% { transform: rotate(0); }
+  16% { transform: rotate(-18deg); }
+  32% { transform: rotate(14deg); }
+  48% { transform: rotate(-10deg); }
+  64% { transform: rotate(7deg); }
+  80% { transform: rotate(-4deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes bellRingHeavy {
+  0% { opacity: 0; transform: scale(0.85); }
+  24% { opacity: 0.9; transform: scale(1.08); }
+  60% { opacity: 0.35; transform: scale(1.18); }
+  100% { opacity: 0; transform: scale(1.22); }
+}
+@keyframes bellDustBurst {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(var(--dust-rot)); }
+  12% { opacity: 1; transform: translate3d(-3px, 12px, 0) rotate(calc(var(--dust-rot) + 3deg)); }
+  35% { opacity: 0.9; transform: translate3d(5px, 70px, 0) rotate(calc(var(--dust-rot) - 4deg)); }
+  60% { opacity: 0.75; transform: translate3d(-4px, 120px, 0) rotate(calc(var(--dust-rot) + 5deg)); }
+  85% { opacity: 0.55; transform: translate3d(3px, 165px, 0) rotate(calc(var(--dust-rot) - 3deg)); }
+  100% { opacity: 0; transform: translate3d(-1px, 190px, 0) rotate(calc(var(--dust-rot) + 2deg)); }
+}
+@keyframes bellDustTrailBurst {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(var(--dust-rot)); }
+  14% { opacity: 0.9; transform: translate3d(4px, 14px, 0) rotate(calc(var(--dust-rot) - 2deg)); }
+  40% { opacity: 0.8; transform: translate3d(-5px, 82px, 0) rotate(calc(var(--dust-rot) + 3deg)); }
+  68% { opacity: 0.65; transform: translate3d(6px, 140px, 0) rotate(calc(var(--dust-rot) - 4deg)); }
+  90% { opacity: 0.45; transform: translate3d(-4px, 185px, 0) rotate(calc(var(--dust-rot) + 4deg)); }
+  100% { opacity: 0; transform: translate3d(2px, 210px, 0) rotate(calc(var(--dust-rot) - 2deg)); }
+}
+.clock-hand-rotate {
+  animation: rotateCW 60s steps(60, end) infinite;
+  transform-origin: 50% 50%;
+}
+.clock-face { stroke: rgb(var(--silver) / 0.9); }
+.clock-ticks { stroke: rgb(var(--silver) / 0.5); }
+.clock-hand { stroke: rgb(var(--gold) / 0.95); stroke-linecap: round; }
+.clock-center { fill: rgb(var(--gold) / 0.95); }
+.webhook-wrap {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  color: rgb(var(--silver) / 0.95);
+}
+.webhook-rays {
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
+  background: conic-gradient(
+    from 0deg,
+    rgb(var(--gold2) / 0.7) 0deg 10deg,
+    transparent 10deg 35deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 55%, #000 56%, #000 70%, transparent 71%);
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(0.4px);
+}
+.webhook-rays-active { animation: webhookRays 10s ease-out infinite; }
+.webhook-wrap::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgb(var(--gold) / 0.45) 0deg 4deg,
+    transparent 4deg 28deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%, #000 72%, transparent 73%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.webhook-wrap::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  width: 22px;
+  height: 6px;
+  background: linear-gradient(90deg, transparent, rgb(var(--gold) / 0.5), transparent);
+  opacity: 0;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+.webhook-wind::after { animation: webhookBreeze 10s ease-out infinite; }
+.webhook-blast {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90px;
+  height: 28px;
+  background:
+    radial-gradient(circle at 6px 14px, rgba(255,255,255,0.98) 0 2.6px, transparent 4px),
+    radial-gradient(circle at 16px 6px, rgba(240,245,255,0.95) 0 2px, transparent 3px),
+    radial-gradient(circle at 24px 20px, rgba(255,255,255,0.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 34px 10px, rgba(235,240,250,0.85) 0 1.8px, transparent 2.8px),
+    radial-gradient(circle at 44px 18px, rgba(255,255,255,0.85) 0 2px, transparent 3px),
+    radial-gradient(circle at 56px 8px, rgba(235,240,250,0.8) 0 1.7px, transparent 2.6px),
+    radial-gradient(circle at 66px 16px, rgba(255,255,255,0.78) 0 1.6px, transparent 2.5px),
+    radial-gradient(circle at 76px 12px, rgba(235,240,250,0.75) 0 1.5px, transparent 2.4px),
+    linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 40%, transparent 85%);
+  opacity: 0;
+  filter: blur(0.35px);
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+.webhook-blast-on { animation: webhookBlast 90s ease-out infinite; }
+.webhook-icon {
+  display: block;
+  filter: drop-shadow(0 0 6px rgb(var(--gold) / 0.25));
+  transform-origin: 50% 50%;
+  transform-box: view-box;
+}
+.webhook-spin {
+  animation: webhookSurge 10s linear infinite;
+  transform-origin: 50% 50%;
+  transform-box: view-box;
+  will-change: transform;
+}
+.bell-shell { stroke: rgb(var(--silver) / 0.92); fill: none; }
+.bell-highlight { stroke: rgb(var(--gold2) / 0.4); }
+.bell-base { stroke: rgb(var(--silver) / 0.75); }
+.bell-clapper { fill: rgb(var(--gold2) / 0.7); }
+.bell-ring { stroke: rgb(var(--gold2) / 0.55); opacity: 0; }
+.bell-ringing .bell-ring { animation: bellRing 2.4s ease-out infinite; }
+.bell-ringing-heavy .bell-ring {
+  animation: bellRingHeavy 1.4s ease-out 1;
+  stroke: rgb(var(--gold2) / 0.7);
+}
+.bell-ring-right { animation-delay: 0.12s; }
+.bell-ding {
+  animation: bellDing 2.2s ease-in-out infinite;
+  transform-origin: 50% 20%;
+  transform-box: view-box;
+}
+.bell-ding-heavy {
+  animation: bellDingHeavy 1.4s ease-in-out 1;
+  transform-origin: 50% 20%;
+  transform-box: view-box;
+}
+.bell-dust-shower {
+  position: fixed;
+  left: var(--bell-dust-x, 50%);
+  top: var(--bell-dust-y, 140px);
+  width: 140px;
+  height: 140px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 20;
+}
+.bell-dust-local {
+  position: absolute;
+  left: 50%;
+  top: calc(100% - 4px);
+  transform: translateX(-50%);
+  width: 180px;
+  height: 240px;
+  z-index: 3;
+}
+.bell-dust-shower::before,
+.bell-dust-shower::after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  opacity: 0;
+  pointer-events: none;
+}
+.bell-dust-shower::before {
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 2px;
+  margin-left: -0.5px;
+  border-radius: 0.2px;
+  --dust-rot: 0deg;
+  background: rgba(255, 216, 140, 0.6);
+  box-shadow:
+    -40px 4px 0 -0.2px rgba(255, 216, 140, 0.45),
+    -32px 8px 0 -0.2px rgba(255, 244, 214, 0.55),
+    -24px 6px 0 -0.2px rgba(255, 232, 180, 0.5),
+    -16px 10px 0 -0.2px rgba(255, 210, 120, 0.45),
+    -8px 8px 0 -0.2px rgba(255, 248, 225, 0.5),
+    0 6px 0 -0.2px rgba(255, 214, 128, 0.5),
+    8px 8px 0 -0.2px rgba(255, 244, 214, 0.5),
+    16px 10px 0 -0.2px rgba(255, 232, 180, 0.45),
+    24px 8px 0 -0.2px rgba(255, 214, 128, 0.4),
+    32px 6px 0 -0.2px rgba(255, 248, 225, 0.45),
+    40px 10px 0 -0.2px rgba(255, 210, 120, 0.4),
+    -30px 6px 0 -0.2px rgba(255, 216, 140, 0.4),
+    -18px 10px 0 -0.1px rgba(255, 244, 214, 0.55),
+    -6px 8px 0 -0.15px rgba(255, 232, 180, 0.55),
+    8px 12px 0 -0.1px rgba(255, 210, 120, 0.4),
+    20px 14px 0 0.1px rgba(255, 248, 225, 0.45),
+    32px 10px 0 -0.15px rgba(255, 214, 128, 0.35),
+    42px 12px 0 -0.25px rgba(255, 232, 180, 0.35),
+    -42px 14px 0 -0.25px rgba(255, 210, 120, 0.35),
+    -24px 20px 0 -0.15px rgba(255, 200, 110, 0.35),
+    -10px 22px 0 -0.1px rgba(255, 236, 190, 0.5),
+    2px 20px 0 -0.15px rgba(255, 214, 128, 0.45),
+    16px 22px 0 -0.2px rgba(255, 244, 214, 0.4),
+    28px 24px 0 -0.15px rgba(255, 232, 180, 0.35),
+    -34px 30px 0 -0.25px rgba(255, 216, 140, 0.3),
+    -22px 34px 0 -0.15px rgba(255, 248, 225, 0.45),
+    -8px 36px 0 -0.15px rgba(255, 210, 120, 0.4),
+    6px 38px 0 0.1px rgba(255, 244, 214, 0.45),
+    20px 40px 0 -0.2px rgba(255, 232, 180, 0.35),
+    34px 42px 0 -0.2px rgba(255, 214, 128, 0.32),
+    46px 44px 0 -0.25px rgba(255, 248, 225, 0.3),
+    -46px 46px 0 -0.25px rgba(255, 216, 140, 0.28),
+    -28px 50px 0 -0.2px rgba(255, 206, 110, 0.3),
+    -12px 52px 0 -0.1px rgba(255, 232, 180, 0.45),
+    0 50px 0 -0.15px rgba(255, 214, 128, 0.42),
+    14px 52px 0 0.15px rgba(255, 244, 214, 0.4),
+    26px 54px 0 -0.2px rgba(255, 210, 120, 0.32),
+    -32px 66px 0 -0.2px rgba(255, 216, 140, 0.3),
+    -18px 68px 0 -0.15px rgba(255, 248, 225, 0.4),
+    -4px 70px 0 -0.2px rgba(255, 232, 180, 0.38),
+    10px 70px 0 -0.15px rgba(255, 214, 128, 0.36),
+    24px 72px 0 0.1px rgba(255, 244, 214, 0.38),
+    36px 74px 0 -0.25px rgba(255, 210, 120, 0.28),
+    48px 76px 0 -0.25px rgba(255, 244, 214, 0.28),
+    -48px 78px 0 -0.25px rgba(255, 216, 140, 0.26),
+    -26px 88px 0 -0.2px rgba(255, 232, 180, 0.3),
+    -10px 90px 0 -0.2px rgba(255, 214, 128, 0.34),
+    4px 92px 0 0.1px rgba(255, 244, 214, 0.36),
+    18px 94px 0 -0.2px rgba(255, 232, 180, 0.3),
+    30px 96px 0 -0.2px rgba(255, 214, 128, 0.3),
+    42px 98px 0 -0.25px rgba(255, 248, 225, 0.28),
+    -42px 100px 0 -0.25px rgba(255, 206, 110, 0.26),
+    -34px 108px 0 -0.25px rgba(255, 206, 110, 0.28),
+    -20px 112px 0 -0.2px rgba(255, 232, 180, 0.3),
+    -6px 114px 0 -0.2px rgba(255, 214, 128, 0.3),
+    8px 116px 0 0.1px rgba(255, 244, 214, 0.3),
+    22px 118px 0 -0.2px rgba(255, 210, 120, 0.28),
+    34px 120px 0 -0.25px rgba(255, 232, 180, 0.28),
+    46px 122px 0 -0.25px rgba(255, 244, 214, 0.26),
+    -46px 124px 0 -0.25px rgba(255, 210, 120, 0.24),
+    -28px 132px 0 -0.25px rgba(255, 216, 140, 0.26),
+    -14px 134px 0 -0.2px rgba(255, 244, 214, 0.3),
+    0 136px 0 -0.2px rgba(255, 232, 180, 0.28),
+    14px 138px 0 0.1px rgba(255, 214, 128, 0.26),
+    28px 140px 0 -0.25px rgba(255, 244, 214, 0.28),
+    40px 142px 0 -0.25px rgba(255, 232, 180, 0.24),
+    -40px 144px 0 -0.25px rgba(255, 216, 140, 0.24),
+    -22px 152px 0 -0.25px rgba(255, 206, 110, 0.24),
+    -6px 154px 0 -0.2px rgba(255, 232, 180, 0.26),
+    10px 156px 0 0.1px rgba(255, 214, 128, 0.24),
+    24px 158px 0 -0.25px rgba(255, 244, 214, 0.26),
+    36px 160px 0 -0.25px rgba(255, 232, 180, 0.22),
+    -36px 162px 0 -0.25px rgba(255, 214, 128, 0.22),
+    48px 164px 0 -0.25px rgba(255, 244, 214, 0.22),
+    -48px 166px 0 -0.25px rgba(255, 210, 120, 0.2),
+    12px 170px 0 -0.25px rgba(255, 232, 180, 0.2),
+    -12px 172px 0 -0.25px rgba(255, 214, 128, 0.2),
+    30px 174px 0 -0.25px rgba(255, 244, 214, 0.2),
+    -30px 176px 0 -0.25px rgba(255, 206, 110, 0.2),
+    0 168px 0 -0.25px rgba(255, 244, 214, 0.22),
+    44px 178px 0 -0.25px rgba(255, 232, 180, 0.18),
+    -44px 180px 0 -0.25px rgba(255, 214, 128, 0.18),
+    18px 184px 0 -0.25px rgba(255, 244, 214, 0.18),
+    -18px 186px 0 -0.25px rgba(255, 210, 120, 0.18),
+    0 190px 0 -0.25px rgba(255, 232, 180, 0.18);
+  animation: none;
+  filter: none;
+  transform-origin: center;
+  mix-blend-mode: screen;
+}
+.bell-dust-shower::after {
+  top: 0;
+  left: 50%;
+  width: 0.9px;
+  height: 0.9px;
+  margin-left: -0.45px;
+  border-radius: 0.1px;
+  --dust-rot: 45deg;
+  background: rgba(255, 244, 214, 0.38);
+  box-shadow:
+    -44px 6px 0 -0.35px rgba(255, 226, 160, 0.22),
+    -36px 10px 0 -0.35px rgba(255, 244, 214, 0.26),
+    -28px 8px 0 -0.35px rgba(255, 255, 255, 0.28),
+    -20px 12px 0 -0.35px rgba(255, 214, 128, 0.24),
+    -12px 10px 0 -0.35px rgba(255, 236, 190, 0.24),
+    -4px 12px 0 -0.35px rgba(255, 214, 128, 0.22),
+    4px 12px 0 -0.35px rgba(255, 244, 214, 0.24),
+    12px 10px 0 -0.35px rgba(255, 232, 180, 0.22),
+    20px 12px 0 -0.35px rgba(255, 214, 128, 0.22),
+    28px 10px 0 -0.35px rgba(255, 244, 214, 0.22),
+    36px 12px 0 -0.35px rgba(255, 210, 120, 0.2),
+    44px 14px 0 -0.35px rgba(255, 226, 160, 0.2),
+    -36px 8px 0 -0.3px rgba(255, 226, 160, 0.26),
+    -24px 12px 0 0.05px rgba(255, 244, 214, 0.34),
+    -10px 10px 0 -0.2px rgba(255, 255, 255, 0.4),
+    6px 12px 0 -0.25px rgba(255, 214, 128, 0.32),
+    18px 14px 0 -0.3px rgba(255, 236, 190, 0.3),
+    32px 12px 0 -0.3px rgba(255, 214, 128, 0.26),
+    44px 14px 0 -0.35px rgba(255, 244, 214, 0.22),
+    -30px 22px 0 -0.25px rgba(255, 236, 190, 0.28),
+    -14px 24px 0 -0.25px rgba(255, 210, 120, 0.24),
+    0 24px 0 0.1px rgba(255, 244, 214, 0.32),
+    12px 26px 0 0.1px rgba(255, 232, 180, 0.28),
+    26px 28px 0 -0.3px rgba(255, 214, 128, 0.24),
+    -34px 36px 0 -0.3px rgba(255, 226, 160, 0.24),
+    -20px 38px 0 -0.25px rgba(255, 244, 214, 0.3),
+    -6px 40px 0 -0.25px rgba(255, 210, 120, 0.24),
+    8px 42px 0 -0.3px rgba(255, 244, 214, 0.28),
+    20px 44px 0 0.1px rgba(255, 232, 180, 0.24),
+    34px 46px 0 -0.3px rgba(255, 214, 128, 0.22),
+    46px 48px 0 -0.35px rgba(255, 244, 214, 0.2),
+    -28px 56px 0 -0.3px rgba(255, 236, 190, 0.24),
+    -12px 58px 0 -0.25px rgba(255, 210, 120, 0.22),
+    2px 58px 0 -0.3px rgba(255, 244, 214, 0.26),
+    14px 60px 0 -0.3px rgba(255, 232, 180, 0.24),
+    28px 62px 0 -0.3px rgba(255, 214, 128, 0.22),
+    -32px 72px 0 -0.3px rgba(255, 226, 160, 0.22),
+    -18px 74px 0 -0.3px rgba(255, 244, 214, 0.26),
+    -4px 76px 0 -0.3px rgba(255, 232, 180, 0.22),
+    10px 76px 0 0.1px rgba(255, 214, 128, 0.22),
+    24px 78px 0 -0.3px rgba(255, 244, 214, 0.24),
+    36px 80px 0 -0.35px rgba(255, 210, 120, 0.2),
+    48px 82px 0 -0.35px rgba(255, 232, 180, 0.18),
+    -26px 92px 0 -0.3px rgba(255, 236, 190, 0.2),
+    -10px 94px 0 -0.3px rgba(255, 214, 128, 0.22),
+    4px 96px 0 -0.3px rgba(255, 244, 214, 0.22),
+    18px 98px 0 0.1px rgba(255, 232, 180, 0.2),
+    30px 100px 0 -0.3px rgba(255, 214, 128, 0.2),
+    42px 102px 0 -0.35px rgba(255, 244, 214, 0.18),
+    -34px 112px 0 -0.35px rgba(255, 226, 160, 0.2),
+    -20px 114px 0 -0.3px rgba(255, 244, 214, 0.22),
+    -6px 116px 0 -0.3px rgba(255, 210, 120, 0.2),
+    8px 118px 0 -0.3px rgba(255, 244, 214, 0.22),
+    22px 120px 0 0.1px rgba(255, 232, 180, 0.2),
+    34px 122px 0 -0.35px rgba(255, 214, 128, 0.2),
+    46px 124px 0 -0.35px rgba(255, 244, 214, 0.18),
+    -28px 134px 0 -0.35px rgba(255, 236, 190, 0.2),
+    -14px 136px 0 -0.3px rgba(255, 244, 214, 0.2),
+    0 138px 0 -0.3px rgba(255, 232, 180, 0.2),
+    14px 140px 0 0.1px rgba(255, 214, 128, 0.18),
+    28px 142px 0 -0.35px rgba(255, 244, 214, 0.2),
+    40px 144px 0 -0.35px rgba(255, 232, 180, 0.16),
+    -22px 154px 0 -0.35px rgba(255, 226, 160, 0.18),
+    -6px 156px 0 -0.3px rgba(255, 232, 180, 0.2),
+    10px 158px 0 0.1px rgba(255, 214, 128, 0.18),
+    24px 160px 0 -0.35px rgba(255, 244, 214, 0.2),
+    36px 162px 0 -0.35px rgba(255, 232, 180, 0.16),
+    -36px 164px 0 -0.35px rgba(255, 214, 128, 0.16),
+    48px 166px 0 -0.35px rgba(255, 244, 214, 0.16),
+    -48px 168px 0 -0.35px rgba(255, 226, 160, 0.16),
+    12px 172px 0 -0.35px rgba(255, 232, 180, 0.16),
+    -12px 174px 0 -0.35px rgba(255, 214, 128, 0.16),
+    30px 176px 0 -0.35px rgba(255, 244, 214, 0.16),
+    -30px 178px 0 -0.35px rgba(255, 210, 120, 0.14),
+    0 170px 0 -0.35px rgba(255, 244, 214, 0.18),
+    44px 182px 0 -0.35px rgba(255, 232, 180, 0.14),
+    -44px 184px 0 -0.35px rgba(255, 214, 128, 0.14),
+    18px 186px 0 -0.35px rgba(255, 244, 214, 0.14),
+    -18px 188px 0 -0.35px rgba(255, 210, 120, 0.14),
+    0 192px 0 -0.35px rgba(255, 232, 180, 0.14);
+  animation: none;
+  filter: blur(0.15px);
+  transform-origin: center;
+  mix-blend-mode: screen;
+}
+.bell-dust-on::before { animation: bellDustBurst 6s ease-out 1; }
+.bell-dust-on::after {
+  animation: bellDustTrailBurst 6s ease-out 1;
+  animation-delay: 0.35s;
+}
+
+.bell-dust-loop::before { animation: bellDustBurst 6.8s linear infinite; }
+.bell-dust-loop::after {
+  animation: bellDustTrailBurst 7.6s linear infinite;
+  animation-delay: 0.4s;
+}
+/* ---------------------------------------------------------------------- */
+
+/* --- How it works sequence -------------------------------------------- */
+@property --how-border-progress {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.how-it-works {
+  position: relative;
+  isolation: isolate;
+  --how-cycle: 32.5s;
+}
+
+.how-it-works::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from 225deg,
+    rgb(var(--gold) / 0.9) 0deg var(--how-border-progress),
+    transparent var(--how-border-progress) 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.how-it-works::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  padding: 4px;
+  background: rgb(var(--gold) / 0.45);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+.how-it-works--active::before {
+  animation: howBorderSweep var(--how-cycle) linear infinite;
+}
+
+.how-it-works--active::after {
+  animation: none;
+  opacity: 0.8;
+}
+
+.how-step-badge {
+  background-color: rgb(var(--surface2) / 0.7);
+  color: rgb(var(--muted));
+  border: 1px solid rgb(var(--stroke) / 0.7);
+}
+
+.how-step-title {
+  color: rgb(var(--muted));
+  text-shadow: none;
+}
+
+.how-step-desc {
+  color: rgb(var(--muted));
+  opacity: 0.75;
+  text-shadow: none;
+}
+
+.how-it-works--active .how-step-1 .how-step-badge {
+  animation: step1Badge var(--how-cycle) infinite;
+}
+.how-it-works--active .how-step-1 .how-step-title,
+.how-it-works--active .how-step-1 .how-step-desc {
+  animation: step1Text var(--how-cycle) infinite;
+}
+
+.how-it-works--active .how-step-2 .how-step-badge {
+  animation: step2Badge var(--how-cycle) infinite;
+}
+.how-it-works--active .how-step-2 .how-step-title,
+.how-it-works--active .how-step-2 .how-step-desc {
+  animation: step2Text var(--how-cycle) infinite;
+}
+
+.how-it-works--active .how-step-3 .how-step-badge {
+  animation: step3Badge var(--how-cycle) infinite;
+}
+.how-it-works--active .how-step-3 .how-step-title,
+.how-it-works--active .how-step-3 .how-step-desc {
+  animation: step3Text var(--how-cycle) infinite;
+}
+
+
+
+@keyframes howBorderSweep {
+  0%, 56.8% {
+    opacity: 0;
+    --how-border-progress: 0deg;
+    filter: drop-shadow(0 0 0 rgba(200, 163, 81, 0));
+  }
+  56.9% {
+    opacity: 1;
+    --how-border-progress: 0deg;
+    filter: drop-shadow(0 0 0 rgba(200, 163, 81, 0));
+  }
+  63.1% {
+    opacity: 1;
+    --how-border-progress: 360deg;
+    filter: drop-shadow(0 0 10px rgba(200, 163, 81, 0.35));
+  }
+  85% {
+    opacity: 1;
+    --how-border-progress: 360deg;
+    filter: drop-shadow(0 0 18px rgba(200, 163, 81, 0.55));
+  }
+  100% {
+    opacity: 1;
+    --how-border-progress: 360deg;
+    filter: drop-shadow(0 0 12px rgba(200, 163, 81, 0.4));
+  }
+}
+
+@keyframes howTilePulse {
+  0%, 63% { opacity: 0; transform: scale(1); }
+  63.2% { opacity: 1; transform: scale(1.03); }
+  93.9% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+@keyframes step1Text {
+  0% { color: rgb(var(--muted)); text-shadow: none; opacity: 0.65; }
+  2% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+  4% { color: rgb(var(--muted)); text-shadow: none; opacity: 0.7; }
+  6% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+  100% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+}
+
+@keyframes step1Badge {
+  0% { background-color: rgb(var(--surface2) / 0.7); color: rgb(var(--muted)); box-shadow: none; border-color: rgb(var(--stroke) / 0.7); }
+  2% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+  4% { background-color: rgb(var(--surface2) / 0.7); color: rgb(var(--muted)); box-shadow: none; border-color: rgb(var(--stroke) / 0.7); }
+  6% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+  100% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+}
+
+@keyframes step2Text {
+  0%, 21.3% { color: rgb(var(--muted)); text-shadow: none; opacity: 0.65; }
+  21.6% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+  22.6% { color: rgb(var(--muted)); text-shadow: none; opacity: 0.7; }
+  23.6% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+  100% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+}
+
+@keyframes step2Badge {
+  0%, 21.3% { background-color: rgb(var(--surface2) / 0.7); color: rgb(var(--muted)); box-shadow: none; border-color: rgb(var(--stroke) / 0.7); }
+  21.6% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+  22.6% { background-color: rgb(var(--surface2) / 0.7); color: rgb(var(--muted)); box-shadow: none; border-color: rgb(var(--stroke) / 0.7); }
+  23.6% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+  100% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+}
+
+@keyframes step3Text {
+  0%, 41.4% { color: rgb(var(--muted)); text-shadow: none; opacity: 0.65; }
+  41.7% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+  42.7% { color: rgb(var(--muted)); text-shadow: none; opacity: 0.7; }
+  43.7% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+  100% { color: rgb(var(--silver)); text-shadow: 0 0 12px rgb(var(--gold) / 0.35); opacity: 1; }
+}
+
+@keyframes step3Badge {
+  0%, 41.4% { background-color: rgb(var(--surface2) / 0.7); color: rgb(var(--muted)); box-shadow: none; border-color: rgb(var(--stroke) / 0.7); }
+  41.7% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+  42.7% { background-color: rgb(var(--surface2) / 0.7); color: rgb(var(--muted)); box-shadow: none; border-color: rgb(var(--stroke) / 0.7); }
+  43.7% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+  100% { background-color: rgb(var(--gold) / 0.22); color: rgb(var(--gold2)); box-shadow: 0 0 18px rgb(var(--gold) / 0.4); border-color: rgb(var(--gold) / 0.5); }
+}
+/* ---------------------------------------------------------------------- */
+
+/* --- Hero alert reel --------------------------------------------------- */
+.alert-reel-item {
+  position: relative;
+  border-radius: var(--radius-control);
+  border: 1px solid rgb(var(--stroke) / 0.7);
+  background: linear-gradient(
+    135deg,
+    rgb(var(--surface2) / 0.86),
+    rgb(var(--surface) / 0.96)
+  );
+  padding: 12px;
+  overflow: hidden;
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease, opacity 220ms ease;
+}
+
+.alert-reel-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--reel-color), transparent);
+  transform: translateX(-140%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.alert-reel-item--active {
+  border-color: rgb(var(--gold) / 0.35);
+  box-shadow: 0 0 0 1px rgb(var(--gold) / 0.12), 0 20px 44px -32px var(--reel-color);
+  transform: translateY(-1px);
+  opacity: 1;
+}
+
+.alert-reel-item--active::after {
+  animation: alertReelSweep 3.4s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+@keyframes alertReelSweep {
+  0% { transform: translateX(-140%); }
+  45% { transform: translateX(140%); }
+  100% { transform: translateX(140%); }
+}
 /* ---------------------------------------------------------------------- */
 
 /* --- Shimmer sequence: EARLY -> TREND -> RUNNER -> idle -> repeat ------ */
@@ -397,10 +1033,77 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 }
 /* ---------------------------------------------------------------------- */
 
+.best-value-pulse {
+  animation: best-value-pulse 13s ease-in-out infinite;
+}
+
+@keyframes best-value-pulse {
+  0%, 69% {
+    filter: brightness(1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 rgba(255,214,128,0);
+  }
+  72% {
+    filter: brightness(1.35);
+    box-shadow: inset 0 1px 0 rgba(255,248,235,0.35), 0 0 22px rgba(255,196,112,0.7);
+  }
+  74% {
+    filter: brightness(1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 rgba(255,214,128,0);
+  }
+  76% {
+    filter: brightness(1.45);
+    box-shadow: inset 0 1px 0 rgba(255,248,235,0.38), 0 0 26px rgba(255,190,104,0.8);
+  }
+  92% {
+    filter: brightness(1.5);
+    box-shadow: inset 0 1px 0 rgba(255,248,235,0.4), 0 0 28px rgba(255,182,96,0.9);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 rgba(255,214,128,0);
+  }
+}
+
+.bundle-alerts-marble {
+  font-size: 1.15em;
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 0.7px rgba(0, 0, 0, 0.65);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(228, 232, 238, 0.96) 45%,
+    rgba(255, 255, 255, 0.92) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+}
+
+
+
 @media (prefers-reduced-motion: reduce) {
   .shimmer-1, .shimmer-2, .shimmer-3 { animation: none !important; }
   .bundle-alerts-platinum, .best-value-buzz { animation: none !important; }
-  .clock-hand-rotate, .spin-slow, .bell-ding { animation: none !important; }
+  .clock-hand-rotate,
+  .webhook-spin,
+  .webhook-rays-active,
+  .how-it-works--active::before,
+  .how-it-works--active::after,
+  .how-it-works--active .how-step-badge,
+  .how-it-works--active .how-step-title,
+  .how-it-works--active .how-step-desc,
+  .bell-ding,
+  .bell-ding-heavy,
+  .bell-ringing .bell-ring,
+  .bell-ringing-heavy .bell-ring,
+  .bell-dust-shower::before,
+  .bell-dust-shower::after,
+  .alert-reel-item--active::after {
+    animation: none !important;
+  }
+  .webhook-wind::after { animation: none !important; }
+  .webhook-blast-on { animation: none !important; }
   [class*="transition"], [class*="animate-"] { transition: none !important; animation: none !important; }
 }
 /* ---------------------------------------------------------------------- */

@@ -109,7 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Login
                 </Link>
                 <Button href="/pricing#plans" size="md" className="hidden sm:inline-flex">
-                  Go Alpha
+                  GO ALPHA
                 </Button>
               </nav>
             </div>

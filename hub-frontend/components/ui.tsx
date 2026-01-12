@@ -136,7 +136,7 @@ type ButtonProps = {
   href?: string;
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "ghost" | "outline" | "gold";
-  size?: "md" | "lg";
+  size?: "sm" | "md" | "lg";
   className?: string;
   disabled?: boolean;
   full?: boolean;
@@ -161,7 +161,9 @@ export function Button({
   const sizes =
     size === "lg"
       ? "h-12 px-6 text-[15px] leading-[1.15]"
-      : "h-11 px-5 text-[15px] leading-[1.15]";
+      : size === "md"
+      ? "h-11 px-5 text-[15px] leading-[1.15]"
+      : "h-10 px-4 text-[14px] leading-[1.1]";
 
   const styles =
     variant === "primary" || variant === "gold"
@@ -182,7 +184,13 @@ export function Button({
 
   if (href) {
     return (
-      <Link href={href} className={classes} aria-disabled={disabled} data-no-link-style>
+      <Link
+        href={href}
+        className={classes}
+        aria-disabled={disabled}
+        data-no-link-style
+        onClick={onClick}
+      >
         {children}
       </Link>
     );
