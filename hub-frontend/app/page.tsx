@@ -5,7 +5,7 @@ import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Timer, Webhook, Bell } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
-import { Badge, Button } from "@/components/ui";
+import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
 
 declare global {
   interface Window {
@@ -166,7 +166,7 @@ function SmoothCounter({
   return (
     <span
       ref={spanRef}
-      className="font-display tabular-nums text-base md:text-lg font-semibold tracking-tight text-silver"
+      className="font-display tabular-nums text-2xl md:text-3xl font-semibold tracking-tight text-silver"
       style={{ display: "inline-block", transform: "translateZ(0)" }}
     />
   );
@@ -203,26 +203,23 @@ function BellIconDing({ active }: { active: boolean }) {
 }
 
 function FeatureRow({ active }: { active: boolean }) {
-  // CHANGED:
-  // - On desktop: force a single row (no wrap)
-  // - On mobile: allow wrap
   return (
-    <div className="mt-6 flex flex-wrap md:flex-nowrap gap-3">
-      <div className="flex items-center gap-2 rounded-xl border border-stroke/70 bg-surface/40 px-4 py-2.5 md:py-3">
+    <div className="mt-6 flex flex-wrap gap-3 md:flex-nowrap">
+      <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
         <ClockIcon active={active} />
-        <div className="text-[13px] md:text-[14px] font-medium leading-none text-silver whitespace-nowrap">
+        <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           Live Trade Signals
         </div>
       </div>
-      <div className="flex items-center gap-2 rounded-xl border border-stroke/70 bg-surface/40 px-4 py-2.5 md:py-3">
+      <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
         <WebhookIconSpin active={active} />
-        <div className="text-[13px] md:text-[14px] font-medium leading-none text-silver whitespace-nowrap">
+        <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           Webhook-Ready
         </div>
       </div>
-      <div className="flex items-center gap-2 rounded-xl border border-stroke/70 bg-surface/40 px-4 py-2.5 md:py-3">
+      <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
         <BellIconDing active={active} />
-        <div className="text-[13px] md:text-[14px] font-medium leading-none text-silver whitespace-nowrap">
+        <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           24/7 Alerts
         </div>
       </div>
@@ -230,23 +227,23 @@ function FeatureRow({ active }: { active: boolean }) {
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+type StepItemProps = {
+  step: number;
+  title: string;
+  description: string;
+};
+
+function StepItem({ step, title, description }: StepItemProps) {
   return (
-    <div className="group relative rounded-2xl border border-stroke/70 bg-surface/85 p-8 md:p-9 transition-all duration-200 will-change-transform hover:-translate-y-1 hover:shadow-[var(--shadow-hover)]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 rounded-[20px] opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-        style={{
-          background:
-            "radial-gradient(60% 60% at 50% 0%, rgb(var(--gold) / 0.18) 0%, rgb(var(--gold) / 0.08) 35%, rgba(0,0,0,0) 70%)",
-          filter: "blur(34px)",
-        }}
-      />
-      <h3 className="font-display relative mb-2 inline-block pb-1 text-lg font-semibold tracking-tight text-silver after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-gradient-to-r after:from-gold/80 after:via-gold/40 after:to-transparent">
-        {title}
-      </h3>
-      <p className="text-sm leading-relaxed text-muted">{children}</p>
-    </div>
+    <li className="flex gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4 shadow-soft md:p-5">
+      <div className="mt-0.5 grid h-9 w-9 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
+        {step}
+      </div>
+      <div>
+        <div className="text-small font-semibold text-silver">{title}</div>
+        <div className="text-small text-muted">{description}</div>
+      </div>
+    </li>
   );
 }
 
@@ -276,13 +273,22 @@ function StatCard({
 
   return (
     <div
-      className="rounded-2xl border border-stroke/70 bg-surface/80 p-4 transition-transform duration-500 will-change-transform"
+      className="rounded-card border border-stroke/70 bg-surface/80 p-5 text-center shadow-soft transition-transform duration-500 will-change-transform"
       style={{ transform: ready ? "translateY(0)" : "translateY(6px)", opacity: ready ? 1 : 0 }}
     >
-      <div className="mb-1 flex items-baseline justify-center gap-1">
-        <SmoothCounter id={id} start={start} target={target} decimals={decimals} suffix={suffix} durationMs={2600} delayMs={delayMs} onDone={onDone} />
+      <div className="mb-2 flex items-baseline justify-center gap-1">
+        <SmoothCounter
+          id={id}
+          start={start}
+          target={target}
+          decimals={decimals}
+          suffix={suffix}
+          durationMs={2600}
+          delayMs={delayMs}
+          onDone={onDone}
+        />
       </div>
-      <div className="text-xs text-muted">{label}</div>
+      <div className="text-[11px] uppercase tracking-[0.28em] text-muted/80">{label}</div>
     </div>
   );
 }
@@ -316,7 +322,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 2,
-    title: "Phase 2 🔥 ALPHA-X Auto Trader",
+    title: "Phase 2 - ALPHA-X Auto Trader",
     tag: "NEXT",
     bullets: [
       "Auto entries on high-probability setups",
@@ -327,12 +333,10 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
       "Moon bag option (optional runner position with trailing stop)",
       "Full trade logs + performance stats",
     ],
-    cta: { label: "Join Waitlist", href: "#waitlist" },
-    anchorId: "waitlist",
   },
   {
     step: 3,
-    title: "Phase 3 🌐 Multi-Chain Alerts",
+    title: "Phase 3 - Multi-Chain Alerts",
     tag: "IN BUILD",
     bullets: [
       "BSC alerts (extra scam and trap filters)",
@@ -355,7 +359,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 5,
-    title: "Phase 5 🧠 Pro Dashboard + Self-Serve Billing",
+    title: "Phase 5 - Pro Dashboard + Self-Serve Billing",
     tag: "PLANNED",
     bullets: [
       "Self-serve checkout (no more manual payments)",
@@ -411,21 +415,18 @@ const RoadmapSection = memo(function RoadmapSection() {
   return (
     <section
       id="roadmap"
-      className="relative overflow-hidden rounded-3xl border border-stroke/70 bg-surface/70 p-6 md:p-10 shadow-[var(--shadow-soft)]"
+      className="relative overflow-hidden rounded-card border border-stroke/70 bg-surface/70 p-6 shadow-soft md:p-10"
     >
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-1/2 h-52 w-[520px] -translate-x-1/2 rounded-full bg-gold/12 blur-[110px]"
       />
       <div className="relative">
-        <div className="text-[11px] uppercase tracking-[0.55em] text-gold/70">Roadmap</div>
+        <div className="text-eyebrow uppercase tracking-[0.35em] text-gold/70">Roadmap</div>
         <div className="mt-4 grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-end">
           <div className="space-y-3">
-            <h2
-              className="font-display text-3xl md:text-5xl font-semibold tracking-tight text-silver"
-              style={{ textShadow: "0 18px 50px rgb(var(--gold) / 0.25)" }}
-            >
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold">
+            <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold drop-shadow-[0_18px_50px_rgb(var(--gold)/0.25)]">
                 Roadmap
               </span>
             </h2>
@@ -436,7 +437,7 @@ const RoadmapSection = memo(function RoadmapSection() {
               aria-hidden
               className="absolute left-0 top-2 hidden h-10 w-px bg-gradient-to-b from-gold/70 via-gold/30 to-transparent md:block"
             />
-            <p className="text-base md:text-lg text-muted leading-relaxed">
+            <p className="text-body text-muted leading-relaxed">
               We ship in phases. Each phase makes alerts{" "}
               <span className="text-silver">cleaner</span>,{" "}
               <span className="text-silver">faster</span>, and{" "}
@@ -511,21 +512,21 @@ const RoadmapSection = memo(function RoadmapSection() {
                     delay: shouldReduceMotion ? 0 : index * 0.08,
                   }}
                   whileHover={shouldReduceMotion ? undefined : { y: -6 }}
-                  className={`order-2 md:order-none md:col-span-4 ${cardCol} pl-12 md:pl-0`}
+                  className={`order-2 md:order-none md:col-span-4 ${cardCol} pl-10 md:pl-0`}
                 >
                   <div
                     className={[
-                      "group relative rounded-2xl border bg-gradient-to-br from-surface2/80 via-surface/70 to-transparent p-6 md:p-7",
-                      "shadow-[0_0_0_1px_rgb(var(--stroke)/0.35)] transition-[box-shadow,background-color,border-color,transform] duration-200 will-change-transform",
+                      "group relative rounded-card border bg-gradient-to-br from-surface2/80 via-surface/70 to-transparent p-6 md:p-7",
+                      "shadow-soft transition-[box-shadow,background-color,border-color,transform] duration-200 will-change-transform",
                       "focus-within:ring-1 focus-within:ring-gold/40",
                       isActive
-                        ? "border-gold/50 bg-surface/85 shadow-[0_0_0_1px_rgb(var(--gold)/0.25),0_30px_80px_-40px_rgb(var(--gold)/0.35)]"
-                        : "border-stroke/70 hover:shadow-[0_0_0_1px_rgb(var(--gold)/0.2),0_20px_60px_-30px_rgb(var(--gold)/0.3)]",
+                        ? "border-gold/50 bg-surface/85 shadow-[0_0_0_1px_rgb(var(--gold)/0.25),0_26px_70px_-36px_rgb(var(--gold)/0.35)]"
+                        : "border-stroke/70 hover:shadow-[0_0_0_1px_rgb(var(--gold)/0.2),0_18px_60px_-32px_rgb(var(--gold)/0.3)]",
                     ].join(" ")}
                   >
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute inset-0 rounded-2xl border border-stroke/30 opacity-60"
+                      className="pointer-events-none absolute inset-0 rounded-card border border-stroke/30 opacity-60"
                     />
                     <div
                       aria-hidden
@@ -533,20 +534,15 @@ const RoadmapSection = memo(function RoadmapSection() {
                     />
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute inset-0 -z-10 rounded-2xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                      style={{
-                        background:
-                          "radial-gradient(75% 75% at 0% 0%, rgb(var(--gold) / 0.18) 0%, rgb(var(--gold) / 0.08) 45%, rgba(0,0,0,0) 75%)",
-                        filter: "blur(24px)",
-                      }}
+                      className="roadmap-card-glow pointer-events-none absolute inset-0 -z-10 rounded-card opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                     />
 
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="min-w-0 flex-1 space-y-2">
-                        <span className="text-[11px] uppercase tracking-[0.45em] text-gold/70">
+                        <span className="text-eyebrow uppercase tracking-[0.35em] text-gold/70">
                           {phaseLabel}
                         </span>
-                        <h3 className="font-display text-lg md:text-xl font-semibold text-silver leading-snug break-words">
+                        <h3 className="font-display text-title-lg md:text-h3 font-semibold text-silver leading-snug break-words">
                           <span className="block max-w-full text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold drop-shadow-[0_12px_30px_rgb(var(--gold)/0.35)]">
                             {titleRest}
                           </span>
@@ -557,7 +553,7 @@ const RoadmapSection = memo(function RoadmapSection() {
 
                     <div className="mt-4 h-px w-full bg-gradient-to-r from-stroke/70 via-stroke/40 to-transparent" />
 
-                    <ul className="mt-4 space-y-3 text-sm text-muted">
+                    <ul className="mt-4 space-y-3 text-small text-muted">
                       {previewBullets.map((bullet) => (
                         <li key={bullet} className="flex min-w-0 gap-3">
                           <span className="mt-2 h-1.5 w-1.5 rounded-full bg-gold/80 shadow-[0_0_10px_rgb(var(--gold)/0.6)]" />
@@ -646,212 +642,241 @@ export default function Page() {
   }, [statsInView, step]);
 
   return (
-    <div className="flex flex-col gap-8 md:gap-10">
-      {/* HERO */}
-      <section className="grid grid-cols-12 items-center gap-10 md:gap-16">
-        {/* LEFT */}
-        <div ref={featuresScope as any} className="col-span-12 md:col-span-6 md:pr-10">
-          {/* Titles back to big, but keep safe gap from chart via gap+pr */}
-          <h1 className="font-display text-silver text-[33px] md:text-[42px] leading-[1.06] font-extrabold tracking-tight">
-            Your Market Edge with
-          </h1>
-
-          <div className="font-display text-[72px] md:text-[92px] leading-[1.02] font-extrabold tracking-tight text-metal-silver">
-            AlphaAlerts
+    <div className="flex flex-col gap-10 md:gap-14">
+      <section className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16">
+        <div ref={featuresScope as any} className="md:col-span-6 md:pr-10">
+          <div className="space-y-5">
+            <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">AlphaAlerts</div>
+            <h1 className="font-display text-silver">
+              <span className="block text-hero-sub font-semibold tracking-[-0.01em]">
+                Your Market Edge with
+              </span>
+              <span className="block text-hero font-black text-metal-silver">AlphaAlerts</span>
+            </h1>
+            <p className="max-w-[56ch] text-body text-muted">
+              AI-powered crypto alerts for SOL, BSC, and ETH. Catch new tokens, trends, and
+              runners before the crowd.
+            </p>
           </div>
 
-          <p className="mt-3 max-w-[56ch] text-[15px] md:text-base text-muted">
-            Real-time scans, smart filters, and pro alerts.
-            <span className="hidden sm:inline"> Built for serious traders who need reliability.</span>
-          </p>
-
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <Button href="/pricing#plans" size="lg">
-              Get Alerts
+              Go Alpha
             </Button>
-            <Button
-              href="#sample-alerts"
-              variant="outline"
-              size="lg"
-            >
+            <Button href="#sample-alerts" variant="outline" size="lg">
               View Sample Alerts
             </Button>
           </div>
 
-          {/* Pills now sit lower (mt-6) and stay in ONE row on desktop */}
           <FeatureRow active={featuresInView} />
         </div>
 
-        {/* RIGHT */}
-        <div className="col-span-12 md:col-span-6 md:pl-4">
+        <div className="md:col-span-6 md:pl-4">
           <HeroChart height={340} />
         </div>
       </section>
 
-      <section className="rounded-2xl border border-stroke/70 bg-surface/80 p-6">
-        <div className="text-xs uppercase tracking-[0.3em] text-muted/80">How it works</div>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <div className="flex gap-3">
-            <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
-              1
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-silver">Pick your tier</div>
-              <div className="text-sm text-muted">
-                Choose Early, Trend, Runner, or the Bundle.
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
-              2
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-silver">Pay and connect</div>
-              <div className="text-sm text-muted">
-                Manual USDC payment, then we invite you to Telegram.
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
-              3
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-silver">Get alerts live</div>
-              <div className="text-sm text-muted">
-                Clean signals with links, filters, and scoring in real time.
-              </div>
-            </div>
-          </div>
+      <section className="rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft md:p-8">
+        <SectionHeading
+          eyebrow="How it works"
+          title="Three steps to go live"
+          subtitle="Pick a tier, pay in USDC, and get clean alerts in Telegram."
+        />
+        <ol className="mt-6 grid gap-4 md:grid-cols-3">
+          <StepItem
+            step={1}
+            title="Pick your tier"
+            description="Choose Early, Trend, Runner, or the Alpha Alerts Bundle."
+          />
+          <StepItem
+            step={2}
+            title="Pay and connect"
+            description="Manual USDC payment, then we invite you to Telegram."
+          />
+          <StepItem
+            step={3}
+            title="Get alerts live"
+            description="Clean signals with links, filters, and scoring in real time."
+          />
+        </ol>
+      </section>
+
+      <section className="space-y-6">
+        <SectionHeading
+          align="center"
+          eyebrow="Built to keep you early"
+          title="Early, safe, and in control"
+          subtitle="Cleaner signals, fewer rugs, and a simple way to stay early across SOL, BSC, and ETH."
+        />
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="relative overflow-hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
+            />
+            <CardBody className="space-y-3">
+              <h3 className="font-display text-title-lg font-semibold text-silver">
+                Smart Risk Filters
+              </h3>
+              <p className="text-small text-muted">
+                Rugs, honeypots, and thin liquidity get filtered out before they hit your feed.
+              </p>
+            </CardBody>
+          </Card>
+          <Card className="relative overflow-hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
+            />
+            <CardBody className="space-y-3">
+              <h3 className="font-display text-title-lg font-semibold text-silver">
+                Alpha-Grade Alerts
+              </h3>
+              <p className="text-small text-muted">
+                Early, Trend, and Runner alerts delivered to Telegram with only the essentials.
+              </p>
+            </CardBody>
+          </Card>
+          <Card className="relative overflow-hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
+            />
+            <CardBody className="space-y-3">
+              <h3 className="font-display text-title-lg font-semibold text-silver">
+                Stacked Alpha Flow
+              </h3>
+              <p className="text-small text-muted">
+                Track a token from birth to breakout with one clean alert stack.
+              </p>
+            </CardBody>
+          </Card>
         </div>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-3">
-        <Card title="Smart Filters">
-          Cut through noise with volatility, liquidity, and timeframe filters. Prevent false alerts and surface only high-quality setups.
-        </Card>
-        <Card title="Pro Alerts">
-          Alerts delivered straight to Telegram or your systems via webhooks. Snooze, batch, or route signals your way.
-        </Card>
-        <Card title="Visual Trends">
-          Momentum, divergence, and liquidation heatmaps so you know why the alert fired and where price might head.
-        </Card>
-      </section>
-
-      <section id="sample-alerts" className="grid items-start gap-6 md:grid-cols-2">
-        <div>
-          <div className="text-xs uppercase tracking-[0.3em] text-muted/80">Sample alerts</div>
-          <h2 className="font-display mt-2 text-2xl font-semibold tracking-tight text-silver">
+      <section id="sample-alerts" className="grid items-start gap-8 md:grid-cols-2">
+        <div className="space-y-4">
+          <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">Sample alerts</div>
+          <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
             See what hits your Telegram
           </h2>
-          <p className="mt-2 text-muted">
+          <p className="text-body text-muted">
             One clean message with entry links, safety checks, and clear market state labels.
           </p>
-          <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted">
-            <span className="rounded-full border border-stroke/70 bg-surface/70 px-3 py-1.5">
-              120ms median latency
-            </span>
-            <span className="rounded-full border border-stroke/70 bg-surface/70 px-3 py-1.5">
-              99.9% uptime
-            </span>
-            <span className="rounded-full border border-stroke/70 bg-surface/70 px-3 py-1.5">
-              100+ pairs watched
-            </span>
+          <div className="flex flex-wrap gap-3">
+            <Pill>120ms median latency</Pill>
+            <Pill>99.9% uptime</Pill>
+            <Pill>100+ pairs watched</Pill>
           </div>
-          <div className="mt-5">
+          <div>
             <Button href="/pricing#plans" size="md">
-              Get Alerts
+              Go Alpha
             </Button>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-stroke/70 bg-surface2/80 p-5 font-mono text-sm text-text shadow-[0_0_0_1px_rgb(var(--stroke)/0.3)]">
-          <div className="flex items-center justify-between text-xs text-muted/80">
-            <span>AlphaAlerts / TREND</span>
-            <span>now</span>
-          </div>
-          <div className="mt-3 space-y-2">
-            <div className="text-silver font-semibold">SOL/USDC / 5m</div>
-            <div className="text-text">Signal: BREAKING / Momentum + Volume</div>
-            <div className="text-muted">
-              Entry: 96.20 / SL: 92.80 / TP1: 101.40 / TP2: 108.00
+        <Card className="bg-surface2/80">
+          <CardBody className="space-y-4 text-small text-text">
+            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.25em] text-muted/80">
+              <span>AlphaAlerts / Trend</span>
+              <span className="text-gold">Live</span>
             </div>
-            <div className="text-muted">
-              Filters: Mint Renounced / Liquidity Locked / Holders 1,240
-            </div>
-          </div>
-          <div className="mt-4 grid grid-cols-3 gap-2 text-[11px] text-muted">
-            <div className="rounded-lg border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
-              Chart
-            </div>
-            <div className="rounded-lg border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
-              Dex
-            </div>
-            <div className="rounded-lg border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
-              Wallet
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section ref={statsRef as any} className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <div className="text-xs uppercase tracking-[0.3em] text-muted/80">Performance</div>
-            <h2 className="font-display mt-1 text-xl font-semibold tracking-tight text-silver">
-              Speed and transparency
-            </h2>
-          </div>
-          <div className="text-xs text-muted">Live metrics from recent activity</div>
-        </div>
-
-        <div className="rounded-2xl border border-stroke/70 bg-surface/80 p-5 shadow-[0_0_0_1px_rgb(var(--stroke)/0.35)]">
-          <div className="grid grid-cols-12 items-center gap-4">
-            <div className="col-span-12 md:col-span-9">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="space-y-1.5">
-                  <StatCard id="median" label="Median alert time" start={step >= 1} target={120} suffix="ms" onDone={() => setTimeout(() => setStep(2), 600)} />
+            <dl className="space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-muted">Pair / TF</dt>
+                <dd className="text-silver font-semibold">SOL/USDC / 5m</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-muted">Signal</dt>
+                <dd className="text-silver">BREAKING / Momentum + Volume</dd>
+              </div>
+              <div className="rounded-control border border-stroke/70 bg-surface/70 p-3">
+                <div className="flex items-center justify-between text-muted">
+                  <span>Entry</span>
+                  <span className="text-silver font-semibold">96.20</span>
                 </div>
-                <div className="space-y-1.5">
-                  <StatCard id="pairs" label="Pairs watched" start={step >= 2} target={100} suffix="+" onDone={() => setTimeout(() => setStep(3), 600)} />
-                </div>
-                <div className="space-y-1.5">
-                  <StatCard id="uptime" label="Uptime" start={step >= 3} target={99.9} decimals={1} suffix="%" />
+                <div className="mt-2 grid grid-cols-2 gap-2 text-muted">
+                  <div className="flex items-center justify-between">
+                    <span>SL</span>
+                    <span className="text-silver">92.80</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>TP1</span>
+                    <span className="text-silver">101.40</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>TP2</span>
+                    <span className="text-silver">108.00</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>State</span>
+                    <span className="text-silver">TREND</span>
+                  </div>
                 </div>
               </div>
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-muted">Filters</dt>
+                <dd className="text-silver">
+                  Mint Renounced / Liquidity Locked / Holders 1,240
+                </dd>
+              </div>
+            </dl>
+            <div className="grid grid-cols-3 gap-2 text-[11px] text-muted">
+              <span className="rounded-pill border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
+                Chart
+              </span>
+              <span className="rounded-pill border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
+                Dex
+              </span>
+              <span className="rounded-pill border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
+                Wallet
+              </span>
             </div>
+          </CardBody>
+        </Card>
+      </section>
 
-            <div className="col-span-12 md:col-span-3 flex md:justify-end">
-              <Button href="/pricing#plans" size="md">
-                Get Alerts
-              </Button>
-            </div>
-          </div>
+      <section ref={statsRef as any} className="space-y-6">
+        <SectionHeading
+          eyebrow="Performance"
+          title="Speed and transparency"
+          subtitle="Live metrics from recent activity."
+        />
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatCard
+            id="median"
+            label="Median alert time"
+            start={step >= 1}
+            target={120}
+            suffix="ms"
+            onDone={() => setTimeout(() => setStep(2), 600)}
+          />
+          <StatCard
+            id="pairs"
+            label="Pairs watched"
+            start={step >= 2}
+            target={100}
+            suffix="+"
+            onDone={() => setTimeout(() => setStep(3), 600)}
+          />
+          <StatCard
+            id="uptime"
+            label="Uptime"
+            start={step >= 3}
+            target={99.9}
+            decimals={1}
+            suffix="%"
+          />
+        </div>
+        <div className="flex justify-center">
+          <Button href="/pricing#plans" size="md">
+            Go Alpha
+          </Button>
         </div>
       </section>
 
       <RoadmapSection />
 
-      <style jsx global>{`
-        @keyframes rotateCW { to { transform: rotate(360deg) } }
-        @keyframes spin360 { to { transform: rotate(360deg) } }
-        @keyframes bellDing {
-          0% { transform: rotate(0) }
-          20% { transform: rotate(-12deg) }
-          45% { transform: rotate(8deg) }
-          70% { transform: rotate(-4deg) }
-          100% { transform: rotate(0) }
-        }
-        .clock-hand-rotate { animation: rotateCW 3s linear infinite }
-        .spin-slow { animation: spin360 3.2s linear infinite; transform-origin: 50% 50% }
-        .bell-ding { animation: bellDing 1.8s ease-in-out infinite; transform-origin: 70% 15% }
-
-        @media (prefers-reduced-motion: reduce) {
-          .clock-hand-rotate, .spin-slow, .bell-ding { animation: none !important }
-          [class*="transition"], [class*="animate-"] { transition: none !important; animation: none !important }
-        }
-      `}</style>
     </div>
   );
 }

@@ -1,14 +1,16 @@
 // app/layout.tsx
+// Updates: refined layout structure, spacing rhythm, performance hooks, and motion polish.
 import "./globals.css";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Manrope, Space_Grotesk } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import Link from "next/link";
 import Script from "next/script";
 import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
+import { Button } from "@/components/ui";
 
-const inter = Inter({ subsets: ["latin"] });
+const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
 const BRAND = process.env.NEXT_PUBLIC_BRAND || "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -56,8 +58,8 @@ function Container({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.className} ${display.variable}`}>
-      <body className="min-h-screen bg-bg text-text antialiased">
+    <html lang="en" className={`${sans.variable} ${display.variable}`}>
+      <body className="min-h-screen bg-bg text-text antialiased font-sans">
         {/* decorative bg layers */}
         <div className="pointer-events-none fixed inset-0 -z-10">
           <div className="absolute inset-0" style={{ backgroundImage: "var(--vignette)" }} />
@@ -71,41 +73,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* navbar */}
         <header className="sticky top-0 z-30 border-b border-stroke/60 bg-bg/80 backdrop-blur">
           <Container>
-            <div className="flex h-14 items-center justify-between">
+            <div className="flex h-16 items-center justify-between gap-4">
               <Link href="/" className="font-semibold tracking-tight">
                 <span className="text-metal-silver">{BRAND}</span>
                 <span className="ml-1 text-muted">Pro</span>
               </Link>
 
-              <nav className="flex items-center gap-1.5">
+              <nav className="flex items-center gap-2">
                 <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface2/60 hover:text-text"
+                  className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text"
                   href="/pricing"
                   data-no-link-style
                 >
                   Pricing
                 </Link>
                 <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface2/60 hover:text-text"
+                  className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text hidden md:inline-flex"
                   href="/dashboard"
                   data-no-link-style
                 >
                   Dashboard
                 </Link>
                 <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface2/60 hover:text-text"
+                  className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text hidden md:inline-flex"
                   href="/billing"
                   data-no-link-style
                 >
                   Billing
                 </Link>
                 <Link
-                  className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface2/60 hover:text-text"
+                  className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text hidden sm:inline-flex"
                   href="/login"
                   data-no-link-style
                 >
                   Login
                 </Link>
+                <Button href="/pricing#plans" size="md" className="hidden sm:inline-flex">
+                  Go Alpha
+                </Button>
               </nav>
             </div>
           </Container>
@@ -122,8 +127,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           <footer className="mt-14 border-t border-stroke/60">
             <Container>
-              <div className="py-8 text-sm text-muted">
-                (c) {new Date().getFullYear()} HUSTON SOLUTIONS
+              <div className="py-8 text-small text-muted">
+                © {new Date().getFullYear()} HUSTON SOLUTIONS
               </div>
             </Container>
           </footer>

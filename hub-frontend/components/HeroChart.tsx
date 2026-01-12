@@ -19,7 +19,7 @@ export default function HeroChart({ height = 340 }: { height?: number }) {
 
   return (
     <div
-      className="rounded-2xl border border-stroke/70 bg-surface/60 backdrop-blur shadow-glow"
+      className="rounded-card border border-stroke/70 bg-surface/60 backdrop-blur shadow-soft"
       style={{ minHeight: minH }}
     >
       <div className="p-4 h-full">

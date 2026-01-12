@@ -20,7 +20,7 @@ export type Plan = {
 export const PLANS: Plan[] = [
   {
     slug: "alpha-early-alerts",
-    emoji: "A",
+    emoji: "⚡",
     titleLeft: "ALPHA",
     titleEmphasis: "EARLY",
     titleRight: "ALERTS",
@@ -39,7 +39,7 @@ export const PLANS: Plan[] = [
   },
   {
     slug: "alpha-trend-alerts",
-    emoji: "T",
+    emoji: "📈",
     titleLeft: "ALPHA",
     titleEmphasis: "TREND",
     titleRight: "ALERTS",
@@ -58,7 +58,7 @@ export const PLANS: Plan[] = [
   },
   {
     slug: "alpha-runner-alerts",
-    emoji: "R",
+    emoji: "🏃",
     titleLeft: "ALPHA",
     titleEmphasis: "RUNNER",
     titleRight: "ALERTS",
@@ -79,13 +79,14 @@ export const PLANS: Plan[] = [
 
 export const BUNDLE = {
   slug: "alpha-bundle",
-  emoji: "B",
-  title: "ALPHA BUNDLE",
+  emoji: "✨",
+  title: "ALPHA ALERTS BUNDLE",
   priceMonthly: 149,
   priceAnnual: 1299,
   bullets: [
-    "ALPHA EARLY + TREND + RUNNER",
+    "Includes Alpha Early Alerts + Alpha Trend Alerts + Alpha Runner Alerts",
+    "One unified flow: new tokens → healthy trends → big runners",
     "Best value for serious traders",
-    "Priority support + new feature previews",
+    "Priority support + early access to new features",
   ],
 };

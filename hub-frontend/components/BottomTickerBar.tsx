@@ -179,19 +179,6 @@ export default function BottomTickerBar({
         </div>
       </div>
 
-      {/* Flash styles */}
-      <style jsx global>{`
-        .tick-flash-up {
-          box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35),
-            0 0 24px rgba(16, 185, 129, 0.18);
-          border-color: rgba(16, 185, 129, 0.35) !important;
-        }
-        .tick-flash-down {
-          box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.35),
-            0 0 24px rgba(244, 63, 94, 0.18);
-          border-color: rgba(244, 63, 94, 0.35) !important;
-        }
-      `}</style>
     </div>
   );
 }

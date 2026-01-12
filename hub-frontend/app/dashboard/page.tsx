@@ -29,7 +29,7 @@ type BotStatus = { bot: string; status: string };
 /* ---------- Small UI helpers ---------- */
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-stroke/70 bg-surface/80 backdrop-blur shadow-glow ${className}`}>
+    <div className={`rounded-card border border-stroke/70 bg-surface/80 backdrop-blur shadow-soft ${className}`}>
       {children}
     </div>
   );

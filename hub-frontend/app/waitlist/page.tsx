@@ -37,8 +37,8 @@ export default function WaitlistPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <div className="rounded-2xl border border-stroke/70 bg-surface/80 p-6 shadow-glow">
-        <h2 className="mb-4 text-center text-2xl font-semibold text-silver">
+      <div className="rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft">
+        <h2 className="mb-4 text-center font-display text-h3 font-semibold text-silver">
           Join the Alpha-X Waitlist
         </h2>
         <form onSubmit={submit} className="grid gap-3">
@@ -65,8 +65,8 @@ export default function WaitlistPage() {
           <Button type="submit" disabled={busy} className="mt-2">
             {busy ? "Working..." : "Join Waitlist"}
           </Button>
-          {ok && <p className="text-green-400 text-sm">{ok}</p>}
-          {err && <p className="text-red-400 text-sm">{err}</p>}
+          {ok && <p className="text-success text-small">{ok}</p>}
+          {err && <p className="text-danger text-small">{err}</p>}
         </form>
       </div>
     </div>

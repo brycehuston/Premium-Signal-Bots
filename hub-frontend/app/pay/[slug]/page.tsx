@@ -59,32 +59,32 @@ export default async function PayPage({
     "4tDVS6pJKirFnXtM3btbP2VfCQbombUotCqtPjoEXkHm";
 
   return (
-    <div className="mx-auto max-w-2xl py-10 px-5">
-      <h1 className="text-2xl font-semibold tracking-tight text-silver">
+    <div className="mx-auto max-w-2xl py-12 px-5">
+      <h1 className="font-display text-h2 font-semibold tracking-tight text-silver">
         Subscribe - <span className="opacity-70">{title}</span>
       </h1>
 
-      <p className="mt-2 text-muted">
+      <p className="mt-2 text-body text-muted">
         You selected <span className="font-medium text-silver">{period}</span> billing.
       </p>
 
-      <div className="mt-6 rounded-2xl border border-stroke/70 bg-surface/80 p-6 shadow-glow">
-        <div className="text-lg font-semibold text-silver">
+      <div className="mt-6 rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft">
+        <div className="text-title-lg font-semibold text-silver">
           {plan.emoji} {title}
         </div>
 
-        <div className="mt-1 text-muted">
+        <div className="mt-1 text-small text-muted">
           Price: <span className="text-silver font-medium">${price}</span> /{" "}
           {period === "annual" ? "year" : "month"}
         </div>
 
-        <div className="mt-6 space-y-3 text-sm">
+        <div className="mt-6 space-y-3 text-small">
           <p className="text-muted">
             1) Send <span className="font-semibold text-silver">${price} {token}</span> on{" "}
             <span className="font-semibold text-silver">{chain}</span> to:
           </p>
 
-          <div className="rounded-lg border border-stroke/70 bg-surface2/80 p-3 font-mono text-silver break-all">
+          <div className="rounded-control border border-stroke/70 bg-surface2/80 p-3 font-mono text-silver break-all">
             {address}
           </div>
 
@@ -109,7 +109,7 @@ export default async function PayPage({
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-stroke/60 bg-surface/70 p-4 text-sm text-muted">
+      <div className="mt-8 rounded-card border border-stroke/60 bg-surface/70 p-4 text-small text-muted">
         <p className="font-medium text-silver">What happens next?</p>
         <ul className="mt-2 list-disc pl-5 space-y-1">
           <li>We verify the payment on-chain.</li>

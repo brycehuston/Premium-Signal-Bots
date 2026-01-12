@@ -14,10 +14,9 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-stroke/70 bg-surface/90 backdrop-blur",
-        "shadow-[var(--shadow-soft)]",
-        "transition-transform duration-200 hover:-translate-y-0.5",
-        "hover:shadow-[var(--shadow-hover)]",
+        "rounded-card border border-stroke/70 bg-surface/90 backdrop-blur",
+        "shadow-soft transition-transform duration-200",
+        "hover:-translate-y-0.5 hover:shadow-glow",
         className
       )}
     >
@@ -33,26 +32,38 @@ export function CardBody({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={cn("p-6 sm:p-7", className)}>{children}</div>;
+  return <div className={cn("p-6 md:p-7", className)}>{children}</div>;
 }
 
 export function H2({ children }: { children: ReactNode }) {
-  return <h2 className="text-lg font-semibold tracking-tight text-silver">{children}</h2>;
+  return (
+    <h2 className="font-display text-h3 font-semibold tracking-tight text-silver">{children}</h2>
+  );
 }
 
 export function SectionHeading({
   title,
   subtitle,
+  eyebrow,
   className,
+  align = "left",
 }: {
   title: string;
   subtitle?: string;
+  eyebrow?: string;
   className?: string;
+  align?: "left" | "center";
 }) {
+  const alignClass = align === "center" ? "text-center" : "text-left";
   return (
-    <div className={cn("mb-5", className)}>
-      <h2 className="text-xl font-semibold tracking-tight text-silver">{title}</h2>
-      {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+    <div className={cn("space-y-3", alignClass, className)}>
+      {eyebrow ? (
+        <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">{eyebrow}</div>
+      ) : null}
+      <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
+        {title}
+      </h2>
+      {subtitle ? <p className="text-body text-muted">{subtitle}</p> : null}
     </div>
   );
 }
@@ -80,8 +91,35 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em]",
+        "inline-flex items-center rounded-pill border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em]",
         "backdrop-blur",
+        toneClass,
+        className
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function Pill({
+  children,
+  tone = "neutral",
+  className,
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "accent";
+  className?: string;
+}) {
+  const toneClass =
+    tone === "accent"
+      ? "border-gold/40 bg-gold/10 text-gold"
+      : "border-stroke/70 bg-surface/70 text-muted";
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-pill border px-3 py-1.5 text-xs",
         toneClass,
         className
       )}
@@ -116,7 +154,7 @@ export function Button({
   full,
 }: ButtonProps) {
   const base =
-    "relative inline-flex items-center justify-center rounded-xl whitespace-nowrap select-none antialiased overflow-hidden " +
+    "relative inline-flex items-center justify-center rounded-control whitespace-nowrap select-none antialiased overflow-hidden " +
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-0 " +
     "transition-all duration-200";
 
@@ -127,15 +165,15 @@ export function Button({
 
   const styles =
     variant === "primary" || variant === "gold"
-      ? "font-bold tracking-[0.02em] text-black bg-metal-gold border border-gold/70 " +
+      ? "font-semibold tracking-[0.02em] text-black bg-metal-gold border border-gold/70 " +
         "shadow-[0_10px_30px_rgb(var(--gold)/0.35)] " +
         "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/60 before:opacity-70 " +
         "after:absolute after:inset-0 after:bg-[radial-gradient(80%_120%_at_50%_-40%,rgba(255,255,255,0.35),transparent_60%)] after:opacity-0 " +
         "hover:after:opacity-100 after:transition-opacity after:duration-200 " +
         "hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgb(var(--gold)/0.45)]"
       : variant === "outline"
-      ? "font-semibold tracking-[0.02em] text-silver border border-silver/40 bg-surface/30 " +
-        "hover:bg-surface2/70 hover:border-silver/60"
+      ? "font-semibold tracking-[0.02em] text-silver border border-stroke/70 bg-surface/30 " +
+        "hover:bg-surface2/70 hover:border-silver/50"
       : "font-semibold text-silver/80 bg-surface/30 border border-stroke/60 " +
         "hover:text-silver hover:bg-surface2/60";
 
