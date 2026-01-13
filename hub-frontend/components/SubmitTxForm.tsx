@@ -49,14 +49,14 @@ export default function SubmitTxForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 space-y-3">
+    <form onSubmit={onSubmit} className="mt-7 space-y-4">
       <label className="block text-sm text-muted">
         TX hash / explorer link
         <input
           required
           value={txHash}
           onChange={e => setTxHash(e.target.value)}
-          className="input mt-1"
+          className="input mt-2"
           placeholder="https://solscan.io/tx/..."
         />
       </label>
@@ -66,7 +66,7 @@ export default function SubmitTxForm({
         <input
           value={telegram}
           onChange={e => setTelegram(e.target.value)}
-          className="input mt-1"
+          className="input mt-2"
           placeholder="@yourname"
         />
       </label>

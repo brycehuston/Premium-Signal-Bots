@@ -3,6 +3,7 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import type { Easing } from "motion-utils";
 import { Webhook } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
 import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
@@ -89,6 +90,7 @@ function SmoothCounter({
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number | null>(null);
   const finishedRef = useRef(false);
+  const doneNotifiedRef = useRef(false);
   const abortedRef = useRef(false);
   const format = useFormatter(decimals);
 
@@ -100,14 +102,22 @@ function SmoothCounter({
   );
 
   useEffect(() => {
+    doneNotifiedRef.current = false;
+  }, [id]);
+
+  useEffect(() => {
     if (!window.__counterDone) window.__counterDone = {};
     if (window.__counterDone[id]) {
       if (spanRef.current) spanRef.current.textContent = `${prefix}${format(target)}${suffix}`;
       finishedRef.current = true;
+      if (!doneNotifiedRef.current) {
+        doneNotifiedRef.current = true;
+        onDone && onDone();
+      }
     } else if (spanRef.current && spanRef.current.textContent === "") {
       spanRef.current.textContent = `${prefix}${format(0)}${suffix}`;
     }
-  }, [id, target, prefix, suffix, format]);
+  }, [id, target, prefix, suffix, format, onDone]);
 
   useEffect(() => {
     if (!start || finishedRef.current) return;
@@ -147,7 +157,10 @@ function SmoothCounter({
         if (spanRef.current) spanRef.current.textContent = `${prefix}${format(target)}${suffix}`;
         finishedRef.current = true;
         window.__counterDone![id] = true;
-        onDone && onDone();
+        if (!doneNotifiedRef.current) {
+          doneNotifiedRef.current = true;
+          onDone && onDone();
+        }
       }
     };
 
@@ -277,6 +290,11 @@ function SectionDivider() {
   return (
     <div ref={dividerRef} aria-hidden className="relative flex items-center justify-center py-12 md:py-20">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-stroke/70 to-transparent" />
+      <span className="divider-dust bell-dust-shower bell-dust-loop bell-dust-boost dust-cycle" aria-hidden="true" />
+      <span
+        className="divider-dust bell-dust-shower bell-dust-loop bell-dust-boost-2 dust-cycle"
+        aria-hidden="true"
+      />
       <motion.div
         className="pointer-events-none absolute top-1/2 h-px w-40 -translate-y-1/2 bg-gradient-to-r from-transparent via-gold/80 to-transparent shadow-[0_0_18px_rgb(var(--gold)/0.45)] md:w-56"
         style={{
@@ -286,13 +304,21 @@ function SectionDivider() {
         }}
       />
       <motion.div
-        className="pointer-events-none absolute top-1/2 flex items-center gap-2 -translate-y-1/2"
+        className="pointer-events-none absolute top-1/2 flex items-center gap-2 -translate-y-1/2 relative"
         style={{
           left: prefersReduced ? "50%" : travel,
           opacity: prefersReduced ? 1 : glow,
           translateX: "-50%",
         }}
       >
+        <span
+          className="divider-dust divider-dust--trail bell-dust-shower bell-dust-loop bell-dust-boost dust-cycle"
+          aria-hidden="true"
+        />
+        <span
+          className="divider-dust divider-dust--trail bell-dust-shower bell-dust-loop bell-dust-boost-2 dust-cycle"
+          aria-hidden="true"
+        />
         <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_12px_rgb(var(--gold)/0.55)]" />
         <span className="h-1 w-1 rounded-full bg-gold/40" />
         <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_12px_rgb(var(--gold)/0.55)]" />
@@ -351,7 +377,15 @@ function FeatureRow({ active }: { active: boolean }) {
       <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
         <span className="relative inline-flex overflow-visible">
           <BellIconDing active={active} heavy={heavyRing} />
-          <span className="bell-dust-shower bell-dust-loop bell-dust-local" aria-hidden="true" />
+          <span className="bell-dust-shower bell-dust-loop bell-dust-local dust-cycle" aria-hidden="true" />
+          <span
+            className="bell-dust-shower bell-dust-loop bell-dust-local bell-dust-boost dust-cycle"
+            aria-hidden="true"
+          />
+          <span
+            className="bell-dust-shower bell-dust-loop bell-dust-local bell-dust-boost-2 dust-cycle"
+            aria-hidden="true"
+          />
         </span>
         <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           24/7 Alerts
@@ -430,14 +464,22 @@ const ALERT_REEL_TONES: Record<
 function HeroAlertReel() {
   const prefersReduced = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(true);
 
   useEffect(() => {
-    if (prefersReduced) return;
+    const id = window.setInterval(() => {
+      setAutoPlay((prev) => !prev);
+    }, 60000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (prefersReduced || !autoPlay) return;
     const id = window.setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % ALERT_REEL_ITEMS.length);
-    }, 3200);
+    }, 5200);
     return () => window.clearInterval(id);
-  }, [prefersReduced]);
+  }, [prefersReduced, autoPlay]);
 
   return (
     <div className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft">
@@ -449,12 +491,27 @@ function HeroAlertReel() {
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted/70">
           <span
             className={[
+              "relative h-4 w-9 rounded-full border border-stroke/70 bg-surface/70 transition-colors",
+              autoPlay ? "border-emerald-400/40 bg-emerald-400/10" : "",
+            ].join(" ")}
+          >
+            <span
+              className={[
+                "absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full transition-transform",
+                autoPlay
+                  ? "translate-x-[18px] bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                  : "translate-x-[3px] bg-muted/70",
+              ].join(" ")}
+            />
+          </span>
+          <span
+            className={[
               "h-2 w-2 rounded-full",
-              prefersReduced ? "bg-muted/60" : "bg-success/80 animate-pulse",
+              prefersReduced || !autoPlay ? "bg-muted/60" : "bg-success/80 animate-pulse",
               "shadow-[0_0_10px_rgb(var(--success)/0.55)]",
             ].join(" ")}
           />
-          Live
+          {autoPlay ? "Live" : "Idle"}
         </div>
       </div>
 
@@ -516,12 +573,12 @@ type StepItemProps = {
 function StepItem({ step, order, title, description }: StepItemProps) {
   return (
     <li
-      className={`how-step how-step-${order} flex gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4 shadow-soft md:p-5`}
+      className={`how-step how-step-${order} flex gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4.5 shadow-soft md:p-5`}
     >
       <div className="how-step-badge mt-0.5 grid h-9 w-9 place-items-center rounded-full text-sm font-semibold">
         {step}
       </div>
-      <div>
+      <div className="space-y-1">
         <div className="how-step-title text-small font-semibold">{title}</div>
         <div className="how-step-desc text-small">{description}</div>
       </div>
@@ -587,11 +644,12 @@ type RoadmapItem = {
 };
 
 const ROADMAP_PREVIEW_COUNT = 3;
+const EASE_OUT: Easing = "easeOut";
 
 const ROADMAP_ITEMS: RoadmapItem[] = [
   {
     step: 1,
-    title: "Phase 1 ✅ Solana AlphaAlerts",
+    title: "Phase 1 ⚡ Solana AlphaAlerts",
     tag: "LIVE",
     bullets: [
       "Alpha Early Alerts (ultra-early Solana pools + tokens)",
@@ -604,7 +662,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 2,
-    title: "Phase 2 - ALPHA-X Auto Trader",
+    title: "Phase 2 🤖 ALPHA-X Auto Trader",
     tag: "NEXT",
     bullets: [
       "Auto entries on high-probability setups",
@@ -618,7 +676,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 3,
-    title: "Phase 3 - Multi-Chain Alerts",
+    title: "Phase 3 🌐 Multi-Chain Alerts",
     tag: "IN BUILD",
     bullets: [
       "BSC alerts (extra scam and trap filters)",
@@ -629,7 +687,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 4,
-    title: "Phase 4 🪙 $ALPHA Token",
+    title: "Phase 4 🪙 ALPHA Access Token",
     tag: "PLANNED",
     bullets: [
       "Pay for subscriptions with $ALPHA (optional)",
@@ -637,11 +695,11 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
       "Staking perks (beta access, extra features, priority drops)",
       "Community votes on roadmap priorities",
     ],
-    disclaimer: "Utility token only. No profit promises.",
+    disclaimer: "Real Utility Token. Built for Access and Features.",
   },
   {
     step: 5,
-    title: "Phase 5 - Pro Dashboard + Self-Serve Billing",
+    title: "Phase 5 🧭 Pro Dashboard + Self-Serve Billing",
     tag: "PLANNED",
     bullets: [
       "Self-serve checkout (no more manual payments)",
@@ -765,7 +823,7 @@ const RoadmapSection = memo(function RoadmapSection() {
                   viewport={{ once: true, amount: 0.6 }}
                   transition={{
                     duration: shouldReduceMotion ? 0.2 : 0.35,
-                    ease: "easeOut",
+                    ease: EASE_OUT,
                     delay: shouldReduceMotion ? 0 : index * 0.07,
                   }}
                   className="order-1 flex justify-start md:order-none md:col-span-1 md:col-start-5 md:justify-center"
@@ -790,7 +848,7 @@ const RoadmapSection = memo(function RoadmapSection() {
                   viewport={{ once: true, amount: 0.35 }}
                   transition={{
                     duration: shouldReduceMotion ? 0.2 : 0.45,
-                    ease: "easeOut",
+                    ease: EASE_OUT,
                     delay: shouldReduceMotion ? 0 : index * 0.08,
                   }}
                   whileHover={shouldReduceMotion ? undefined : { y: -6 }}
@@ -857,7 +915,7 @@ const RoadmapSection = memo(function RoadmapSection() {
                         }
                         transition={{
                           duration: shouldReduceMotion ? 0 : 0.25,
-                          ease: "easeOut",
+                          ease: EASE_OUT,
                         }}
                       >
                         {extraBullets.map((bullet) => (
@@ -926,9 +984,40 @@ export default function Page() {
 
   const [heroView, setHeroView] = useState<"chart" | "reel">("chart");
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
+  const [showStealthCta, setShowStealthCta] = useState(false);
+  const stealthTimerRef = useRef<number | null>(null);
   useEffect(() => {
     if (statsInView && step === 0) setStep(1);
   }, [statsInView, step]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setHeroView((prev) => (prev === "chart" ? "reel" : "chart"));
+    }, 60000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const { ref: stealthRef, inView: stealthInView } = useInView({
+    threshold: 0.25,
+    once: true,
+  });
+
+  useEffect(() => {
+    if (shouldReduceMotion) {
+      setShowStealthCta(true);
+      return;
+    }
+    if (!stealthInView || showStealthCta || stealthTimerRef.current) return;
+    stealthTimerRef.current = window.setTimeout(() => {
+      setShowStealthCta(true);
+    }, 10000);
+  }, [shouldReduceMotion, showStealthCta, stealthInView]);
+
+  useEffect(() => {
+    return () => {
+      if (stealthTimerRef.current) window.clearTimeout(stealthTimerRef.current);
+    };
+  }, []);
 
   const revealProps = {
     initial: shouldReduceMotion
@@ -936,7 +1025,7 @@ export default function Page() {
       : { opacity: 0, y: 20, filter: "blur(6px)" },
     whileInView: { opacity: 1, y: 0, filter: "blur(0px)" },
     viewport: { once: true, amount: 0.18 },
-    transition: { duration: shouldReduceMotion ? 0 : 0.85, ease: "easeOut" },
+    transition: { duration: shouldReduceMotion ? 0 : 0.85, ease: EASE_OUT },
   };
 
   return (
@@ -968,7 +1057,11 @@ export default function Page() {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button href="/pricing#plans" size="lg" className="min-w-[180px]">
+            <Button
+              href="/pricing#plans"
+              size="lg"
+              className="min-w-[180px] !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
+            >
               GO ALPHA
             </Button>
             <Button href="#sample-alerts" variant="outline" size="lg" className="min-w-[180px]">
@@ -1051,6 +1144,7 @@ export default function Page() {
           eyebrow="How it works"
           title="Three Steps To Go Live"
           subtitle="Pick a tier, pay in USDC, and get clean alerts in Telegram."
+          className="space-y-3"
         />
         <ol className="mt-6 grid gap-4 md:grid-cols-3">
           <StepItem
@@ -1076,11 +1170,11 @@ export default function Page() {
 
       <SectionDivider />
 
-      <motion.section {...revealProps} className="space-y-6">
+      <motion.section {...revealProps} className="space-y-8">
         <SectionHeading
           align="center"
           eyebrow="Built to keep you early"
-          title="Early, safe, and in control"
+          title="Early, Safe, And In Control"
           subtitle="Cleaner signals, fewer rugs, and a simple way to stay early on Solana."
         />
         <div className="grid gap-6 md:grid-cols-3">
@@ -1134,95 +1228,124 @@ export default function Page() {
       <motion.section
         {...revealProps}
         id="sample-alerts"
-        className="grid items-start gap-8 md:grid-cols-2"
+        className="grid items-start gap-8 md:grid-cols-2 scroll-mt-24 md:scroll-mt-32"
       >
-        <div className="space-y-4">
-          <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">Sample alerts</div>
+        <div className="space-y-5">
+          <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">Sample Alerts</div>
           <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
-            See what hits your Telegram
+            See What Hits Your Telegram
           </h2>
           <p className="text-body text-muted">
             One clean message with entry links, safety checks, and clear market state labels.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Pill>120ms median latency</Pill>
-            <Pill>99.9% uptime</Pill>
-            <Pill>100+ pairs watched</Pill>
+            <Pill className="pill-shimmer pill-shimmer-delay-1">Live Signal Feed</Pill>
+            <Pill className="pill-shimmer pill-shimmer-delay-2">Scored + Filtered</Pill>
+            <Pill className="pill-shimmer pill-shimmer-delay-3">One-Tap Links</Pill>
           </div>
           <div>
-            <Button href="/pricing#plans" size="md">
+            <Button
+              href="/pricing#plans"
+              size="md"
+              className="h-10 !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
+            >
               GO ALPHA
             </Button>
           </div>
         </div>
 
         <Card className="bg-surface2/80">
-          <CardBody className="space-y-4 text-small text-text">
+          <CardBody className="space-y-4 text-text">
             <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.25em] text-muted/80">
-              <span>AlphaAlerts / Trend</span>
+              <span>AlphaAlerts / Alert</span>
               <span className="text-gold">Live</span>
             </div>
-            <dl className="space-y-3">
-              <div className="flex items-center justify-between gap-4">
-                <dt className="text-muted">Pair / TF</dt>
-                <dd className="text-silver font-semibold">SOL/USDC / 5m</dd>
+
+            <div className="space-y-1">
+              <div className="font-display text-title-lg font-semibold text-silver leading-tight">
+                New York Crime
               </div>
-              <div className="flex items-center justify-between gap-4">
-                <dt className="text-muted">Signal</dt>
-                <dd className="text-silver">BREAKING / Momentum + Volume</dd>
+              <div className="text-small text-muted">
+                <span className="text-silver font-semibold">$NYC</span>
               </div>
-              <div className="rounded-control border border-stroke/70 bg-surface/70 p-3">
-                <div className="flex items-center justify-between text-muted">
-                  <span>Entry</span>
-                  <span className="text-silver font-semibold">96.20</span>
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-muted">
-                  <div className="flex items-center justify-between">
-                    <span>SL</span>
-                    <span className="text-silver">92.80</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>TP1</span>
-                    <span className="text-silver">101.40</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>TP2</span>
-                    <span className="text-silver">108.00</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>State</span>
-                    <span className="text-silver">TREND</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <dt className="text-muted">Filters</dt>
-                <dd className="text-silver">
-                  Mint Renounced / Liquidity Locked / Holders 1,240
-                </dd>
-              </div>
-            </dl>
-            <div className="grid grid-cols-3 gap-2 text-[11px] text-muted">
-              <span className="rounded-pill border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
-                Chart
-              </span>
-              <span className="rounded-pill border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
-                Dex
-              </span>
-              <span className="rounded-pill border border-stroke/70 bg-surface/70 px-2 py-1 text-center">
-                Wallet
-              </span>
             </div>
+
+            <div className="rounded-control border border-stroke/70 bg-surface/70 px-3 py-2 text-[11px] uppercase tracking-[0.2em] text-muted/80">
+              <span className="text-silver">Score 8.25</span>
+              <span className="mx-2 text-muted/50">/</span>
+              <span>Since 1.00x</span>
+              <span className="mx-2 text-muted/50">/</span>
+              <span>Age 22.2m</span>
+            </div>
+
+            <div className="grid gap-2 rounded-control border border-stroke/70 bg-surface/70 p-3 text-[12px] text-muted sm:grid-cols-2">
+              <div className="flex items-center justify-between gap-3">
+                <span>MC</span>
+                <span className="text-silver font-semibold">60.95K</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Liq</span>
+                <span className="text-silver font-semibold">24.79K</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Vol24</span>
+                <span className="text-silver font-semibold">291.25K</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>V/MC</span>
+                <span className="text-silver font-semibold">4.78</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>m5 tx</span>
+                <span className="text-silver font-semibold">478</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>B/S</span>
+                <span className="text-silver font-semibold">1.44x</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 sm:col-span-2">
+                <span>AvgTx</span>
+                <span className="text-silver font-semibold">$85</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full !h-9 !rounded-pill !px-2 text-[11px] uppercase tracking-[0.25em]"
+              >
+                AXIOM
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full !h-9 !rounded-pill !px-2 text-[11px] uppercase tracking-[0.25em]"
+              >
+                PUMP.FUN
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full !h-9 !rounded-pill !px-2 text-[11px] uppercase tracking-[0.25em]"
+              >
+                RUGCHECK
+              </Button>
+            </div>
+
           </CardBody>
         </Card>
       </motion.section>
 
       <SectionDivider />
 
-      <motion.section ref={statsRef as any} {...revealProps} className="space-y-6">
+      <motion.section ref={statsRef as any} {...revealProps} className="space-y-7">
         <SectionHeading
           eyebrow="Performance"
-          title="Speed and transparency"
+          title="Speed And Transparency"
           subtitle="Live metrics from recent activity."
         />
         <div className="grid gap-4 md:grid-cols-3">
@@ -1252,7 +1375,11 @@ export default function Page() {
           />
         </div>
         <div className="flex justify-center">
-          <Button href="/pricing#plans" size="md">
+          <Button
+            href="/pricing#plans"
+            size="md"
+            className="min-w-[150px] !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
+          >
             GO ALPHA
           </Button>
         </div>
@@ -1263,8 +1390,25 @@ export default function Page() {
       <motion.div {...revealProps}>
         <RoadmapSection />
       </motion.div>
+
+      <motion.section
+        {...revealProps}
+        ref={stealthRef as any}
+        className="stealth-cta-wrap flex justify-center -mt-4 -mb-10 py-0"
+      >
+        <Button
+          href="/pricing#plans"
+          size="md"
+          variant="outline"
+          className={[
+            "stealth-cta",
+            showStealthCta ? "stealth-cta--show" : "stealth-cta--hidden",
+            "!bg-surface/90 !border-gold/40 !text-white !shadow-none",
+          ].join(" ")}
+        >
+          GET ALPHA ALERTS
+        </Button>
+      </motion.section>
     </div>
   );
 }
-
-

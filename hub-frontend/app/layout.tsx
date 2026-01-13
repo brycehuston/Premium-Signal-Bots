@@ -1,7 +1,7 @@
 // app/layout.tsx
 // Updates: refined layout structure, spacing rhythm, performance hooks, and motion polish.
 import "./globals.css";
-import { Manrope, Space_Grotesk } from "next/font/google";
+import { Manrope, Sora } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import BottomTickerBar from "@/components/BottomTickerBar";
 import { Button } from "@/components/ui";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
-const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
+const display = Sora({ subsets: ["latin"], variable: "--font-display" });
 const BRAND = process.env.NEXT_PUBLIC_BRAND || "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -108,7 +108,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 >
                   Login
                 </Link>
-                <Button href="/pricing#plans" size="md" className="hidden sm:inline-flex">
+                <Button
+                  href="/pricing#plans"
+                  size="sm"
+                  className="hidden h-9 px-4 text-small sm:inline-flex font-extrabold tracking-[0.06em] !text-black !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
+                >
                   GO ALPHA
                 </Button>
               </nav>

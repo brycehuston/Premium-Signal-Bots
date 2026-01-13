@@ -7,6 +7,20 @@ import { Send, ArrowUpRight, ArrowDownRight } from "lucide-react";
 type Sym = "BTC" | "ETH" | "SOL";
 type PriceState = Record<Sym, number | null>;
 type DirState = Record<Sym, "up" | "down" | "flat">;
+type FearGreedTone = "green" | "red";
+type FearGreedState = {
+  label: "GREED" | "FEAR" | "EXTREME";
+  tone: FearGreedTone;
+  isExtreme: boolean;
+};
+
+function mapFearGreed(value: number | null): FearGreedState {
+  if (value == null) return { label: "GREED", tone: "green", isExtreme: false };
+  if (value >= 75) return { label: "EXTREME", tone: "green", isExtreme: true };
+  if (value >= 50) return { label: "GREED", tone: "green", isExtreme: false };
+  if (value <= 25) return { label: "EXTREME", tone: "red", isExtreme: true };
+  return { label: "FEAR", tone: "red", isExtreme: false };
+}
 
 function formatCompactUsd(n: number) {
   const abs = Math.abs(n);
@@ -82,14 +96,21 @@ export default function BottomTickerBar({
     ETH: null,
     SOL: null,
   });
+  const [fearGreed, setFearGreed] = useState<FearGreedState>(mapFearGreed(null));
 
   const timerRef = useRef<number | null>(null);
   const inFlightRef = useRef<boolean>(false);
+  const fearGreedTimerRef = useRef<number | null>(null);
+  const fearGreedInFlightRef = useRef<boolean>(false);
 
   const url = useMemo(() => {
     const ids = "bitcoin,ethereum,solana";
     return `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
   }, []);
+  const fearGreedUrl = useMemo(
+    () => "https://api.alternative.me/fng/?limit=1&format=json",
+    []
+  );
 
   async function fetchPrices() {
     if (inFlightRef.current) return;
@@ -129,6 +150,25 @@ export default function BottomTickerBar({
     }
   }
 
+  async function fetchFearGreed() {
+    if (fearGreedInFlightRef.current) return;
+    fearGreedInFlightRef.current = true;
+
+    try {
+      const res = await fetch(fearGreedUrl, { cache: "no-store" });
+      const j = await res.json();
+      const raw = j?.data?.[0]?.value;
+      const parsed = raw != null ? Number(raw) : null;
+      if (parsed != null && !Number.isNaN(parsed)) {
+        setFearGreed(mapFearGreed(parsed));
+      }
+    } catch {
+      // ignore errors, keep last state
+    } finally {
+      fearGreedInFlightRef.current = false;
+    }
+  }
+
   useEffect(() => {
     fetchPrices();
     timerRef.current = window.setInterval(fetchPrices, refreshMs);
@@ -137,6 +177,21 @@ export default function BottomTickerBar({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshMs]);
+
+  useEffect(() => {
+    fetchFearGreed();
+    fearGreedTimerRef.current = window.setInterval(fetchFearGreed, 60_000);
+    return () => {
+      if (fearGreedTimerRef.current) window.clearInterval(fearGreedTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fearGreedClass = [
+    "fear-greed-box",
+    fearGreed.tone === "green" ? "fear-greed-box--green" : "fear-greed-box--red",
+    fearGreed.isExtreme ? "fear-greed-box--extreme" : "",
+  ].join(" ");
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50">
@@ -148,6 +203,11 @@ export default function BottomTickerBar({
           <Chip symbol="BTC" price={prices.BTC} dir={dirs.BTC} flash={flash.BTC} />
           <Chip symbol="ETH" price={prices.ETH} dir={dirs.ETH} flash={flash.ETH} />
           <Chip symbol="SOL" price={prices.SOL} dir={dirs.SOL} flash={flash.SOL} />
+        </div>
+
+        {/* LEFT FEAR/GREED */}
+        <div className="absolute left-4 flex items-center gap-2">
+          <div className={fearGreedClass}>{fearGreed.label}</div>
         </div>
 
         {/* RIGHT SOCIAL ICONS */}

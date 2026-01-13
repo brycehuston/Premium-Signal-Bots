@@ -1,7 +1,7 @@
 ﻿// filename: app/pricing/page.tsx
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { PLANS, BUNDLE, PlanTone } from "@/lib/plans";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
@@ -97,6 +97,56 @@ function auraClass(tone: PlanTone) {
   return "plan-aura plan-aura-gold";
 }
 
+function mulberry32(seed: number) {
+  let t = seed;
+  return () => {
+    t += 0x6d2b79f5;
+    let r = Math.imul(t ^ (t >>> 15), t | 1);
+    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function ConfettiBurst({ seed }: { seed: number }) {
+  const pieces = useMemo(() => {
+    const rand = mulberry32(seed);
+    return Array.from({ length: 18 }, () => {
+      const angle = rand() * Math.PI * 2;
+      const distance = 36 + rand() * 38;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance - 12;
+      const rot = Math.round(rand() * 180 - 90);
+      const delay = Math.round(rand() * 140);
+      const hue = Math.round(40 + rand() * 20);
+      const width = Math.round(4 + rand() * 3);
+      const height = Math.round(6 + rand() * 4);
+      return { x, y, rot, delay, hue, width, height };
+    });
+  }, [seed]);
+
+  return (
+    <div className="confetti-burst" aria-hidden>
+      {pieces.map((piece, index) => (
+        <span
+          key={`${seed}-${index}`}
+          className="confetti-piece"
+          style={
+            {
+              ["--x" as any]: `${piece.x}px`,
+              ["--y" as any]: `${piece.y}px`,
+              ["--rot" as any]: `${piece.rot}deg`,
+              ["--delay" as any]: `${piece.delay}ms`,
+              ["--hue" as any]: piece.hue,
+              width: `${piece.width}px`,
+              height: `${piece.height}px`,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
 function PlanTitle({
   left,
   emphasis,
@@ -177,6 +227,8 @@ function PricingDivider() {
 
 export default function PricingPage() {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+  const [bundleConfetti, setBundleConfetti] = useState(0);
+  const confettiTimerRef = useRef<number | null>(null);
   const bundleTitle = BUNDLE.title;
   const bundleKey = "ALERTS";
   const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
@@ -198,13 +250,29 @@ export default function PricingPage() {
     "alpha-runner-alerts": 3,
   };
 
+  useEffect(() => {
+    return () => {
+      if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
+    };
+  }, []);
+
+  const triggerBundleConfetti = () => {
+    if (billing !== "annual") return;
+    const now = Date.now();
+    setBundleConfetti(now);
+    if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
+    confettiTimerRef.current = window.setTimeout(() => {
+      setBundleConfetti((current) => (current === now ? 0 : current));
+    }, 1200);
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-12">
       <div className="text-center">
-        <h1 className="font-display text-[112px] font-semibold tracking-tight text-silver leading-none md:text-[160px]">
+        <h1 className="font-display text-[84px] font-semibold tracking-tight text-silver leading-none md:text-[120px]">
           PRICING
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-xs text-muted">
+        <p className="mx-auto mt-3 max-w-2xl text-small text-muted">
           Choose the alerts you want. Payments are manual for now via USDC on Solana.
         </p>
       </div>
@@ -245,7 +313,10 @@ export default function PricingPage() {
       </div>
 
       {/* 3 main plans */}
-      <div id="plans" className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
+      <div
+        id="plans"
+        className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3 scroll-mt-24 md:scroll-mt-32"
+      >
         {PLANS.map((p) => (
           <Card
             key={p.slug}
@@ -348,7 +419,7 @@ export default function PricingPage() {
                 <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold">
                   <span className="text-[18px]">{BUNDLE.emoji}</span>
                 </div>
-                <h3 className="font-display text-title-lg font-semibold tracking-tight text-silver">
+                <h3 className="font-display text-title-lg text-[22px] md:text-[24px] font-semibold tracking-tight text-silver">
                   {bundleTitleNode}
                 </h3>
                 <Pill
@@ -361,21 +432,21 @@ export default function PricingPage() {
 
               <div className="space-y-1">
                 <div className="flex items-baseline gap-3">
-                  <div className="font-display text-[32px] font-semibold leading-none">
+                  <div className="font-display text-[38px] md:text-[42px] font-semibold leading-none">
                     ${billing === "annual" ? BUNDLE.priceAnnual : BUNDLE.priceMonthly}
                   </div>
-                  <div className="text-muted text-sm">
+                  <div className="text-muted text-[14px] md:text-[15px]">
                     / {billing === "annual" ? "year" : "month"}
                   </div>
                 </div>
-                <div className="text-muted/80 text-sm">
+                <div className="text-muted/80 text-[14px] md:text-[15px]">
                   {billing === "annual"
                     ? `Billed annually • ${BUNDLE.priceAnnual} / year`
                     : `Or ${BUNDLE.priceAnnual} / year`}
                 </div>
               </div>
 
-              <ul className="space-y-2.5 text-small text-muted">
+              <ul className="space-y-2.5 text-[14px] md:text-[15px] text-muted">
                 {BUNDLE.bullets.map((b: string, i: number) => (
                   <li key={i} className="flex gap-2.5">
                     <Check tone="gold" />
@@ -385,13 +456,15 @@ export default function PricingPage() {
               </ul>
             </div>
 
-            <div className="md:min-w-[320px]">
+            <div className="relative md:min-w-[340px]">
+              {bundleConfetti ? <ConfettiBurst seed={bundleConfetti} /> : null}
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 full
-                className={tonePrimaryButtonClass("gold")}
+                className={`!h-12 text-[16px] ${tonePrimaryButtonClass("gold")}`}
                 href={`/pay/${BUNDLE.slug}?period=${billing}`}
+                onClick={triggerBundleConfetti}
               >
                 {billing === "annual" ? "Bundle Annual" : "Bundle Monthly"}
               </Button>
@@ -482,6 +555,10 @@ export default function PricingPage() {
         </Card>
       </section>
 
+      <div className="mt-6 md:mt-8">
+        <PricingDivider />
+      </div>
+
       {/* --- ALPHA-X promo --------------------------------------------------- */}
       <div className="relative mt-10">
         <div
@@ -490,9 +567,9 @@ export default function PricingPage() {
         />
 
         <Card className="border-gold/25 bg-[linear-gradient(180deg,rgb(var(--surface2)_/_0.95)_0%,rgb(var(--surface)_/_0.98)_100%)] shadow-[0_0_0_1px_rgb(var(--gold)/0.2)] hover:shadow-[0_0_0_1px_rgb(var(--gold)/0.25),0_20px_60px_rgb(var(--gold)/0.3)]">
-          <CardBody className="px-6 py-10 text-center sm:px-10 sm:py-14">
+          <CardBody className="px-6 pt-18 pb-18 text-center sm:px-12 sm:pt-22 sm:pb-24">
             <svg
-              className="mx-auto mb-4 h-8 w-8 text-gold animate-bolt"
+              className="mx-auto mb-6 h-9 w-9 text-gold animate-bolt"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -503,19 +580,19 @@ export default function PricingPage() {
               <path d="M13 2L3 14h7l-2 8 10-12h-7l2-8z" />
             </svg>
 
-            <h3 className="font-sans text-4xl font-extrabold tracking-tight text-silver sm:text-5xl">
+            <h3 className="font-display text-[42px] font-semibold leading-tight tracking-[0.14em] text-silver sm:text-[72px]">
               ALPHA-X
             </h3>
-            <div className="mt-1 text-small font-semibold uppercase tracking-widest text-muted/80">
-              (Coming Soon)
+            <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.5em] text-muted/70">
+              Coming Soon
             </div>
 
-            <p className="mx-auto mt-6 max-w-3xl text-balance text-small leading-relaxed text-muted">
+            <p className="mx-auto mt-5 max-w-3xl text-balance text-body leading-relaxed text-muted">
               A hands-free auto-trader that hunts high-probability setups, sizes risk, and manages
               exits for you while you sleep.
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-small text-muted">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-5 text-small text-muted/85">
               <span className="after:ml-4 after:text-muted/50 after:content-['/']">
                 Auto entries + SL/TP
               </span>
@@ -530,7 +607,7 @@ export default function PricingPage() {
             <Button
               href="/waitlist"
               size="lg"
-              className="mx-auto mt-8 px-8 font-bold uppercase tracking-wider shadow-[0_8px_30px_rgb(var(--gold)/0.45)] hover:shadow-[0_10px_36px_rgb(var(--gold)/0.55)]"
+              className="mx-auto mt-8 px-9 font-bold uppercase tracking-[0.28em] shadow-[0_10px_36px_rgb(var(--gold)/0.5)] hover:shadow-[0_12px_42px_rgb(var(--gold)/0.6)]"
             >
               JOIN WAITLIST
             </Button>
@@ -540,6 +617,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-
-

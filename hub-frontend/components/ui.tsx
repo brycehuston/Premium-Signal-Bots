@@ -167,16 +167,16 @@ export function Button({
 
   const styles =
     variant === "primary" || variant === "gold"
-      ? "font-semibold tracking-[0.02em] text-black bg-metal-gold border border-gold/70 " +
+      ? "font-bold tracking-[0.02em] text-black bg-metal-gold border border-gold/70 " +
         "shadow-[0_10px_30px_rgb(var(--gold)/0.35)] " +
         "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/60 before:opacity-70 " +
         "after:absolute after:inset-0 after:bg-[radial-gradient(80%_120%_at_50%_-40%,rgba(255,255,255,0.35),transparent_60%)] after:opacity-0 " +
         "hover:after:opacity-100 after:transition-opacity after:duration-200 " +
         "hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgb(var(--gold)/0.45)]"
       : variant === "outline"
-      ? "font-semibold tracking-[0.02em] text-silver border border-stroke/70 bg-surface/30 " +
+      ? "font-bold tracking-[0.02em] text-silver border border-stroke/70 bg-surface/30 " +
         "hover:bg-surface2/70 hover:border-silver/50"
-      : "font-semibold text-silver/80 bg-surface/30 border border-stroke/60 " +
+      : "font-bold text-silver/80 bg-surface/30 border border-stroke/60 " +
         "hover:text-silver hover:bg-surface2/60";
 
   const width = full ? "w-full" : "";

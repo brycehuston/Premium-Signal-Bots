@@ -64,22 +64,22 @@ export default async function PayPage({
         Subscribe - <span className="opacity-70">{title}</span>
       </h1>
 
-      <p className="mt-2 text-body text-muted">
+      <p className="mt-4 text-body text-muted">
         You selected <span className="font-medium text-silver">{period}</span> billing.
       </p>
 
-      <div className="mt-6 rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft">
+      <div className="mt-8 rounded-card border border-stroke/70 bg-surface/80 p-7 shadow-soft md:p-8">
         <div className="text-title-lg font-semibold text-silver">
           {plan.emoji} {title}
         </div>
 
-        <div className="mt-1 text-small text-muted">
+        <div className="mt-2 text-small text-muted">
           Price: <span className="text-silver font-medium">${price}</span> /{" "}
           {period === "annual" ? "year" : "month"}
         </div>
 
-        <div className="mt-6 space-y-3 text-small">
-          <p className="text-muted">
+        <div className="mt-7 space-y-4 text-small">
+          <p className="text-muted leading-relaxed">
             1) Send <span className="font-semibold text-silver">${price} {token}</span> on{" "}
             <span className="font-semibold text-silver">{chain}</span> to:
           </p>
@@ -88,18 +88,18 @@ export default async function PayPage({
             {address}
           </div>
 
-          <p className="text-muted">
+          <p className="text-muted leading-relaxed">
             2) In the transaction memo (if available), include your email:{" "}
             <span className="font-mono text-silver">{`<your@email>`}</span>.
           </p>
 
-          <p className="text-muted">
+          <p className="text-muted leading-relaxed">
             3) After confirmation, send the{" "}
             <span className="font-medium text-silver">TX link or screenshot</span> to our Telegram or email.
             We'll reply with your private Telegram invite.
           </p>
 
-          <div className="mt-4">
+          <div className="mt-6">
             <Button href="/pricing" variant="outline" size="md">
               Back to pricing
             </Button>
@@ -109,9 +109,9 @@ export default async function PayPage({
         </div>
       </div>
 
-      <div className="mt-8 rounded-card border border-stroke/60 bg-surface/70 p-4 text-small text-muted">
+      <div className="mt-10 rounded-card border border-stroke/60 bg-surface/70 p-5 text-small text-muted">
         <p className="font-medium text-silver">What happens next?</p>
-        <ul className="mt-2 list-disc pl-5 space-y-1">
+        <ul className="mt-3 list-disc pl-5 space-y-2">
           <li>We verify the payment on-chain.</li>
           <li>
             You'll receive a private Telegram link for{" "}

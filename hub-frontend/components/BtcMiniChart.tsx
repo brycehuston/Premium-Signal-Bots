@@ -3,15 +3,20 @@
 import { useEffect, useRef } from 'react';
 import { createChart, IChartApi, Time, UTCTimestamp } from 'lightweight-charts';
 
-type Props = { height?: number };
+type Props = { height?: number; paused?: boolean };
 const WS_URL = 'wss://stream.binance.com:9443/ws/btcusdt@kline_1m';
 const HIST_URL =
   'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=300';
 
-export default function BtcMiniChart({ height = 280 }: Props) {
+export default function BtcMiniChart({ height = 280, paused = false }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ReturnType<IChartApi['addCandlestickSeries']> | null>(null);
+  const pausedRef = useRef(paused);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -71,6 +76,7 @@ export default function BtcMiniChart({ height = 280 }: Props) {
     const ws = new WebSocket(WS_URL);
     ws.onmessage = (ev) => {
       try {
+        if (pausedRef.current) return;
         const msg = JSON.parse(ev.data);
         const k = msg.k; // kline payload
         if (!k) return;
