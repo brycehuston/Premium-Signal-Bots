@@ -1,5 +1,9 @@
 ﻿// lib/api.ts
-export async function api(path: string, init: RequestInit = {}) {
+export async function api(
+  path: string,
+  init: RequestInit = {},
+  options: { token?: string } = {}
+) {
   const base = process.env.NEXT_PUBLIC_API_URL!;
   const controller = new AbortController();
   const timeoutMs = 12000;
@@ -10,11 +14,7 @@ export async function api(path: string, init: RequestInit = {}) {
     ...(init.headers as any),
   };
 
-  // attach token
-  try {
-    const tok = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (tok) headers.Authorization = `Bearer ${tok}`;
-  } catch {}
+  if (options.token) headers.Authorization = `Bearer ${options.token}`;
 
   const url = `${base}${path}`;
 

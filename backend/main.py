@@ -10,6 +10,7 @@ from sqlalchemy import text
 from .database import Base, engine, get_db
 from .models import User, Subscription
 from .auth import hash_password, verify_password, create_access_token, decode_token
+from .clerk_auth import verify_clerk_token, fetch_clerk_email
 from .bot import start_bot, stop_bot, bot_status, stream_logs
 
 from google.oauth2 import id_token
@@ -93,6 +94,8 @@ def ensure_users_schema():
         def add(sql): conn.execute(text(f"ALTER TABLE users ADD COLUMN {sql}"))
         if "role" not in cols:
             add("role TEXT NOT NULL DEFAULT 'user'")
+        if "clerk_id" not in cols:
+            add("clerk_id TEXT")
         if "plan" not in cols:
             add("plan TEXT")
         if "is_active" not in cols:
@@ -140,6 +143,7 @@ class GoogleToken(BaseModel):
 
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+ALLOW_LEGACY_TOKENS = os.getenv("ALLOW_LEGACY_TOKENS", "false").lower() == "true"
 
 
 class RegisterPayload(BaseModel):
@@ -188,11 +192,54 @@ class ApprovePayload(BaseModel):
     months: int = 1
 
 
+def _email_from_clerk_payload(payload: dict, clerk_id: str) -> str | None:
+    email = payload.get("email") or payload.get("email_address") or payload.get("primary_email_address")
+    if email:
+        return email
+    return fetch_clerk_email(clerk_id)
+
+
+def _get_or_create_user_from_clerk(payload: dict, db: Session) -> User:
+    clerk_id = payload.get("sub")
+    if not clerk_id:
+        raise HTTPException(status_code=401, detail="invalid clerk token")
+
+    user = db.query(User).filter(User.clerk_id == clerk_id).first()
+    email = _email_from_clerk_payload(payload, clerk_id)
+
+    if user:
+        if email and user.email != email:
+            user.email = email
+            db.commit()
+        return user
+
+    if not email:
+        raise HTTPException(status_code=401, detail="clerk email not found")
+
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        user.clerk_id = clerk_id
+        db.commit()
+        return user
+
+    user = User(email=email, password_hash=hash_password(os.urandom(8).hex()))
+    user.clerk_id = clerk_id
+    db.add(user)
+    db.commit()
+    return user
+
+
 def require_user(request: Request, db: Session) -> User:
     auth = request.headers.get("authorization", "")
     if not auth.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="unauthorized")
     token = auth.split(" ", 1)[1]
+    try:
+        payload = verify_clerk_token(token)
+        return _get_or_create_user_from_clerk(payload, db)
+    except Exception:
+        if not ALLOW_LEGACY_TOKENS:
+            raise HTTPException(status_code=401, detail="invalid token")
     try:
         payload = decode_token(token)
     except Exception:
@@ -208,8 +255,16 @@ def maybe_user_id(request: Request, db: Session):
     auth = request.headers.get("authorization", "")
     if not auth.lower().startswith("bearer "):
         return None
+    token = auth.split(" ", 1)[1]
     try:
-        payload = decode_token(auth.split(" ", 1)[1])
+        payload = verify_clerk_token(token)
+        user = _get_or_create_user_from_clerk(payload, db)
+        return user.id
+    except Exception:
+        if not ALLOW_LEGACY_TOKENS:
+            return None
+    try:
+        payload = decode_token(token)
         email = payload.get("sub")
         u = db.query(User).filter(User.email == email).first()
         return u.id if u else None

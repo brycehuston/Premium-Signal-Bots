@@ -5,10 +5,10 @@ import { Manrope, Sora } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import Link from "next/link";
-import Script from "next/script";
 import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
 import { Button } from "@/components/ui";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const display = Sora({ subsets: ["latin"], variable: "--font-display" });
@@ -58,8 +58,9 @@ function Container({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable}`}>
-      <body className="min-h-screen bg-bg text-text antialiased font-sans">
+    <ClerkProvider>
+      <html lang="en" className={`${sans.variable} ${display.variable}`} suppressHydrationWarning>
+      <body className="min-h-screen bg-bg text-text antialiased font-sans overflow-x-hidden">
         {/* decorative bg layers */}
         <div className="pointer-events-none fixed inset-0 -z-10">
           <div className="absolute inset-0" style={{ backgroundImage: "var(--vignette)" }} />
@@ -74,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="sticky top-0 z-30 border-b border-stroke/60 bg-bg/80 backdrop-blur">
           <Container>
             <div className="flex h-16 items-center justify-between gap-4">
-              <Link href="/" className="font-semibold tracking-tight">
+              <Link href="/" className="text-lg sm:text-xl font-semibold tracking-tight">
                 <span className="text-metal-silver">{BRAND}</span>
                 <span className="ml-1 text-muted">Pro</span>
               </Link>
@@ -145,9 +146,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           refreshMs={8000}
         />
 
-        {/* Google Identity Services */}
-        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
-      </body>
-    </html>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

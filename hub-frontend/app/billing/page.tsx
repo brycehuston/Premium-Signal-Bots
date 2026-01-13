@@ -1,6 +1,7 @@
 ﻿// app/billing/page.tsx (replace body inside your Card)
 "use client";
 import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { Button, Section } from "@/components/ui";
 import { motion } from "framer-motion";
 import { CreditCard, Settings } from "lucide-react";
@@ -8,11 +9,12 @@ import { toast } from "sonner";
 
 export default function Billing() {
   const [busy, setBusy] = useState(false);
+  const { getToken } = useAuth();
 
   async function go(path: string) {
     setBusy(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = await getToken();
       if (!token) { window.location.href = "/login"; return; }
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}${path}`, {
         method: "POST",

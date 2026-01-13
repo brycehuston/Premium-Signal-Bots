@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import BtcMiniChart from "@/components/BtcMiniChart";
 import { api } from "@/lib/api";
 
@@ -90,6 +91,8 @@ function logsWsUrl(channel: string) {
 
 /* ---------- Page ---------- */
 export default function Dashboard() {
+  const { getToken } = useAuth();
+  const { signOut: clerkSignOut } = useClerk();
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<BotStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,14 +106,20 @@ export default function Dashboard() {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef({ tries: 0, timer: 0 });
 
+  async function authedApi(path: string, init: RequestInit = {}) {
+    const token = await getToken();
+    if (!token) throw new Error("not_authenticated");
+    return api(path, init, { token });
+  }
+
   async function refresh() {
     try {
-      const _me = await api("/me"); // requires Bearer token from api() helper
+      const _me = await authedApi("/me");
       setMe(_me as Me);
 
       // /bot/status may 403 for inactive accounts - that's fine
       try {
-        const s = await api("/bot/status");
+        const s = await authedApi("/bot/status");
         setStatus((s?.bots || []) as BotStatus[]);
       } catch {
         setStatus([]);
@@ -169,7 +178,7 @@ export default function Dashboard() {
   async function start(bot: BotKey) {
     try {
       setBusy("start");
-      await api("/bot/start", { method: "POST", body: JSON.stringify({ bot_name: bot }) });
+      await authedApi("/bot/start", { method: "POST", body: JSON.stringify({ bot_name: bot }) });
       await refresh();
     } finally {
       setBusy(null);
@@ -178,17 +187,14 @@ export default function Dashboard() {
   async function stop(bot: BotKey) {
     try {
       setBusy("stop");
-      await api("/bot/stop", { method: "POST", body: JSON.stringify({ bot_name: bot }) });
+      await authedApi("/bot/stop", { method: "POST", body: JSON.stringify({ bot_name: bot }) });
       await refresh();
     } finally {
       setBusy(null);
     }
   }
   function signOut() {
-    try {
-      localStorage.removeItem("token");
-    } catch {}
-    window.location.href = "/login";
+    clerkSignOut({ redirectUrl: "/login" });
   }
 
   useEffect(() => {
