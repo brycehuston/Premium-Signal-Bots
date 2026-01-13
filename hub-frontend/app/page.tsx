@@ -1027,6 +1027,10 @@ export default function Page() {
     viewport: { once: true, amount: 0.18 },
     transition: { duration: shouldReduceMotion ? 0 : 0.85, ease: EASE_OUT },
   };
+  const heroSwapTransition = {
+    duration: shouldReduceMotion ? 0 : 0.9,
+    ease: [0.22, 1, 0.36, 1] as Easing,
+  };
 
   return (
     <div className="relative flex flex-col gap-8 md:gap-12">
@@ -1108,26 +1112,40 @@ export default function Page() {
             </div>
 
             <div className="relative isolate min-h-[360px] md:min-h-[380px] overflow-visible">
-              <div
+              <motion.div
                 aria-hidden={heroView !== "chart"}
-                className={[
-                  "absolute inset-0 z-0 transition-opacity duration-300",
-                  heroView === "chart" ? "opacity-100 z-10" : "opacity-0 pointer-events-none",
-                ].join(" ")}
+                className="absolute inset-0"
+                animate={
+                  heroView === "chart"
+                    ? { opacity: 1, scale: 1, filter: "blur(0px)" }
+                    : { opacity: 0, scale: 0.985, filter: "blur(8px)" }
+                }
+                transition={heroSwapTransition}
+                style={{
+                  zIndex: heroView === "chart" ? 2 : 1,
+                  pointerEvents: heroView === "chart" ? "auto" : "none",
+                }}
               >
                 <HeroChart height={340} />
-              </div>
-              <div
+              </motion.div>
+              <motion.div
                 aria-hidden={heroView !== "reel"}
-                className={[
-                  "absolute inset-0 z-0 flex items-center justify-center transition-opacity duration-300",
-                  heroView === "reel" ? "opacity-100 z-10" : "opacity-0 pointer-events-none",
-                ].join(" ")}
+                className="absolute inset-0 flex items-center justify-center"
+                animate={
+                  heroView === "reel"
+                    ? { opacity: 1, scale: 1, filter: "blur(0px)" }
+                    : { opacity: 0, scale: 0.985, filter: "blur(8px)" }
+                }
+                transition={heroSwapTransition}
+                style={{
+                  zIndex: heroView === "reel" ? 2 : 1,
+                  pointerEvents: heroView === "reel" ? "auto" : "none",
+                }}
               >
                 <div className="w-full max-w-[520px]">
                   <HeroAlertReel />
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

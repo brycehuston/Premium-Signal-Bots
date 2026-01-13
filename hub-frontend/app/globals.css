@@ -228,7 +228,7 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   transform: translateX(-140%);
   opacity: 0;
   mix-blend-mode: screen;
-  animation: pillShimmerSweep 12s linear infinite;
+  animation: pillShimmerSweep 9s ease-in-out infinite;
   animation-delay: var(--pill-delay);
   pointer-events: none;
 }
@@ -244,14 +244,15 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 }
 
 .pill-shimmer-delay-1 { --pill-delay: 0s; }
-.pill-shimmer-delay-2 { --pill-delay: -4s; }
-.pill-shimmer-delay-3 { --pill-delay: -8s; }
+.pill-shimmer-delay-2 { --pill-delay: -3s; }
+.pill-shimmer-delay-3 { --pill-delay: -6s; }
 
 @keyframes pillShimmerSweep {
   0% { opacity: 0; transform: translateX(-140%); }
-  6% { opacity: 0.2; }
-  33% { opacity: 0.3; transform: translateX(140%); }
-  34% { opacity: 0; transform: translateX(140%); }
+  10% { opacity: 0.2; }
+  40% { opacity: 0.32; transform: translateX(140%); }
+  55% { opacity: 0.22; transform: translateX(140%); }
+  65% { opacity: 0; transform: translateX(140%); }
   100% { opacity: 0; transform: translateX(140%); }
 }
 
@@ -301,11 +302,11 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 }
 
 .stealth-cta--show {
-  opacity: 0.95;
+  opacity: 0.4;
   transform: translateY(0) scale(1);
   filter: blur(0);
-  border-color: rgb(var(--gold) / 0.75);
-  box-shadow: 0 0 0 1px rgb(var(--gold) / 0.35), 0 24px 60px -32px rgb(var(--gold) / 0.55);
+  border-color: rgb(var(--gold) / 0.35);
+  box-shadow: 0 0 0 1px rgb(var(--gold) / 0.18), 0 16px 40px -32px rgb(var(--gold) / 0.25);
 }
 
 .stealth-cta-wrap:hover .stealth-cta,

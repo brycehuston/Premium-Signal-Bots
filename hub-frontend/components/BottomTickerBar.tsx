@@ -206,9 +206,11 @@ export default function BottomTickerBar({
         </div>
 
         {/* LEFT FEAR/GREED */}
-        <div className="absolute left-4 flex items-center gap-2">
-          <div className={fearGreedClass}>{fearGreed.label}</div>
-        </div>
+        {fearGreed.tone === "green" ? (
+          <div className="absolute left-4 flex items-center gap-2">
+            <div className={fearGreedClass}>{fearGreed.label}</div>
+          </div>
+        ) : null}
 
         {/* RIGHT SOCIAL ICONS */}
         <div className="absolute right-4 flex items-center gap-2">
