@@ -378,6 +378,10 @@
       white-space: nowrap;
     }
 
+    .mobileHeroTitle{
+      display: none;
+    }
+
     @media (max-width: 820px){
       .badgeStack{
         left: 12px;
@@ -390,20 +394,57 @@
     }
 
     @media (max-width: 430px){
-      .stage{ padding: 10px; }
+      .stage{ padding: 8px; }
       .frame{
         width: 100vw;
         height: 100vh;
+        height: 100dvh;
         border-radius: 18px;
+        display: flex;
+        flex-direction: column;
       }
       .badgeStack{
-        left: 10px;
-        right: 10px;
-        top: 10px;
+        position: static;
+        margin: 8px auto 0;
+        width: fit-content;
+        max-width: 92vw;
+        padding: 0;
         gap: 6px;
+        align-self: center;
+        justify-items: center;
+      }
+      .workflowNote{
+        max-width: 92vw;
+        width: max-content;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+      }
+      .mobileHeroTitle{
+        margin: 10px auto 0;
+        width: min(980px, 92%);
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        line-height: 1.1;
+        text-transform: uppercase;
+        text-align: center;
+        color: rgba(247,251,255,0.92);
+        pointer-events: none;
+        user-select: none;
+        position: relative;
+        z-index: 5;
+      }
+      .mobileHeroTitle .titleGold{
+        color: var(--gold);
       }
       .brandMark{
         padding: 7px 9px;
+        justify-content: center;
+        width: max-content;
       }
       .brandMark .brandText{
         font-size: 10px;
@@ -426,6 +467,9 @@
         letter-spacing: 0.24em;
         padding: 7px 10px;
       }
+      .infoBtn{
+        min-height: 44px;
+      }
     }
 </style>
 </head>
@@ -439,6 +483,9 @@
           <div class="workflowTitle">SYSTEM WORKFLOW</div>
           <p class="workflowText">PHASE 1 PULLS RAW SOURCES.</p>
         </div>
+      </div>
+      <div class="mobileHeroTitle" aria-hidden="true">
+        <span>MARKET</span><span class="titleGold">DATA</span><span>SOURCES</span>
       </div>
       <div class="sphereHint" id="sphereHint">TRIPPLE CLICK</div>
       <canvas id="cv"></canvas>
@@ -534,6 +581,11 @@ function smooth01(t){
         stars: 70,
 
         tagFont: "900 16px Sora, ui-sans-serif, system-ui",
+        tagPadX: 52,
+        tagHeight: 46,
+        bottomFont: "900 18px Sora, ui-sans-serif, system-ui",
+        bottomPadX: 46,
+        bottomHeight: 44,
 
         srcOrbRadiusMul: 0.034,
         srcRingCount: 2,
@@ -684,6 +736,7 @@ const brandEl = document.querySelector(".brandMark");
 
 // Hover hint
 const sphereHintEl = document.getElementById("sphereHint");
+const touchMode = window.matchMedia && window.matchMedia("(hover: none)").matches;
 
 // Helper: show/hide + position hint cleanly
 function updateSphereHint(show){
@@ -691,6 +744,7 @@ function updateSphereHint(show){
 
   // Never show while diving (keeps it cinematic)
   if(DIVE.active || DIVE.done) show = false;
+  if(touchMode) show = true;
 
   if(show){
     // Position slightly above the sphere center
@@ -846,6 +900,23 @@ function drawWarp(cx, cy, coreR, dt){
         W = Math.max(1, Math.floor(frameRect.width));
         H = Math.max(1, Math.floor(frameRect.height));
 
+        const isNarrow = W < 520;
+        const isTiny = W < 380;
+        CFG.tagFont = isTiny
+          ? "800 8px Sora, ui-sans-serif, system-ui"
+          : isNarrow
+            ? "800 9px Sora, ui-sans-serif, system-ui"
+            : "900 16px Sora, ui-sans-serif, system-ui";
+        CFG.tagPadX = isTiny ? 12 : isNarrow ? 14 : 52;
+        CFG.tagHeight = isTiny ? 24 : isNarrow ? 26 : 46;
+        CFG.bottomFont = isTiny
+          ? "800 13px Sora, ui-sans-serif, system-ui"
+          : isNarrow
+            ? "800 14px Sora, ui-sans-serif, system-ui"
+            : "900 18px Sora, ui-sans-serif, system-ui";
+        CFG.bottomPadX = isTiny ? 26 : isNarrow ? 32 : 46;
+        CFG.bottomHeight = isTiny ? 34 : isNarrow ? 36 : 44;
+
         canvas.width = Math.floor(W * DPR);
         canvas.height = Math.floor(H * DPR);
         canvas.style.width = W + "px";
@@ -957,8 +1028,12 @@ window.addEventListener("pointerleave", ()=>{
   pointer.inside = false;
 }, { passive:true });
 
-// ✅ CLICK → PORTAL DIVE
+// ✅ TRIPLE TAP → PORTAL DIVE
 // NOTE: We use lastCore (idle sphere) so the click always feels consistent.
+let tapCount = 0;
+let lastTapMs = 0;
+const tripleTapWindowMs = 700;
+
 canvas.addEventListener("pointerdown", (e)=>{
   updateFrameRect();
   const p = toLocal(e.clientX, e.clientY);
@@ -967,7 +1042,16 @@ canvas.addEventListener("pointerdown", (e)=>{
   const dy = p.y - lastCore.y;
 
   if((dx*dx + dy*dy) <= (lastCore.r * lastCore.r)){
-    startDive();
+    const now = performance.now();
+    if (now - lastTapMs > tripleTapWindowMs) {
+      tapCount = 0;
+    }
+    tapCount += 1;
+    lastTapMs = now;
+    if (tapCount >= 3) {
+      tapCount = 0;
+      startDive();
+    }
   }
 }, { passive:true });
 
@@ -982,8 +1066,8 @@ canvas.addEventListener("pointerdown", (e)=>{
         ctx.globalCompositeOperation = "source-over";
         ctx.font = CFG.tagFont;
 
-        const w = Math.ceil(ctx.measureText(text).width + 52);
-        const h = 46;
+        const w = Math.ceil(ctx.measureText(text).width + CFG.tagPadX);
+        const h = CFG.tagHeight;
         const rx = x - w/2;
         const ry = y - h/2;
 
@@ -1044,10 +1128,10 @@ canvas.addEventListener("pointerdown", (e)=>{
         ctx.save();
         ctx.globalCompositeOperation = "source-over";
         const title = "VPS CORE";
-        ctx.font = "900 18px Sora, ui-sans-serif, system-ui";
+        ctx.font = CFG.bottomFont;
 
-        const w = Math.ceil(ctx.measureText(title).width + 46);
-        const h = 44;
+        const w = Math.ceil(ctx.measureText(title).width + CFG.bottomPadX);
+        const h = CFG.bottomHeight;
         const rx = cx - w/2;
         const ry = y - h/2;
 
@@ -1072,17 +1156,24 @@ canvas.addEventListener("pointerdown", (e)=>{
          Layout
          ============================================================ */
       function getLayout(baseCoreR){
-        const srcY = H * 0.115;
-        const bottomLabelY = clamp(H * 0.92, H * 0.80, H - 44);
+        const isNarrow = W < 520;
+        const isTiny = W < 380;
+        const srcY = H * (isNarrow ? 0.23 : 0.115);
+        let bottomLabelY = clamp(
+          H * (isNarrow ? 0.82 : 0.92),
+          H * (isNarrow ? 0.70 : 0.80),
+          H - (isNarrow ? 32 : 44)
+        );
+        bottomLabelY -= isNarrow ? 10 : 6;
 
         let sinkY = (srcY + bottomLabelY) * 0.52;
         const minSinkY = srcY + 110 + baseCoreR;
         const maxSinkY = bottomLabelY - 70 - baseCoreR;
         sinkY = clamp(sinkY, minSinkY, maxSinkY);
 
-        const leftX  = clamp(W * 0.32, 140, W * 0.44);
+        const leftX  = clamp(W * (isNarrow ? 0.22 : 0.32), isNarrow ? 56 : 140, W * 0.44);
         const midX   = W * 0.50;
-        const rightX = clamp(W * 0.68, W * 0.56, W - 140);
+        const rightX = clamp(W * (isNarrow ? 0.78 : 0.68), W * 0.56, W - (isNarrow ? 56 : 140));
 
         const sources = [
           { key:"bronze", text:"DEXSCREENER",        x: leftX,  y: srcY, rgb: COLORS.bronze, idleBoost: 0.20 },
@@ -1907,5 +1998,8 @@ ctx.restore();
       requestAnimationFrame(loop);
     })();
   </script>
+
 </body>
 </html>
+
+

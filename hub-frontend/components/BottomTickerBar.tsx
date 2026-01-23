@@ -56,7 +56,7 @@ function Chip({
   return (
     <div
       className={[
-        "relative flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm",
+        "relative flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[11px] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm",
         "bg-surface/70 backdrop-blur border-stroke/60",
         flash === "up" ? "tick-flash-up" : "",
         flash === "down" ? "tick-flash-down" : "",
@@ -71,12 +71,12 @@ function Chip({
       {Icon ? (
         <Icon
           className={[
-            "h-4 w-4",
+            "h-3 w-3 sm:h-4 sm:w-4",
             dir === "up" ? "text-emerald-400" : "text-rose-400",
           ].join(" ")}
         />
       ) : (
-        <span className="h-4 w-4" />
+        <span className="h-3 w-3 sm:h-4 sm:w-4" />
       )}
     </div>
   );
@@ -205,9 +205,9 @@ export default function BottomTickerBar({
     <div className="fixed bottom-0 left-0 right-0 z-50">
       <div className="h-px w-full bg-stroke/70" />
 
-      <div className="relative flex items-center justify-center px-4 py-2 bg-bg/75 backdrop-blur">
+      <div className="relative flex items-center justify-center px-2 py-2 bg-bg/75 backdrop-blur sm:px-4">
         {/* CENTERED TICKERS */}
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-1.5 whitespace-nowrap md:gap-3">
           <Chip symbol="BTC" price={prices.BTC} dir={dirs.BTC} flash={flash.BTC} />
           <Chip symbol="ETH" price={prices.ETH} dir={dirs.ETH} flash={flash.ETH} />
           <Chip symbol="SOL" price={prices.SOL} dir={dirs.SOL} flash={flash.SOL} />
@@ -215,13 +215,13 @@ export default function BottomTickerBar({
 
         {/* LEFT FEAR/GREED */}
         {showFearGreed ? (
-          <div className="absolute left-4 flex items-center gap-2">
+          <div className="absolute left-2 flex items-center gap-2 sm:left-4">
             <div className={fearGreedClass}>{fearGreed.label}</div>
           </div>
         ) : null}
 
         {/* RIGHT SOCIAL ICONS */}
-        <div className="absolute right-4 flex items-center gap-2">
+        <div className="absolute right-2 flex items-center gap-2 sm:right-4">
           <a
             href={telegramUrl}
             target="_blank"
@@ -229,9 +229,9 @@ export default function BottomTickerBar({
             aria-label="Telegram"
             title="Telegram"
             data-no-link-style
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-stroke/60 bg-surface/70 text-muted hover:text-text hover:border-gold/40 transition"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-stroke/60 bg-surface/70 text-muted hover:text-text hover:border-gold/40 transition sm:h-9 sm:w-9"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-3 w-3 sm:h-4 sm:w-4" />
           </a>
 
           <a
@@ -241,10 +241,10 @@ export default function BottomTickerBar({
             aria-label="X"
             title="X"
             data-no-link-style
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-stroke/60 bg-surface/70 text-muted hover:text-text hover:border-gold/40 transition"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-stroke/60 bg-surface/70 text-muted hover:text-text hover:border-gold/40 transition sm:h-9 sm:w-9"
           >
             {/* Custom X logo using text, not the icon */}
-            <span className="text-sm font-bold leading-none">X</span>
+            <span className="text-[10px] font-bold leading-none sm:text-sm">X</span>
           </a>
         </div>
       </div>

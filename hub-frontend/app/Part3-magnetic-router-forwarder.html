@@ -1052,10 +1052,11 @@ canvas {
     }
 
     @media (max-width: 430px){
-      .stage{ padding: 10px; }
+      .stage{ padding: 8px; }
       .frame{
         width: 100vw;
         height: 100vh;
+        height: 100dvh;
         border-radius: 18px;
       }
       .badgeStack{
@@ -1090,13 +1091,23 @@ canvas {
       .goAlphaBtn{
         font-size: 11px;
         padding: 10px 14px;
+        min-height: 44px;
       }
       .hintBubble{
         font-size: 10px;
         letter-spacing: 0.16em;
       }
       .forwarder3d{
-        transform: translate(-50%, -50%) scale(0.88);
+        transform: translate(-50%, -50%) scale(0.82);
+      }
+      .infoBtn{
+        min-height: 44px;
+      }
+    }
+
+    @media (max-width: 360px){
+      .forwarder3d{
+        transform: translate(-50%, -50%) scale(0.78);
       }
     }
 
@@ -2514,6 +2525,8 @@ canvas {
       let armed = false;
       let running = false;
 
+      const canHover = window.matchMedia && window.matchMedia("(hover: hover)").matches;
+
       // ----- hover hint follows mouse while inside button -----
       function showHint(e){
         armed = true;
@@ -2531,9 +2544,23 @@ canvas {
         bubble.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       }
 
-      btn.addEventListener("pointerenter", showHint, {passive:true});
-      btn.addEventListener("pointermove", moveHint, {passive:true});
-      btn.addEventListener("pointerleave", hideHint, {passive:true});
+      function positionTouchHint(){
+        const rect = btn.getBoundingClientRect();
+        const x = rect.left + rect.width * 0.5;
+        const y = rect.top - 12;
+        bubble.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+      }
+
+      if(canHover){
+        btn.addEventListener("pointerenter", showHint, {passive:true});
+        btn.addEventListener("pointermove", moveHint, {passive:true});
+        btn.addEventListener("pointerleave", hideHint, {passive:true});
+      } else {
+        bubble.textContent = "TAP";
+        bubble.classList.add("show");
+        positionTouchHint();
+        window.addEventListener("resize", positionTouchHint, {passive:true});
+      }
 
       // ----- Single click activation -----
       btn.addEventListener("pointerdown", ()=>{

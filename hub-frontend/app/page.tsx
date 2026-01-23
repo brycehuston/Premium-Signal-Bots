@@ -1302,8 +1302,8 @@ export default function Page() {
           <div className="space-y-5">
             <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">AlphaAlerts</div>
             <h1 className="font-display text-silver">
-              <span className="block text-hero-sub font-semibold tracking-[-0.01em]">
-                Your Market Edge with
+              <span className="block font-semibold tracking-[-0.01em] text-[clamp(22px,4vw,40px)] sm:text-hero-sub">
+                Your Solana edge, delivered by
               </span>
               <span className="block text-hero font-black text-metal-silver">AlphaAlerts</span>
             </h1>
@@ -1448,6 +1448,7 @@ export default function Page() {
       <motion.section {...revealProps} className="space-y-8">
         <SectionHeading
           align="center"
+          eyebrow="System Flow"
           title="Explore The 3 Phases"
           subtitle="Step inside the pipeline. Watch signals become alerts."
         />
@@ -1463,7 +1464,6 @@ export default function Page() {
             <CardBody className="phase-body relative text-left">
               <div className="phase-grid">
                 <div className="phase-left">
-                  <div className="phase-kicker">SYSTEM FLOW</div>
                   {/* NEW: hero line */}
                   <div className="phase-hero-line">SOURCE → SCANNER → ROUTER</div>
                   {/* NEW: supporting line */}
@@ -1533,7 +1533,7 @@ export default function Page() {
           .phase-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 36px;
+            gap: 44px;
             align-items: center;
           }
           .phase-hero-line {
@@ -1554,11 +1554,12 @@ export default function Page() {
             letter-spacing: 0.1em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.7);
+            margin-top: 2px;
           }
           .phase-left {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             max-width: 380px;
           }
           .phase-right {
@@ -1612,7 +1613,7 @@ export default function Page() {
             transform: translate(-50%, -50%);
             background: rgba(244, 198, 90, 0.95);
             box-shadow: 0 0 12px rgba(244, 198, 90, 0.2);
-            animation: beamPulse 6s ease-in-out infinite;
+            animation: beamPulse 14s ease-in-out infinite;
           }
           .beam-station {
             position: absolute;
@@ -1625,7 +1626,7 @@ export default function Page() {
             letter-spacing: 0.18em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.75);
-            animation: stationLabel 6s ease-in-out infinite;
+            animation: stationLabel 14s ease-in-out infinite;
           }
           .beam-station--source {
             left: 10%;
@@ -1635,12 +1636,12 @@ export default function Page() {
           .beam-station--scanner {
             left: 50%;
             transform: translateX(-50%);
-            animation-delay: 2s;
+            animation-delay: 3s;
           }
           .beam-station--router {
             left: 90%;
             transform: translateX(-50%);
-            animation-delay: 4s;
+            animation-delay: 6s;
           }
           .beam-ring {
             width: 14px;
@@ -1648,16 +1649,16 @@ export default function Page() {
             border-radius: 999px;
             border: 1px solid rgba(255, 255, 255, 0.18);
             box-shadow: 0 0 10px rgba(244, 198, 90, 0);
-            animation: stationHit 6s ease-in-out infinite;
+            animation: stationHit 14s ease-in-out infinite;
           }
           .beam-station--source .beam-ring {
             animation-delay: 0s;
           }
           .beam-station--scanner .beam-ring {
-            animation-delay: 2s;
+            animation-delay: 3s;
           }
           .beam-station--router .beam-ring {
-            animation-delay: 4s;
+            animation-delay: 6s;
           }
           .beam-label {
             font-size: 12px;
@@ -1667,7 +1668,7 @@ export default function Page() {
             position: relative;
             display: flex;
             justify-content: flex-start;
-            padding-top: 12px;
+            padding-top: 14px;
           }
           .phase-cta {
             position: relative;
@@ -1710,19 +1711,16 @@ export default function Page() {
             0% {
               left: 10%;
             }
-            25% {
-              left: 10%;
-            }
-            33% {
+            30% {
               left: 50%;
             }
-            58% {
+            36% {
               left: 50%;
             }
-            66% {
+            63% {
               left: 90%;
             }
-            91% {
+            69% {
               left: 90%;
             }
             100% {
@@ -1809,7 +1807,8 @@ export default function Page() {
             .beam-module {
               width: min(320px, 100%);
               height: 90px;
-              transform: scale(1.2);
+              min-width: 220px;
+              transform: scale(1.05);
               transform-origin: center;
             }
             .beam-track {
@@ -1820,6 +1819,7 @@ export default function Page() {
               letter-spacing: 0.16em;
             }
             .phase-cta {
+              min-height: 44px;
               width: 100%;
               max-width: 260px;
               min-width: 0;

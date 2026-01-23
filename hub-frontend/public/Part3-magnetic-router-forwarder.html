@@ -1,6 +1,7 @@
 <!-- magnetic_router_split_FULLSCREEN_FORWARDER_CUBES_EDGE_ORBIT_v7_VOXEL_GOLD_CORE.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
@@ -12,18 +13,18 @@
 
 
   <style>
-    :root{
+    :root {
       /* NEW: MASTER STYLE TOKENS (shared across all pages) */
-      --bg0:#05070c;
-      --bg1:#04060a;
-      --white:#F5FCFF;
-      --text: rgba(245,252,255,0.92);
-      --muted: rgba(245,252,255,0.55);
-      --bronze:#CD9655;
-      --silver:#CDD7EB;
-      --gold:#F6D48B;
-      --stroke: rgba(255,255,255,0.11);
-      --strokeSoft: rgba(255,255,255,0.06);
+      --bg0: #05070c;
+      --bg1: #04060a;
+      --white: #F5FCFF;
+      --text: rgba(245, 252, 255, 0.92);
+      --muted: rgba(245, 252, 255, 0.55);
+      --bronze: #CD9655;
+      --silver: #CDD7EB;
+      --gold: #F6D48B;
+      --stroke: rgba(255, 255, 255, 0.11);
+      --strokeSoft: rgba(255, 255, 255, 0.06);
       --radius: 26px;
       --badgeWidth: 280px;
       --badgePadY: 8px;
@@ -33,7 +34,8 @@
       --noteRadius: 12px;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       width: 100%;
       height: 100%;
@@ -44,46 +46,55 @@
     }
 
     /* NEW: shared stage + frame (matches Pages 1–2) */
-    .stage{
-      width:100%;
-      height:100%;
-      display:grid;
-      place-items:center;
+    .stage {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
       padding: 18px;
       background:
-        radial-gradient(1200px 900px at 50% 18%, rgba(255,255,255,0.085), transparent 62%),
-        radial-gradient(900px 700px at 22% 80%, rgba(246,212,139,0.045), transparent 62%),
-        radial-gradient(900px 700px at 85% 70%, rgba(205,215,235,0.040), transparent 62%),
+        radial-gradient(1200px 900px at 50% 18%, rgba(255, 255, 255, 0.085), transparent 62%),
+        radial-gradient(900px 700px at 22% 80%, rgba(246, 212, 139, 0.045), transparent 62%),
+        radial-gradient(900px 700px at 85% 70%, rgba(205, 215, 235, 0.040), transparent 62%),
         linear-gradient(to bottom, var(--bg0), var(--bg1));
     }
 
-    .frame{
+    .frame {
       position: relative;
       width: min(1680px, 96vw);
       height: min(860px, 88vh);
       border-radius: var(--radius);
       border: 1px solid var(--stroke);
       overflow: hidden;
-      background: rgba(0,0,0,0.20);
+      background: rgba(0, 0, 0, 0.20);
       box-shadow:
-        0 0 0 1px rgba(255,255,255,0.04) inset,
-        0 40px 140px rgba(0,0,0,0.75);
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 40px 140px rgba(0, 0, 0, 0.75);
       transform: translateZ(0);
-      animation: entry 520ms cubic-bezier(0.2,0.8,0.2,1) both;
+      animation: entry 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
-    @keyframes entry{
-      from { opacity: 0; transform: translateY(10px) scale(0.985); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+    @keyframes entry {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
-canvas {
+
+    canvas {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       display: block;
     }
-/* ==========================
+
+    /* ==========================
        Forwarder 3D Cubes Overlay
        ========================== */
     .forwarder3d {
@@ -109,10 +120,10 @@ canvas {
       --core-rotate-duration: 55s;
 
       /* premium gold palette */
-      --gold-top:   #FFF2B0;
-      --gold-mid:   #E7C35A;
-      --gold-deep:  #B78618;
-      --gold-burn:  #7E5A10;
+      --gold-top: #FFF2B0;
+      --gold-mid: #E7C35A;
+      --gold-deep: #B78618;
+      --gold-burn: #7E5A10;
 
       /* dark contrast metals */
       --metal-ink1: rgba(10, 16, 26, 0.92);
@@ -152,8 +163,8 @@ canvas {
       transform: translate(-50%, -50%) scale(calc(1 + var(--pulse, 0) * 0.20));
       border-radius: 999px;
       background: radial-gradient(circle,
-        rgba(255, 205, 110, 0.14),
-        rgba(0,0,0,0) 70%);
+          rgba(255, 205, 110, 0.14),
+          rgba(0, 0, 0, 0) 70%);
       filter: blur(2px);
       opacity: calc(0.55 + var(--pulse, 0) * 0.55);
       will-change: transform, opacity;
@@ -162,7 +173,7 @@ canvas {
 
 
     /* ✅ NEW: secondary halo layer (breathing glow without hollowing cube) */
-    .forwarderHalo::after{
+    .forwarderHalo::after {
       content: "";
       position: absolute;
       left: 0;
@@ -172,9 +183,9 @@ canvas {
       transform: translate(-50%, -50%) scale(calc(1 + var(--pulse, 0) * 0.28));
       border-radius: 999px;
       background: radial-gradient(circle,
-        rgba(255,255,255,0.08),
-        rgba(246,212,139,0.05) 42%,
-        rgba(0,0,0,0) 72%);
+          rgba(255, 255, 255, 0.08),
+          rgba(246, 212, 139, 0.05) 42%,
+          rgba(0, 0, 0, 0) 72%);
       filter: blur(10px);
       opacity: calc(0.24 + var(--pulse, 0) * 0.36);
       will-change: transform, opacity;
@@ -184,24 +195,24 @@ canvas {
     /* ==========================
        ✅ Forwarder Label (Premium)
        ========================== */
-    .forwarderLabel{
+    .forwarderLabel {
       position: absolute;
       left: 0;
       top: 0;
       transform: translate(-50%, calc(-50% - (var(--u, 38px) * 3.62)));
       padding: 10px 16px;
       border-radius: 999px;
-      background: rgba(0,0,0,0.35);
+      background: rgba(0, 0, 0, 0.35);
       border: 1.5px solid rgba(255, 205, 110, 0.35);
       box-shadow:
         0 0 22px rgba(255, 205, 110, 0.12),
         0 0 60px rgba(255, 205, 110, 0.06);
-      color: rgba(247,251,255,0.92);
+      color: rgba(247, 251, 255, 0.92);
       font-weight: 700;
       font-size: 12px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      text-shadow: 0 0 18px rgba(255,255,255,0.10);
+      text-shadow: 0 0 18px rgba(255, 255, 255, 0.10);
       pointer-events: none;
       user-select: none;
       white-space: nowrap;
@@ -237,13 +248,19 @@ canvas {
       animation: coreSpin var(--core-rotate-duration) linear infinite;
     }
 
-    @keyframes coreSpin{
-      from { transform: translate(-50%, -50%) rotateX(60deg) rotateZ(-45deg); }
-      to   { transform: translate(-50%, -50%) rotateX(60deg) rotateZ(calc(-45deg + 1turn)); }
+    @keyframes coreSpin {
+      from {
+        transform: translate(-50%, -50%) rotateX(60deg) rotateZ(-45deg);
+      }
+
+      to {
+        transform: translate(-50%, -50%) rotateX(60deg) rotateZ(calc(-45deg + 1turn));
+      }
     }
 
     /* base cube sizing */
-    .cube, .large-shadow{
+    .cube,
+    .large-shadow {
       height: var(--u);
       width: var(--u);
       transform-style: preserve-3d;
@@ -254,7 +271,7 @@ canvas {
       left: 0;
     }
 
-    .cube > .cube-wrap{
+    .cube>.cube-wrap {
       position: absolute;
       inset: 0;
       transform-style: preserve-3d;
@@ -264,7 +281,7 @@ canvas {
     }
 
     /* ✅ ACTIVE: cube flip animation */
-    .forwarder3d.isActive .cube-wrap{
+    .forwarder3d.isActive .cube-wrap {
       /* ✅ bring back the flipping rhythm while sorting */
       animation: cubeWrapSpin var(--duration) 1 both;
 
@@ -273,17 +290,22 @@ canvas {
     }
 
     /* ✅ IDLE: stop ONLY the flip (keeps the voxel look stable) */
-    .forwarder3d.isIdle .cube-wrap{
+    .forwarder3d.isIdle .cube-wrap {
       animation: none !important;
       transform: none !important;
     }
 
-    @keyframes cubeWrapSpin{
-      from, to, 20%, 60%{
+    @keyframes cubeWrapSpin {
+
+      from,
+      to,
+      20%,
+      60% {
         animation-timing-function: step-start;
         transform: none;
       }
-      40%{
+
+      40% {
         transform: rotateY(1turn);
       }
     }
@@ -296,21 +318,23 @@ canvas {
        ========================== */
 
     /* rows */
-    .cube[data-cube^="1"]{
+    .cube[data-cube^="1"] {
       top: calc(-1 * var(--u) - var(--gap));
       --color-bg-top: #FFF7CC;
       --color-bg-bottom: var(--gold-mid);
       --color-fl-top: var(--gold-mid);
       --color-fl-bottom: var(--gold-deep);
     }
-    .cube[data-cube^="2"]{
+
+    .cube[data-cube^="2"] {
       top: 0;
       --color-bg-top: var(--gold-top);
       --color-bg-bottom: var(--gold-mid);
       --color-fl-top: var(--gold-mid);
       --color-fl-bottom: var(--gold-deep);
     }
-    .cube[data-cube^="3"]{
+
+    .cube[data-cube^="3"] {
       top: calc(var(--u) + var(--gap));
       --color-bg-top: #FFE08A;
       --color-bg-bottom: var(--gold-deep);
@@ -321,7 +345,7 @@ canvas {
     /* cols */
     .cube[data-cube^="11"],
     .cube[data-cube^="21"],
-    .cube[data-cube^="31"]{
+    .cube[data-cube^="31"] {
       left: calc(-1 * var(--u) - var(--gap));
       --color-fr-top: var(--metal-ink1);
       --color-fr-bottom: var(--metal-ink2);
@@ -329,7 +353,7 @@ canvas {
 
     .cube[data-cube^="12"],
     .cube[data-cube^="22"],
-    .cube[data-cube^="32"]{
+    .cube[data-cube^="32"] {
       left: 0;
       --color-fr-top: rgba(16, 24, 38, 0.92);
       --color-fr-bottom: rgba(36, 48, 70, 0.92);
@@ -337,24 +361,29 @@ canvas {
 
     .cube[data-cube^="13"],
     .cube[data-cube^="23"],
-    .cube[data-cube^="33"]{
+    .cube[data-cube^="33"] {
       left: calc(var(--u) + var(--gap));
       --color-fr-top: rgba(18, 28, 44, 0.92);
       --color-fr-bottom: rgba(44, 58, 82, 0.92);
     }
 
     /* depth layers */
-    .cube[data-cube$="2"]{ transform: translateZ(calc(var(--u) + var(--gap))); }
-    .cube[data-cube$="3"]{ transform: translateZ(calc(-1 * var(--u) - var(--gap))); }
+    .cube[data-cube$="2"] {
+      transform: translateZ(calc(var(--u) + var(--gap)));
+    }
+
+    .cube[data-cube$="3"] {
+      transform: translateZ(calc(-1 * var(--u) - var(--gap)));
+    }
 
     /* ==========================
        BIG FLOOR SHADOWS
        ========================== */
-    .large-shadows{
+    .large-shadows {
       transform: translateZ(calc(var(--u) * -2.1));
     }
 
-    .large-shadow{
+    .large-shadow {
       background: #000;
       height: var(--u);
       width: var(--u);
@@ -367,11 +396,26 @@ canvas {
       filter: blur(var(--shadowBlur));
     }
 
-    @keyframes largeShadow{
-      from, 80%, to { transform: scale(1.5, 3); }
-      20% { transform: scale(1.5, 2); }
-      40%, 60% { transform: scale(1.5, 5); }
-      50% { transform: scale(1, 5); }
+    @keyframes largeShadow {
+
+      from,
+      80%,
+      to {
+        transform: scale(1.5, 3);
+      }
+
+      20% {
+        transform: scale(1.5, 2);
+      }
+
+      40%,
+      60% {
+        transform: scale(1.5, 5);
+      }
+
+      50% {
+        transform: scale(1, 5);
+      }
     }
 
     /* ==========================
@@ -382,7 +426,7 @@ canvas {
     .cube-front-right,
     .cube-back-left,
     .cube-back-right,
-    .cube-bottom{
+    .cube-bottom {
       position: absolute;
       inset: 0;
       backface-visibility: visible;
@@ -394,7 +438,7 @@ canvas {
     .cube-front-left::before,
     .cube-front-right::before,
     .cube-back-left::before,
-    .cube-back-right::before{
+    .cube-back-right::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -404,54 +448,70 @@ canvas {
     /* ==========================
        TOP (white shimmer stays)
        ========================== */
-    .cube-top{
+    .cube-top {
       overflow: hidden;
       animation: cubeTopMove var(--duration) infinite both;
       animation-delay: calc(var(--delay, 0ms) * 0.72);
       animation-timing-function: var(--easing) !important;
     }
 
-    .cube-top::before{
+    .cube-top::before {
       background-image:
-        linear-gradient(to bottom, rgba(255,255,255,0.58), transparent 45%),
-        linear-gradient(135deg, rgba(255,255,255,0.18), transparent 55%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.58), transparent 45%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 55%),
         linear-gradient(to bottom, var(--color-bg-top), var(--color-bg-bottom));
       background-repeat: no-repeat;
     }
 
-    .cube-top::after{
+    .cube-top::after {
       content: "";
       position: absolute;
       inset: 0;
-      background-color: rgba(255,255,255,0.95);
+      background-color: rgba(255, 255, 255, 0.95);
       animation: cubeTopFlash var(--duration) infinite both;
       animation-delay: calc(var(--delay, 0ms) * 0.72);
       mix-blend-mode: overlay;
     }
 
-    @keyframes cubeTopFlash{
-      from, 50%, 60%, to { opacity: 0; }
-      52% { opacity: 0.35; }
+    @keyframes cubeTopFlash {
+
+      from,
+      50%,
+      60%,
+      to {
+        opacity: 0;
+      }
+
+      52% {
+        opacity: 0.35;
+      }
     }
 
-    @keyframes cubeTopMove{
-      20% { transform: translateZ(calc(-1 * var(--u) + (var(--u) * 0.20))); }
-      40%, 60%, 80% { transform: none; }
+    @keyframes cubeTopMove {
+      20% {
+        transform: translateZ(calc(-1 * var(--u) + (var(--u) * 0.20)));
+      }
+
+      40%,
+      60%,
+      80% {
+        transform: none;
+      }
     }
 
     /* ==========================
        LEFT FACE (front-left)
        ========================== */
-    .cube-front-left{
+    .cube-front-left {
       transform-origin: left center;
       transform: rotateY(90deg);
       overflow: hidden;
     }
 
-    .cube-front-left::before{
+    .cube-front-left::before {
       background-image:
         linear-gradient(to bottom, var(--color-fl-top), var(--color-fl-bottom)),
-        linear-gradient(to bottom, rgba(255,255,255,.20), transparent 65%);
+        linear-gradient(to bottom, rgba(255, 255, 255, .20), transparent 65%);
       background-repeat: no-repeat;
       transform-origin: right;
       animation: faceLeft var(--duration) infinite both;
@@ -459,50 +519,68 @@ canvas {
       animation-timing-function: var(--easing) !important;
     }
 
-    @keyframes faceLeft{
-      20% { transform: scaleX(.2); }
-      40%, 60% { transform: translateX(calc(-1 * var(--u) * 0.80)) scaleX(.2); }
-      80% { transform: none; }
+    @keyframes faceLeft {
+      20% {
+        transform: scaleX(.2);
+      }
+
+      40%,
+      60% {
+        transform: translateX(calc(-1 * var(--u) * 0.80)) scaleX(.2);
+      }
+
+      80% {
+        transform: none;
+      }
     }
 
     /* ==========================
        FRONT FACE (front-right)
        ========================== */
-    .cube-front-right{
+    .cube-front-right {
       transform-origin: bottom center;
       transform: rotateX(90deg);
       overflow: hidden;
     }
 
-    .cube-front-right::before{
+    .cube-front-right::before {
       background-image:
         linear-gradient(to right, var(--color-fr-top), var(--color-fr-bottom)),
-        linear-gradient(to right, rgba(255,255,255,0.10), transparent 60%);
+        linear-gradient(to right, rgba(255, 255, 255, 0.10), transparent 60%);
       transform-origin: top;
       animation: faceFront var(--duration) infinite both;
       animation-delay: calc(var(--delay, 0ms) * 0.72);
       animation-timing-function: var(--easing) !important;
     }
 
-    @keyframes faceFront{
-      20% { transform: scaleY(.2); }
-      40%, 60% { transform: translateY(calc(var(--u) * 0.80)) scaleY(.2); }
-      80% { transform: none; }
+    @keyframes faceFront {
+      20% {
+        transform: scaleY(.2);
+      }
+
+      40%,
+      60% {
+        transform: translateY(calc(var(--u) * 0.80)) scaleY(.2);
+      }
+
+      80% {
+        transform: none;
+      }
     }
 
     /* ==========================
        RIGHT FACE (back-left)
        ========================== */
-    .cube-back-left{
+    .cube-back-left {
       transform-origin: right center;
       transform: rotateY(-90deg);
       overflow: hidden;
     }
 
-    .cube-back-left::before{
+    .cube-back-left::before {
       background-image:
         linear-gradient(to bottom, var(--color-fl-top), var(--color-fl-bottom)),
-        linear-gradient(to bottom, rgba(255,255,255,.14), transparent 70%);
+        linear-gradient(to bottom, rgba(255, 255, 255, .14), transparent 70%);
       background-repeat: no-repeat;
       transform-origin: left;
       filter: brightness(0.88);
@@ -511,25 +589,34 @@ canvas {
       animation-timing-function: var(--easing) !important;
     }
 
-    @keyframes faceRight{
-      20% { transform: scaleX(.2); }
-      40%, 60% { transform: translateX(calc(var(--u) * 0.80)) scaleX(.2); }
-      80% { transform: none; }
+    @keyframes faceRight {
+      20% {
+        transform: scaleX(.2);
+      }
+
+      40%,
+      60% {
+        transform: translateX(calc(var(--u) * 0.80)) scaleX(.2);
+      }
+
+      80% {
+        transform: none;
+      }
     }
 
     /* ==========================
        BACK FACE (back-right)
        ========================== */
-    .cube-back-right{
+    .cube-back-right {
       transform-origin: top center;
       transform: rotateX(-90deg);
       overflow: hidden;
     }
 
-    .cube-back-right::before{
+    .cube-back-right::before {
       background-image:
         linear-gradient(to right, var(--color-fr-top), var(--color-fr-bottom)),
-        linear-gradient(to right, rgba(255,255,255,0.06), transparent 70%);
+        linear-gradient(to right, rgba(255, 255, 255, 0.06), transparent 70%);
       transform-origin: bottom;
       filter: brightness(0.88);
       animation: faceBack var(--duration) infinite both;
@@ -537,16 +624,25 @@ canvas {
       animation-timing-function: var(--easing) !important;
     }
 
-    @keyframes faceBack{
-      20% { transform: scaleY(.2); }
-      40%, 60% { transform: translateY(calc(-1 * var(--u) * 0.80)) scaleY(.2); }
-      80% { transform: none; }
+    @keyframes faceBack {
+      20% {
+        transform: scaleY(.2);
+      }
+
+      40%,
+      60% {
+        transform: translateY(calc(-1 * var(--u) * 0.80)) scaleY(.2);
+      }
+
+      80% {
+        transform: none;
+      }
     }
 
     /* ==========================
        BOTTOM
        ========================== */
-    .cube-bottom{
+    .cube-bottom {
       transform: translateZ(calc(-1 * var(--u)));
       background-image:
         linear-gradient(to bottom, var(--color-bg-top), var(--color-bg-bottom));
@@ -556,29 +652,44 @@ canvas {
       filter: brightness(0.92);
     }
 
-    @keyframes cubeBottomMove{
-      from, 20%, 80%, to {
+    @keyframes cubeBottomMove {
+
+      from,
+      20%,
+      80%,
+      to {
         transform: translateZ(calc(-1 * var(--u) + 1px)) scale(.95);
       }
-      40%, 60% {
+
+      40%,
+      60% {
         transform: translateZ(calc(-1 * var(--u) * 0.20)) scale(.95);
       }
     }
 
-    .cube-bottom::after{
+    .cube-bottom::after {
       content: "";
       position: absolute;
       inset: 0;
-      background-color: rgba(255,255,255,0.95);
+      background-color: rgba(255, 255, 255, 0.95);
       animation: cubeBottomFlash var(--duration) infinite both;
       animation-delay: calc(var(--delay, 0ms) * 0.72);
       opacity: 0.12;
       mix-blend-mode: overlay;
     }
 
-    @keyframes cubeBottomFlash{
-      from, 40%, 50%, to { opacity: 0; }
-      45% { opacity: 0.22; }
+    @keyframes cubeBottomFlash {
+
+      from,
+      40%,
+      50%,
+      to {
+        opacity: 0;
+      }
+
+      45% {
+        opacity: 0.22;
+      }
     }
 
     /* ==========================
@@ -586,7 +697,7 @@ canvas {
        ========================== */
     .shadow-y,
     .shadow-flip,
-    .shadow-z{
+    .shadow-z {
       position: absolute;
       inset: 0;
       overflow: hidden;
@@ -595,43 +706,69 @@ canvas {
 
     .shadow-y::before,
     .shadow-flip::before,
-    .shadow-z::before{
+    .shadow-z::before {
       content: "";
       position: absolute;
       inset: 0;
-      background-color: rgba(0,0,0,0.85);
+      background-color: rgba(0, 0, 0, 0.85);
       opacity: 0.55;
     }
 
-    .shadow-y{
+    .shadow-y {
       animation: shadowY var(--duration) infinite both;
       animation-delay: calc(var(--delay, 0ms) * 0.72);
       animation-timing-function: var(--easing) !important;
     }
 
     .shadow-y[data-cube^="11"],
-    .shadow-y[data-cube^="21"]{ left: 10%; }
-
-    .shadow-y[data-cube^="13"],
-    .shadow-y[data-cube^="23"]{ left: -10%; }
-
-    @keyframes shadowY{
-      to, 40%, 60%, 80%, from { transform: translateY(-100%) scale(2, .75); }
-      20% { transform: scale(2, 1); }
+    .shadow-y[data-cube^="21"] {
+      left: 10%;
     }
 
-    .shadow-y::before{
+    .shadow-y[data-cube^="13"],
+    .shadow-y[data-cube^="23"] {
+      left: -10%;
+    }
+
+    @keyframes shadowY {
+
+      to,
+      40%,
+      60%,
+      80%,
+      from {
+        transform: translateY(-100%) scale(2, .75);
+      }
+
+      20% {
+        transform: scale(2, 1);
+      }
+    }
+
+    .shadow-y::before {
       animation: shadowYInv var(--duration) infinite both;
       animation-delay: calc(var(--delay, 0ms) * 0.72);
       transform-origin: top center;
     }
 
-    @keyframes shadowYInv{
-      to, 40%, 60%, 80%, from { opacity: 0.75; transform: scale(2, 1); }
-      20% { opacity: 0; transform: translateY(-100%) scale(2, .75); }
+    @keyframes shadowYInv {
+
+      to,
+      40%,
+      60%,
+      80%,
+      from {
+        opacity: 0.75;
+        transform: scale(2, 1);
+      }
+
+      20% {
+        opacity: 0;
+        transform: translateY(-100%) scale(2, .75);
+      }
     }
 
-    .shadow-flip{
+    .shadow-flip {
       width: calc(var(--u) * 0.20);
       height: 50%;
       top: calc(-1 * var(--u) * 0.10);
@@ -644,24 +781,46 @@ canvas {
       animation-timing-function: var(--easing) !important;
     }
 
-    @keyframes shadowFlip{
-      from, 20%, 40%, 50%, to { transform: rotate(90deg); }
-      45% { transform: rotate(270deg); }
+    @keyframes shadowFlip {
+
+      from,
+      20%,
+      40%,
+      50%,
+      to {
+        transform: rotate(90deg);
+      }
+
+      45% {
+        transform: rotate(270deg);
+      }
     }
 
-    .shadow-flip::before{
+    .shadow-flip::before {
       animation: shadowFlipInv var(--duration) infinite both;
       animation-delay: calc(var(--delay, 0ms) * 0.72);
       transform-origin: top center;
       opacity: 0;
     }
 
-    @keyframes shadowFlipInv{
-      from, 20%, 40%, 50%, to { transform: rotate(0deg); opacity: 0; }
-      45% { transform: rotate(-180deg); opacity: 0.45; }
+    @keyframes shadowFlipInv {
+
+      from,
+      20%,
+      40%,
+      50%,
+      to {
+        transform: rotate(0deg);
+        opacity: 0;
+      }
+
+      45% {
+        transform: rotate(-180deg);
+        opacity: 0.45;
+      }
     }
 
-    .shadow-z{
+    .shadow-z {
       overflow: visible;
       transform-origin: top center;
       animation: shadowZ var(--duration) infinite both;
@@ -669,40 +828,79 @@ canvas {
       animation-timing-function: var(--easing) !important;
     }
 
-    .shadow-z[data-cube^="11"]{ --shadow-z-left: 50%; --shadow-z-top: 50%; }
-    .shadow-z[data-cube^="21"],
-    .shadow-z[data-cube^="31"]{ --shadow-z-left: 50%; --shadow-z-top: 0; }
-    .shadow-z[data-cube^="32"]{ --shadow-z-left: 0; --shadow-z-top: 0; --shadow-x-scale: 2; }
-    .shadow-z[data-cube^="33"]{ --shadow-z-left: -50%; --shadow-z-top: 0; }
+    .shadow-z[data-cube^="11"] {
+      --shadow-z-left: 50%;
+      --shadow-z-top: 50%;
+    }
 
-    @keyframes shadowZ{
-      from, 40%, 60%, 80%, to { transform: scale(var(--shadow-x-scale, 1), 2); }
-      20%{
+    .shadow-z[data-cube^="21"],
+    .shadow-z[data-cube^="31"] {
+      --shadow-z-left: 50%;
+      --shadow-z-top: 0;
+    }
+
+    .shadow-z[data-cube^="32"] {
+      --shadow-z-left: 0;
+      --shadow-z-top: 0;
+      --shadow-x-scale: 2;
+    }
+
+    .shadow-z[data-cube^="33"] {
+      --shadow-z-left: -50%;
+      --shadow-z-top: 0;
+    }
+
+    @keyframes shadowZ {
+
+      from,
+      40%,
+      60%,
+      80%,
+      to {
+        transform: scale(var(--shadow-x-scale, 1), 2);
+      }
+
+      20% {
         transform:
-          translateX(var(--shadow-z-left, 0))
-          translateY(var(--shadow-z-top, 0))
-          scale(calc(var(--shadow-x-scale, 1) / 2), 2);
+          translateX(var(--shadow-z-left, 0)) translateY(var(--shadow-z-top, 0)) scale(calc(var(--shadow-x-scale, 1) / 2), 2);
       }
     }
 
-    .shadow-z::before{
+    .shadow-z::before {
       animation: shadowZInv var(--duration) infinite both;
       animation-delay: calc(var(--delay, 0ms) * 0.72);
     }
 
-    @keyframes shadowZInv{
-      40%, 60%{
+    @keyframes shadowZInv {
+
+      40%,
+      60% {
         transform:
-          translateX(var(--shadow-z-left, 0))
-          translateY(var(--shadow-z-top, 0))
-          scale(var(--shadow-x-scale, 1), 2);
+          translateX(var(--shadow-z-left, 0)) translateY(var(--shadow-z-top, 0)) scale(var(--shadow-x-scale, 1), 2);
       }
-      45%{ opacity: 0; }
-      from, 40%, 55%{ opacity: .35; }
-      to{ opacity: 0.75; }
-      from, 20%, 80%, to{ transform: scale(2); }
+
+      45% {
+        opacity: 0;
+      }
+
+      from,
+      40%,
+      55% {
+        opacity: .35;
+      }
+
+      to {
+        opacity: 0.75;
+      }
+
+      from,
+      20%,
+      80%,
+      to {
+        transform: scale(2);
+      }
     }
-  
+
 
     /* =========================================
        ROUTER LOGIC OVERRIDES (fixed + meaningful)
@@ -712,10 +910,10 @@ canvas {
 
     /* Core no longer auto-spins in idle.
        We drive rotateZ with --coreRot from JS so it can "point" to lanes. */
-    .cubes{
+    .cubes {
       animation: none !important;
       transform: translate(-50%, -50%) rotateX(60deg) rotateZ(var(--coreRot, -45deg));
-      transition: transform 620ms cubic-bezier(.22,.85,.2,1);
+      transition: transform 620ms cubic-bezier(.22, .85, .2, 1);
       will-change: transform;
     }
 
@@ -723,7 +921,7 @@ canvas {
     .forwarder3d.isIdle .cubes,
     .forwarder3d.isIdle .cubes *,
     .forwarder3d.isIdle .cubes *::before,
-    .forwarder3d.isIdle .cubes *::after{
+    .forwarder3d.isIdle .cubes *::after {
       animation: none !important;
     }
 
@@ -731,7 +929,7 @@ canvas {
     .forwarder3d.isActive .cubes,
     .forwarder3d.isActive .cubes *,
     .forwarder3d.isActive .cubes *::before,
-    .forwarder3d.isActive .cubes *::after{
+    .forwarder3d.isActive .cubes *::after {
       animation-iteration-count: 1 !important;
     }
 
@@ -740,205 +938,319 @@ canvas {
        GRID FALL ORDER (preset delays)
        This matches the "cool falling order" timing you liked.
        ========================== */
-    .cube[data-cube="111"]{--delay:57ms;}
-    .cube[data-cube="121"]{--delay:12ms;}
-    .cube[data-cube="131"]{--delay:140ms;}
-    .cube[data-cube="211"]{--delay:125ms;}
-    .cube[data-cube="221"]{--delay:114ms;}
-    .cube[data-cube="231"]{--delay:71ms;}
-    .cube[data-cube="311"]{--delay:52ms;}
-    .cube[data-cube="321"]{--delay:279ms;}
-    .cube[data-cube="331"]{--delay:44ms;}
-    .cube[data-cube="112"]{--delay:216ms;}
-    .cube[data-cube="122"]{--delay:16ms;}
-    .cube[data-cube="132"]{--delay:15ms;}
-    .cube[data-cube="212"]{--delay:47ms;}
-    .cube[data-cube="222"]{--delay:111ms;}
-    .cube[data-cube="232"]{--delay:119ms;}
-    .cube[data-cube="312"]{--delay:258ms;}
-    .cube[data-cube="322"]{--delay:13ms;}
-    .cube[data-cube="332"]{--delay:287ms;}
-    .cube[data-cube="113"]{--delay:101ms;}
-    .cube[data-cube="123"]{--delay:279ms;}
-    .cube[data-cube="133"]{--delay:214ms;}
-    .cube[data-cube="213"]{--delay:112ms;}
-    .cube[data-cube="223"]{--delay:229ms;}
-    .cube[data-cube="233"]{--delay:142ms;}
-    .cube[data-cube="313"]{--delay:3ms;}
-    .cube[data-cube="323"]{--delay:81ms;}
-    .cube[data-cube="333"]{--delay:216ms;}
+    .cube[data-cube="111"] {
+      --delay: 57ms;
+    }
 
-    .large-shadow[data-cube="113"]{--delay:101ms;}
-    .large-shadow[data-cube="123"]{--delay:279ms;}
-    .large-shadow[data-cube="133"]{--delay:214ms;}
-    .large-shadow[data-cube="213"]{--delay:112ms;}
-    .large-shadow[data-cube="223"]{--delay:229ms;}
-    .large-shadow[data-cube="233"]{--delay:142ms;}
-    .large-shadow[data-cube="313"]{--delay:3ms;}
-    .large-shadow[data-cube="323"]{--delay:81ms;}
-    .large-shadow[data-cube="333"]{--delay:216ms;}
+    .cube[data-cube="121"] {
+      --delay: 12ms;
+    }
 
-  
+    .cube[data-cube="131"] {
+      --delay: 140ms;
+    }
+
+    .cube[data-cube="211"] {
+      --delay: 125ms;
+    }
+
+    .cube[data-cube="221"] {
+      --delay: 114ms;
+    }
+
+    .cube[data-cube="231"] {
+      --delay: 71ms;
+    }
+
+    .cube[data-cube="311"] {
+      --delay: 52ms;
+    }
+
+    .cube[data-cube="321"] {
+      --delay: 279ms;
+    }
+
+    .cube[data-cube="331"] {
+      --delay: 44ms;
+    }
+
+    .cube[data-cube="112"] {
+      --delay: 216ms;
+    }
+
+    .cube[data-cube="122"] {
+      --delay: 16ms;
+    }
+
+    .cube[data-cube="132"] {
+      --delay: 15ms;
+    }
+
+    .cube[data-cube="212"] {
+      --delay: 47ms;
+    }
+
+    .cube[data-cube="222"] {
+      --delay: 111ms;
+    }
+
+    .cube[data-cube="232"] {
+      --delay: 119ms;
+    }
+
+    .cube[data-cube="312"] {
+      --delay: 258ms;
+    }
+
+    .cube[data-cube="322"] {
+      --delay: 13ms;
+    }
+
+    .cube[data-cube="332"] {
+      --delay: 287ms;
+    }
+
+    .cube[data-cube="113"] {
+      --delay: 101ms;
+    }
+
+    .cube[data-cube="123"] {
+      --delay: 279ms;
+    }
+
+    .cube[data-cube="133"] {
+      --delay: 214ms;
+    }
+
+    .cube[data-cube="213"] {
+      --delay: 112ms;
+    }
+
+    .cube[data-cube="223"] {
+      --delay: 229ms;
+    }
+
+    .cube[data-cube="233"] {
+      --delay: 142ms;
+    }
+
+    .cube[data-cube="313"] {
+      --delay: 3ms;
+    }
+
+    .cube[data-cube="323"] {
+      --delay: 81ms;
+    }
+
+    .cube[data-cube="333"] {
+      --delay: 216ms;
+    }
+
+    .large-shadow[data-cube="113"] {
+      --delay: 101ms;
+    }
+
+    .large-shadow[data-cube="123"] {
+      --delay: 279ms;
+    }
+
+    .large-shadow[data-cube="133"] {
+      --delay: 214ms;
+    }
+
+    .large-shadow[data-cube="213"] {
+      --delay: 112ms;
+    }
+
+    .large-shadow[data-cube="223"] {
+      --delay: 229ms;
+    }
+
+    .large-shadow[data-cube="233"] {
+      --delay: 142ms;
+    }
+
+    .large-shadow[data-cube="313"] {
+      --delay: 3ms;
+    }
+
+    .large-shadow[data-cube="323"] {
+      --delay: 81ms;
+    }
+
+    .large-shadow[data-cube="333"] {
+      --delay: 216ms;
+    }
+
+
     /* NEW: consistent brand mark (shared) */
-    .brandMark{
-      position:relative; /* ✅ fixed: inline inside .brandWrap */
-      left:auto;
-      top:auto;
+    .brandMark {
+      position: relative;
+      /* ✅ fixed: inline inside .brandWrap */
+      left: auto;
+      top: auto;
       font-weight: 900;
       font-size: 11px;
       line-height: 1;
       padding: 0;
       letter-spacing: 0.34em;
       text-transform: uppercase;
-      color: rgba(245,252,255,0.70);
+      color: rgba(245, 252, 255, 0.70);
       z-index: 20;
-      pointer-events:none;
-      user-select:none;
-      text-shadow: 0 0 18px rgba(246,212,139,0.10);
+      pointer-events: none;
+      user-select: none;
+      text-shadow: 0 0 18px rgba(246, 212, 139, 0.10);
     }
 
-  
+
     /* ==========================
        Phase label (matches Part 1 / Part 2)
        ========================== */
-    .brandWrap{
-      position:absolute;
-      left:18px;
-      top:16px;
-      display:flex;
-      align-items:center;
-      gap:12px;
+    .brandWrap {
+      position: absolute;
+      left: 18px;
+      top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       z-index: 30;
-      pointer-events:none;
-      user-select:none;
+      pointer-events: none;
+      user-select: none;
     }
-    .brandWrap::after{
-      content:"";
-      position:absolute;
-      inset:-10px -12px;
-      border-radius:999px;
-      background: radial-gradient(120% 140% at 20% 20%, rgba(255,255,255,0.06), transparent 55%);
-      opacity:0.26;
-      filter: blur(0px);
-      pointer-events:none;
-    }
-    .brandWrap > *{ position:relative; }
 
-.phaseTag{
-      padding:6px 10px;
-      border-radius:999px;
-      font-weight:850;
-      letter-spacing:0.16em;
-      font-size:11px;
-      text-transform:uppercase;
-      color:rgba(246,212,139,0.95);
+    .brandWrap::after {
+      content: "";
+      position: absolute;
+      inset: -10px -12px;
+      border-radius: 999px;
+      background: radial-gradient(120% 140% at 20% 20%, rgba(255, 255, 255, 0.06), transparent 55%);
+      opacity: 0.26;
+      filter: blur(0px);
+      pointer-events: none;
+    }
+
+    .brandWrap>* {
+      position: relative;
+    }
+
+    .phaseTag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 850;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: rgba(246, 212, 139, 0.95);
       background:
-        radial-gradient(120% 140% at 20% 20%, rgba(255,255,255,0.10), transparent 52%),
-        linear-gradient(180deg, rgba(246,212,139,0.14), rgba(0,0,0,0.18));
-      border:1px solid rgba(246,212,139,0.34);
+        radial-gradient(120% 140% at 20% 20%, rgba(255, 255, 255, 0.10), transparent 52%),
+        linear-gradient(180deg, rgba(246, 212, 139, 0.14), rgba(0, 0, 0, 0.18));
+      border: 1px solid rgba(246, 212, 139, 0.34);
       box-shadow:
-        0 0 22px rgba(246,212,139,0.10),
-        inset 0 0 14px rgba(246,212,139,0.06);
+        0 0 22px rgba(246, 212, 139, 0.10),
+        inset 0 0 14px rgba(246, 212, 139, 0.06);
     }
 
     /* Workflow panel */
-    .infoPanel{
-      position:absolute;
+    .infoPanel {
+      position: absolute;
       left: 16px;
       bottom: 16px;
       z-index: 40;
       width: min(360px, 92vw);
       padding: 14px 16px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.38);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.38);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
       pointer-events: auto;
     }
 
-    .infoEyebrow{
+    .infoEyebrow {
       font-size: 10px;
       letter-spacing: 0.32em;
       text-transform: uppercase;
-      color: rgba(245,252,255,0.60);
+      color: rgba(245, 252, 255, 0.60);
       font-weight: 800;
     }
 
-    .infoTitle{
+    .infoTitle {
       margin-top: 6px;
       font-size: 14px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       font-weight: 900;
-      color: rgba(245,252,255,0.92);
+      color: rgba(245, 252, 255, 0.92);
     }
 
-    .infoText{
+    .infoText {
       margin: 8px 0 0 0;
       font-size: 12px;
-      color: rgba(245,252,255,0.70);
+      color: rgba(245, 252, 255, 0.70);
       line-height: 1.35;
     }
 
-    .phaseRow{
+    .phaseRow {
       margin-top: 10px;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
     }
 
-    .phasePill{
+    .phasePill {
       font-size: 10px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       padding: 6px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(245,252,255,0.72);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(245, 252, 255, 0.72);
       text-decoration: none;
-      background: rgba(0,0,0,0.28);
-    }
-    .phasePill.active{
-      border-color: rgba(246,212,139,0.48);
-      color: rgba(246,212,139,0.95);
-      background: rgba(246,212,139,0.10);
+      background: rgba(0, 0, 0, 0.28);
     }
 
-    .infoButtons{
+    .phasePill.active {
+      border-color: rgba(246, 212, 139, 0.48);
+      color: rgba(246, 212, 139, 0.95);
+      background: rgba(246, 212, 139, 0.10);
+    }
+
+    .infoButtons {
       margin-top: 12px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
 
-    .infoBtn{
+    .infoBtn {
       font-size: 10px;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       padding: 8px 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.30);
-      color: rgba(245,252,255,0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.30);
+      color: rgba(245, 252, 255, 0.88);
       text-decoration: none;
       font-weight: 800;
       transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
     }
-    .infoBtn:hover{
+
+    .infoBtn:hover {
       transform: translateY(-1px);
-      border-color: rgba(255,255,255,0.22);
-      background: rgba(0,0,0,0.42);
-    }
-    .infoBtn.primary{
-      border-color: rgba(246,212,139,0.46);
-      color: rgba(246,212,139,0.98);
-      background: rgba(246,212,139,0.08);
+      border-color: rgba(255, 255, 255, 0.22);
+      background: rgba(0, 0, 0, 0.42);
     }
 
-    @media (max-width: 820px){
-      .infoPanel{
+    .infoBtn.primary {
+      border-color: rgba(246, 212, 139, 0.46);
+      color: rgba(246, 212, 139, 0.98);
+      background: rgba(246, 212, 139, 0.08);
+    }
+
+    @media (max-width: 820px) {
+      .infoPanel {
         left: 12px;
         right: 12px;
         width: auto;
@@ -946,8 +1258,8 @@ canvas {
     }
 
     /* Unified badge stack */
-    .badgeStack{
-      position:absolute;
+    .badgeStack {
+      position: absolute;
       left: 16px;
       top: 14px;
       z-index: 30;
@@ -962,266 +1274,363 @@ canvas {
     }
 
     /* Unified phase badge */
-    .brandWrap{
+    .brandWrap {
       position: relative;
       left: auto;
       top: auto;
-      display:flex;
-      align-items:center;
+      display: flex;
+      align-items: center;
       gap: 8px;
       width: 100%;
       padding: var(--badgePadY) var(--badgePadX);
       border-radius: var(--noteRadius);
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.34);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.34);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       pointer-events: none;
     }
-    .brandWrap::after{ content: none; }
 
-    .brandMark{
-      color: rgba(245,252,255,0.72);
+    .brandWrap::after {
+      content: none;
+    }
+
+    .brandMark {
+      color: rgba(245, 252, 255, 0.72);
       font-weight: 800;
       font-size: 11px;
       letter-spacing: 0.26em;
       text-transform: uppercase;
     }
 
-    .brandSep{
-      color: rgba(245,252,255,0.28);
+    .brandSep {
+      color: rgba(245, 252, 255, 0.28);
       font-weight: 800;
       font-size: 11px;
       line-height: 1;
       letter-spacing: 0;
     }
 
-    .phaseTag{
+    .phaseTag {
       padding: 4px 8px;
       border-radius: 999px;
       font-weight: 900;
       letter-spacing: 0.16em;
       font-size: 10px;
-      color: rgba(249,217,118,0.95);
-      border: 1px solid rgba(249,217,118,0.40);
-      background: rgba(249,217,118,0.08);
+      color: rgba(249, 217, 118, 0.95);
+      border: 1px solid rgba(249, 217, 118, 0.40);
+      background: rgba(249, 217, 118, 0.08);
       text-transform: uppercase;
       box-shadow: none;
     }
 
     /* Compact workflow note */
-    .workflowNote{
+    .workflowNote {
       position: relative;
       left: auto;
       top: auto;
       width: 100%;
       padding: var(--notePadY) var(--notePadX);
       border-radius: var(--noteRadius);
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.30);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      background: rgba(0, 0, 0, 0.30);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       pointer-events: none;
     }
 
-    .workflowTitle{
+    .workflowTitle {
       font-size: 11px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: rgba(245,252,255,0.78);
+      color: rgba(245, 252, 255, 0.78);
       font-weight: 800;
     }
 
-    .workflowText{
+    .workflowText {
       margin: 6px 0 0 0;
       font-size: 11px;
-      color: rgba(245,252,255,0.62);
+      color: rgba(245, 252, 255, 0.62);
       line-height: 1.35;
       white-space: nowrap;
     }
 
-    @media (max-width: 820px){
-      .badgeStack{
+    .mobileHeroTitle {
+      display: none;
+    }
+
+    @media (max-width: 820px) {
+      .badgeStack {
         left: 12px;
         right: 12px;
         width: auto;
       }
-      .workflowText{
+
+      .workflowText {
         white-space: normal;
       }
     }
 
-    @media (max-width: 430px){
-      .stage{ padding: 10px; }
-      .frame{
+    @media (max-width: 430px) {
+      .stage {
+        padding: 8px;
+      }
+
+      .frame {
         width: 100vw;
         height: 100vh;
+        height: 100dvh;
         border-radius: 18px;
+        display: flex;
+        flex-direction: column;
       }
-      .badgeStack{
-        left: 10px;
-        right: 10px;
-        top: 10px;
+
+      .badgeStack {
+        position: static;
+        margin: 8px auto 0;
+        width: fit-content;
+        max-width: 92vw;
+        padding: 0;
         gap: 6px;
+        align-self: center;
+        z-index: 6;
+        align-items: center;
+        text-align: center;
+        justify-items: center;
+        box-sizing: border-box;
       }
-      .brandWrap{
+
+      .workflowNote {
+        align-items: center;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        width: max-content;
+      }
+
+      .brandWrap {
+        justify-content: center;
+        width: max-content;
+      }
+
+      .brandWrap,
+      .workflowNote {
+        max-width: min(360px, 92vw);
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+
+      .mobileHeroTitle {
+        margin: 10px auto 0;
+        width: min(980px, 92%);
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        line-height: 1.1;
+        text-transform: uppercase;
+        text-align: center;
+        color: rgba(245, 252, 255, 0.92);
+        pointer-events: none;
+        user-select: none;
+        position: relative;
+        z-index: 6;
+      }
+
+      .mobileHeroTitle .titleGold {
+        color: var(--gold);
+      }
+
+      .brandWrap {
         padding: 7px 9px;
       }
-      .brandMark{
+
+      .brandMark {
         font-size: 10px;
         letter-spacing: 0.22em;
       }
-      .phaseTag{
+
+      .phaseTag {
         font-size: 9px;
         padding: 3px 7px;
         letter-spacing: 0.14em;
       }
-      .workflowTitle{
+
+      .workflowTitle {
         font-size: 10px;
         letter-spacing: 0.14em;
       }
-      .workflowText{
+
+      .workflowText {
         font-size: 10px;
       }
-      .goAlphaWrap{
-        right: 10px;
-        bottom: 18px;
+
+      .goAlphaWrap {
+        left: 50% !important;
+        right: auto !important;
+        bottom: 88px !important;
+        transform: translateX(-50%) !important;
+        z-index: 6;
       }
-      .goAlphaBtn{
+
+      .goAlphaBtn {
         font-size: 11px;
         padding: 10px 14px;
+        min-height: 44px;
       }
-      .hintBubble{
+
+      .hintBubble {
         font-size: 10px;
         letter-spacing: 0.16em;
+        display: none;
       }
-      .forwarder3d{
-        transform: translate(-50%, -50%) scale(0.88);
+
+      .forwarder3d {
+        transform: translate(-50%, -50%) scale(0.82);
+      }
+
+      .infoBtn {
+        min-height: 44px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .forwarder3d {
+        transform: translate(-50%, -50%) scale(0.78);
       }
     }
 
     /* ==========================
        GO ALPHA CTA (bottom-right)
        ========================== */
-    .goAlphaWrap{
-      position:absolute;
-      right:18px;
-      bottom:26px;
+    .goAlphaWrap {
+      position: absolute;
+      right: 18px;
+      bottom: 26px;
       z-index: 40;
-      pointer-events:auto;
+      pointer-events: auto;
     }
 
-    .goAlphaBtn{
-      position:relative;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:12px 16px;
-      border-radius:14px;
-      border:1px solid rgba(246,212,139,0.34);
+    .goAlphaBtn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(246, 212, 139, 0.34);
       background:
-        radial-gradient(120% 140% at 20% 20%, rgba(255,255,255,0.10), transparent 52%),
-        linear-gradient(180deg, rgba(246,212,139,0.12), rgba(0,0,0,0.18));
-      color:rgba(255,255,255,0.96);
-      font-family:"Sora", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      font-weight:900;
-      letter-spacing:0.14em;
-      font-size:11px;
-      text-transform:uppercase;
-      cursor:pointer;
-      user-select:none;
-      transform:translateZ(0);
+        radial-gradient(120% 140% at 20% 20%, rgba(255, 255, 255, 0.10), transparent 52%),
+        linear-gradient(180deg, rgba(246, 212, 139, 0.12), rgba(0, 0, 0, 0.18));
+      color: rgba(255, 255, 255, 0.96);
+      font-family: "Sora", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      font-size: 11px;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+      transform: translateZ(0);
       transition:
         transform 160ms ease,
         border-color 160ms ease,
         box-shadow 160ms ease,
         background 160ms ease,
-        opacity 520ms cubic-bezier(.22,.85,.2,1);
+        opacity 520ms cubic-bezier(.22, .85, .2, 1);
       box-shadow:
-        0 0 22px rgba(246,212,139,0.10),
-        inset 0 0 14px rgba(246,212,139,0.06);
+        0 0 22px rgba(246, 212, 139, 0.10),
+        inset 0 0 14px rgba(246, 212, 139, 0.06);
     }
-    .goAlphaBtn:hover{
-      transform:translateY(-1px) scale(1.02);
-      border-color:rgba(246,212,139,0.56);
+
+    .goAlphaBtn:hover {
+      transform: translateY(-1px) scale(1.02);
+      border-color: rgba(246, 212, 139, 0.56);
       box-shadow:
-        0 0 34px rgba(246,212,139,0.14),
-        inset 0 0 18px rgba(246,212,139,0.08);
+        0 0 34px rgba(246, 212, 139, 0.14),
+        inset 0 0 18px rgba(246, 212, 139, 0.08);
       background:
-        radial-gradient(120% 140% at 20% 20%, rgba(255,255,255,0.14), transparent 52%),
-        linear-gradient(180deg, rgba(246,212,139,0.18), rgba(0,0,0,0.18));
+        radial-gradient(120% 140% at 20% 20%, rgba(255, 255, 255, 0.14), transparent 52%),
+        linear-gradient(180deg, rgba(246, 212, 139, 0.18), rgba(0, 0, 0, 0.18));
     }
-    .goAlphaBtn:active{
-      transform:translateY(0) scale(0.99);
+
+    .goAlphaBtn:active {
+      transform: translateY(0) scale(0.99);
     }
 
     /* Hover hint (TRIPPLE CLICK) over CTA */
-    .hintBubble{
-      position:fixed;
+    .hintBubble {
+      position: fixed;
       z-index: 999;
-      pointer-events:none;
-      opacity:0;
+      pointer-events: none;
+      opacity: 0;
       transform: translate3d(0, 6px, 0) scale(0.98);
       transition: opacity 140ms ease, transform 140ms ease;
       padding: 8px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(246,212,139,0.34);
-      background: rgba(0,0,0,0.55);
-      color: rgba(246,212,139,0.96);
+      border: 1px solid rgba(246, 212, 139, 0.34);
+      background: rgba(0, 0, 0, 0.55);
+      color: rgba(246, 212, 139, 0.96);
       font-weight: 900;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       font-size: 10px;
       box-shadow:
-        0 0 26px rgba(246,212,139,0.12),
-        inset 0 0 14px rgba(246,212,139,0.06);
+        0 0 26px rgba(246, 212, 139, 0.12),
+        inset 0 0 14px rgba(246, 212, 139, 0.06);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       will-change: transform, opacity;
     }
-    .hintBubble.show{
-      opacity:1;
+
+    .hintBubble.show {
+      opacity: 1;
       transform: translate3d(0, 0, 0) scale(1);
     }
 
     /* ==========================
        Portal zoom (for CTA only)
        ========================== */
-    .portalLayer{
-      position:absolute;
-      inset:0;
+    .portalLayer {
+      position: absolute;
+      inset: 0;
       z-index: 35;
-      pointer-events:none;
-      opacity:0;
+      pointer-events: none;
+      opacity: 0;
       transition: opacity 240ms ease;
     }
-    .portalLayer.active{ opacity:1; }
 
-    #warpCv{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      display:block;
+    .portalLayer.active {
+      opacity: 1;
+    }
+
+    #warpCv {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
     /* Fade UI slightly (premium, not hidden) during dive */
     .portalFaded .forwarder3d,
-    .portalFaded .brandWrap{
-      opacity:0.32;
-      transition: opacity 520ms cubic-bezier(.22,.85,.2,1);
+    .portalFaded .brandWrap {
+      opacity: 0.32;
+      transition: opacity 520ms cubic-bezier(.22, .85, .2, 1);
     }
-    .portalFaded .goAlphaBtn{
-      opacity:0.40;
+
+    .portalFaded .goAlphaBtn {
+      opacity: 0.40;
     }
 
     /* Scale the whole frame like "camera dives" */
-    .portalDiving #frame{
+    .portalDiving #frame {
       transform: scale(3.65);
       transform-origin: 50% 50%;
-      transition: transform 1450ms cubic-bezier(.18,.85,.2,1);
+      transition: transform 1450ms cubic-bezier(.18, .85, .2, 1);
     }
-
   </style>
 </head>
 
@@ -1229,11 +1638,18 @@ canvas {
   <div class="stage">
     <div class="frame" id="frame">
       <div class="badgeStack">
-        <div class="brandWrap"><div class="brandMark">ALPHA ALERTS</div><div class="brandSep">•</div><div class="phaseTag">PHASE 3</div></div>
+        <div class="brandWrap">
+          <div class="brandMark">ALPHA ALERTS</div>
+          <div class="brandSep">•</div>
+          <div class="phaseTag">PHASE 3</div>
+        </div>
         <div class="workflowNote">
           <div class="workflowTitle">SYSTEM WORKFLOW</div>
           <p class="workflowText">PHASE 3 ROUTES TO EARLY, TREND, RUNNER.</p>
         </div>
+      </div>
+      <div class="mobileHeroTitle" aria-hidden="true">
+        <span>ALERT</span><span class="titleGold">ROUTING</span><span>HUB</span>
       </div>
       <canvas id="cv"></canvas>
 
@@ -1255,1428 +1671,1463 @@ canvas {
 
 
       <div class="forwarder3d isIdle" id="forwarder3d">
-    <div class="forwarderCore">
-      <div class="forwarderHalo"></div>
-      <div class="forwarderLabel">FORWARDER BOT</div>
+        <div class="forwarderCore">
+          <div class="forwarderHalo"></div>
+          <div class="forwarderLabel">FORWARDER BOT</div>
 
-      <!-- ✅ VOXEL GOLD CORE (FULL HTML) -->
-      <div class="cubes" id="cubes">
-        <!-- row, col, z -->
-        <div class="cube" data-cube="111">
-          <div class="cube-wrap">
-            <div class="cube-top"><div class="shadow-z" data-cube="112"></div></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="121">
-          <div class="cube-wrap">
-            <div class="cube-top"></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="131">
-          <div class="cube-wrap">
-            <div class="cube-top"><div class="shadow-z" data-cube="132"></div></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="211">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="111"></div>
-              <div class="shadow-y" data-cube="111"></div>
-              <div class="shadow-z" data-cube="212"></div>
+          <!-- ✅ VOXEL GOLD CORE (FULL HTML) -->
+          <div class="cubes" id="cubes">
+            <!-- row, col, z -->
+            <div class="cube" data-cube="111">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-z" data-cube="112"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="221">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="121"></div>
-              <div class="shadow-y" data-cube="121"></div>
+            <div class="cube" data-cube="121">
+              <div class="cube-wrap">
+                <div class="cube-top"></div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="231">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="131"></div>
-              <div class="shadow-y" data-cube="131"></div>
+            <div class="cube" data-cube="131">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-z" data-cube="132"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="311">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="211"></div>
-              <div class="shadow-y" data-cube="211"></div>
-              <div class="shadow-z" data-cube="312"></div>
+            <div class="cube" data-cube="211">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="111"></div>
+                  <div class="shadow-y" data-cube="111"></div>
+                  <div class="shadow-z" data-cube="212"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="321">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="221"></div>
-              <div class="shadow-y" data-cube="221"></div>
-              <div class="shadow-z" data-cube="322"></div>
+            <div class="cube" data-cube="221">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="121"></div>
+                  <div class="shadow-y" data-cube="121"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="331">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="231"></div>
-              <div class="shadow-y" data-cube="231"></div>
-              <div class="shadow-z" data-cube="332"></div>
+            <div class="cube" data-cube="231">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="131"></div>
+                  <div class="shadow-y" data-cube="131"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <!-- top layer -->
-        <div class="cube" data-cube="112">
-          <div class="cube-wrap">
-            <div class="cube-top"></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="122">
-          <div class="cube-wrap">
-            <div class="cube-top"></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="132">
-          <div class="cube-wrap">
-            <div class="cube-top"></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="212">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="112"></div>
-              <div class="shadow-y" data-cube="112"></div>
+            <div class="cube" data-cube="311">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="211"></div>
+                  <div class="shadow-y" data-cube="211"></div>
+                  <div class="shadow-z" data-cube="312"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="222">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="122"></div>
-              <div class="shadow-y" data-cube="122"></div>
+            <div class="cube" data-cube="321">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="221"></div>
+                  <div class="shadow-y" data-cube="221"></div>
+                  <div class="shadow-z" data-cube="322"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="232">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="132"></div>
-              <div class="shadow-y" data-cube="132"></div>
+            <div class="cube" data-cube="331">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="231"></div>
+                  <div class="shadow-y" data-cube="231"></div>
+                  <div class="shadow-z" data-cube="332"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="312">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="212"></div>
-              <div class="shadow-y" data-cube="212"></div>
+            <!-- top layer -->
+            <div class="cube" data-cube="112">
+              <div class="cube-wrap">
+                <div class="cube-top"></div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="322">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="222"></div>
-              <div class="shadow-y" data-cube="222"></div>
+            <div class="cube" data-cube="122">
+              <div class="cube-wrap">
+                <div class="cube-top"></div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="332">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="232"></div>
-              <div class="shadow-y" data-cube="232"></div>
+            <div class="cube" data-cube="132">
+              <div class="cube-wrap">
+                <div class="cube-top"></div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <!-- bottom layer -->
-        <div class="cube" data-cube="113">
-          <div class="cube-wrap">
-            <div class="cube-top"><div class="shadow-z" data-cube="111"></div></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="123">
-          <div class="cube-wrap">
-            <div class="cube-top"><div class="shadow-z" data-cube="121"></div></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="133">
-          <div class="cube-wrap">
-            <div class="cube-top"></div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
-
-        <div class="cube" data-cube="213">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="113"></div>
-              <div class="shadow-y" data-cube="113"></div>
-              <div class="shadow-z" data-cube="211"></div>
+            <div class="cube" data-cube="212">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="112"></div>
+                  <div class="shadow-y" data-cube="112"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="223">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-y" data-cube="123"></div>
-              <div class="shadow-z" data-cube="221"></div>
+            <div class="cube" data-cube="222">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="122"></div>
+                  <div class="shadow-y" data-cube="122"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="233">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-y" data-cube="133"></div>
-              <div class="shadow-z" data-cube="231"></div>
+            <div class="cube" data-cube="232">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="132"></div>
+                  <div class="shadow-y" data-cube="132"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="313">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="213"></div>
-              <div class="shadow-y" data-cube="213"></div>
-              <div class="shadow-z" data-cube="311"></div>
+            <div class="cube" data-cube="312">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="212"></div>
+                  <div class="shadow-y" data-cube="212"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="323">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="223"></div>
-              <div class="shadow-y" data-cube="223"></div>
-              <div class="shadow-z" data-cube="321"></div>
+            <div class="cube" data-cube="322">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="222"></div>
+                  <div class="shadow-y" data-cube="222"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <div class="cube" data-cube="333">
-          <div class="cube-wrap">
-            <div class="cube-top">
-              <div class="shadow-flip" data-cube="233"></div>
-              <div class="shadow-y" data-cube="233"></div>
-              <div class="shadow-z" data-cube="331"></div>
+            <div class="cube" data-cube="332">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="232"></div>
+                  <div class="shadow-y" data-cube="232"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
             </div>
-            <div class="cube-bottom"></div>
-            <div class="cube-front-left"></div>
-            <div class="cube-front-right"></div>
-            <div class="cube-back-left"></div>
-            <div class="cube-back-right"></div>
-          </div>
-        </div>
 
-        <!-- floor shadows -->
-        <div class="large-shadows">
-          <div class="large-shadow" data-cube="113"></div>
-          <div class="large-shadow" data-cube="123"></div>
-          <div class="large-shadow" data-cube="133"></div>
-          <div class="large-shadow" data-cube="213"></div>
-          <div class="large-shadow" data-cube="223"></div>
-          <div class="large-shadow" data-cube="233"></div>
-          <div class="large-shadow" data-cube="313"></div>
-          <div class="large-shadow" data-cube="323"></div>
-          <div class="large-shadow" data-cube="333"></div>
+            <!-- bottom layer -->
+            <div class="cube" data-cube="113">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-z" data-cube="111"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <div class="cube" data-cube="123">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-z" data-cube="121"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <div class="cube" data-cube="133">
+              <div class="cube-wrap">
+                <div class="cube-top"></div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <div class="cube" data-cube="213">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="113"></div>
+                  <div class="shadow-y" data-cube="113"></div>
+                  <div class="shadow-z" data-cube="211"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <div class="cube" data-cube="223">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-y" data-cube="123"></div>
+                  <div class="shadow-z" data-cube="221"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <div class="cube" data-cube="233">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-y" data-cube="133"></div>
+                  <div class="shadow-z" data-cube="231"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <div class="cube" data-cube="313">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="213"></div>
+                  <div class="shadow-y" data-cube="213"></div>
+                  <div class="shadow-z" data-cube="311"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <div class="cube" data-cube="323">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="223"></div>
+                  <div class="shadow-y" data-cube="223"></div>
+                  <div class="shadow-z" data-cube="321"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <div class="cube" data-cube="333">
+              <div class="cube-wrap">
+                <div class="cube-top">
+                  <div class="shadow-flip" data-cube="233"></div>
+                  <div class="shadow-y" data-cube="233"></div>
+                  <div class="shadow-z" data-cube="331"></div>
+                </div>
+                <div class="cube-bottom"></div>
+                <div class="cube-front-left"></div>
+                <div class="cube-front-right"></div>
+                <div class="cube-back-left"></div>
+                <div class="cube-back-right"></div>
+              </div>
+            </div>
+
+            <!-- floor shadows -->
+            <div class="large-shadows">
+              <div class="large-shadow" data-cube="113"></div>
+              <div class="large-shadow" data-cube="123"></div>
+              <div class="large-shadow" data-cube="133"></div>
+              <div class="large-shadow" data-cube="213"></div>
+              <div class="large-shadow" data-cube="223"></div>
+              <div class="large-shadow" data-cube="233"></div>
+              <div class="large-shadow" data-cube="313"></div>
+              <div class="large-shadow" data-cube="323"></div>
+              <div class="large-shadow" data-cube="333"></div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <script>
-(() => {
-  const frame = document.getElementById("frame");
-  const canvas = document.getElementById("cv");
-  const ctx = canvas.getContext("2d", { alpha: true });
-
-  const forwarder3d = document.getElementById("forwarder3d");
-  const cubes = document.getElementById("cubes");
-
-  const TAU = Math.PI * 2;
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const rand = (a, b) => a + Math.random() * (b - a);
-
-  function easeInOutSine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
-  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-
-  function bezierPoint(p0, p1, p2, p3, t) {
-    const u = 1 - t;
-    const tt = t * t;
-    const uu = u * u;
-    const uuu = uu * u;
-    const ttt = tt * t;
-    return {
-      x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
-      y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y
-    };
-  }
-
-  function roundRect(x, y, w, h, r) {
-    const rr = Math.min(r, w / 2, h / 2);
-    ctx.beginPath();
-    ctx.moveTo(x + rr, y);
-    ctx.arcTo(x + w, y, x + w, y + h, rr);
-    ctx.arcTo(x + w, y + h, x, y + h, rr);
-    ctx.arcTo(x, y + h, x, y, rr);
-    ctx.arcTo(x, y, x + w, y, rr);
-    ctx.closePath();
-  }
-
-  const CFG = {
-    dprMax: 2,
-    stars: 120,
-    vignette: 0.84,
-
-    // Orb colors
-    inOrb: [245, 250, 255],
-    early: [199, 142, 84],
-    trend: [215, 224, 238],
-    runner: [255, 205, 110],
-
-    // Layout tuning (matches your screenshot)
-    forwarderNudgeX: 0,
-    forwarderNudgeY: 0,
-    centerY: 0.46,
-    forwarderX: 0.50,
-    sourceX: 0.50,
-    forwarderOffsetY: -0.03,  // ✅ moved up a touch for cleaner spacing
-    outOffsetY: 0.30,
-    sourceOffsetY: -0.27,
-
-    laneOffsetX: 0.22,
-    outYPad: 0,
-
-    // Timing (router behavior)
-    intakeDurMs: 1150,
-    sortMs: 3600,          // must match cube flip duration visually
-    rotateMs: 520,
-    emitGapMs: 340,
-    outDurMs: 2200,
-
-    // Visual sizing
-    packetSize: 2.8,
-    packetGlow: 18,
-    inOrbScale: 1.55,
-    outOrbScale: 1.10,
-
-    // Pill sizing (shared by lanes + pills)
-    pillW: 138,
-    pillH: 42,
-
-    lanePulseMs: 1500,
-    pillFlashMs: 950,
-    splitFlashMs: 0,
-    splitBeamAlpha: 0,
-
-    // How often batches arrive (no new batch while sorting/routing)
-    batch: {
-      minCount: 1,
-      maxCount: 1,
-      spacingMs: 180,  // staggered intake into the core
-      idleMinMs: 2000,
-      idleMaxMs: 5200,
-      pauseChance: 0.10,
-      pauseMinMs: 9000,
-      pauseMaxMs: 12000
-    }
-  };
-
-  let DPR = 1;
-  let W = 1;
-  let H = 1;
-
-  // This is the square half-size used by layout + curves
-  let currentCubeHalf = 70;
-
-  // Stars (subtle background noise)
-  const stars = [];
-
-  function initStars() {
-    stars.length = 0;
-    for (let i = 0; i < CFG.stars; i++) {
-      stars.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        r: 0.6 + Math.random() * 1.1,
-        a: 0.03 + Math.random() * 0.10
-      });
-    }
-  }
-
-  function updateForwarderSize() {
-    const minSide = Math.min(W, H);
-
-    // cube size tuned for voxel core
-    const cubeUnit = clamp(minSide * 0.038, 26, 64);  // ✅ slightly bigger cube (premium presence)
-    const gap = clamp(Math.round(cubeUnit * 0.07), 2, 5);
-
-    // cluster half-size = (1.5u + gap) around center
-    currentCubeHalf = (cubeUnit * 1.5 + gap) * 1.04;
-
-    cubes.style.setProperty("--u", cubeUnit + "px");
-    cubes.style.setProperty("--gap", gap + "px");
-
-    // ✅ expose unit sizing to the label too
-    forwarder3d.style.setProperty("--u", cubeUnit + "px");
-    forwarder3d.style.setProperty("--gap", gap + "px");
-
-    // blur scales with size so it stays premium
-    const blurPx = clamp(cubeUnit * 0.55, 10, 30);
-    forwarder3d.style.setProperty("--shadowBlur", blurPx + "px");
-  }
-
-  function resize() {
-    DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
-    const rect = frame.getBoundingClientRect();
-    W = Math.max(1, Math.floor(rect.width));
-    H = Math.max(1, Math.floor(rect.height));
-
-    canvas.width = Math.floor(W * DPR);
-    canvas.height = Math.floor(H * DPR);
-    canvas.style.width = W + "px";
-    canvas.style.height = H + "px";
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-    initStars();
-    updateForwarderSize();
-  }
-
-  window.addEventListener("resize", resize);
-
-  /* ==========================
-     Layout + routing geometry
-     ========================== */
-
-  function getLayout() {
-    const cubeHalf = currentCubeHalf;
-    const centerY = H * CFG.centerY;
-
-    let ry = centerY + H * CFG.forwarderOffsetY;
-    let outY = centerY + H * CFG.outOffsetY;
-    let sy = centerY + H * CFG.sourceOffsetY;
-
-    const topSafe = cubeHalf + 80;
-    const bottomSafe = 70;
-
-    outY = clamp(outY, ry + cubeHalf + 150, H - bottomSafe);
-    ry = clamp(ry, topSafe, outY - cubeHalf - 160);
-    sy = clamp(sy, 45, ry - cubeHalf - 140);
-
-    const sx = W * CFG.sourceX;
-    const rx = W * CFG.forwarderX;
-
-    const laneOffsetPx = clamp(W * CFG.laneOffsetX, 150, 350);
-
-    const laneX0 = rx - laneOffsetPx;
-    const laneX1 = rx;
-    const laneX2 = rx + laneOffsetPx;
-
-    // pill positions live just above the bottom edge
-    const pillY = outY + 48;
-
-    return {
-      sx, sy,
-      rx, ry,
-      outY,
-      pillY,
-      lanes: [
-        { laneId: 0, x: laneX0, label: "EARLY" },
-        { laneId: 1, x: laneX1, label: "TREND" },
-        { laneId: 2, x: laneX2, label: "RUNNER" },
-      ]
-    };
-  }
-
-  function cubeEdgePoint(cx, cy, half, t) {
-    // t from 0..1 around perimeter
-    t = ((t % 1) + 1) % 1;
-    const seg = t * 4;
-    const i = Math.floor(seg);
-    const lt = seg - i;
-    const e = easeInOutSine(lt);
-
-    if (i === 0) return { x: lerp(cx - half, cx + half, e), y: cy - half };
-    if (i === 1) return { x: cx + half, y: lerp(cy - half, cy + half, e) };
-    if (i === 2) return { x: lerp(cx + half, cx - half, e), y: cy + half };
-    return { x: cx - half, y: lerp(cy + half, cy - half, e) };
-  }
-
-  function buildCurves(L, cubeHalf) {
-    // ✅ Smooth "drawn like a cable" lanes (no hooks / no looping into pills)
-    // Goal: start under the cube, sweep outward, arrive cleanly into the pill edge.
-    const p0 = { x: L.rx, y: (L.ry + cubeHalf * 0.98) };
-
-    return L.lanes.map((lane) => {
-      // End *into* the pill top edge so the lane visually CONNECTS (like your sketch).
-      // Pill center is L.pillY, so the top edge is L.pillY - (pillH/2).
-      const p3 = { x: lane.x, y: (L.pillY - (CFG.pillH * 0.5) - 2) };
-
-      const dx = lane.x - L.rx;
-      const dy = p3.y - p0.y;
-
-      // Control points stay INSIDE the p0->p3 box to prevent any "loop-back" curves.
-      // This matches the red sketch: wide arc, smooth approach, no bounce.
-      const p1 = { x: L.rx + dx * 0.10, y: p0.y + dy * 0.42 };
-      const p2 = { x: L.rx + dx * 0.90, y: p0.y + dy * 0.92 };
-
-      return { laneId: lane.laneId, p0, p1, p2, p3 };
-    });
-  }
-
-  function laneColor(laneId) {
-    if (laneId === 0) return CFG.early;
-    if (laneId === 1) return CFG.trend;
-    return CFG.runner;
-  }
-
-  const rgb = (arr) => `rgb(${arr[0]},${arr[1]},${arr[2]})`;
-  const rgba = (arr, a) => `rgba(${arr[0]},${arr[1]},${arr[2]},${a})`;
-
-  /* ==========================
-     Core pointing (visual logic)
-     ========================== */
-
-  const IDLE_ANGLE = -45;
-  const LANE_ANGLE = {
-    0: -62, // early (left)
-    1: -45, // trend (center)
-    2: -28  // runner (right)
-  };
-
-  function setCoreAngleDeg(deg) {
-    cubes.style.setProperty("--coreRot", deg + "deg");
-  }
-
-  function pointToLane(laneId) {
-    setCoreAngleDeg(LANE_ANGLE[laneId] ?? IDLE_ANGLE);
-  }
-
-  /* ==========================
-     Router state machine
-     ========================== */
-
-  // "inside" queue: packets are in the core (we don't draw them externally)
-  // "inPackets": visible intake orbs traveling into the core
-  // "outPackets": visible output orbs traveling down lanes
-  const router = {
-    mode: "idle", // idle | intake | sort | route | cooldown
-    queue: [],
-    inPackets: [],
-    outPackets: [],
-    pendingEmit: null,
-    nextSpawnAt: 0,
-    sortStart: 0,
-    routeNextAt: 0,
-    lastLaneUsed: 1,
-    internalPulseSeed: Math.random() * 1000
-  };
-
-  // lane pulse + pill flash times
-  const lanePulseAt = [0, 0, 0];
-  const pillFlashAt = [0, 0, 0];
-  let splitFlashUntil = 0;
-
-  function setSortActive(on) {
-    // Only run the flip sequence while sorting
-    if (on) {
-      forwarder3d.classList.remove("isIdle");
-      forwarder3d.classList.add("isActive");
-    } else {
-      forwarder3d.classList.remove("isActive");
-      forwarder3d.classList.add("isIdle");
-    }
-  }
-
-  function scheduleNextBatch(now) {
-    let wait = rand(CFG.batch.idleMinMs, CFG.batch.idleMaxMs);
-
-    // occasional "pause" to feel human / not mechanical
-    if (Math.random() < CFG.batch.pauseChance) {
-      wait = rand(CFG.batch.pauseMinMs, CFG.batch.pauseMaxMs);
-    }
-
-    router.nextSpawnAt = now + wait;
-  }
-
-  function pickLane() {
-    // subtle round-robin so it feels intentional
-    const next = (router.lastLaneUsed + 1) % 3;
-    router.lastLaneUsed = next;
-    return next;
-  }
-
-  function startBatch(now) {
-    const count = Math.floor(rand(CFG.batch.minCount, CFG.batch.maxCount + 1));
-
-    router.mode = "intake";
-    router.queue.length = 0;
-    router.inPackets.length = 0;
-    router.outPackets.length = 0;
-    router.pendingEmit = null;
-
-    // Always point to center before intake
-    pointToLane(1);
-
-    for (let i = 0; i < count; i++) {
-      router.inPackets.push({
-        laneId: pickLane(),
-        spawnAt: now + i * CFG.batch.spacingMs,
-        entered: false
-      });
-    }
-  }
-
-  /* ==========================
-     Drawing (premium + readable)
-     ========================== */
-
-  function drawBackground(L, cubeHalf) {
-    // deep background
-    ctx.fillStyle = "#05070c";
-    ctx.fillRect(0, 0, W, H);
-
-    // stars
-    ctx.save();
-    for (const s of stars) {
-      ctx.fillStyle = `rgba(255,255,255,${s.a})`;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, TAU);
-      ctx.fill();
-    }
-    ctx.restore();
-
-    // ✅ NEW: cinematic spotlight behind the forwarder core (subtle, premium)
-    if (L) {
-      ctx.save();
-      const cx = L.rx;
-      const cy = L.ry - cubeHalf * 0.10;
-
-      const inner = Math.max(40, cubeHalf * 0.55);
-      const outer = Math.max(W, H) * 0.55;
-
-      const glow = ctx.createRadialGradient(cx, cy, inner * 0.12, cx, cy, outer);
-      glow.addColorStop(0.00, "rgba(246,212,139,0.11)");
-      glow.addColorStop(0.22, "rgba(255,255,255,0.045)");
-      glow.addColorStop(0.55, "rgba(246,212,139,0.030)");
-      glow.addColorStop(1.00, "rgba(0,0,0,0)");
-
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, W, H);
-      ctx.restore();
-    }
-
-
-    // vignette
-    ctx.save();
-    const vg = ctx.createRadialGradient(
-      W * 0.5, H * 0.48, Math.min(W, H) * 0.10,
-      W * 0.5, H * 0.5, Math.max(W, H) * 0.88
-    );
-    vg.addColorStop(0.0, "rgba(0,0,0,0)");
-    vg.addColorStop(1.0, `rgba(0,0,0,${CFG.vignette})`);
-    ctx.fillStyle = vg;
-    ctx.fillRect(0, 0, W, H);
-    ctx.restore();
-  }
-
-  function drawLaneCurve(p0, p1, p2, p3, color, boost = 0) {
-    // ✅ Lane look like your screenshot:
-    // - thicker, readable "ribbon"
-    // - soft gold glow + inner filament
-    // - subtle bead highlights (feels alive, not a flat line)
-    const b = clamp(boost, 0, 1);
-
-    const mainW = 6.1 + b * 4.0;     // thicker lane body (more noticeable)
-    const filamentW = 1.65 + b * 1.35;
-    const glowBlur = 28 + b * 56;
-
-    // Gradient across the lane (tapered ends)
-    const grad = ctx.createLinearGradient(p0.x, p0.y, p3.x, p3.y);
-    grad.addColorStop(0.00, rgba(color, 0.08));
-    grad.addColorStop(0.22, rgba(color, 0.30 + b * 0.22));
-    grad.addColorStop(0.50, rgba(color, 0.42 + b * 0.30));
-    grad.addColorStop(0.78, rgba(color, 0.30 + b * 0.22));
-    grad.addColorStop(1.00, rgba(color, 0.08));
-
-    ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    // Base ribbon
-    ctx.shadowBlur = glowBlur;
-    ctx.shadowColor = rgba(color, 0.74);
-    ctx.lineWidth = mainW;
-    ctx.strokeStyle = grad;
-    ctx.beginPath();
-    ctx.moveTo(p0.x, p0.y);
-    ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
-    ctx.stroke();
-
-    // Inner filament (sharp + premium)
-    ctx.shadowBlur = 0;
-    ctx.globalAlpha = 0.85 + b * 0.15;
-    ctx.lineWidth = filamentW;
-    ctx.strokeStyle = rgba(color, 0.66 + b * 0.26);
-    ctx.beginPath();
-    ctx.moveTo(p0.x, p0.y);
-    ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
-    ctx.stroke();
-
-    // Micro highlight (metallic shine)
-    ctx.globalAlpha = 0.22 + b * 0.14;
-    ctx.lineWidth = Math.max(0.9, filamentW * 0.55);
-    ctx.strokeStyle = rgba(color, 0.95);
-    ctx.beginPath();
-    ctx.moveTo(p0.x, p0.y);
-    ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
-    ctx.stroke();
-
-    // Tiny "socket" glow at the pill connection (makes it feel truly plugged in)
-    ctx.save();
-    ctx.globalAlpha = 0.55 + b * 0.25;
-    ctx.shadowBlur = 18 + b * 22;
-    ctx.shadowColor = rgba(color, 0.85);
-    ctx.fillStyle = rgba(color, 0.38 + b * 0.24);
-    ctx.beginPath();
-    ctx.arc(p3.x, p3.y, 2.6 + b * 1.2, 0, TAU);
-    ctx.fill();
-    ctx.restore();
-
-    // ✅ NEW: tiny socket ring pulse (looks like a real port)
-    ctx.save();
-    ctx.globalAlpha = 0.18 + b * 0.42;
-    ctx.shadowBlur = 20 + b * 26;
-    ctx.shadowColor = rgba(color, 0.95);
-    ctx.lineWidth = 1.1;
-    ctx.strokeStyle = rgba(color, 0.30 + b * 0.55);
-    ctx.beginPath();
-    ctx.arc(p3.x, p3.y, 7.2 + b * 4.2, 0, TAU);
-    ctx.stroke();
-    ctx.restore();
-    ctx.restore();
-  }
-
-
-  function drawPill(x, y, text, color, isCenter, flashT) {
-    const w = CFG.pillW;
-    const h = CFG.pillH;
-    const r = 999;
-
-    // flashT (0..1) comes from packet arrival at destination
-    // ✅ glow is *circular*, not a box.
-    const glow = easeOutCubic(clamp(flashT, 0, 1));
-
-    // Natural halo (circular) behind the pill
-    if (glow > 0.001) {
-      ctx.save();
-      const rad = 34 + glow * 90;
-      const g = ctx.createRadialGradient(x, y, rad * 0.10, x, y, rad);
-      g.addColorStop(0.00, rgba(color, 0.28 * glow));
-      g.addColorStop(0.55, rgba(color, 0.12 * glow));
-      g.addColorStop(1.00, "rgba(0,0,0,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(x, y, rad, 0, TAU);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    ctx.save();
-    ctx.translate(x - w / 2, y - h / 2);
-
-    // glass background
-    ctx.fillStyle = "rgba(0,0,0,0.36)";
-    roundRect(0, 0, w, h, r);
-    ctx.fill();
-
-    // border (premium + subtle)
-    ctx.lineWidth = 1.6;
-    ctx.strokeStyle = rgba(color, (isCenter ? 0.60 : 0.46) + glow * 0.18);
-    ctx.shadowBlur = 16 + glow * 28;
-    ctx.shadowColor = rgba(color, 0.85);
-    ctx.stroke();
-
-    // text
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255,255,255,0.92)";
-    ctx.font = "700 14px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, w / 2, h / 2 + 0.5);
-
-    ctx.restore();
-  }
-
-  // ✅ Extra arrival pulse ring (circular + natural)
-  function drawArrivalPulse(x, y, color, flashT) {
-    const t = clamp(flashT, 0, 1);
-    if (t <= 0) return;
-
-    const p = 1 - t;                 // progress 0→1
-    const a = easeOutCubic(t);        // intensity
-
-    // ✅ NO RING: just a soft expanding glow "puff" when the packet arrives
-    const radOuter = 26 + p * 120;
-    const radInner = 10 + p * 40;
-
-    ctx.save();
-
-    // outer bloom
-    let g = ctx.createRadialGradient(x, y, radInner * 0.10, x, y, radOuter);
-    g.addColorStop(0.00, rgba(color, 0.16 * a));
-    g.addColorStop(0.35, rgba(color, 0.08 * a));
-    g.addColorStop(1.00, "rgba(0,0,0,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(x, y, radOuter, 0, TAU);
-    ctx.fill();
-
-    // hot core puff
-    g = ctx.createRadialGradient(x, y, 0, x, y, radInner);
-    g.addColorStop(0.00, rgba(color, 0.22 * a));
-    g.addColorStop(1.00, "rgba(0,0,0,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(x, y, radInner, 0, TAU);
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-
-  function drawOrb(x, y, color, scale = 1.0, alpha = 1.0) {
-    const r = CFG.packetSize * scale;
-
-    ctx.save();
-    ctx.globalAlpha = alpha;
-
-    // core
-    ctx.fillStyle = rgb(color);
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, TAU);
-    ctx.fill();
-
-    // glow
-    ctx.shadowBlur = CFG.packetGlow * scale;
-    ctx.shadowColor = rgba(color, 0.90);
-    ctx.fillStyle = rgba(color, 0.55);
-    ctx.beginPath();
-    ctx.arc(x, y, r * 1.75, 0, TAU);
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawSplitFlash(L) { /* disabled: no pre-lines */ return; }
-
-  function drawInternalActivity(now, L) {
-    // Only show internal "calculation" when queue exists or sorting
-    const q = router.queue.length;
-    if (q <= 0 && router.mode !== "sort") return;
-
-    const cx = L.rx;
-    const cy = L.ry;
-    const base = currentCubeHalf * 0.22;
-
-    const wobble = 0.35 + 0.15 * Math.sin((now * 0.003) + router.internalPulseSeed);
-    const pulses = Math.min(6, 2 + q);
-
-    ctx.save();
-    ctx.globalAlpha = 0.85;
-    for (let i = 0; i < pulses; i++) {
-      const a = (i / pulses) * TAU + now * 0.002;
-      const rr = base * (0.55 + 0.22 * i) * wobble;
-      const x = cx + Math.cos(a) * rr;
-      const y = cy + Math.sin(a) * rr * 0.65;
-
-      // color: white-ish, with a tiny tint depending on last lane
-      const tint = laneColor(router.lastLaneUsed);
-      const col = [
-        Math.round(lerp(CFG.inOrb[0], tint[0], 0.18)),
-        Math.round(lerp(CFG.inOrb[1], tint[1], 0.18)),
-        Math.round(lerp(CFG.inOrb[2], tint[2], 0.18))
-      ];
-
-      drawOrb(x, y, col, 0.85, 0.75);
-    }
-    ctx.restore();
-  }
-
-  /* ==========================
-     Update + draw loop
-     ========================== */
-
-  function updateRouter(now, L, cubeHalf, curves) {
-
-    // ✅ NEW: subtle idle breathing so the core feels alive
-    if (router.mode === "idle") {
-      const p = 0.56 + 0.06 * Math.sin(now * 0.0018);
-      forwarder3d.style.setProperty("--pulse", p.toFixed(3));
-    }
-    // Intake packets (visible) -> become "inside queue"
-    if (router.mode === "idle" && now >= router.nextSpawnAt) {
-      startBatch(now);
-    }
-
-    if (router.mode === "intake") {
-      let allEntered = true;
-
-      for (const p of router.inPackets) {
-        if (p.entered) continue;
-
-        if (now < p.spawnAt) {
-          allEntered = false;
-          continue;
-        }
-
-        const t = clamp((now - p.spawnAt) / CFG.intakeDurMs, 0, 1);
-        const e = easeInOutSine(t);
-
-        // incoming is always white orb
-        const start = { x: L.sx, y: L.sy };
-        const inlet = { x: L.rx, y: L.ry - cubeHalf * 0.88 };
-
-        const x = lerp(start.x, inlet.x, e);
-        const y = lerp(start.y, inlet.y, e);
-
-        drawOrb(x, y, CFG.inOrb, CFG.inOrbScale, 1.0);
-
-        if (t >= 1) {
-          p.entered = true;
-          router.queue.push({ laneId: p.laneId });
-/* split flash disabled */
-        } else {
-          allEntered = false;
-        }
-      }
-
-      if (allEntered) {
-        // start sorting (flip sequence)
-        router.mode = "sort";
-        router.sortStart = now;
-        setSortActive(true);
-      }
-    }
-
-    // Sorting (cube does its flip/shift as "calculation")
-    if (router.mode === "sort") {
-      // pulse intensity based on progress (simple)
-      const prog = clamp((now - router.sortStart) / CFG.sortMs, 0, 1);
-      forwarder3d.style.setProperty("--pulse", (0.9 + 0.35 * Math.sin(prog * Math.PI)).toFixed(3));
-
-      if (now - router.sortStart >= CFG.sortMs) {
-        // sorting done -> stop shifting, begin routing
-        setSortActive(false);
-        forwarder3d.style.setProperty("--pulse", "0.65");
-
-        router.mode = "route";
-        router.routeNextAt = now; // immediate start
-        router.pendingEmit = null;
-
-        // snap to center first
-        pointToLane(1);
-      }
-    }
-
-    // Routing (point to lane -> spit -> point -> spit)
-    if (router.mode === "route") {
-      // internal pulse while we still have items
-      forwarder3d.style.setProperty("--pulse", (router.queue.length > 0 ? "0.72" : "0.60"));
-
-      // handle pending emit (happens AFTER rotation finishes)
-      if (router.pendingEmit && now >= router.pendingEmit.emitAt) {
-        const laneId = router.pendingEmit.laneId;
-        router.pendingEmit = null;
-
-        // create outgoing orb
-        router.outPackets.push({
-          laneId,
-          outStart: now
-        });
-/* split flash disabled */
-
-        // short wait before next rotation/spit
-        router.routeNextAt = now + CFG.emitGapMs;
-      }
-
-      // if nothing pending, and time to act, rotate to next queued lane
-      if (!router.pendingEmit && router.queue.length > 0 && now >= router.routeNextAt) {
-        const item = router.queue.shift();
-        const laneId = item.laneId;
-
-        // point the core (this IS the visible "router choosing a lane")
-        pointToLane(laneId);
-
-        router.pendingEmit = {
-          laneId,
-          emitAt: now + CFG.rotateMs
-        };
-
-        // keep routeNextAt far enough that we don't spam rotations
-        router.routeNextAt = now + CFG.rotateMs + 20;
-      }
-
-      // if queue empty & nothing pending -> wait for outPackets to finish
-      if (router.queue.length === 0 && !router.pendingEmit) {
-        if (router.outPackets.length === 0) {
-          // cool down then schedule next batch
-          router.mode = "cooldown";
-          pointToLane(1); // settle
-          scheduleNextBatch(now);
-        }
-      }
-    }
-
-    if (router.mode === "cooldown") {
-      // nothing extra, just wait for scheduler -> idle
-      const p = 0.56 + 0.06 * Math.sin(now * 0.0018);
-      forwarder3d.style.setProperty("--pulse", p.toFixed(3));
-      if (now >= router.nextSpawnAt) {
-        router.mode = "idle";
-      }
-    }
-
-    // Outgoing packets always update while traveling
-    if (router.outPackets.length > 0) {
-      const keep = [];
-
-      for (const op of router.outPackets) {
-        const curve = curves[op.laneId];
-        const t = clamp((now - op.outStart) / CFG.outDurMs, 0, 1);
-        const e = easeOutCubic(t);
-
-        const p = bezierPoint(curve.p0, curve.p1, curve.p2, curve.p3, e);
-
-        const col = laneColor(op.laneId);
-        drawOrb(p.x, p.y, col, CFG.outOrbScale, 1.0);
-
-        if (t < 1) {
-          keep.push(op);
-        } else {
-          // ✅ destination impact pulse (lane + pill)
-          lanePulseAt[op.laneId] = now;
-          pillFlashAt[op.laneId] = now;
-        }
-      }
-
-      router.outPackets = keep;
-    }
-  }
-
-  function draw(now) {
-    const L = getLayout();
-    const cubeHalf = currentCubeHalf;
-
-    drawBackground(L, cubeHalf);
-
-
-    // centered + nudges
-    forwarder3d.style.left = (L.rx + CFG.forwarderNudgeX) + "px";
-    forwarder3d.style.top  = (L.ry + CFG.forwarderNudgeY) + "px";
-
-    const curves = buildCurves(L, cubeHalf);
-
-    // lane pulse
-    const laneBoost = [0, 0, 0];
-    for (let i = 0; i < 3; i++) {
-      const age = now - lanePulseAt[i];
-      const t = clamp(1 - age / CFG.lanePulseMs, 0, 1);
-      laneBoost[i] = easeOutCubic(t);
-    }
-
-    // lanes
-    for (const c of curves) {
-      drawLaneCurve(c.p0, c.p1, c.p2, c.p3, laneColor(c.laneId), laneBoost[c.laneId]);
-    }
-
-    // split flash (tiny reactive beam)
-
-    // internal "calculation" glow
-    drawInternalActivity(now, L);
-
-    // Update router state + draw packets
-    updateRouter(now, L, cubeHalf, curves);
-
-    // pills
-    for (const lane of L.lanes) {
-      const flashAge = now - pillFlashAt[lane.laneId];
-      const flashT = clamp(1 - flashAge / CFG.pillFlashMs, 0, 1);
-
-      // ✅ Natural glow pulse on arrival (circular, not boxy)
-      if (flashT > 0.001) {
-        drawArrivalPulse(lane.x, L.pillY, laneColor(lane.laneId), flashT);
-      }
-
-      drawPill(lane.x, L.pillY, lane.label, laneColor(lane.laneId), lane.laneId === 1, flashT);
-    }
-  }
-
-  function loop(now) {
-    draw(now);
-    requestAnimationFrame(loop);
-  }
-
-  // Boot
-  resize();
-  setCoreAngleDeg(IDLE_ANGLE);
-  setSortActive(false);
-
-  const bootNow = performance.now();
-  scheduleNextBatch(bootNow);
-  // Start one quick batch so you instantly see the logic on load
-  router.nextSpawnAt = bootNow + 900;
-
-  requestAnimationFrame(loop);
-})();
-</script>
-
-  <script>
-    /* ============================================================
-       PHASE 3 CTA PORTAL (non-destructive upgrade)
-      - Click GO ALPHA
-       - Cinematic zoom + warp streaks
-       - Then navigate to pricing page
-       ============================================================ */
-    (function(){
-      const btn = document.getElementById("goAlphaBtn");
-      const bubble = document.getElementById("hintBubble");
-      const portalLayer = document.getElementById("portalLayer");
-      const warpCv = document.getElementById("warpCv");
-
-      if(!btn || !bubble || !portalLayer || !warpCv) return;
-
-      const TARGET_URL = "/pricing";
-
-      // ✅ tweakables (feel free to adjust)
-      const DIVE_MS = 1450;         // 1.2s–1.8s range
-      const GLOW_BOOST_MS = 780;    // glow peak timing
-      const MAX_STREAKS = 140;      // warp density (performance-safe)
-      const SPEED_MIN = 18;
-      const SPEED_MAX = 44;
-
-      let armed = false;
-      let running = false;
-
-      // ----- hover hint follows mouse while inside button -----
-      function showHint(e){
-        armed = true;
-        bubble.classList.add("show");
-        moveHint(e);
-      }
-      function hideHint(){
-        armed = false;
-        bubble.classList.remove("show");
-      }
-      function moveHint(e){
-        if(!armed) return;
-        const x = e.clientX + 14;
-        const y = e.clientY + 12;
-        bubble.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      }
-
-      btn.addEventListener("pointerenter", showHint, {passive:true});
-      btn.addEventListener("pointermove", moveHint, {passive:true});
-      btn.addEventListener("pointerleave", hideHint, {passive:true});
-
-      // ----- Single click activation -----
-      btn.addEventListener("pointerdown", ()=>{
-        if(running) return;
-        startPortal();
-      });
-
-      // ----- Warp streak renderer (fast + lightweight) -----
-      const wctx = warpCv.getContext("2d", { alpha: true, desynchronized: true });
-      let W = 1, H = 1, DPR = 1;
-
-      function resizeWarp(){
-        const rect = warpCv.getBoundingClientRect();
-        DPR = Math.max(1, Math.min(1.6, window.devicePixelRatio || 1));
-        W = Math.max(1, Math.floor(rect.width));
-        H = Math.max(1, Math.floor(rect.height));
-        warpCv.width  = Math.floor(W * DPR);
-        warpCv.height = Math.floor(H * DPR);
-        wctx.setTransform(DPR,0,0,DPR,0,0);
-      }
-
-      const streaks = [];
-      function spawnStreak(){
-        // 3D-ish: near center heavy + edges sometimes
-        const centerBias = (Math.random() < 0.70);
-        const x = centerBias ? (W*0.5 + (Math.random()*2-1)*W*0.18) : (Math.random()*W);
-        const y = centerBias ? (H*0.5 + (Math.random()*2-1)*H*0.18) : (Math.random()*H);
-
-        streaks.push({
-          x, y,
-          z: Math.random()*1.0,
-          v: SPEED_MIN + Math.random()*(SPEED_MAX - SPEED_MIN),
-          w: 0.9 + Math.random()*1.9,
-          a: 0.22 + Math.random()*0.36
-        });
-        if(streaks.length > MAX_STREAKS) streaks.shift();
-      }
-
-      function drawWarp(t){
-        // clean fade (no flash)
-        wctx.clearRect(0,0,W,H);
-
-        // subtle gold veil
-        const g = wctx.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, Math.min(W,H)*0.70);
-        g.addColorStop(0.00, "rgba(246,212,139,0.06)");
-        g.addColorStop(0.55, "rgba(246,212,139,0.02)");
-        g.addColorStop(1.00, "rgba(0,0,0,0)");
-        wctx.fillStyle = g;
-        wctx.fillRect(0,0,W,H);
-
-        // streaks
-        wctx.save();
-        wctx.globalCompositeOperation = "lighter";
-        for(let i=0;i<streaks.length;i++){
-          const s = streaks[i];
-
-          // depth scale: closer = larger + faster
-          s.z += 0.020 + s.v*0.00036;
-          const depth = Math.min(1.0, s.z);
-
-          const len = 18 + depth*120;
-          const dx = (s.x - W*0.5);
-          const dy = (s.y - H*0.5);
-
-          // direction away from center (warp feel)
-          const mag = Math.sqrt(dx*dx + dy*dy) || 1;
-          const ux = dx / mag;
-          const uy = dy / mag;
-
-          const x2 = s.x + ux * len;
-          const y2 = s.y + uy * len;
-
-          const a = s.a * (0.35 + depth*0.95);
-
-          wctx.lineWidth = s.w * (0.75 + depth*1.45);
-          wctx.lineCap = "round";
-          wctx.strokeStyle = `rgba(255,255,255,${a})`;
-          wctx.beginPath();
-          wctx.moveTo(s.x, s.y);
-          wctx.lineTo(x2, y2);
-          wctx.stroke();
-
-          wctx.strokeStyle = `rgba(246,212,139,${a*0.42})`;
-          wctx.lineWidth *= 1.10;
-          wctx.beginPath();
-          wctx.moveTo(s.x, s.y);
-          wctx.lineTo(x2, y2);
-          wctx.stroke();
-
-          // recycle
-          if(s.z > 1.12){
-            s.z = 0;
-            s.x = W*0.5 + (Math.random()*2-1)*W*0.20;
-            s.y = H*0.5 + (Math.random()*2-1)*H*0.20;
+      <script>
+        (() => {
+          const frame = document.getElementById("frame");
+          const canvas = document.getElementById("cv");
+          const ctx = canvas.getContext("2d", { alpha: true });
+
+          const forwarder3d = document.getElementById("forwarder3d");
+          const cubes = document.getElementById("cubes");
+
+          const TAU = Math.PI * 2;
+          const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+          const lerp = (a, b, t) => a + (b - a) * t;
+          const rand = (a, b) => a + Math.random() * (b - a);
+
+          function easeInOutSine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
+          function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+          function bezierPoint(p0, p1, p2, p3, t) {
+            const u = 1 - t;
+            const tt = t * t;
+            const uu = u * u;
+            const uuu = uu * u;
+            const ttt = tt * t;
+            return {
+              x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
+              y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y
+            };
           }
-        }
-        wctx.restore();
-      }
 
-      let raf = 0;
-      function warpLoop(t){
-        if(!running) return;
+          function roundRect(x, y, w, h, r) {
+            const rr = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + rr, y);
+            ctx.arcTo(x + w, y, x + w, y + h, rr);
+            ctx.arcTo(x + w, y + h, x, y + h, rr);
+            ctx.arcTo(x, y + h, x, y, rr);
+            ctx.arcTo(x, y, x + w, y, rr);
+            ctx.closePath();
+          }
 
-        // keep enough particles alive
-        while(streaks.length < MAX_STREAKS) spawnStreak();
-        drawWarp(t);
-        raf = requestAnimationFrame(warpLoop);
-      }
+          const CFG = {
+            dprMax: 2,
+            stars: 120,
+            vignette: 0.84,
 
-      // ----- Start portal: fade UI, zoom frame, glow + warp, then navigate -----
-      function startPortal(){
-        if(running) return;
-        running = true;
+            // Orb colors
+            inOrb: [245, 250, 255],
+            early: [199, 142, 84],
+            trend: [215, 224, 238],
+            runner: [255, 205, 110],
 
-        resizeWarp();
+            // Layout tuning (matches your screenshot)
+            forwarderNudgeX: 0,
+            forwarderNudgeY: 0,
+            centerY: 0.46,
+            forwarderX: 0.50,
+            sourceX: 0.50,
+            forwarderOffsetY: -0.03,  // ✅ moved up a touch for cleaner spacing
+            outOffsetY: 0.30,
+            sourceOffsetY: -0.27,
 
-        document.body.classList.add("portalFaded");
-        document.body.classList.add("portalDiving");
-        portalLayer.classList.add("active");
+            laneOffsetX: 0.22,
+            outYPad: 0,
 
-        // start warp render
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(warpLoop);
+            // Timing (router behavior)
+            intakeDurMs: 1150,
+            sortMs: 3600,          // must match cube flip duration visually
+            rotateMs: 520,
+            emitGapMs: 340,
+            outDurMs: 2200,
 
-        // gentle glow ramp (no heavy blur)
-        const t0 = performance.now();
-        const glowTimer = setInterval(()=>{
-          const u = Math.min(1, (performance.now() - t0) / GLOW_BOOST_MS);
-          portalLayer.style.opacity = String(0.35 + 0.65*u);
-          if(u >= 1) clearInterval(glowTimer);
-        }, 16);
+            // Visual sizing
+            packetSize: 2.8,
+            packetGlow: 18,
+            inOrbScale: 1.55,
+            outOrbScale: 1.10,
 
-        // Navigate after the dive ends (no flicker)
-        setTimeout(()=>{
-          window.location.href = TARGET_URL;
-        }, DIVE_MS);
-      }
+            // Pill sizing (shared by lanes + pills)
+            pillW: 138,
+            pillH: 42,
+            pillFont: 14,
+            pillYOffset: 48,
 
-      window.addEventListener("resize", ()=>{ if(running) resizeWarp(); }, {passive:true});
-    })();
-  </script>
+            lanePulseMs: 1500,
+            pillFlashMs: 950,
+            splitFlashMs: 0,
+            splitBeamAlpha: 0,
+
+            // How often batches arrive (no new batch while sorting/routing)
+            batch: {
+              minCount: 1,
+              maxCount: 1,
+              spacingMs: 180,  // staggered intake into the core
+              idleMinMs: 2000,
+              idleMaxMs: 5200,
+              pauseChance: 0.10,
+              pauseMinMs: 9000,
+              pauseMaxMs: 12000
+            }
+          };
+
+          const mobileMQ = window.matchMedia("(max-width: 430px)");
+          if (mobileMQ.matches) {
+            CFG.pillW = 104;
+            CFG.pillH = 32;
+            CFG.pillFont = 11;
+            CFG.pillYOffset = 30;
+            CFG.laneOffsetX = 0.14;
+            CFG.outOffsetY = 0.26;
+          }
+
+          let DPR = 1;
+          let W = 1;
+          let H = 1;
+
+          // This is the square half-size used by layout + curves
+          let currentCubeHalf = 70;
+
+          // Stars (subtle background noise)
+          const stars = [];
+
+          function initStars() {
+            stars.length = 0;
+            for (let i = 0; i < CFG.stars; i++) {
+              stars.push({
+                x: Math.random() * W,
+                y: Math.random() * H,
+                r: 0.6 + Math.random() * 1.1,
+                a: 0.03 + Math.random() * 0.10
+              });
+            }
+          }
+
+          function updateForwarderSize() {
+            const minSide = Math.min(W, H);
+
+            // cube size tuned for voxel core
+            const cubeUnit = clamp(minSide * 0.038, 26, 64);  // ✅ slightly bigger cube (premium presence)
+            const gap = clamp(Math.round(cubeUnit * 0.07), 2, 5);
+
+            // cluster half-size = (1.5u + gap) around center
+            currentCubeHalf = (cubeUnit * 1.5 + gap) * 1.04;
+
+            cubes.style.setProperty("--u", cubeUnit + "px");
+            cubes.style.setProperty("--gap", gap + "px");
+
+            // ✅ expose unit sizing to the label too
+            forwarder3d.style.setProperty("--u", cubeUnit + "px");
+            forwarder3d.style.setProperty("--gap", gap + "px");
+
+            // blur scales with size so it stays premium
+            const blurPx = clamp(cubeUnit * 0.55, 10, 30);
+            forwarder3d.style.setProperty("--shadowBlur", blurPx + "px");
+          }
+
+          function resize() {
+            DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
+            const rect = frame.getBoundingClientRect();
+            W = Math.max(1, Math.floor(rect.width));
+            H = Math.max(1, Math.floor(rect.height));
+
+            canvas.width = Math.floor(W * DPR);
+            canvas.height = Math.floor(H * DPR);
+            canvas.style.width = W + "px";
+            canvas.style.height = H + "px";
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+            initStars();
+            updateForwarderSize();
+          }
+
+          window.addEventListener("resize", resize);
+
+          /* ==========================
+             Layout + routing geometry
+             ========================== */
+
+          function getLayout() {
+            const cubeHalf = currentCubeHalf;
+            const centerY = H * CFG.centerY;
+
+            let ry = centerY + H * CFG.forwarderOffsetY;
+            let outY = centerY + H * CFG.outOffsetY;
+            let sy = centerY + H * CFG.sourceOffsetY;
+
+            const topSafe = cubeHalf + 80;
+            const bottomSafe = 70;
+
+            outY = clamp(outY, ry + cubeHalf + 150, H - bottomSafe);
+            ry = clamp(ry, topSafe, outY - cubeHalf - 160);
+            sy = clamp(sy, 45, ry - cubeHalf - 140);
+
+            const sx = W * CFG.sourceX;
+            const rx = W * CFG.forwarderX;
+
+            const laneOffsetPx = clamp(W * CFG.laneOffsetX, 150, 350);
+
+            const laneX0 = rx - laneOffsetPx;
+            const laneX1 = rx;
+            const laneX2 = rx + laneOffsetPx;
+
+            // pill positions live just above the bottom edge
+            const pillY = outY + CFG.pillYOffset;
+
+            return {
+              sx, sy,
+              rx, ry,
+              outY,
+              pillY,
+              lanes: [
+                { laneId: 0, x: laneX0, label: "EARLY" },
+                { laneId: 1, x: laneX1, label: "TREND" },
+                { laneId: 2, x: laneX2, label: "RUNNER" },
+              ]
+            };
+          }
+
+          function cubeEdgePoint(cx, cy, half, t) {
+            // t from 0..1 around perimeter
+            t = ((t % 1) + 1) % 1;
+            const seg = t * 4;
+            const i = Math.floor(seg);
+            const lt = seg - i;
+            const e = easeInOutSine(lt);
+
+            if (i === 0) return { x: lerp(cx - half, cx + half, e), y: cy - half };
+            if (i === 1) return { x: cx + half, y: lerp(cy - half, cy + half, e) };
+            if (i === 2) return { x: lerp(cx + half, cx - half, e), y: cy + half };
+            return { x: cx - half, y: lerp(cy + half, cy - half, e) };
+          }
+
+          function buildCurves(L, cubeHalf) {
+            // ✅ Smooth "drawn like a cable" lanes (no hooks / no looping into pills)
+            // Goal: start under the cube, sweep outward, arrive cleanly into the pill edge.
+            const p0 = { x: L.rx, y: (L.ry + cubeHalf * 0.98) };
+
+            return L.lanes.map((lane) => {
+              // End *into* the pill top edge so the lane visually CONNECTS (like your sketch).
+              // Pill center is L.pillY, so the top edge is L.pillY - (pillH/2).
+              const p3 = { x: lane.x, y: (L.pillY - (CFG.pillH * 0.5) - 2) };
+
+              const dx = lane.x - L.rx;
+              const dy = p3.y - p0.y;
+
+              // Control points stay INSIDE the p0->p3 box to prevent any "loop-back" curves.
+              // This matches the red sketch: wide arc, smooth approach, no bounce.
+              const p1 = { x: L.rx + dx * 0.10, y: p0.y + dy * 0.42 };
+              const p2 = { x: L.rx + dx * 0.90, y: p0.y + dy * 0.92 };
+
+              return { laneId: lane.laneId, p0, p1, p2, p3 };
+            });
+          }
+
+          function laneColor(laneId) {
+            if (laneId === 0) return CFG.early;
+            if (laneId === 1) return CFG.trend;
+            return CFG.runner;
+          }
+
+          const rgb = (arr) => `rgb(${arr[0]},${arr[1]},${arr[2]})`;
+          const rgba = (arr, a) => `rgba(${arr[0]},${arr[1]},${arr[2]},${a})`;
+
+          /* ==========================
+             Core pointing (visual logic)
+             ========================== */
+
+          const IDLE_ANGLE = -45;
+          const LANE_ANGLE = {
+            0: -62, // early (left)
+            1: -45, // trend (center)
+            2: -28  // runner (right)
+          };
+
+          function setCoreAngleDeg(deg) {
+            cubes.style.setProperty("--coreRot", deg + "deg");
+          }
+
+          function pointToLane(laneId) {
+            setCoreAngleDeg(LANE_ANGLE[laneId] ?? IDLE_ANGLE);
+          }
+
+          /* ==========================
+             Router state machine
+             ========================== */
+
+          // "inside" queue: packets are in the core (we don't draw them externally)
+          // "inPackets": visible intake orbs traveling into the core
+          // "outPackets": visible output orbs traveling down lanes
+          const router = {
+            mode: "idle", // idle | intake | sort | route | cooldown
+            queue: [],
+            inPackets: [],
+            outPackets: [],
+            pendingEmit: null,
+            nextSpawnAt: 0,
+            sortStart: 0,
+            routeNextAt: 0,
+            lastLaneUsed: 1,
+            internalPulseSeed: Math.random() * 1000
+          };
+
+          // lane pulse + pill flash times
+          const lanePulseAt = [0, 0, 0];
+          const pillFlashAt = [0, 0, 0];
+          let splitFlashUntil = 0;
+
+          function setSortActive(on) {
+            // Only run the flip sequence while sorting
+            if (on) {
+              forwarder3d.classList.remove("isIdle");
+              forwarder3d.classList.add("isActive");
+            } else {
+              forwarder3d.classList.remove("isActive");
+              forwarder3d.classList.add("isIdle");
+            }
+          }
+
+          function scheduleNextBatch(now) {
+            let wait = rand(CFG.batch.idleMinMs, CFG.batch.idleMaxMs);
+
+            // occasional "pause" to feel human / not mechanical
+            if (Math.random() < CFG.batch.pauseChance) {
+              wait = rand(CFG.batch.pauseMinMs, CFG.batch.pauseMaxMs);
+            }
+
+            router.nextSpawnAt = now + wait;
+          }
+
+          function pickLane() {
+            // subtle round-robin so it feels intentional
+            const next = (router.lastLaneUsed + 1) % 3;
+            router.lastLaneUsed = next;
+            return next;
+          }
+
+          function startBatch(now) {
+            const count = Math.floor(rand(CFG.batch.minCount, CFG.batch.maxCount + 1));
+
+            router.mode = "intake";
+            router.queue.length = 0;
+            router.inPackets.length = 0;
+            router.outPackets.length = 0;
+            router.pendingEmit = null;
+
+            // Always point to center before intake
+            pointToLane(1);
+
+            for (let i = 0; i < count; i++) {
+              router.inPackets.push({
+                laneId: pickLane(),
+                spawnAt: now + i * CFG.batch.spacingMs,
+                entered: false
+              });
+            }
+          }
+
+          /* ==========================
+             Drawing (premium + readable)
+             ========================== */
+
+          function drawBackground(L, cubeHalf) {
+            // deep background
+            ctx.fillStyle = "#05070c";
+            ctx.fillRect(0, 0, W, H);
+
+            // stars
+            ctx.save();
+            for (const s of stars) {
+              ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+              ctx.beginPath();
+              ctx.arc(s.x, s.y, s.r, 0, TAU);
+              ctx.fill();
+            }
+            ctx.restore();
+
+            // ✅ NEW: cinematic spotlight behind the forwarder core (subtle, premium)
+            if (L) {
+              ctx.save();
+              const cx = L.rx;
+              const cy = L.ry - cubeHalf * 0.10;
+
+              const inner = Math.max(40, cubeHalf * 0.55);
+              const outer = Math.max(W, H) * 0.55;
+
+              const glow = ctx.createRadialGradient(cx, cy, inner * 0.12, cx, cy, outer);
+              glow.addColorStop(0.00, "rgba(246,212,139,0.11)");
+              glow.addColorStop(0.22, "rgba(255,255,255,0.045)");
+              glow.addColorStop(0.55, "rgba(246,212,139,0.030)");
+              glow.addColorStop(1.00, "rgba(0,0,0,0)");
+
+              ctx.fillStyle = glow;
+              ctx.fillRect(0, 0, W, H);
+              ctx.restore();
+            }
+
+
+            // vignette
+            ctx.save();
+            const vg = ctx.createRadialGradient(
+              W * 0.5, H * 0.48, Math.min(W, H) * 0.10,
+              W * 0.5, H * 0.5, Math.max(W, H) * 0.88
+            );
+            vg.addColorStop(0.0, "rgba(0,0,0,0)");
+            vg.addColorStop(1.0, `rgba(0,0,0,${CFG.vignette})`);
+            ctx.fillStyle = vg;
+            ctx.fillRect(0, 0, W, H);
+            ctx.restore();
+          }
+
+          function drawLaneCurve(p0, p1, p2, p3, color, boost = 0) {
+            // ✅ Lane look like your screenshot:
+            // - thicker, readable "ribbon"
+            // - soft gold glow + inner filament
+            // - subtle bead highlights (feels alive, not a flat line)
+            const b = clamp(boost, 0, 1);
+
+            const mainW = 6.1 + b * 4.0;     // thicker lane body (more noticeable)
+            const filamentW = 1.65 + b * 1.35;
+            const glowBlur = 28 + b * 56;
+
+            // Gradient across the lane (tapered ends)
+            const grad = ctx.createLinearGradient(p0.x, p0.y, p3.x, p3.y);
+            grad.addColorStop(0.00, rgba(color, 0.08));
+            grad.addColorStop(0.22, rgba(color, 0.30 + b * 0.22));
+            grad.addColorStop(0.50, rgba(color, 0.42 + b * 0.30));
+            grad.addColorStop(0.78, rgba(color, 0.30 + b * 0.22));
+            grad.addColorStop(1.00, rgba(color, 0.08));
+
+            ctx.save();
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+
+            // Base ribbon
+            ctx.shadowBlur = glowBlur;
+            ctx.shadowColor = rgba(color, 0.74);
+            ctx.lineWidth = mainW;
+            ctx.strokeStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+            ctx.stroke();
+
+            // Inner filament (sharp + premium)
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 0.85 + b * 0.15;
+            ctx.lineWidth = filamentW;
+            ctx.strokeStyle = rgba(color, 0.66 + b * 0.26);
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+            ctx.stroke();
+
+            // Micro highlight (metallic shine)
+            ctx.globalAlpha = 0.22 + b * 0.14;
+            ctx.lineWidth = Math.max(0.9, filamentW * 0.55);
+            ctx.strokeStyle = rgba(color, 0.95);
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+            ctx.stroke();
+
+            // Tiny "socket" glow at the pill connection (makes it feel truly plugged in)
+            ctx.save();
+            ctx.globalAlpha = 0.55 + b * 0.25;
+            ctx.shadowBlur = 18 + b * 22;
+            ctx.shadowColor = rgba(color, 0.85);
+            ctx.fillStyle = rgba(color, 0.38 + b * 0.24);
+            ctx.beginPath();
+            ctx.arc(p3.x, p3.y, 2.6 + b * 1.2, 0, TAU);
+            ctx.fill();
+            ctx.restore();
+
+            // ✅ NEW: tiny socket ring pulse (looks like a real port)
+            ctx.save();
+            ctx.globalAlpha = 0.18 + b * 0.42;
+            ctx.shadowBlur = 20 + b * 26;
+            ctx.shadowColor = rgba(color, 0.95);
+            ctx.lineWidth = 1.1;
+            ctx.strokeStyle = rgba(color, 0.30 + b * 0.55);
+            ctx.beginPath();
+            ctx.arc(p3.x, p3.y, 7.2 + b * 4.2, 0, TAU);
+            ctx.stroke();
+            ctx.restore();
+            ctx.restore();
+          }
+
+
+          function drawPill(x, y, text, color, isCenter, flashT) {
+            const w = CFG.pillW;
+            const h = CFG.pillH;
+            const r = 999;
+
+            // flashT (0..1) comes from packet arrival at destination
+            // ✅ glow is *circular*, not a box.
+            const glow = easeOutCubic(clamp(flashT, 0, 1));
+
+            // Natural halo (circular) behind the pill
+            if (glow > 0.001) {
+              ctx.save();
+              const rad = 34 + glow * 90;
+              const g = ctx.createRadialGradient(x, y, rad * 0.10, x, y, rad);
+              g.addColorStop(0.00, rgba(color, 0.28 * glow));
+              g.addColorStop(0.55, rgba(color, 0.12 * glow));
+              g.addColorStop(1.00, "rgba(0,0,0,0)");
+              ctx.fillStyle = g;
+              ctx.beginPath();
+              ctx.arc(x, y, rad, 0, TAU);
+              ctx.fill();
+              ctx.restore();
+            }
+
+            ctx.save();
+            ctx.translate(x - w / 2, y - h / 2);
+
+            // glass background
+            ctx.fillStyle = "rgba(0,0,0,0.36)";
+            roundRect(0, 0, w, h, r);
+            ctx.fill();
+
+            // border (premium + subtle)
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = rgba(color, (isCenter ? 0.60 : 0.46) + glow * 0.18);
+            ctx.shadowBlur = 16 + glow * 28;
+            ctx.shadowColor = rgba(color, 0.85);
+            ctx.stroke();
+
+            // text
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "rgba(255,255,255,0.92)";
+            ctx.font = `700 ${CFG.pillFont}px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(text, w / 2, h / 2 + 0.5);
+
+            ctx.restore();
+          }
+
+          // ✅ Extra arrival pulse ring (circular + natural)
+          function drawArrivalPulse(x, y, color, flashT) {
+            const t = clamp(flashT, 0, 1);
+            if (t <= 0) return;
+
+            const p = 1 - t;                 // progress 0→1
+            const a = easeOutCubic(t);        // intensity
+
+            // ✅ NO RING: just a soft expanding glow "puff" when the packet arrives
+            const radOuter = 26 + p * 120;
+            const radInner = 10 + p * 40;
+
+            ctx.save();
+
+            // outer bloom
+            let g = ctx.createRadialGradient(x, y, radInner * 0.10, x, y, radOuter);
+            g.addColorStop(0.00, rgba(color, 0.16 * a));
+            g.addColorStop(0.35, rgba(color, 0.08 * a));
+            g.addColorStop(1.00, "rgba(0,0,0,0)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(x, y, radOuter, 0, TAU);
+            ctx.fill();
+
+            // hot core puff
+            g = ctx.createRadialGradient(x, y, 0, x, y, radInner);
+            g.addColorStop(0.00, rgba(color, 0.22 * a));
+            g.addColorStop(1.00, "rgba(0,0,0,0)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(x, y, radInner, 0, TAU);
+            ctx.fill();
+
+            ctx.restore();
+          }
+
+
+          function drawOrb(x, y, color, scale = 1.0, alpha = 1.0) {
+            const r = CFG.packetSize * scale;
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+
+            // core
+            ctx.fillStyle = rgb(color);
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, TAU);
+            ctx.fill();
+
+            // glow
+            ctx.shadowBlur = CFG.packetGlow * scale;
+            ctx.shadowColor = rgba(color, 0.90);
+            ctx.fillStyle = rgba(color, 0.55);
+            ctx.beginPath();
+            ctx.arc(x, y, r * 1.75, 0, TAU);
+            ctx.fill();
+
+            ctx.restore();
+          }
+
+          function drawSplitFlash(L) { /* disabled: no pre-lines */ return; }
+
+          function drawInternalActivity(now, L) {
+            // Only show internal "calculation" when queue exists or sorting
+            const q = router.queue.length;
+            if (q <= 0 && router.mode !== "sort") return;
+
+            const cx = L.rx;
+            const cy = L.ry;
+            const base = currentCubeHalf * 0.22;
+
+            const wobble = 0.35 + 0.15 * Math.sin((now * 0.003) + router.internalPulseSeed);
+            const pulses = Math.min(6, 2 + q);
+
+            ctx.save();
+            ctx.globalAlpha = 0.85;
+            for (let i = 0; i < pulses; i++) {
+              const a = (i / pulses) * TAU + now * 0.002;
+              const rr = base * (0.55 + 0.22 * i) * wobble;
+              const x = cx + Math.cos(a) * rr;
+              const y = cy + Math.sin(a) * rr * 0.65;
+
+              // color: white-ish, with a tiny tint depending on last lane
+              const tint = laneColor(router.lastLaneUsed);
+              const col = [
+                Math.round(lerp(CFG.inOrb[0], tint[0], 0.18)),
+                Math.round(lerp(CFG.inOrb[1], tint[1], 0.18)),
+                Math.round(lerp(CFG.inOrb[2], tint[2], 0.18))
+              ];
+
+              drawOrb(x, y, col, 0.85, 0.75);
+            }
+            ctx.restore();
+          }
+
+          /* ==========================
+             Update + draw loop
+             ========================== */
+
+          function updateRouter(now, L, cubeHalf, curves) {
+
+            // ✅ NEW: subtle idle breathing so the core feels alive
+            if (router.mode === "idle") {
+              const p = 0.56 + 0.06 * Math.sin(now * 0.0018);
+              forwarder3d.style.setProperty("--pulse", p.toFixed(3));
+            }
+            // Intake packets (visible) -> become "inside queue"
+            if (router.mode === "idle" && now >= router.nextSpawnAt) {
+              startBatch(now);
+            }
+
+            if (router.mode === "intake") {
+              let allEntered = true;
+
+              for (const p of router.inPackets) {
+                if (p.entered) continue;
+
+                if (now < p.spawnAt) {
+                  allEntered = false;
+                  continue;
+                }
+
+                const t = clamp((now - p.spawnAt) / CFG.intakeDurMs, 0, 1);
+                const e = easeInOutSine(t);
+
+                // incoming is always white orb
+                const start = { x: L.sx, y: L.sy };
+                const inlet = { x: L.rx, y: L.ry - cubeHalf * 0.88 };
+
+                const x = lerp(start.x, inlet.x, e);
+                const y = lerp(start.y, inlet.y, e);
+
+                drawOrb(x, y, CFG.inOrb, CFG.inOrbScale, 1.0);
+
+                if (t >= 1) {
+                  p.entered = true;
+                  router.queue.push({ laneId: p.laneId });
+                  /* split flash disabled */
+                } else {
+                  allEntered = false;
+                }
+              }
+
+              if (allEntered) {
+                // start sorting (flip sequence)
+                router.mode = "sort";
+                router.sortStart = now;
+                setSortActive(true);
+              }
+            }
+
+            // Sorting (cube does its flip/shift as "calculation")
+            if (router.mode === "sort") {
+              // pulse intensity based on progress (simple)
+              const prog = clamp((now - router.sortStart) / CFG.sortMs, 0, 1);
+              forwarder3d.style.setProperty("--pulse", (0.9 + 0.35 * Math.sin(prog * Math.PI)).toFixed(3));
+
+              if (now - router.sortStart >= CFG.sortMs) {
+                // sorting done -> stop shifting, begin routing
+                setSortActive(false);
+                forwarder3d.style.setProperty("--pulse", "0.65");
+
+                router.mode = "route";
+                router.routeNextAt = now; // immediate start
+                router.pendingEmit = null;
+
+                // snap to center first
+                pointToLane(1);
+              }
+            }
+
+            // Routing (point to lane -> spit -> point -> spit)
+            if (router.mode === "route") {
+              // internal pulse while we still have items
+              forwarder3d.style.setProperty("--pulse", (router.queue.length > 0 ? "0.72" : "0.60"));
+
+              // handle pending emit (happens AFTER rotation finishes)
+              if (router.pendingEmit && now >= router.pendingEmit.emitAt) {
+                const laneId = router.pendingEmit.laneId;
+                router.pendingEmit = null;
+
+                // create outgoing orb
+                router.outPackets.push({
+                  laneId,
+                  outStart: now
+                });
+                /* split flash disabled */
+
+                // short wait before next rotation/spit
+                router.routeNextAt = now + CFG.emitGapMs;
+              }
+
+              // if nothing pending, and time to act, rotate to next queued lane
+              if (!router.pendingEmit && router.queue.length > 0 && now >= router.routeNextAt) {
+                const item = router.queue.shift();
+                const laneId = item.laneId;
+
+                // point the core (this IS the visible "router choosing a lane")
+                pointToLane(laneId);
+
+                router.pendingEmit = {
+                  laneId,
+                  emitAt: now + CFG.rotateMs
+                };
+
+                // keep routeNextAt far enough that we don't spam rotations
+                router.routeNextAt = now + CFG.rotateMs + 20;
+              }
+
+              // if queue empty & nothing pending -> wait for outPackets to finish
+              if (router.queue.length === 0 && !router.pendingEmit) {
+                if (router.outPackets.length === 0) {
+                  // cool down then schedule next batch
+                  router.mode = "cooldown";
+                  pointToLane(1); // settle
+                  scheduleNextBatch(now);
+                }
+              }
+            }
+
+            if (router.mode === "cooldown") {
+              // nothing extra, just wait for scheduler -> idle
+              const p = 0.56 + 0.06 * Math.sin(now * 0.0018);
+              forwarder3d.style.setProperty("--pulse", p.toFixed(3));
+              if (now >= router.nextSpawnAt) {
+                router.mode = "idle";
+              }
+            }
+
+            // Outgoing packets always update while traveling
+            if (router.outPackets.length > 0) {
+              const keep = [];
+
+              for (const op of router.outPackets) {
+                const curve = curves[op.laneId];
+                const t = clamp((now - op.outStart) / CFG.outDurMs, 0, 1);
+                const e = easeOutCubic(t);
+
+                const p = bezierPoint(curve.p0, curve.p1, curve.p2, curve.p3, e);
+
+                const col = laneColor(op.laneId);
+                drawOrb(p.x, p.y, col, CFG.outOrbScale, 1.0);
+
+                if (t < 1) {
+                  keep.push(op);
+                } else {
+                  // ✅ destination impact pulse (lane + pill)
+                  lanePulseAt[op.laneId] = now;
+                  pillFlashAt[op.laneId] = now;
+                }
+              }
+
+              router.outPackets = keep;
+            }
+          }
+
+          function draw(now) {
+            const L = getLayout();
+            const cubeHalf = currentCubeHalf;
+
+            drawBackground(L, cubeHalf);
+
+
+            // centered + nudges
+            forwarder3d.style.left = (L.rx + CFG.forwarderNudgeX) + "px";
+            forwarder3d.style.top = (L.ry + CFG.forwarderNudgeY) + "px";
+
+            const curves = buildCurves(L, cubeHalf);
+
+            // lane pulse
+            const laneBoost = [0, 0, 0];
+            for (let i = 0; i < 3; i++) {
+              const age = now - lanePulseAt[i];
+              const t = clamp(1 - age / CFG.lanePulseMs, 0, 1);
+              laneBoost[i] = easeOutCubic(t);
+            }
+
+            // lanes
+            for (const c of curves) {
+              drawLaneCurve(c.p0, c.p1, c.p2, c.p3, laneColor(c.laneId), laneBoost[c.laneId]);
+            }
+
+            // split flash (tiny reactive beam)
+
+            // internal "calculation" glow
+            drawInternalActivity(now, L);
+
+            // Update router state + draw packets
+            updateRouter(now, L, cubeHalf, curves);
+
+            // pills
+            for (const lane of L.lanes) {
+              const flashAge = now - pillFlashAt[lane.laneId];
+              const flashT = clamp(1 - flashAge / CFG.pillFlashMs, 0, 1);
+
+              // ✅ Natural glow pulse on arrival (circular, not boxy)
+              if (flashT > 0.001) {
+                drawArrivalPulse(lane.x, L.pillY, laneColor(lane.laneId), flashT);
+              }
+
+              drawPill(lane.x, L.pillY, lane.label, laneColor(lane.laneId), lane.laneId === 1, flashT);
+            }
+          }
+
+          function loop(now) {
+            draw(now);
+            requestAnimationFrame(loop);
+          }
+
+          // Boot
+          resize();
+          setCoreAngleDeg(IDLE_ANGLE);
+          setSortActive(false);
+
+          const bootNow = performance.now();
+          scheduleNextBatch(bootNow);
+          // Start one quick batch so you instantly see the logic on load
+          router.nextSpawnAt = bootNow + 900;
+
+          requestAnimationFrame(loop);
+        })();
+      </script>
+
+      <script>
+        /* ============================================================
+           PHASE 3 CTA PORTAL (non-destructive upgrade)
+          - Click GO ALPHA
+           - Cinematic zoom + warp streaks
+           - Then navigate to pricing page
+           ============================================================ */
+        (function () {
+          const btn = document.getElementById("goAlphaBtn");
+          const bubble = document.getElementById("hintBubble");
+          const portalLayer = document.getElementById("portalLayer");
+          const warpCv = document.getElementById("warpCv");
+
+          if (!btn || !bubble || !portalLayer || !warpCv) return;
+
+          const TARGET_URL = "/pricing";
+
+          // ✅ tweakables (feel free to adjust)
+          const DIVE_MS = 1450;         // 1.2s–1.8s range
+          const GLOW_BOOST_MS = 780;    // glow peak timing
+          const MAX_STREAKS = 140;      // warp density (performance-safe)
+          const SPEED_MIN = 18;
+          const SPEED_MAX = 44;
+
+          let armed = false;
+          let running = false;
+
+          const canHover = window.matchMedia && window.matchMedia("(hover: hover)").matches;
+
+          // ----- hover hint follows mouse while inside button -----
+          function showHint(e) {
+            armed = true;
+            bubble.classList.add("show");
+            moveHint(e);
+          }
+          function hideHint() {
+            armed = false;
+            bubble.classList.remove("show");
+          }
+          function moveHint(e) {
+            if (!armed) return;
+            const x = e.clientX + 14;
+            const y = e.clientY + 12;
+            bubble.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+          }
+
+          function positionTouchHint() {
+            const rect = btn.getBoundingClientRect();
+            const x = rect.left + rect.width * 0.5;
+            const y = rect.top - 12;
+            bubble.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+          }
+
+          if (canHover) {
+            btn.addEventListener("pointerenter", showHint, { passive: true });
+            btn.addEventListener("pointermove", moveHint, { passive: true });
+            btn.addEventListener("pointerleave", hideHint, { passive: true });
+          } else {
+            bubble.textContent = "TAP";
+            bubble.classList.add("show");
+            positionTouchHint();
+            window.addEventListener("resize", positionTouchHint, { passive: true });
+          }
+
+          // ----- Single click activation -----
+          btn.addEventListener("pointerdown", () => {
+            if (running) return;
+            startPortal();
+          });
+
+          // ----- Warp streak renderer (fast + lightweight) -----
+          const wctx = warpCv.getContext("2d", { alpha: true, desynchronized: true });
+          let W = 1, H = 1, DPR = 1;
+
+          function resizeWarp() {
+            const rect = warpCv.getBoundingClientRect();
+            DPR = Math.max(1, Math.min(1.6, window.devicePixelRatio || 1));
+            W = Math.max(1, Math.floor(rect.width));
+            H = Math.max(1, Math.floor(rect.height));
+            warpCv.width = Math.floor(W * DPR);
+            warpCv.height = Math.floor(H * DPR);
+            wctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+          }
+
+          const streaks = [];
+          function spawnStreak() {
+            // 3D-ish: near center heavy + edges sometimes
+            const centerBias = (Math.random() < 0.70);
+            const x = centerBias ? (W * 0.5 + (Math.random() * 2 - 1) * W * 0.18) : (Math.random() * W);
+            const y = centerBias ? (H * 0.5 + (Math.random() * 2 - 1) * H * 0.18) : (Math.random() * H);
+
+            streaks.push({
+              x, y,
+              z: Math.random() * 1.0,
+              v: SPEED_MIN + Math.random() * (SPEED_MAX - SPEED_MIN),
+              w: 0.9 + Math.random() * 1.9,
+              a: 0.22 + Math.random() * 0.36
+            });
+            if (streaks.length > MAX_STREAKS) streaks.shift();
+          }
+
+          function drawWarp(t) {
+            // clean fade (no flash)
+            wctx.clearRect(0, 0, W, H);
+
+            // subtle gold veil
+            const g = wctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, Math.min(W, H) * 0.70);
+            g.addColorStop(0.00, "rgba(246,212,139,0.06)");
+            g.addColorStop(0.55, "rgba(246,212,139,0.02)");
+            g.addColorStop(1.00, "rgba(0,0,0,0)");
+            wctx.fillStyle = g;
+            wctx.fillRect(0, 0, W, H);
+
+            // streaks
+            wctx.save();
+            wctx.globalCompositeOperation = "lighter";
+            for (let i = 0; i < streaks.length; i++) {
+              const s = streaks[i];
+
+              // depth scale: closer = larger + faster
+              s.z += 0.020 + s.v * 0.00036;
+              const depth = Math.min(1.0, s.z);
+
+              const len = 18 + depth * 120;
+              const dx = (s.x - W * 0.5);
+              const dy = (s.y - H * 0.5);
+
+              // direction away from center (warp feel)
+              const mag = Math.sqrt(dx * dx + dy * dy) || 1;
+              const ux = dx / mag;
+              const uy = dy / mag;
+
+              const x2 = s.x + ux * len;
+              const y2 = s.y + uy * len;
+
+              const a = s.a * (0.35 + depth * 0.95);
+
+              wctx.lineWidth = s.w * (0.75 + depth * 1.45);
+              wctx.lineCap = "round";
+              wctx.strokeStyle = `rgba(255,255,255,${a})`;
+              wctx.beginPath();
+              wctx.moveTo(s.x, s.y);
+              wctx.lineTo(x2, y2);
+              wctx.stroke();
+
+              wctx.strokeStyle = `rgba(246,212,139,${a * 0.42})`;
+              wctx.lineWidth *= 1.10;
+              wctx.beginPath();
+              wctx.moveTo(s.x, s.y);
+              wctx.lineTo(x2, y2);
+              wctx.stroke();
+
+              // recycle
+              if (s.z > 1.12) {
+                s.z = 0;
+                s.x = W * 0.5 + (Math.random() * 2 - 1) * W * 0.20;
+                s.y = H * 0.5 + (Math.random() * 2 - 1) * H * 0.20;
+              }
+            }
+            wctx.restore();
+          }
+
+          let raf = 0;
+          function warpLoop(t) {
+            if (!running) return;
+
+            // keep enough particles alive
+            while (streaks.length < MAX_STREAKS) spawnStreak();
+            drawWarp(t);
+            raf = requestAnimationFrame(warpLoop);
+          }
+
+          // ----- Start portal: fade UI, zoom frame, glow + warp, then navigate -----
+          function startPortal() {
+            if (running) return;
+            running = true;
+
+            resizeWarp();
+
+            document.body.classList.add("portalFaded");
+            document.body.classList.add("portalDiving");
+            portalLayer.classList.add("active");
+
+            // start warp render
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(warpLoop);
+
+            // gentle glow ramp (no heavy blur)
+            const t0 = performance.now();
+            const glowTimer = setInterval(() => {
+              const u = Math.min(1, (performance.now() - t0) / GLOW_BOOST_MS);
+              portalLayer.style.opacity = String(0.35 + 0.65 * u);
+              if (u >= 1) clearInterval(glowTimer);
+            }, 16);
+
+            // Navigate after the dive ends (no flicker)
+            setTimeout(() => {
+              window.location.href = TARGET_URL;
+            }, DIVE_MS);
+          }
+
+          window.addEventListener("resize", () => { if (running) resizeWarp(); }, { passive: true });
+        })();
+      </script>
 
 </body>
+
 </html>
-
-

@@ -1,6 +1,7 @@
 <!-- filename: reactor-core-RGB-CLUSTER-SINGLE-FRAME-CLOSER_UNIFIED.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,20 +15,20 @@
     /* ============================================================
        NEW: MASTER STYLE TOKENS (shared across all pages)
        ============================================================ */
-    :root{
-      --bg0:#03040a;
-      --bg1:#05070c;
+    :root {
+      --bg0: #03040a;
+      --bg1: #05070c;
 
-      --text: rgba(245,252,255,0.94);
-      --muted: rgba(245,252,255,0.62);
+      --text: rgba(245, 252, 255, 0.94);
+      --muted: rgba(245, 252, 255, 0.62);
 
-      --bronze:#D0924C;
-      --silver:#DCE4F2;
-      --gold:#F8D870;
-      --white:#F5FCFF;
+      --bronze: #D0924C;
+      --silver: #DCE4F2;
+      --gold: #F8D870;
+      --white: #F5FCFF;
 
-      --stroke: rgba(255,255,255,0.14);
-      --strokeSoft: rgba(255,255,255,0.08);
+      --stroke: rgba(255, 255, 255, 0.14);
+      --strokeSoft: rgba(255, 255, 255, 0.08);
 
       --radius: 26px;
 
@@ -37,7 +38,8 @@
       --panelRadius: 22px;
 
       /* panels */
-      --panelTitleTop: 175px; /* ✅ moved upward (matches your red line) */
+      --panelTitleTop: 175px;
+      /* ✅ moved upward (matches your red line) */
 
       /* telegram */
       --routerSize: 78px;
@@ -54,7 +56,8 @@
       --noteRadius: 12px;
     }
 
-    html, body{
+    html,
+    body {
       margin: 0;
       height: 100%;
       background: var(--bg0);
@@ -62,22 +65,25 @@
       font-family: "Sora", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color: var(--text);
     }
-    *{box-sizing:border-box}
 
-    .stage{
+    * {
+      box-sizing: border-box
+    }
+
+    .stage {
       position: fixed;
       inset: 0;
       display: grid;
       place-items: center;
       padding: 18px;
       background:
-        radial-gradient(1200px 900px at 50% 18%, rgba(255,255,255,0.085), transparent 62%),
-        radial-gradient(900px 700px at 22% 80%, rgba(248,216,112,0.045), transparent 62%),
-        radial-gradient(900px 700px at 85% 70%, rgba(220,228,242,0.040), transparent 62%),
+        radial-gradient(1200px 900px at 50% 18%, rgba(255, 255, 255, 0.085), transparent 62%),
+        radial-gradient(900px 700px at 22% 80%, rgba(248, 216, 112, 0.045), transparent 62%),
+        radial-gradient(900px 700px at 85% 70%, rgba(220, 228, 242, 0.040), transparent 62%),
         linear-gradient(to bottom, var(--bg0), var(--bg1));
     }
 
-    .frame{
+    .frame {
       position: relative;
       width: min(1680px, 96vw);
       height: min(860px, 88vh);
@@ -85,55 +91,61 @@
       border: 1px solid var(--stroke);
       overflow: hidden;
       background:
-        radial-gradient(1200px 900px at 50% 15%, rgba(255,255,255,0.036), transparent 66%),
-        linear-gradient(to bottom right, rgba(255,255,255,0.018), rgba(255,255,255,0.006));
+        radial-gradient(1200px 900px at 50% 15%, rgba(255, 255, 255, 0.036), transparent 66%),
+        linear-gradient(to bottom right, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006));
       box-shadow:
-        0 40px 120px rgba(0,0,0,0.72),
-        inset 0 1px 0 rgba(255,255,255,0.05);
-      transition: transform 1100ms cubic-bezier(0.2,0.8,0.2,1),
-                  filter 1100ms cubic-bezier(0.2,0.8,0.2,1);
+        0 40px 120px rgba(0, 0, 0, 0.72),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: transform 1100ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 1100ms cubic-bezier(0.2, 0.8, 0.2, 1);
       padding: var(--framePad);
       will-change: transform;
     }
 
     /* NEW: subtle texture */
-    .frame::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
+    .frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
       background:
-        radial-gradient(900px 700px at 50% 55%, rgba(255,255,255,0.02), transparent 62%);
+        radial-gradient(900px 700px at 50% 55%, rgba(255, 255, 255, 0.02), transparent 62%);
       opacity: 0.55;
     }
 
     /* ============================================================
        NEW: portal transition overlay (Page2 -> Page3)
        ============================================================ */
-    #portalFx{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
+    #portalFx {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       z-index: 11;
-      pointer-events:none;
+      pointer-events: none;
       opacity: 0;
-      transition: opacity 200ms cubic-bezier(0.2,0.8,0.2,1);
+      transition: opacity 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    .frame.entering #portalFx{ opacity: 1; }
 
-    #fadeOut{
-      position:absolute;
-      inset:0;
+    .frame.entering #portalFx {
+      opacity: 1;
+    }
+
+    #fadeOut {
+      position: absolute;
+      inset: 0;
       background: var(--bg0);
       opacity: 0;
-      pointer-events:none;
-      transition: opacity 320ms cubic-bezier(0.2,0.8,0.2,1);
+      pointer-events: none;
+      transition: opacity 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
       z-index: 12;
     }
-    #fadeOut.on{ opacity: 1; }
 
-    .frame.entering{
+    #fadeOut.on {
+      opacity: 1;
+    }
+
+    .frame.entering {
       transform: scale(1.05);
       filter: saturate(1.02);
     }
@@ -144,79 +156,81 @@
        ============================================================ */
     .frame .header,
     .frame .clusterWrap,
-    .frame .routerLabel{
-      transition: opacity 900ms cubic-bezier(0.2,0.8,0.2,1);
+    .frame .routerLabel {
+      transition: opacity 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     .frame.entering .header,
     .frame.entering .clusterWrap,
-    .frame.entering .routerLabel{
-      opacity: 0.28; /* ✅ fades down like Part 1 (still visible) */
+    .frame.entering .routerLabel {
+      opacity: 0.28;
+      /* ✅ fades down like Part 1 (still visible) */
     }
 
-    .frame.entering .routerBtn{
+    .frame.entering .routerBtn {
       /* ✅ premium zoom-in on button during portal */
       transform: translateY(-1px) scale(3.3);
-      transition: transform 1100ms cubic-bezier(0.2,0.8,0.2,1),
-                  box-shadow 1100ms cubic-bezier(0.2,0.8,0.2,1),
-                  border-color 1100ms cubic-bezier(0.2,0.8,0.2,1);
-      border-color: rgba(248,216,112,0.40);
+      transition: transform 1100ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 1100ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 1100ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      border-color: rgba(248, 216, 112, 0.40);
       box-shadow:
-        0 38px 120px rgba(0,0,0,0.70),
-        0 0 44px rgba(248,216,112,0.14),
-        inset 0 1px 0 rgba(255,255,255,0.16);
+        0 38px 120px rgba(0, 0, 0, 0.70),
+        0 0 44px rgba(248, 216, 112, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
     }
 
     /* ===========================
        FIX: HEADER SPACING + CLARITY
     =========================== */
-    .header{
+    .header {
       position: relative;
       z-index: 6;
       height: var(--headerHeight);
-      padding: 10px 16px 0 16px; /* FIX: more premium top rhythm */
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-end;
+      padding: 10px 16px 0 16px;
+      /* FIX: more premium top rhythm */
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
       gap: 18px;
     }
 
     /* NEW: subtle divider under header */
-    .header::after{
-      content:"";
-      position:absolute;
+    .header::after {
+      content: "";
+      position: absolute;
       left: 18px;
       right: 18px;
       bottom: 10px;
       height: 1px;
       background: linear-gradient(to right,
-        rgba(255,255,255,0.00),
-        rgba(255,255,255,0.08),
-        rgba(255,255,255,0.00)
-      );
+          rgba(255, 255, 255, 0.00),
+          rgba(255, 255, 255, 0.08),
+          rgba(255, 255, 255, 0.00));
       opacity: 0.55;
-      pointer-events:none;
+      pointer-events: none;
     }
 
-    .titleBlock{
+    .titleBlock {
       position: absolute;
       left: 50%;
-      top: 10px; /* FIX: aligned to frame padding */
+      top: 10px;
+      /* FIX: aligned to frame padding */
       transform: translateX(-50%);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      text-align:center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
       width: min(980px, 92%);
-      user-select:none;
-      pointer-events:none;
+      user-select: none;
+      pointer-events: none;
     }
 
     /* NEW: unified H1 style */
-    .title{
-      display:flex;
-      align-items:baseline;
-      justify-content:center;
+    .title {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
       gap: 12px;
       font-weight: 900;
       letter-spacing: 0.22em;
@@ -224,66 +238,80 @@
       font-size: 40px;
       line-height: 1;
       text-shadow:
-        0 10px 24px rgba(0,0,0,0.55),
-        0 0 22px rgba(248,216,112,0.06);
+        0 10px 24px rgba(0, 0, 0, 0.55),
+        0 0 22px rgba(248, 216, 112, 0.06);
       white-space: nowrap;
     }
-    .title .py{ color: rgba(245,252,255,0.92); }
-    .title .scan{ color: var(--gold); }
-    .title .bots{ color: rgba(245,252,255,0.86); opacity: 0.92; }
 
-    .master{
-      position: relative;
-      z-index: 6;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      user-select:none;
+    .title .py {
+      color: rgba(245, 252, 255, 0.92);
     }
 
-    .pill{
+    .title .scan {
+      color: var(--gold);
+    }
+
+    .title .bots {
+      color: rgba(245, 252, 255, 0.86);
+      opacity: 0.92;
+    }
+
+    .master {
+      position: relative;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+
+    .pill {
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: rgba(245,252,255,0.76);
+      color: rgba(245, 252, 255, 0.76);
       padding: 10px 12px;
       border-radius: 999px;
-      background: rgba(0,0,0,0.28);
+      background: rgba(0, 0, 0, 0.28);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.14);
+      border: 1px solid rgba(255, 255, 255, 0.14);
     }
 
     /* NEW: unified button system */
-    .btn{
+    .btn {
       width: 44px;
       height: 44px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.26);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.26);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      color: rgba(245,252,255,0.92);
+      color: rgba(245, 252, 255, 0.92);
       font-size: 16px;
       font-weight: 900;
       cursor: pointer;
-      display:grid;
-      place-items:center;
-      transition: transform 200ms cubic-bezier(0.2,0.8,0.2,1),
-                  border-color 200ms cubic-bezier(0.2,0.8,0.2,1),
-                  background 200ms cubic-bezier(0.2,0.8,0.2,1);
+      display: grid;
+      place-items: center;
+      transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        background 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
     }
-    .btn:hover{
+
+    .btn:hover {
       transform: translateY(-1px);
-      border-color: rgba(255,255,255,0.18);
-      background: rgba(0,0,0,0.36);
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.36);
     }
-    .btn:active{
+
+    .btn:active {
       transform: translateY(0px) scale(0.98);
     }
 
-    .sfxBtn{
+    .sfxBtn {
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 0.14em;
@@ -291,206 +319,270 @@
       width: 56px;
     }
 
+    .btn:focus,
+    .btn:focus-visible,
+    .sfxBtn:focus,
+    .sfxBtn:focus-visible {
+      outline: none;
+      box-shadow:
+        0 12px 26px rgba(0, 0, 0, 0.5),
+        0 0 0 2px rgba(255, 255, 255, 0.18);
+    }
+
     /* FIX: panels area spacing */
-    .clusterWrap{
+    .clusterWrap {
       position: relative;
       z-index: 2;
       height: calc(100% - var(--headerHeight));
       padding: var(--botsTopGap) 10px var(--botsBottomGap) 10px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    .cluster{
-      display:grid;
+    .cluster {
+      display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: var(--panelGap);
       align-items: stretch;
     }
 
-    .panel{
-      position:relative;
+    .panel {
+      position: relative;
       height: 650px;
       border-radius: var(--panelRadius);
-      border: 1px solid rgba(255,255,255,0.080);
+      border: 1px solid rgba(255, 255, 255, 0.080);
       background:
-        radial-gradient(700px 520px at 50% 45%, rgba(255,255,255,0.026), transparent 65%),
-        radial-gradient(900px 720px at 50% 60%, rgba(0,0,0,0.10), rgba(0,0,0,0.34));
-      overflow:hidden;
+        radial-gradient(700px 520px at 50% 45%, rgba(255, 255, 255, 0.026), transparent 65%),
+        radial-gradient(900px 720px at 50% 60%, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.34));
+      overflow: hidden;
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.04);
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
-    .panel::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background: radial-gradient(circle at 50% 55%, transparent 55%, rgba(0,0,0,0.20) 82%);
-      opacity:0.38;
-      mix-blend-mode:multiply;
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 55%, transparent 55%, rgba(0, 0, 0, 0.20) 82%);
+      opacity: 0.38;
+      mix-blend-mode: multiply;
     }
 
-    .panelHead{
-      position:absolute;
+    .panelHead {
+      position: absolute;
       left: 0;
       right: 0;
-      top: var(--panelTitleTop); /* ✅ moved up to match your red line */
+      top: var(--panelTitleTop);
+      /* ✅ moved up to match your red line */
       z-index: 3;
       padding: 0;
-      text-align:center;
-      user-select:none;
-      pointer-events:none; /* keep clicks for the canvas / UI */
+      text-align: center;
+      user-select: none;
+      pointer-events: none;
+      /* keep clicks for the canvas / UI */
     }
 
-    .panelTitle{
-      display:flex;
-      justify-content:center;
+    .panelTitle {
+      display: flex;
+      justify-content: center;
       gap: 10px;
-      align-items:center;
+      align-items: center;
       font-size: 16px;
       font-weight: 900;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       margin-bottom: 0px;
-      text-shadow: 0 10px 22px rgba(0,0,0,0.55);
+      text-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
     }
 
-    .panelTitle .alpha{ color: rgba(245,252,255,0.92); }
+    .panelTitle .alpha {
+      color: rgba(245, 252, 255, 0.92);
+    }
 
-    .panel[data-bot="EARLY"]  .panelTitle .name{ color: #D0924C; }
-    .panel[data-bot="TREND"]  .panelTitle .name{ color: #DCE4F2; }
-    .panel[data-bot="RUNNER"] .panelTitle .name{ color: #F8D870; }
+    .panel[data-bot="EARLY"] .panelTitle .name {
+      color: #D0924C;
+    }
 
-    .panelBody{
-      position:absolute;
+    .panel[data-bot="TREND"] .panelTitle .name {
+      color: #DCE4F2;
+    }
+
+    .panel[data-bot="RUNNER"] .panelTitle .name {
+      color: #F8D870;
+    }
+
+    .panelBody {
+      position: absolute;
       inset: 0;
-      padding-top: 0px; /* title is now absolute overlay */
+      padding-top: 0px;
+      /* title is now absolute overlay */
     }
 
-    canvas.reactor{
-      position:absolute;
+    canvas.reactor {
+      position: absolute;
       inset: 0;
-      width:100%;
-      height:100%;
-      display:block;
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    #overlay{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
+    #overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       z-index: 4;
-      pointer-events:none;
+      pointer-events: none;
     }
 
     /* FIX: router pinned to bottom with perfect spacing */
-    .routerDock{
-      position:absolute;
+    .routerDock {
+      position: absolute;
       left: 50%;
       bottom: 16px;
       transform: translateX(-50%);
       z-index: 10;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       gap: 10px;
-      user-select:none;
+      user-select: none;
       pointer-events: auto;
     }
 
-    .routerBtn{
+    .routerBtn {
       width: var(--routerSize);
       height: var(--routerSize);
       border-radius: 999px;
-      border: 1px solid rgba(248,216,112,0.22);
+      border: 1px solid rgba(248, 216, 112, 0.22);
       background:
-        radial-gradient(circle at 30% 25%, rgba(255,255,255,0.14), transparent 45%),
-        radial-gradient(circle at 50% 55%, rgba(248,216,112,0.08), rgba(0,0,0,0.35));
+        radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.14), transparent 45%),
+        radial-gradient(circle at 50% 55%, rgba(248, 216, 112, 0.08), rgba(0, 0, 0, 0.35));
       box-shadow:
-        0 24px 60px rgba(0,0,0,0.55),
-        inset 0 1px 0 rgba(255,255,255,0.08);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      position:relative;
-      transition: transform 220ms cubic-bezier(0.2,0.8,0.2,1),
-                  box-shadow 220ms cubic-bezier(0.2,0.8,0.2,1),
-                  border-color 220ms cubic-bezier(0.2,0.8,0.2,1);
+        0 24px 60px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
       outline: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .routerBtn::before{
-      content:"";
-      position:absolute;
-      inset:-10px;
-      border-radius:999px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: radial-gradient(circle at 50% 50%, rgba(248,216,112,0.06), transparent 70%);
+    .routerBtn:focus,
+    .routerBtn:focus-visible {
+      outline: none;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.55),
+        0 0 0 2px rgba(255, 255, 255, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .routerBtn::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: radial-gradient(circle at 50% 50%, rgba(248, 216, 112, 0.06), transparent 70%);
       opacity: 0.85;
-      pointer-events:none;
+      pointer-events: none;
     }
 
-    .routerBtn.pulse{
-      animation: routerPulse 900ms cubic-bezier(0.2,0.8,0.2,1);
-    }
-    @keyframes routerPulse{
-      0%   { transform: translateY(0) scale(1); }
-      35%  { transform: translateY(-1px) scale(1.02); }
-      70%  { transform: translateY(0) scale(1.01); }
-      100% { transform: translateY(0) scale(1); }
+    .routerBtn.pulse {
+      animation: routerPulse 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
-    .routerIcon{
+    @keyframes routerPulse {
+      0% {
+        transform: translateY(0) scale(1);
+      }
+
+      35% {
+        transform: translateY(-1px) scale(1.02);
+      }
+
+      70% {
+        transform: translateY(0) scale(1.01);
+      }
+
+      100% {
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes routerHintGlow {
+      0%,
+      100% {
+        opacity: 0.15;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.18);
+      }
+      50% {
+        opacity: 0.75;
+        box-shadow: 0 0 24px rgba(255, 255, 255, 0.45);
+        border-color: rgba(255, 255, 255, 0.65);
+      }
+    }
+
+    .routerIcon {
       width: 34px;
       height: 34px;
       opacity: 0.95;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
+      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.55));
     }
 
     /* Subtle triple-click hint (hover only) */
-    .routerHint{
-      position:absolute;
+    .routerHint {
+      position: absolute;
       top: -14px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 11px;
-      font-weight: 850;
-      letter-spacing: 0.14em;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      color: rgba(245,252,255,0.74);
-      padding: 6px 10px;
+      color: rgba(245, 252, 255, 0.74);
+      padding: 4px 6px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.40);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.40);
       opacity: 0;
-      pointer-events:none;
-      transition: opacity 160ms cubic-bezier(0.2,0.8,0.2,1);
+      pointer-events: none;
+      transition: opacity 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
       white-space: nowrap;
     }
-    .routerBtn.hintOn .routerHint{ opacity: 1; }
 
-    .routerLabel{
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.22em;
+    .routerBtn.hintOn .routerHint {
+      opacity: 1;
+    }
+
+    .routerLabel {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: rgba(245,252,255,0.70);
-      padding: 6px 12px;
+      color: rgba(245, 252, 255, 0.70);
+      padding: 3px 6px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(0, 0, 0, 0.22);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
 
-    @media (max-width: 980px){
-      .frame{ height: min(980px, 92vh); }
+    @media (max-width: 980px) {
+      .frame {
+        height: min(980px, 92vh);
+      }
 
-      .header{
+      .header {
         justify-content: center;
         align-items: center;
         flex-direction: column;
@@ -498,31 +590,42 @@
         padding-bottom: 12px;
       }
 
-      .titleBlock{
+      .titleBlock {
         position: static;
         transform: none;
         width: 100%;
         pointer-events: auto;
       }
 
-      .title{ font-size: 28px; white-space: normal; }
-      .master{ justify-content:center; }
+      .title {
+        font-size: 28px;
+        white-space: normal;
+      }
 
-      .cluster{
+      .master {
+        justify-content: center;
+      }
+
+      .cluster {
         grid-template-columns: 1fr;
         gap: 14px;
       }
 
-      .panel{ height: 420px; }
-      .routerDock{ bottom: 12px; }
+      .panel {
+        height: 420px;
+      }
+
+      .routerDock {
+        bottom: 12px;
+      }
     }
-  
+
     /* ============================================================
        NEW: consistent brand mark (shared)
        ============================================================ */
-    
-    .brandMark{
-      position:absolute;
+
+    .brandMark {
+      position: absolute;
       left: 18px;
       top: 16px;
       font-family: var(--font);
@@ -530,127 +633,138 @@
       font-size: 11px;
       letter-spacing: 0.34em;
       text-transform: uppercase;
-      color: rgba(245,252,255,0.70);
+      color: rgba(245, 252, 255, 0.70);
       z-index: 9;
-      pointer-events:none;
-      user-select:none;
-      text-shadow: 0 0 18px rgba(248,216,112,0.10);
+      pointer-events: none;
+      user-select: none;
+      text-shadow: 0 0 18px rgba(248, 216, 112, 0.10);
 
       /* ✅ new: premium phase tag row */
-      display:flex;
-      align-items:center;
+      display: flex;
+      align-items: center;
       gap: 10px;
     }
-    .brandText{ color: rgba(245,252,255,0.72); }
-    .brandSep{ opacity: 0.35; letter-spacing: 0; }
-.phaseTag{
-      color: rgba(248,216,112,0.95);
-      border: 1px solid rgba(248,216,112,0.22);
-      background: rgba(0,0,0,0.26);
+
+    .brandText {
+      color: rgba(245, 252, 255, 0.72);
+    }
+
+    .brandSep {
+      opacity: 0.35;
+      letter-spacing: 0;
+    }
+
+    .phaseTag {
+      color: rgba(248, 216, 112, 0.95);
+      border: 1px solid rgba(248, 216, 112, 0.22);
+      background: rgba(0, 0, 0, 0.26);
       padding: 6px 10px;
       border-radius: 999px;
       letter-spacing: 0.22em;
-      box-shadow: 0 0 18px rgba(248,216,112,0.08);
+      box-shadow: 0 0 18px rgba(248, 216, 112, 0.08);
     }
 
     /* Workflow panel */
-    .infoPanel{
-      position:absolute;
+    .infoPanel {
+      position: absolute;
       left: 16px;
       bottom: 16px;
       z-index: 10;
       width: min(360px, 92vw);
       padding: 14px 16px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.36);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.36);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
       pointer-events: auto;
     }
 
-    .infoEyebrow{
+    .infoEyebrow {
       font-size: 10px;
       letter-spacing: 0.32em;
       text-transform: uppercase;
-      color: rgba(245,252,255,0.60);
+      color: rgba(245, 252, 255, 0.60);
       font-weight: 800;
     }
 
-    .infoTitle{
+    .infoTitle {
       margin-top: 6px;
       font-size: 14px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       font-weight: 900;
-      color: rgba(245,252,255,0.92);
+      color: rgba(245, 252, 255, 0.92);
     }
 
-    .infoText{
+    .infoText {
       margin: 8px 0 0 0;
       font-size: 12px;
-      color: rgba(245,252,255,0.70);
+      color: rgba(245, 252, 255, 0.70);
       line-height: 1.35;
     }
 
-    .phaseRow{
+    .phaseRow {
       margin-top: 10px;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
     }
 
-    .phasePill{
+    .phasePill {
       font-size: 10px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       padding: 6px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(245,252,255,0.72);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(245, 252, 255, 0.72);
       text-decoration: none;
-      background: rgba(0,0,0,0.28);
-    }
-    .phasePill.active{
-      border-color: rgba(248,216,112,0.48);
-      color: rgba(248,216,112,0.95);
-      background: rgba(248,216,112,0.10);
+      background: rgba(0, 0, 0, 0.28);
     }
 
-    .infoButtons{
+    .phasePill.active {
+      border-color: rgba(248, 216, 112, 0.48);
+      color: rgba(248, 216, 112, 0.95);
+      background: rgba(248, 216, 112, 0.10);
+    }
+
+    .infoButtons {
       margin-top: 12px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
 
-    .infoBtn{
+    .infoBtn {
       font-size: 10px;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       padding: 8px 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.30);
-      color: rgba(245,252,255,0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.30);
+      color: rgba(245, 252, 255, 0.88);
       text-decoration: none;
       font-weight: 800;
       transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
     }
-    .infoBtn:hover{
+
+    .infoBtn:hover {
       transform: translateY(-1px);
-      border-color: rgba(255,255,255,0.22);
-      background: rgba(0,0,0,0.42);
-    }
-    .infoBtn.primary{
-      border-color: rgba(248,216,112,0.46);
-      color: rgba(248,216,112,0.98);
-      background: rgba(248,216,112,0.08);
+      border-color: rgba(255, 255, 255, 0.22);
+      background: rgba(0, 0, 0, 0.42);
     }
 
-    @media (max-width: 820px){
-      .infoPanel{
+    .infoBtn.primary {
+      border-color: rgba(248, 216, 112, 0.46);
+      color: rgba(248, 216, 112, 0.98);
+      background: rgba(248, 216, 112, 0.08);
+    }
+
+    @media (max-width: 820px) {
+      .infoPanel {
         left: 12px;
         right: 12px;
         width: auto;
@@ -658,8 +772,8 @@
     }
 
     /* Unified badge stack */
-    .badgeStack{
-      position:absolute;
+    .badgeStack {
+      position: absolute;
       left: 16px;
       top: 14px;
       z-index: 10;
@@ -672,171 +786,282 @@
     }
 
     /* Unified phase badge */
-    .brandMark{
+    .brandMark {
       position: relative;
       left: auto;
       top: auto;
-      display:flex;
-      align-items:center;
+      display: flex;
+      align-items: center;
       gap: 8px;
       width: 100%;
       padding: var(--badgePadY) var(--badgePadX);
       border-radius: var(--noteRadius);
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.34);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.34);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       white-space: nowrap;
     }
 
-    .brandText{
-      color: rgba(245,252,255,0.72);
+    .brandText {
+      color: rgba(245, 252, 255, 0.72);
       font-weight: 800;
       font-size: 11px;
       letter-spacing: 0.26em;
       text-transform: uppercase;
     }
 
-    .brandSep{
-      color: rgba(245,252,255,0.28);
+    .brandSep {
+      color: rgba(245, 252, 255, 0.28);
       font-weight: 800;
       font-size: 11px;
       line-height: 1;
       letter-spacing: 0;
     }
 
-    .phaseTag{
+    .phaseTag {
       padding: 4px 8px;
       border-radius: 999px;
       font-weight: 900;
       letter-spacing: 0.16em;
       font-size: 10px;
-      color: rgba(249,217,118,0.95);
-      border: 1px solid rgba(249,217,118,0.40);
-      background: rgba(249,217,118,0.08);
+      color: rgba(249, 217, 118, 0.95);
+      border: 1px solid rgba(249, 217, 118, 0.40);
+      background: rgba(249, 217, 118, 0.08);
       text-transform: uppercase;
     }
 
     /* Compact workflow note */
-    .workflowNote{
+    .workflowNote {
       position: relative;
       left: auto;
       top: auto;
       width: 100%;
       padding: var(--notePadY) var(--notePadX);
       border-radius: var(--noteRadius);
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.30);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      background: rgba(0, 0, 0, 0.30);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       pointer-events: none;
     }
 
-    .workflowTitle{
+    .workflowTitle {
       font-size: 11px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: rgba(245,252,255,0.78);
+      color: rgba(245, 252, 255, 0.78);
       font-weight: 800;
     }
 
-    .workflowText{
+    .workflowText {
       margin: 6px 0 0 0;
       font-size: 11px;
-      color: rgba(245,252,255,0.62);
+      color: rgba(245, 252, 255, 0.62);
       line-height: 1.35;
       white-space: nowrap;
     }
 
-    @media (max-width: 820px){
-      .badgeStack{
+    @media (max-width: 820px) {
+      .badgeStack {
         left: 12px;
         right: 12px;
         width: auto;
       }
-      .workflowText{
+
+      .workflowText {
         white-space: normal;
       }
     }
 
-    @media (max-width: 430px){
-      :root{
+    @media (max-width: 430px) {
+      :root {
         --routerSize: 64px;
-        --headerHeight: 86px;
-        --panelTitleTop: 135px;
-        --botsTopGap: 14px;
-        --botsBottomGap: 78px;
+        --headerHeight: 128px;
+        --panelTitleTop: 52px;
+        --botsTopGap: 16px;
+        --botsBottomGap: 120px;
         --panelRadius: 18px;
+        --mobileHeaderInset: 220px;
+        --mobileDockInset: 90px;
       }
 
-      .stage{ padding: 10px; }
-      .frame{
+      .stage {
+        padding: 8px;
+      }
+
+      .frame {
         width: 100vw;
         height: 100vh;
+        height: 100dvh;
         border-radius: 18px;
+        display: flex;
+        flex-direction: column;
       }
-      .title{
-        font-size: 24px;
-        letter-spacing: 0.18em;
-        gap: 8px;
-      }
-      .pill{
-        padding: 8px 10px;
-        font-size: 10px;
-        letter-spacing: 0.18em;
-      }
-      .btn{
-        width: 40px;
-        height: 40px;
-        font-size: 14px;
-      }
-      .sfxBtn{
-        width: 52px;
-        font-size: 11px;
-      }
-      .panel{ height: 360px; }
-      .routerDock{ bottom: 12px; gap: 8px; }
-      .routerLabel{
-        font-size: 10px;
-        letter-spacing: 0.18em;
-      }
-      .badgeStack{
-        left: 10px;
-        right: 10px;
-        top: 10px;
+
+      .badgeStack {
+        position: static;
+        margin: 8px auto 0;
+        width: fit-content;
+        max-width: 92vw;
+        padding: 0;
         gap: 6px;
+        align-self: center;
+        justify-items: center;
       }
-      .brandMark{
-        padding: 7px 9px;
+
+      .brandMark {
+        padding: 6px 6px;
+        justify-content: center;
       }
-      .brandText{
+
+      .brandText {
         font-size: 10px;
         letter-spacing: 0.22em;
       }
-      .phaseTag{
+
+      .phaseTag {
         font-size: 9px;
         padding: 3px 7px;
         letter-spacing: 0.14em;
       }
-      .workflowTitle{
+
+      .workflowNote {
+        margin-top: 6px;
+        margin-left: auto;
+        margin-right: auto;
+        width: max-content;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.42);
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+      .brandMark,
+      .workflowNote {
+        max-width: 92vw;
+      }
+
+      .workflowTitle {
         font-size: 10px;
         letter-spacing: 0.14em;
       }
-      .workflowText{
+
+      .workflowText {
         font-size: 10px;
       }
+
+      .header {
+        height: auto;
+        padding: 8px 14px 0;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .title {
+        font-size: 20px;
+        letter-spacing: 0.14em;
+        gap: 6px;
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+        flex-wrap: wrap;
+        line-height: 1.1;
+      }
+
+      .titleBlock {
+        position: static;
+        transform: none;
+        width: min(980px, 92%);
+        max-width: 100%;
+        margin-top: 0;
+      }
+
+      .master {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .pill {
+        padding: 8px 10px;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+      }
+
+      .btn {
+        width: 44px;
+        height: 44px;
+        font-size: 14px;
+        touch-action: manipulation;
+      }
+
+      .sfxBtn {
+        width: 56px;
+        font-size: 11px;
+      }
+
+      .clusterWrap {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        flex: 1;
+        min-height: 0;
+        padding-top: 480px;
+        padding-bottom: calc(var(--mobileDockInset) + 56px);
+        max-height: calc(100dvh - var(--mobileHeaderInset) - var(--mobileDockInset));
+      }
+
+      .panel {
+        height: 300px;
+      }
+
+
+      .routerDock {
+        left: 50%;
+        right: auto;
+        bottom: 22px;
+        top: auto;
+        transform: translateX(-50%);
+        gap: 6px;
+      }
+
+      .routerLabel {
+        font-size: 7px;
+        letter-spacing: 0.16em;
+        padding: 2px 5px;
+      }
+
+      .routerHint {
+        display: none;
+      }
+
+      .routerBtn::after {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        box-shadow: 0 0 14px rgba(255, 255, 255, 0.18);
+        opacity: 0;
+        animation: routerHintGlow 3s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      .infoBtn {
+        min-height: 44px;
+      }
     }
-</style>
+  </style>
 </head>
 
 <body>
   <div class="stage">
     <div class="frame" id="frame">
       <div class="badgeStack">
-        <div class="brandMark"><span class="brandText">ALPHA ALERTS</span><span class="brandSep">•</span><span class="phaseTag">PHASE 2</span></div>
+        <div class="brandMark"><span class="brandText">ALPHA ALERTS</span><span class="brandSep">•</span><span
+            class="phaseTag">PHASE 2</span></div>
         <div class="workflowNote">
           <div class="workflowTitle">SYSTEM WORKFLOW</div>
-          <p class="workflowText">PHASE 2 SCORES AND FILTERS.</p>
+          <p class="workflowText">PHASE 2 SCANS, SCORES AND FILTERS.</p>
         </div>
       </div>
       <div class="header">
@@ -898,8 +1123,9 @@
         <button class="routerBtn" id="routerBtn" title="Telegram Bot">
           <div class="routerHint">TRIPPLE CLICK</div>
           <svg class="routerIcon" viewBox="0 0 24 24" fill="none">
-            <path d="M21 3L10.2 13.8" stroke="rgba(248,216,112,0.95)" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M21 3L14.6 21L10.2 13.8L3 9.4L21 3Z" stroke="rgba(245,252,255,0.85)" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M21 3L10.2 13.8" stroke="rgba(248,216,112,0.95)" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M21 3L14.6 21L10.2 13.8L3 9.4L21 3Z" stroke="rgba(245,252,255,0.85)" stroke-width="1.5"
+              stroke-linejoin="round" />
           </svg>
         </button>
         <div class="routerLabel">TELEGRAM BOT</div>
@@ -929,6 +1155,11 @@
     };
 
     const OFFSETS = { EARLY: 0.59, TREND: 0.11, RUNNER: -0.59 };
+    if (window.matchMedia && window.matchMedia("(max-width: 430px)").matches) {
+      OFFSETS.EARLY = 0.38;
+      OFFSETS.TREND = 0.06;
+      OFFSETS.RUNNER = -0.38;
+    }
 
     const MASTER = {
       baseTilt: 0,
@@ -936,20 +1167,20 @@
       tiltClamp: 0.95
     };
 
-    function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
-    function rgba(rgb,a){ return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`; }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function rgba(rgb, a) { return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`; }
 
-    function clampBaseTilt(v){
+    function clampBaseTilt(v) {
       const offsets = Object.values(OFFSETS);
       const minOff = Math.min(...offsets);
       const maxOff = Math.max(...offsets);
       const minBase = -MASTER.tiltClamp - maxOff;
-      const maxBase =  MASTER.tiltClamp - minOff;
+      const maxBase = MASTER.tiltClamp - minOff;
       return Math.max(minBase, Math.min(maxBase, v));
     }
 
     const masterReadout = document.getElementById("masterReadout");
-    function updateMasterReadout(){
+    function updateMasterReadout() {
       masterReadout.textContent = `MASTER ${MASTER.baseTilt.toFixed(2)}`;
     }
 
@@ -963,21 +1194,50 @@
     });
 
     window.addEventListener("keydown", (e) => {
-      if(e.key === "ArrowUp"){
+      if (e.key === "ArrowUp") {
         MASTER.baseTilt = clampBaseTilt(MASTER.baseTilt - MASTER.tiltStep);
         updateMasterReadout();
       }
-      if(e.key === "ArrowDown"){
+      if (e.key === "ArrowDown") {
         MASTER.baseTilt = clampBaseTilt(MASTER.baseTilt + MASTER.tiltStep);
         updateMasterReadout();
       }
-      if(e.key === " "){
+      if (e.key === " ") {
         MASTER.baseTilt = 0;
         updateMasterReadout();
       }
     });
 
     updateMasterReadout();
+
+    function updateMobileInsets() {
+      if (!document?.documentElement) return;
+      const root = document.documentElement;
+      const isMobile = window.matchMedia && window.matchMedia("(max-width: 430px)").matches;
+      if (!isMobile) {
+        root.style.removeProperty("--mobileHeaderInset");
+        root.style.removeProperty("--mobileDockInset");
+        return;
+      }
+
+      const badgeStack = document.querySelector(".badgeStack");
+      const header = document.querySelector(".header");
+      const routerDock = document.getElementById("routerDock");
+      if (!header || !routerDock) return;
+
+      const badgeH = badgeStack ? badgeStack.getBoundingClientRect().height : 0;
+      const headerH = header.getBoundingClientRect().height;
+      const dockH = routerDock.getBoundingClientRect().height;
+      const headerInset = Math.ceil(badgeH + headerH + 8);
+      const dockInset = Math.ceil(dockH + 2);
+
+      root.style.setProperty("--mobileHeaderInset", `${headerInset}px`);
+      root.style.setProperty("--mobileDockInset", `${dockInset}px`);
+    }
+
+    updateMobileInsets();
+    window.addEventListener("resize", () => requestAnimationFrame(updateMobileInsets), { passive: true });
+    window.addEventListener("orientationchange", () => requestAnimationFrame(updateMobileInsets), { passive: true });
 
     /* ============================================================
        SFX (kept)
@@ -992,39 +1252,39 @@
       SFX_ENABLED = !SFX_ENABLED;
       sfxBtn.style.opacity = SFX_ENABLED ? "1" : "0.55";
 
-      if(SFX_ENABLED){
+      if (SFX_ENABLED) {
         const ctx = getAudio();
-        if(ctx){
-          try{ await ctx.resume(); }catch(e){}
+        if (ctx) {
+          try { await ctx.resume(); } catch (e) { }
         }
         playSoftConfirm();
       }
     });
 
     let audioCtx = null;
-    function getAudio(){
+    function getAudio() {
       // ✅ SAFETY: AudioContext can throw or be blocked without a user gesture.
       // We never let SFX crash the animation.
-      try{
-        if(!audioCtx){
+      try {
+        if (!audioCtx) {
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
         // Some browsers start it suspended until the user clicks something
-        if(audioCtx && audioCtx.state === "suspended"){
-          audioCtx.resume().catch(()=>{});
+        if (audioCtx && audioCtx.state === "suspended") {
+          audioCtx.resume().catch(() => { });
         }
         return audioCtx;
-      }catch(err){
+      } catch (err) {
         return null;
       }
     }
 
-    function playSoftConfirm(){
-      if(!SFX_ENABLED) return;
+    function playSoftConfirm() {
+      if (!SFX_ENABLED) return;
       const ctx = getAudio();
-      if(!ctx) return;
+      if (!ctx) return;
 
-      try{
+      try {
         const t0 = ctx.currentTime;
 
         const osc = ctx.createOscillator();
@@ -1041,17 +1301,17 @@
         gain.connect(ctx.destination);
         osc.start(t0);
         osc.stop(t0 + 0.13);
-      }catch(e){
+      } catch (e) {
         // ignore SFX errors
       }
     }
 
-    function playDispatch(){
-      if(!SFX_ENABLED) return;
+    function playDispatch() {
+      if (!SFX_ENABLED) return;
       const ctx = getAudio();
-      if(!ctx) return;
+      if (!ctx) return;
 
-      try{
+      try {
         const t0 = ctx.currentTime;
 
         const carrier = ctx.createOscillator();
@@ -1089,17 +1349,17 @@
 
         carrier.stop(t0 + 0.31);
         mod.stop(t0 + 0.31);
-      }catch(e){
+      } catch (e) {
         // ignore SFX errors
       }
     }
 
-    function playReceive(){
-      if(!SFX_ENABLED) return;
+    function playReceive() {
+      if (!SFX_ENABLED) return;
       const ctx = getAudio();
-      if(!ctx) return;
+      if (!ctx) return;
 
-      try{
+      try {
         const t0 = ctx.currentTime;
 
         const osc = ctx.createOscillator();
@@ -1116,7 +1376,7 @@
         gain.connect(ctx.destination);
         osc.start(t0);
         osc.stop(t0 + 0.23);
-      }catch(e){
+      } catch (e) {
         // ignore SFX errors
       }
     }
@@ -1124,6 +1384,8 @@
     const routerBtn = document.getElementById("routerBtn");
 
     let hintTimer = null;
+    const touchMode = window.matchMedia && window.matchMedia("(hover: none)").matches;
+    if (touchMode) routerBtn.classList.add("hintOn");
     routerBtn.addEventListener("pointerenter", () => {
       routerBtn.classList.add("hintOn");
       clearTimeout(hintTimer);
@@ -1135,14 +1397,14 @@
     });
 
     routerBtn.addEventListener("click", () => {
-      try { getAudio().resume(); } catch(e){}
+      try { getAudio().resume(); } catch (e) { }
       routerBtn.classList.remove("pulse");
       void routerBtn.offsetWidth;
       routerBtn.classList.add("pulse");
       playSoftConfirm();
     });
 
-    function routerReceivePulse(){
+    function routerReceivePulse() {
       routerBtn.classList.remove("pulse");
       void routerBtn.offsetWidth;
       routerBtn.classList.add("pulse");
@@ -1154,18 +1416,18 @@
     const frameEl = document.getElementById("frame");
     const fadeOutEl = document.getElementById("fadeOut");
     const portalCanvas = document.getElementById("portalFx");
-    const portalCtx = portalCanvas.getContext("2d", { alpha:true, desynchronized:true });
+    const portalCtx = portalCanvas.getContext("2d", { alpha: true, desynchronized: true });
 
-    const openFX = { active:false, t0:0, faded:false, redirected:false };
+    const openFX = { active: false, t0: 0, faded: false, redirected: false };
 
-    function resizePortal(){
+    function resizePortal() {
       const r = frameEl.getBoundingClientRect();
       const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
       portalCanvas.width = Math.floor(r.width * dpr);
       portalCanvas.height = Math.floor(r.height * dpr);
       portalCanvas.style.width = r.width + "px";
       portalCanvas.style.height = r.height + "px";
-      portalCtx.setTransform(dpr,0,0,dpr,0,0);
+      portalCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     window.addEventListener("resize", () => setTimeout(resizePortal, 0));
@@ -1173,20 +1435,20 @@
 
     let routerClickTimes = [];
     routerBtn.addEventListener("pointerdown", (e) => {
-      if(!NAV.enabled) return;
-      if(openFX.active) return;
+      if (!NAV.enabled) return;
+      if (openFX.active) return;
 
       const now = performance.now();
       routerClickTimes.push(now);
       routerClickTimes = routerClickTimes.filter(t => (now - t) <= NAV.tripleMs);
 
-      if(routerClickTimes.length >= 3){
+      if (routerClickTimes.length >= 3) {
         routerClickTimes = [];
         triggerPortalOpen();
       }
-    }, { passive:true });
+    }, { passive: true });
 
-    function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
     const TAU = Math.PI * 2;
 
 
@@ -1195,9 +1457,9 @@
        - Lightweight (just lines) so it stays 60fps
        - Tweak counts + lengths here
        ============================================================ */
-    function drawWarpStreaks(cx, cy, baseR, u, tSec){
+    function drawWarpStreaks(cx, cy, baseR, u, tSec) {
       const s = easeOutCubic(u);
-      const intensity = s*s;
+      const intensity = s * s;
 
       portalCtx.save();
       portalCtx.globalCompositeOperation = "lighter";
@@ -1205,8 +1467,8 @@
       const fastCount = 90;   // ✅ more = more intense (keep <120 for safety)
       const slowCount = 45;
 
-      const maxLenFast = baseR * (7.0 + 10.0*s);
-      const maxLenSlow = baseR * (3.8 + 6.5*s);
+      const maxLenFast = baseR * (7.0 + 10.0 * s);
+      const maxLenSlow = baseR * (3.8 + 6.5 * s);
 
       // Helper hash (stable-ish but animated)
       const h01 = (n) => {
@@ -1215,23 +1477,23 @@
       };
 
       // FAST layer (bright + thin)
-      for(let i=0;i<fastCount;i++){
-        const a = (i * 0.61803398875) * TAU + tSec*0.55;
+      for (let i = 0; i < fastCount; i++) {
+        const a = (i * 0.61803398875) * TAU + tSec * 0.55;
         const dirx = Math.cos(a), diry = Math.sin(a);
 
-        const seed = i*91.7 + Math.floor(tSec*24)*0.25;
+        const seed = i * 91.7 + Math.floor(tSec * 24) * 0.25;
         const p = h01(seed);
 
         // travel from near center outwards (feels like moving through the portal)
-        const r0 = baseR * (0.22 + 0.55*(1 - s)) * p;
-        const len = maxLenFast * (0.35 + 0.65*p) * (0.25 + 0.75*s);
+        const r0 = baseR * (0.22 + 0.55 * (1 - s)) * p;
+        const len = maxLenFast * (0.35 + 0.65 * p) * (0.25 + 0.75 * s);
 
         const x0 = cx + dirx * r0;
         const y0 = cy + diry * r0;
         const x1 = cx + dirx * (r0 + len);
         const y1 = cy + diry * (r0 + len);
 
-        portalCtx.strokeStyle = `rgba(245,252,255,${0.06*intensity})`;
+        portalCtx.strokeStyle = `rgba(245,252,255,${0.06 * intensity})`;
         portalCtx.lineWidth = 1.2;
         portalCtx.beginPath();
         portalCtx.moveTo(x0, y0);
@@ -1240,22 +1502,22 @@
       }
 
       // SLOW layer (warmer gold depth)
-      for(let i=0;i<slowCount;i++){
-        const a = (i * 0.754877666) * TAU - tSec*0.28;
+      for (let i = 0; i < slowCount; i++) {
+        const a = (i * 0.754877666) * TAU - tSec * 0.28;
         const dirx = Math.cos(a), diry = Math.sin(a);
 
-        const seed = i*133.3 + Math.floor(tSec*12)*0.35;
+        const seed = i * 133.3 + Math.floor(tSec * 12) * 0.35;
         const p = h01(seed);
 
-        const r0 = baseR * (0.35 + 0.70*(1 - s)) * p;
-        const len = maxLenSlow * (0.28 + 0.72*p) * (0.18 + 0.82*s);
+        const r0 = baseR * (0.35 + 0.70 * (1 - s)) * p;
+        const len = maxLenSlow * (0.28 + 0.72 * p) * (0.18 + 0.82 * s);
 
         const x0 = cx + dirx * r0;
         const y0 = cy + diry * r0;
         const x1 = cx + dirx * (r0 + len);
         const y1 = cy + diry * (r0 + len);
 
-        portalCtx.strokeStyle = `rgba(248,216,112,${0.05*intensity})`;
+        portalCtx.strokeStyle = `rgba(248,216,112,${0.05 * intensity})`;
         portalCtx.lineWidth = 1.8;
         portalCtx.beginPath();
         portalCtx.moveTo(x0, y0);
@@ -1267,8 +1529,8 @@
     }
 
 
-    function drawPortal(x, y, baseR, u, tSec){
-      portalCtx.clearRect(0,0,portalCanvas.width, portalCanvas.height);
+    function drawPortal(x, y, baseR, u, tSec) {
+      portalCtx.clearRect(0, 0, portalCanvas.width, portalCanvas.height);
 
       // ✅ Warp streak fly-through (behind the ring)
       drawWarpStreaks(x, y, baseR, u, tSec);
@@ -1279,42 +1541,42 @@
       portalCtx.save();
       portalCtx.globalCompositeOperation = "lighter";
 
-      const g1 = portalCtx.createRadialGradient(x, y, ringR*0.25, x, y, ringR*1.35);
+      const g1 = portalCtx.createRadialGradient(x, y, ringR * 0.25, x, y, ringR * 1.35);
       g1.addColorStop(0.0, "rgba(0,0,0,0)");
-      g1.addColorStop(0.45, `rgba(248,216,112,${0.18*s})`);
-      g1.addColorStop(0.72, `rgba(245,252,255,${0.14*s})`);
+      g1.addColorStop(0.45, `rgba(248,216,112,${0.18 * s})`);
+      g1.addColorStop(0.72, `rgba(245,252,255,${0.14 * s})`);
       g1.addColorStop(1.0, "rgba(0,0,0,0)");
 
       portalCtx.fillStyle = g1;
       portalCtx.beginPath();
-      portalCtx.arc(x, y, ringR*1.35, 0, TAU);
+      portalCtx.arc(x, y, ringR * 1.35, 0, TAU);
       portalCtx.fill();
 
-      portalCtx.strokeStyle = `rgba(245,252,255,${0.24*s})`;
-      portalCtx.lineWidth = 2.0 + 2.0*s;
+      portalCtx.strokeStyle = `rgba(245,252,255,${0.24 * s})`;
+      portalCtx.lineWidth = 2.0 + 2.0 * s;
       portalCtx.beginPath();
-      portalCtx.arc(x, y, ringR*0.98, 0, TAU);
+      portalCtx.arc(x, y, ringR * 0.98, 0, TAU);
       portalCtx.stroke();
 
-      const swirl = tSec * (2.2 + s*2.8);
-      for(let k=0;k<6;k++){
-        const a0 = swirl + k*0.92;
-        const a1 = a0 + 0.50 + s*0.25;
+      const swirl = tSec * (2.2 + s * 2.8);
+      for (let k = 0; k < 6; k++) {
+        const a0 = swirl + k * 0.92;
+        const a1 = a0 + 0.50 + s * 0.25;
 
-        portalCtx.strokeStyle = `rgba(248,216,112,${0.07*s})`;
+        portalCtx.strokeStyle = `rgba(248,216,112,${0.07 * s})`;
         portalCtx.lineWidth = 2.0;
         portalCtx.beginPath();
-        portalCtx.arc(x, y, ringR*(0.62 + k*0.13), a0, a1);
+        portalCtx.arc(x, y, ringR * (0.62 + k * 0.13), a0, a1);
         portalCtx.stroke();
       }
 
       portalCtx.restore();
     }
 
-    function triggerPortalOpen(){
-      if(openFX.active) return;
+    function triggerPortalOpen() {
+      if (openFX.active) return;
       openFX.active = true;
-      openFX.t0 = performance.now()/1000;
+      openFX.t0 = performance.now() / 1000;
       openFX.faded = false;
       openFX.redirected = false;
 
@@ -1326,14 +1588,14 @@
        Your existing visual system below (unchanged logic)
        ============================================================ */
 
-    const WHITE = [255,255,255];
+    const WHITE = [255, 255, 255];
 
     class ReactorCore {
       constructor(rootEl, botName, accentRGB, accent2RGB, overlayDispatchFn) {
         this.root = rootEl;
         this.botName = botName;
         this.canvas = rootEl.querySelector("canvas");
-        this.ctx = this.canvas.getContext("2d", { alpha:true });
+        this.ctx = this.canvas.getContext("2d", { alpha: true });
 
         const profile = this.getBotProfile(botName);
         this.onDispatch = overlayDispatchFn;
@@ -1373,29 +1635,29 @@
           zapJitter: 5
         };
 
-        this.W=1; this.H=1; this.DPR=1;
-        this.cam = { rx:0, ry:0, trx:0 };
+        this.W = 1; this.H = 1; this.DPR = 1;
+        this.cam = { rx: 0, ry: 0, trx: 0 };
 
-        this.stars=[];
-        this.sparks=[];
-        this.dots=[];
-        this.zaps=[]; // NEW: lightning arcs on scan
-        this.capturedOrbs=[]; // NEW: scanned orbs that travel on zap then join ring
+        this.stars = [];
+        this.sparks = [];
+        this.dots = [];
+        this.zaps = []; // NEW: lightning arcs on scan
+        this.capturedOrbs = []; // NEW: scanned orbs that travel on zap then join ring
 
-        this.frameT=0;
-        this.lastMs=0;
+        this.frameT = 0;
+        this.lastMs = 0;
 
         this.lastDispatchSec = -999;
         this.resize();
       }
 
-      getBotProfile(name){
-        if(name === "EARLY") return { dotSpawnPerSec: 0.10, ringBrightness: 1.18, cooldown: 2.8 };
-        if(name === "TREND") return { dotSpawnPerSec: 0.18, ringBrightness: 1.28, cooldown: 1.8 };
+      getBotProfile(name) {
+        if (name === "EARLY") return { dotSpawnPerSec: 0.10, ringBrightness: 1.18, cooldown: 2.8 };
+        if (name === "TREND") return { dotSpawnPerSec: 0.18, ringBrightness: 1.28, cooldown: 1.8 };
         return { dotSpawnPerSec: 0.12, ringBrightness: 1.22, cooldown: 2.6 };
       }
 
-      resize(){
+      resize() {
         const r = this.root.getBoundingClientRect();
         const dpr = Math.max(1, Math.min(this.CFG.dprMax, window.devicePixelRatio || 1));
         this.DPR = dpr;
@@ -1414,130 +1676,130 @@
         this.initSparks();
       }
 
-      project3D(x,y,z,cx,cy){
+      project3D(x, y, z, cx, cy) {
         const cosY = Math.cos(this.cam.ry), sinY = Math.sin(this.cam.ry);
-        let x1 = x*cosY + z*sinY;
-        let z1 = -x*sinY + z*cosY;
+        let x1 = x * cosY + z * sinY;
+        let z1 = -x * sinY + z * cosY;
 
         const cosX = Math.cos(this.cam.rx), sinX = Math.sin(this.cam.rx);
-        let y2 = y*cosX - z1*sinX;
-        let z2 = y*sinX + z1*cosX;
+        let y2 = y * cosX - z1 * sinX;
+        let z2 = y * sinX + z1 * cosX;
 
         const denom = 1 + z2 * 0.0022;
-// Safety clamp so projection never explodes (prevents NaN/Infinity glitches)
-const safeDen = (Math.abs(denom) < 0.12) ? (denom < 0 ? -0.12 : 0.12) : denom;
-const p = 1 / safeDen;
-return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
+        // Safety clamp so projection never explodes (prevents NaN/Infinity glitches)
+        const safeDen = (Math.abs(denom) < 0.12) ? (denom < 0 ? -0.12 : 0.12) : denom;
+        const p = 1 / safeDen;
+        return { x: cx + x1 * p, y: cy + y2 * p, z: z2, p };
       }
 
-      angleDiff(a,b){
+      angleDiff(a, b) {
         let d = a - b;
-        while(d > Math.PI) d -= Math.PI*2;
-        while(d < -Math.PI) d += Math.PI*2;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
         return d;
       }
 
-      initStars(){
+      initStars() {
         this.stars.length = 0;
-        for(let i=0;i<this.CFG.bgStars;i++){
+        for (let i = 0; i < this.CFG.bgStars; i++) {
           this.stars.push({
-            x: Math.random()*this.W,
-            y: Math.random()*this.H,
-            r: 0.6 + Math.random()*1.2,
-            a: 0.04 + Math.random()*0.10
+            x: Math.random() * this.W,
+            y: Math.random() * this.H,
+            r: 0.6 + Math.random() * 1.2,
+            a: 0.04 + Math.random() * 0.10
           });
         }
       }
 
-      drawStars(){
+      drawStars() {
         const ctx = this.ctx;
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
-        for(const s of this.stars){
+        for (const s of this.stars) {
           ctx.fillStyle = `rgba(255,255,255,${s.a})`;
           ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.restore();
       }
 
-      initSparks(){
+      initSparks() {
         this.sparks.length = 0;
-        for(let i=0;i<this.CFG.sparks;i++){
+        for (let i = 0; i < this.CFG.sparks; i++) {
           this.sparks.push({
-            a: Math.random()*Math.PI*2,
-            sp:(0.6 + Math.random()*1.1)*this.CFG.sparkSpeed,
-            s:0.8 + Math.random()*1.8,
-            o:0.40 + Math.random()*0.50,
-            wob:Math.random()*Math.PI*2
+            a: Math.random() * Math.PI * 2,
+            sp: (0.6 + Math.random() * 1.1) * this.CFG.sparkSpeed,
+            s: 0.8 + Math.random() * 1.8,
+            o: 0.40 + Math.random() * 0.50,
+            wob: Math.random() * Math.PI * 2
           });
         }
       }
 
-      drawRadarGrid(cx, cy, radarR){
+      drawRadarGrid(cx, cy, radarR) {
         const ctx = this.ctx;
         ctx.save();
-        ctx.globalCompositeOperation="screen";
+        ctx.globalCompositeOperation = "screen";
         ctx.strokeStyle = rgba(this.KNOBS.coreB, this.CFG.gridAlpha);
         ctx.lineWidth = 1;
 
         ctx.beginPath();
-        ctx.arc(cx, cy, radarR, 0, Math.PI*2);
+        ctx.arc(cx, cy, radarR, 0, Math.PI * 2);
         ctx.clip();
 
-        for(let i=1;i<=this.CFG.gridRings;i++){
-          const rr = (i/this.CFG.gridRings)*radarR;
+        for (let i = 1; i <= this.CFG.gridRings; i++) {
+          const rr = (i / this.CFG.gridRings) * radarR;
           ctx.beginPath();
-          ctx.arc(cx, cy, rr, 0, Math.PI*2);
+          ctx.arc(cx, cy, rr, 0, Math.PI * 2);
           ctx.stroke();
         }
 
-        for(let i=0;i<this.CFG.gridSpokes;i++){
-          const a = (i/this.CFG.gridSpokes)*Math.PI*2;
+        for (let i = 0; i < this.CFG.gridSpokes; i++) {
+          const a = (i / this.CFG.gridSpokes) * Math.PI * 2;
           ctx.beginPath();
           ctx.moveTo(cx, cy);
-          ctx.lineTo(cx + Math.cos(a)*radarR, cy + Math.sin(a)*radarR);
+          ctx.lineTo(cx + Math.cos(a) * radarR, cy + Math.sin(a) * radarR);
           ctx.stroke();
         }
 
         ctx.restore();
       }
 
-      getSweepAngle(nowSec){
+      getSweepAngle(nowSec) {
         const turnsPerSec = 0.18;
-        return (-Math.PI/2) + nowSec * (Math.PI*2*turnsPerSec);
+        return (-Math.PI / 2) + nowSec * (Math.PI * 2 * turnsPerSec);
       }
 
-      drawRadarFan(cx, cy, coreR, nowSec){
+      drawRadarFan(cx, cy, coreR, nowSec) {
         const ctx = this.ctx;
         const ang = this.getSweepAngle(nowSec);
-        const arc = (this.KNOBS.radarFanDeg*Math.PI)/180;
+        const arc = (this.KNOBS.radarFanDeg * Math.PI) / 180;
 
         const radarR = coreR * this.CFG.radarRadiusMul;
-        const rIn = radarR*0.02;
+        const rIn = radarR * 0.02;
         const rOut = radarR;
 
-        const a0 = ang - arc*0.5;
-        const a1 = ang + arc*0.5;
+        const a0 = ang - arc * 0.5;
+        const a1 = ang + arc * 0.5;
 
         const g = ctx.createRadialGradient(cx, cy, rIn, cx, cy, rOut);
         g.addColorStop(0.00, rgba(this.KNOBS.coreA, 0.00));
         g.addColorStop(0.22, rgba(this.KNOBS.coreA, this.KNOBS.radarFanAlpha));
-        g.addColorStop(0.92, rgba(this.KNOBS.coreB, this.KNOBS.radarFanAlpha*0.38));
+        g.addColorStop(0.92, rgba(this.KNOBS.coreB, this.KNOBS.radarFanAlpha * 0.38));
         g.addColorStop(1.00, "rgba(0,0,0,0)");
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(cx, cy, radarR, 0, Math.PI*2);
+        ctx.arc(cx, cy, radarR, 0, Math.PI * 2);
         ctx.clip();
-        ctx.globalCompositeOperation="screen";
+        ctx.globalCompositeOperation = "screen";
         ctx.fillStyle = g;
 
         ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(a0)*rIn, cy + Math.sin(a0)*rIn);
+        ctx.moveTo(cx + Math.cos(a0) * rIn, cy + Math.sin(a0) * rIn);
         ctx.arc(cx, cy, rOut, a0, a1, false);
-        ctx.lineTo(cx + Math.cos(a1)*rIn, cy + Math.sin(a1)*rIn);
+        ctx.lineTo(cx + Math.cos(a1) * rIn, cy + Math.sin(a1) * rIn);
         ctx.arc(cx, cy, rIn, a1, a0, true);
         ctx.closePath();
         ctx.fill();
@@ -1545,59 +1807,59 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
         ctx.restore();
       }
 
-      spawnDot(){
-        if(this.dots.length >= this.KNOBS.maxDots) return;
-        const a = Math.random()*Math.PI*2;
-        const r01 = 0.22 + Math.random()*0.72;
-        this.dots.push({ a, r01, scanned:false, scannedAt: 0, toRemoveAt: 0 });
+      spawnDot() {
+        if (this.dots.length >= this.KNOBS.maxDots) return;
+        const a = Math.random() * Math.PI * 2;
+        const r01 = 0.22 + Math.random() * 0.72;
+        this.dots.push({ a, r01, scanned: false, scannedAt: 0, toRemoveAt: 0 });
       }
 
-            drawDots(cx, cy, coreR, nowSec){
+      drawDots(cx, cy, coreR, nowSec) {
         const ctx = this.ctx;
         const radarR = coreR * this.CFG.radarRadiusMul;
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(cx, cy, radarR, 0, Math.PI*2);
+        ctx.arc(cx, cy, radarR, 0, Math.PI * 2);
         ctx.clip();
-        ctx.globalCompositeOperation="screen";
+        ctx.globalCompositeOperation = "screen";
 
-        for(const d of this.dots){
-          const r = radarR*d.r01;
-          const x = cx + Math.cos(d.a)*r;
-          const y = cy + Math.sin(d.a)*r;
+        for (const d of this.dots) {
+          const r = radarR * d.r01;
+          const x = cx + Math.cos(d.a) * r;
+          const y = cy + Math.sin(d.a) * r;
 
           const scanned = !!d.scanned;
 
-                              // ✅ Keep the discovered dot visible while the lightning transfers it.
+          // ✅ Keep the discovered dot visible while the lightning transfers it.
           // It should NOT vanish when the zap starts.
           const impactT = (this.CFG.zapLife * 0.55); // bolt hits the ring here
           let fadeMul = 1.0;
-          if(scanned){
+          if (scanned) {
             const age = Math.max(0, (nowSec || 0) - (d.scannedAt || 0));
             const t = clamp(age / Math.max(0.001, impactT), 0, 1);
-            const smooth = t*t*(3 - 2*t); // smoothstep
+            const smooth = t * t * (3 - 2 * t); // smoothstep
             fadeMul = 1.0 - 0.18 * smooth; // 1.00 -> 0.82
           }
           const a0 = this.KNOBS.dotAlpha * fadeMul;
 
           ctx.fillStyle = rgba(WHITE, a0);
           ctx.beginPath();
-          ctx.arc(x, y, this.KNOBS.dotSize, 0, Math.PI*2);
+          ctx.arc(x, y, this.KNOBS.dotSize, 0, Math.PI * 2);
           ctx.fill();
 
           // halo
           ctx.fillStyle = rgba(WHITE, scanned ? 0.08 : 0.14);
           ctx.beginPath();
-          ctx.arc(x, y, Math.max(1.0, this.KNOBS.dotSize*(scanned ? 1.10 : 1.25)), 0, Math.PI*2);
+          ctx.arc(x, y, Math.max(1.0, this.KNOBS.dotSize * (scanned ? 1.10 : 1.25)), 0, Math.PI * 2);
           ctx.fill();
 
           // subtle scan-ring pulse when scanned
-          if(scanned){
+          if (scanned) {
             ctx.strokeStyle = rgba(this.KNOBS.coreB, 0.16);
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.arc(x, y, this.KNOBS.dotSize*2.2, 0, Math.PI*2);
+            ctx.arc(x, y, this.KNOBS.dotSize * 2.2, 0, Math.PI * 2);
             ctx.stroke();
           }
         }
@@ -1605,25 +1867,25 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
         ctx.restore();
       }
 
-      scanDotsAndDispatch(nowSec){
+      scanDotsAndDispatch(nowSec) {
         // Keep the discovered dot visible while the zap is traveling.
         // We only remove it AFTER the transfer is complete so the scan "makes sense".
-        for(let i=this.dots.length-1;i>=0;i--){
+        for (let i = this.dots.length - 1; i >= 0; i--) {
           const d = this.dots[i];
-          if(d.scanned && d.toRemoveAt && nowSec >= d.toRemoveAt){
+          if (d.scanned && d.toRemoveAt && nowSec >= d.toRemoveAt) {
             this.dots.splice(i, 1);
           }
         }
 
         const ang = this.getSweepAngle(nowSec);
-        const arc = (this.KNOBS.radarFanDeg*Math.PI)/180;
+        const arc = (this.KNOBS.radarFanDeg * Math.PI) / 180;
 
-        for(let i=this.dots.length-1;i>=0;i--){
+        for (let i = this.dots.length - 1; i >= 0; i--) {
           const d = this.dots[i];
-          if(d.scanned) continue;
+          if (d.scanned) continue;
 
           const da = this.angleDiff(d.a, ang);
-          if(Math.abs(da) <= arc*0.45){
+          if (Math.abs(da) <= arc * 0.45) {
             d.scanned = true;
             d.scannedAt = nowSec;
 
@@ -1636,7 +1898,7 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
 
             // NEW: make the orb "ride" the zap lane, then snap perfectly into the ring
             const lastZap = this.zaps && this.zaps.length ? this.zaps[this.zaps.length - 1] : null;
-            if(lastZap){
+            if (lastZap) {
               this.addCapturedOrb({
                 angle: d.a,
                 r01: d.r01,
@@ -1647,193 +1909,193 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
             }
 
             // dispatch packets (separate from the visual scan zap)
-            if((nowSec - this.lastDispatchSec) >= this.KNOBS.dispatchCooldown){
+            if ((nowSec - this.lastDispatchSec) >= this.KNOBS.dispatchCooldown) {
               this.lastDispatchSec = nowSec;
 
-              if(this.onDispatch){
-                try{
+              if (this.onDispatch) {
+                try {
                   this.onDispatch(this.botName, {
                     angle: d.a,
                     r01: d.r01,
                     sparkIdx,
-                    zapSeed: lastZap ? lastZap.seed : (Math.random()*9999),
+                    zapSeed: lastZap ? lastZap.seed : (Math.random() * 9999),
                     core: this
                   });
-                }catch(e){
+                } catch (e) {
                   // don't crash core loop if overlay has a hiccup
                 }
-                try{ playDispatch(); }catch(e){}
+                try { playDispatch(); } catch (e) { }
               }
             }
           }
         }
       }
 
-addCapturedOrb(payload){
-  // payload: {angle, r01, sparkIdx, zapSeed, born}
-  this.capturedOrbs.push({
-    angle: payload.angle,
-    r01: payload.r01,
-    sparkIdx: payload.sparkIdx,
-    seed: payload.zapSeed,
-    born: payload.born,
-    // transfer time matches the zap readability (slower + smoother)
-    transferDur: this.CFG.zapLife * 0.95,
-    // after joining ring, keep it alive briefly so it "feels" processed
-    orbitHold: 4.0
-  });
+      addCapturedOrb(payload) {
+        // payload: {angle, r01, sparkIdx, zapSeed, born}
+        this.capturedOrbs.push({
+          angle: payload.angle,
+          r01: payload.r01,
+          sparkIdx: payload.sparkIdx,
+          seed: payload.zapSeed,
+          born: payload.born,
+          // transfer time matches the zap readability (slower + smoother)
+          transferDur: this.CFG.zapLife * 0.95,
+          // after joining ring, keep it alive briefly so it "feels" processed
+          orbitHold: 4.0
+        });
 
-  // keep it clean (no clutter)
-  while(this.capturedOrbs.length > 6){
-    this.capturedOrbs.shift();
-  }
-}
-
-getRingPointForSpark(s, cx, cy, ringR, baseR, nowSec){
-  // SAME ring math as drawRing() + drawZaps() so it always stays IN the ring
-  const y3 = Math.sin(s.wob + nowSec*0.8) * (baseR*this.CFG.ringThickness);
-  const x3 = Math.cos(s.a) * ringR;
-  const z3 = Math.sin(s.a) * ringR;
-  const pr = this.project3D(x3, y3, z3, cx, cy);
-  return { x: pr.x, y: pr.y, p: pr.p };
-}
-
-// returns a point ON the same jagged lane used by drawZaps()
-getZapPoint(sx, sy, ex, ey, seed, nowSec, u01){
-  const dx = ex - sx;
-  const dy = ey - sy;
-  const len = Math.max(1, Math.hypot(dx, dy));
-  const nx = -dy / len;
-  const ny =  dx / len;
-
-  const segs = this.CFG.zapSegs;
-  const jitter = this.CFG.zapJitter;
-  const flick = Math.floor(nowSec * 14) * 0.15;
-
-  // choose a segment index based on u01
-  const kf = clamp(u01, 0, 1) * segs;
-  const k0 = Math.floor(kf);
-  const k1 = Math.min(segs, k0 + 1);
-  const t  = kf - k0;
-
-  const ptAt = (k)=>{
-    const u = k / segs;
-    const baseX = sx + dx * u;
-    const baseY = sy + dy * u;
-
-    const n = this._hash01(seed + k*19.19 + flick);
-    const w = (n - 0.5) * 2;
-
-    const mid = Math.sin(u*Math.PI);
-    const amp = jitter * (0.10 + 0.90*mid);
-
-    return {
-      x: baseX + nx * w * amp,
-      y: baseY + ny * w * amp
-    };
-  };
-
-  const p0 = ptAt(k0);
-  const p1 = ptAt(k1);
-  return {
-    x: lerp(p0.x, p1.x, t),
-    y: lerp(p0.y, p1.y, t)
-  };
-}
-
-drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
-  const ctx = this.ctx;
-  if(!this.capturedOrbs.length) return;
-
-  for(let i=this.capturedOrbs.length-1;i>=0;i--){
-    const o = this.capturedOrbs[i];
-    const age = nowSec - o.born;
-
-    // ring endpoint (always moving with spark)
-    const s = this.sparks[o.sparkIdx];
-    if(!s){
-      this.capturedOrbs.splice(i,1);
-      continue;
-    }
-
-    const end = this.getRingPointForSpark(s, cx, cy, ringR, baseR, nowSec);
-
-    // start point (where dot was discovered)
-    const startR = radarR * (o.r01 ?? 1.0);
-    const sx = cx + Math.cos(o.angle) * startR;
-    const sy = cy + Math.sin(o.angle) * startR;
-
-    let px, py, alpha;
-
-    if(age < o.transferDur){
-      // transfer along the zap lane
-      const tt = clamp(age / o.transferDur, 0, 1);
-      const u = tt*tt*(3 - 2*tt); // smoothstep
-      const p = this.getZapPoint(sx, sy, end.x, end.y, o.seed, nowSec, u);
-      px = p.x;
-      py = p.y;
-      alpha = 0.92;
-    } else {
-      // joined ring: sit INSIDE the moving ring and rotate with it
-      px = end.x;
-      py = end.y;
-
-      const holdT = (age - o.transferDur) / Math.max(0.001, o.orbitHold);
-      alpha = clamp(1 - holdT, 0, 1);
-
-      if(alpha <= 0){
-        this.capturedOrbs.splice(i,1);
-        continue;
+        // keep it clean (no clutter)
+        while (this.capturedOrbs.length > 6) {
+          this.capturedOrbs.shift();
+        }
       }
-    }
 
-    // Safety: never let a non-finite point kill the frame (prevents the core from disappearing)
-    if(!Number.isFinite(px) || !Number.isFinite(py)){
-      px = end.x;
-      py = end.y;
-      if(!Number.isFinite(px) || !Number.isFinite(py)){
-        px = cx;
-        py = cy;
+      getRingPointForSpark(s, cx, cy, ringR, baseR, nowSec) {
+        // SAME ring math as drawRing() + drawZaps() so it always stays IN the ring
+        const y3 = Math.sin(s.wob + nowSec * 0.8) * (baseR * this.CFG.ringThickness);
+        const x3 = Math.cos(s.a) * ringR;
+        const z3 = Math.sin(s.a) * ringR;
+        const pr = this.project3D(x3, y3, z3, cx, cy);
+        return { x: pr.x, y: pr.y, p: pr.p };
       }
-    }
 
-    ctx.save();
-    ctx.globalCompositeOperation = "screen";
+      // returns a point ON the same jagged lane used by drawZaps()
+      getZapPoint(sx, sy, ex, ey, seed, nowSec, u01) {
+        const dx = ex - sx;
+        const dy = ey - sy;
+        const len = Math.max(1, Math.hypot(dx, dy));
+        const nx = -dy / len;
+        const ny = dx / len;
 
-    // soft orb glow
-    const g = ctx.createRadialGradient(px, py, 0, px, py, 20);
-    g.addColorStop(0.0, `rgba(255,255,255,${0.42*alpha})`);
-    g.addColorStop(0.35, rgba(this.KNOBS.coreB, 0.18*alpha));
-    g.addColorStop(1.0, "rgba(0,0,0,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(px, py, 13, 0, Math.PI*2);
-    ctx.fill();
+        const segs = this.CFG.zapSegs;
+        const jitter = this.CFG.zapJitter;
+        const flick = Math.floor(nowSec * 14) * 0.15;
 
-    // core dot
-    ctx.fillStyle = `rgba(255,255,255,${0.75*alpha})`;
-    ctx.beginPath();
-    ctx.arc(px, py, 4.4, 0, Math.PI*2);
-    ctx.fill();
+        // choose a segment index based on u01
+        const kf = clamp(u01, 0, 1) * segs;
+        const k0 = Math.floor(kf);
+        const k1 = Math.min(segs, k0 + 1);
+        const t = kf - k0;
 
-    ctx.restore();
-  }
-}
+        const ptAt = (k) => {
+          const u = k / segs;
+          const baseX = sx + dx * u;
+          const baseY = sy + dy * u;
+
+          const n = this._hash01(seed + k * 19.19 + flick);
+          const w = (n - 0.5) * 2;
+
+          const mid = Math.sin(u * Math.PI);
+          const amp = jitter * (0.10 + 0.90 * mid);
+
+          return {
+            x: baseX + nx * w * amp,
+            y: baseY + ny * w * amp
+          };
+        };
+
+        const p0 = ptAt(k0);
+        const p1 = ptAt(k1);
+        return {
+          x: lerp(p0.x, p1.x, t),
+          y: lerp(p0.y, p1.y, t)
+        };
+      }
+
+      drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec) {
+        const ctx = this.ctx;
+        if (!this.capturedOrbs.length) return;
+
+        for (let i = this.capturedOrbs.length - 1; i >= 0; i--) {
+          const o = this.capturedOrbs[i];
+          const age = nowSec - o.born;
+
+          // ring endpoint (always moving with spark)
+          const s = this.sparks[o.sparkIdx];
+          if (!s) {
+            this.capturedOrbs.splice(i, 1);
+            continue;
+          }
+
+          const end = this.getRingPointForSpark(s, cx, cy, ringR, baseR, nowSec);
+
+          // start point (where dot was discovered)
+          const startR = radarR * (o.r01 ?? 1.0);
+          const sx = cx + Math.cos(o.angle) * startR;
+          const sy = cy + Math.sin(o.angle) * startR;
+
+          let px, py, alpha;
+
+          if (age < o.transferDur) {
+            // transfer along the zap lane
+            const tt = clamp(age / o.transferDur, 0, 1);
+            const u = tt * tt * (3 - 2 * tt); // smoothstep
+            const p = this.getZapPoint(sx, sy, end.x, end.y, o.seed, nowSec, u);
+            px = p.x;
+            py = p.y;
+            alpha = 0.92;
+          } else {
+            // joined ring: sit INSIDE the moving ring and rotate with it
+            px = end.x;
+            py = end.y;
+
+            const holdT = (age - o.transferDur) / Math.max(0.001, o.orbitHold);
+            alpha = clamp(1 - holdT, 0, 1);
+
+            if (alpha <= 0) {
+              this.capturedOrbs.splice(i, 1);
+              continue;
+            }
+          }
+
+          // Safety: never let a non-finite point kill the frame (prevents the core from disappearing)
+          if (!Number.isFinite(px) || !Number.isFinite(py)) {
+            px = end.x;
+            py = end.y;
+            if (!Number.isFinite(px) || !Number.isFinite(py)) {
+              px = cx;
+              py = cy;
+            }
+          }
+
+          ctx.save();
+          ctx.globalCompositeOperation = "screen";
+
+          // soft orb glow
+          const g = ctx.createRadialGradient(px, py, 0, px, py, 20);
+          g.addColorStop(0.0, `rgba(255,255,255,${0.42 * alpha})`);
+          g.addColorStop(0.35, rgba(this.KNOBS.coreB, 0.18 * alpha));
+          g.addColorStop(1.0, "rgba(0,0,0,0)");
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(px, py, 13, 0, Math.PI * 2);
+          ctx.fill();
+
+          // core dot
+          ctx.fillStyle = `rgba(255,255,255,${0.75 * alpha})`;
+          ctx.beginPath();
+          ctx.arc(px, py, 4.4, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
+      }
 
 
 
-/* ========================================================
-
-         NEW: LIGHTNING ZAP (discovered dot -> rotating spark ring)
-         Triggered when radar fan hits a dot (scan event)
-
-         ✅ IMPORTANT CHANGE:
-         - Start point = WHERE THE DOT WAS DISCOVERED (inside the scanner field)
-         - End point = a REAL moving spark on the rotating ring
-           so the zap ALWAYS connects to the ring you see moving.
-         ======================================================== */
-      addZap(angle, r01){
-        const now = performance.now()/1000;
+      /* ========================================================
+      
+               NEW: LIGHTNING ZAP (discovered dot -> rotating spark ring)
+               Triggered when radar fan hits a dot (scan event)
+      
+               ✅ IMPORTANT CHANGE:
+               - Start point = WHERE THE DOT WAS DISCOVERED (inside the scanner field)
+               - End point = a REAL moving spark on the rotating ring
+                 so the zap ALWAYS connects to the ring you see moving.
+               ======================================================== */
+      addZap(angle, r01) {
+        const now = performance.now() / 1000;
 
         // pick the spark that is CURRENTLY closest to this scan angle
         // (this makes the bolt land ON the moving ring instead of empty space)
@@ -1843,7 +2105,7 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
           a: angle,
           born: now,
           life: this.CFG.zapLife,
-          seed: Math.random()*9999,
+          seed: Math.random() * 9999,
           sparkIdx,
           r01
         });
@@ -1852,14 +2114,14 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
         return sparkIdx;
       }
 
-      findClosestSparkIndex(angle){
+      findClosestSparkIndex(angle) {
         // returns the index of the spark whose angle is closest to "angle"
         let best = 0;
         let bestAbs = 1e9;
-        for(let i=0;i<this.sparks.length;i++){
+        for (let i = 0; i < this.sparks.length; i++) {
           const s = this.sparks[i];
           const d = Math.abs(this.angleDiff(s.a, angle));
-          if(d < bestAbs){
+          if (d < bestAbs) {
             bestAbs = d;
             best = i;
           }
@@ -1867,23 +2129,23 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
         return best;
       }
 
-      _hash01(x){
+      _hash01(x) {
         // deterministic hash in [0..1)
         const s = Math.sin(x) * 10000;
         return s - Math.floor(s);
       }
 
-      drawZaps(cx, cy, radarR, ringR, nowSec){
+      drawZaps(cx, cy, radarR, ringR, nowSec) {
         const ctx = this.ctx;
-        if(!this.zaps.length) return;
+        if (!this.zaps.length) return;
 
-        for(let i=this.zaps.length-1;i>=0;i--){
+        for (let i = this.zaps.length - 1; i >= 0; i--) {
           const z = this.zaps[i];
           const t = clamp((nowSec - z.born) / z.life, 0, 1);
-          if(t >= 1){ this.zaps.splice(i,1); continue; }
+          if (t >= 1) { this.zaps.splice(i, 1); continue; }
 
           // fade: hold briefly, then decay
-          const hold = t < 0.45 ? 1 : (1 - (t-0.45)/0.55);
+          const hold = t < 0.45 ? 1 : (1 - (t - 0.45) / 0.55);
           const a0 = clamp(hold, 0, 1);
 
           // start = WHERE THE DOT WAS DISCOVERED (2D point inside scanner)
@@ -1895,10 +2157,10 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
           let ex, ey;
           const s = this.sparks[z.sparkIdx];
 
-          if(s){
+          if (s) {
             // baseR is needed for the ring's vertical wobble, ringR for the horizontal orbit
             const baseR = ringR / this.KNOBS.ringRadiusMul;
-            const y3 = Math.sin(s.wob + nowSec*0.8) * (baseR*this.CFG.ringThickness);
+            const y3 = Math.sin(s.wob + nowSec * 0.8) * (baseR * this.CFG.ringThickness);
             const x3 = Math.cos(s.a) * ringR;
             const z3 = Math.sin(s.a) * ringR;
             const pr = this.project3D(x3, y3, z3, cx, cy);
@@ -1914,7 +2176,7 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
           }
 
           // Safety: if anything goes non-finite, fall back to a clean ring point
-          if(!Number.isFinite(ex) || !Number.isFinite(ey)){
+          if (!Number.isFinite(ex) || !Number.isFinite(ey)) {
             const x3 = Math.cos(z.a) * ringR;
             const z3 = Math.sin(z.a) * ringR;
             const pr = this.project3D(x3, 0, z3, cx, cy);
@@ -1926,28 +2188,28 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
           const dy = ey - sy;
           const len = Math.max(1, Math.hypot(dx, dy));
           const nx = -dy / len;
-          const ny =  dx / len;
+          const ny = dx / len;
 
           // jitter scales down over time (slow + readable)
-          const jitter = this.CFG.zapJitter * (0.35 + 0.65*(1 - t));
+          const jitter = this.CFG.zapJitter * (0.35 + 0.65 * (1 - t));
 
           // build a jagged polyline
           const pts = [];
           const segs = this.CFG.zapSegs;
           const flick = Math.floor(nowSec * 14) * 0.15;
 
-          for(let k=0;k<=segs;k++){
+          for (let k = 0; k <= segs; k++) {
             const u = k / segs;
             const baseX = sx + dx * u;
             const baseY = sy + dy * u;
 
             // noise per segment
-            const n = this._hash01(z.seed + k*19.19 + flick);
+            const n = this._hash01(z.seed + k * 19.19 + flick);
             const w = (n - 0.5) * 2;
 
             // smooth falloff (quiet near ends, strongest mid-path)
-            const mid = Math.sin(u*Math.PI);
-            const amp = jitter * (0.10 + 0.90*mid);
+            const mid = Math.sin(u * Math.PI);
+            const amp = jitter * (0.10 + 0.90 * mid);
 
             pts.push({
               x: baseX + nx * w * amp,
@@ -1957,7 +2219,7 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
 
           // NEW: smooth travel — bolt grows from detected dot → ring (easier to see)
           const grow01 = clamp(t / 0.55, 0, 1);
-          const grow = grow01*grow01*(3 - 2*grow01); // smoothstep
+          const grow = grow01 * grow01 * (3 - 2 * grow01); // smoothstep
           const drawN = Math.max(2, Math.floor(grow * pts.length));
 
 
@@ -1970,21 +2232,21 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
           ctx.strokeStyle = rgba(this.KNOBS.coreA, 0.10 * a0);
           ctx.lineWidth = 6.0;
           ctx.beginPath();
-          for(let k=0;k<drawN;k++){
+          for (let k = 0; k < drawN; k++) {
             const p = pts[k];
-            if(k===0) ctx.moveTo(p.x,p.y);
-            else ctx.lineTo(p.x,p.y);
+            if (k === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
           }
           ctx.stroke();
 
           // main bolt
-          ctx.strokeStyle = `rgba(255,255,255,${0.55*a0})`;
+          ctx.strokeStyle = `rgba(255,255,255,${0.55 * a0})`;
           ctx.lineWidth = 2.2;
           ctx.beginPath();
-          for(let k=0;k<drawN;k++){
+          for (let k = 0; k < drawN; k++) {
             const p = pts[k];
-            if(k===0) ctx.moveTo(p.x,p.y);
-            else ctx.lineTo(p.x,p.y);
+            if (k === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
           }
           ctx.stroke();
 
@@ -1992,147 +2254,147 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
           const pulseU = grow;
           const px = sx + dx * pulseU;
           const py = sy + dy * pulseU;
-          const g = ctx.createRadialGradient(px,py,0,px,py,18);
-          g.addColorStop(0.0, `rgba(255,255,255,${0.42*a0})`);
-          g.addColorStop(0.45, rgba(this.KNOBS.coreB, 0.14*a0));
+          const g = ctx.createRadialGradient(px, py, 0, px, py, 18);
+          g.addColorStop(0.0, `rgba(255,255,255,${0.42 * a0})`);
+          g.addColorStop(0.45, rgba(this.KNOBS.coreB, 0.14 * a0));
           g.addColorStop(1.0, "rgba(0,0,0,0)");
           ctx.fillStyle = g;
           ctx.beginPath();
-          ctx.arc(px, py, 12, 0, Math.PI*2);
+          ctx.arc(px, py, 12, 0, Math.PI * 2);
           ctx.fill();
 
           // impact glow on the ring endpoint (shows where it lands)
           const ig = ctx.createRadialGradient(ex, ey, 0, ex, ey, 26);
-          ig.addColorStop(0.0, `rgba(255,255,255,${0.55*a0})`);
-          ig.addColorStop(0.4, rgba(this.KNOBS.coreB, 0.18*a0));
+          ig.addColorStop(0.0, `rgba(255,255,255,${0.55 * a0})`);
+          ig.addColorStop(0.4, rgba(this.KNOBS.coreB, 0.18 * a0));
           ig.addColorStop(1.0, 'rgba(0,0,0,0)');
           ctx.fillStyle = ig;
           ctx.beginPath();
-          ctx.arc(ex, ey, 18, 0, Math.PI*2);
+          ctx.arc(ex, ey, 18, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
         }
       }
 
-      drawRing(cx, cy, baseR, t){
+      drawRing(cx, cy, baseR, t) {
         const ctx = this.ctx;
         const ringR = baseR * this.KNOBS.ringRadiusMul;
 
         const list = [];
-        for(const s of this.sparks){
+        for (const s of this.sparks) {
           s.a += s.sp;
 
-          const y = Math.sin(s.wob + t*0.9) * (baseR*this.CFG.ringThickness);
+          const y = Math.sin(s.wob + t * 0.9) * (baseR * this.CFG.ringThickness);
           const x = Math.cos(s.a) * ringR;
           const z = Math.sin(s.a) * ringR;
 
           const pr = this.project3D(x, y, z, cx, cy);
-          const depth = clamp((pr.p - 0.75)*1.8, 0.15, 1);
-          const alpha = s.o*depth*this.CFG.ringBrightness;
+          const depth = clamp((pr.p - 0.75) * 1.8, 0.15, 1);
+          const alpha = s.o * depth * this.CFG.ringBrightness;
 
-          list.push({ x: pr.x, y: pr.y, z: pr.z, a: alpha, size: s.s*clamp(pr.p,0.75,1.25) });
+          list.push({ x: pr.x, y: pr.y, z: pr.z, a: alpha, size: s.s * clamp(pr.p, 0.75, 1.25) });
         }
 
-        list.sort((a,b)=>a.z-b.z);
+        list.sort((a, b) => a.z - b.z);
 
         ctx.save();
-        ctx.globalCompositeOperation="lighter";
+        ctx.globalCompositeOperation = "lighter";
 
-        for(const d of list){
-          const glow = ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.size*4.6);
-          glow.addColorStop(0.0, rgba(this.KNOBS.coreB, d.a*0.58));
-          glow.addColorStop(0.7, rgba(this.KNOBS.coreB, d.a*0.16));
+        for (const d of list) {
+          const glow = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.size * 4.6);
+          glow.addColorStop(0.0, rgba(this.KNOBS.coreB, d.a * 0.58));
+          glow.addColorStop(0.7, rgba(this.KNOBS.coreB, d.a * 0.16));
           glow.addColorStop(1.0, "rgba(0,0,0,0)");
           ctx.fillStyle = glow;
           ctx.beginPath();
-          ctx.arc(d.x, d.y, d.size*1.05, 0, Math.PI*2);
+          ctx.arc(d.x, d.y, d.size * 1.05, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.globalCompositeOperation="screen";
-          ctx.fillStyle = `rgba(255,252,244,${clamp(d.a*1.10,0,1)})`;
+          ctx.globalCompositeOperation = "screen";
+          ctx.fillStyle = `rgba(255,252,244,${clamp(d.a * 1.10, 0, 1)})`;
           ctx.beginPath();
-          ctx.arc(d.x, d.y, Math.max(1.1, d.size*0.58), 0, Math.PI*2);
+          ctx.arc(d.x, d.y, Math.max(1.1, d.size * 0.58), 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.globalCompositeOperation="lighter";
+          ctx.globalCompositeOperation = "lighter";
         }
 
         ctx.restore();
       }
 
-      drawCoreSphere(cx, cy, coreR, pulse){
+      drawCoreSphere(cx, cy, coreR, pulse) {
         const ctx = this.ctx;
 
         ctx.save();
-        ctx.globalCompositeOperation="lighter";
-        const bloom = ctx.createRadialGradient(cx, cy, coreR*0.12, cx, cy, coreR*2.9);
+        ctx.globalCompositeOperation = "lighter";
+        const bloom = ctx.createRadialGradient(cx, cy, coreR * 0.12, cx, cy, coreR * 2.9);
         bloom.addColorStop(0.0, rgba(this.KNOBS.coreA, 0.20));
         bloom.addColorStop(0.35, rgba(this.KNOBS.coreB, 0.10));
         bloom.addColorStop(1.0, "rgba(0,0,0,0)");
-        ctx.fillStyle=bloom;
+        ctx.fillStyle = bloom;
         ctx.beginPath();
-        ctx.arc(cx, cy, coreR*2.9, 0, Math.PI*2);
+        ctx.arc(cx, cy, coreR * 2.9, 0, Math.PI * 2);
         ctx.fill();
 
-        const lx = cx - coreR*0.35;
-        const ly = cy - coreR*0.40;
-        const base = ctx.createRadialGradient(lx, ly, coreR*0.15, cx, cy, coreR*1.25);
+        const lx = cx - coreR * 0.35;
+        const ly = cy - coreR * 0.40;
+        const base = ctx.createRadialGradient(lx, ly, coreR * 0.15, cx, cy, coreR * 1.25);
         base.addColorStop(0.0, rgba(this.KNOBS.coreB, 0.42));
         base.addColorStop(0.40, rgba(this.KNOBS.coreA, 0.30));
         base.addColorStop(0.85, "rgba(0,0,0,0.58)");
         base.addColorStop(1.0, "rgba(0,0,0,0.78)");
-        ctx.globalCompositeOperation="source-over";
-        ctx.fillStyle=base;
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = base;
         ctx.beginPath();
-        ctx.arc(cx, cy, coreR*(0.94 + pulse*0.01), 0, Math.PI*2);
+        ctx.arc(cx, cy, coreR * (0.94 + pulse * 0.01), 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.globalCompositeOperation="lighter";
-        const nucR = coreR*0.20;
-        const nucleus = ctx.createRadialGradient(cx-nucR*0.25, cy-nucR*0.25, 0, cx, cy, nucR*1.25);
+        ctx.globalCompositeOperation = "lighter";
+        const nucR = coreR * 0.20;
+        const nucleus = ctx.createRadialGradient(cx - nucR * 0.25, cy - nucR * 0.25, 0, cx, cy, nucR * 1.25);
         nucleus.addColorStop(0.0, "rgba(255,255,255,0.75)");
         nucleus.addColorStop(0.35, rgba(this.KNOBS.coreA, 0.58));
         nucleus.addColorStop(1.0, "rgba(0,0,0,0)");
-        ctx.fillStyle=nucleus;
+        ctx.fillStyle = nucleus;
         ctx.beginPath();
-        ctx.arc(cx, cy, nucR*(1.0 + pulse*0.10), 0, Math.PI*2);
+        ctx.arc(cx, cy, nucR * (1.0 + pulse * 0.10), 0, Math.PI * 2);
         ctx.fill();
 
         ctx.strokeStyle = rgba(this.KNOBS.coreA, 0.52);
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(cx, cy, coreR*0.98, 0, Math.PI*2);
+        ctx.arc(cx, cy, coreR * 0.98, 0, Math.PI * 2);
         ctx.stroke();
 
         ctx.restore();
       }
 
-      drawGlass(cx, cy, radius){
+      drawGlass(cx, cy, radius) {
         const ctx = this.ctx;
         ctx.save();
-        ctx.globalCompositeOperation="source-over";
+        ctx.globalCompositeOperation = "source-over";
 
         ctx.strokeStyle = `rgba(255,255,255,0.07)`;
         ctx.lineWidth = 1.1;
         ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI*2);
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
         ctx.stroke();
 
-        const vg = ctx.createRadialGradient(cx, cy, radius*0.42, cx, cy, radius*1.06);
+        const vg = ctx.createRadialGradient(cx, cy, radius * 0.42, cx, cy, radius * 1.06);
         vg.addColorStop(0.0, "rgba(0,0,0,0)");
         vg.addColorStop(1.0, `rgba(0,0,0,${this.CFG.vignette})`);
-        ctx.fillStyle=vg;
+        ctx.fillStyle = vg;
         ctx.beginPath();
-        ctx.arc(cx, cy, radius*1.08, 0, Math.PI*2);
+        ctx.arc(cx, cy, radius * 1.08, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
       }
 
-      draw(nowMs){
+      draw(nowMs) {
         const ctx = this.ctx;
-        const nowSec = nowMs/1000;
+        const nowSec = nowMs / 1000;
 
         // SAFETY: re-apply DPR scaling every frame so the core never "shrinks" or disappears
         // during scan/zap events (some GPU/browser combos can reset the canvas transform state).
@@ -2140,29 +2402,29 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
         ctx.globalCompositeOperation = "source-over";
         ctx.globalAlpha = 1;
         ctx.filter = "none";
-        const dt = this.lastMs ? Math.min(0.05, (nowMs-this.lastMs)/1000) : 0.016;
+        const dt = this.lastMs ? Math.min(0.05, (nowMs - this.lastMs) / 1000) : 0.016;
         this.lastMs = nowMs;
 
         const offset = OFFSETS[this.botName] || 0;
         const targetTilt = clamp(MASTER.baseTilt + offset, -this.CFG.tiltClamp, this.CFG.tiltClamp);
         this.cam.trx = targetTilt;
-        this.cam.rx += (this.cam.trx - this.cam.rx)*this.CFG.cameraEase;
-        this.cam.ry += (0 - this.cam.ry)*0.08;
+        this.cam.rx += (this.cam.trx - this.cam.rx) * this.CFG.cameraEase;
+        this.cam.ry += (0 - this.cam.ry) * 0.08;
 
-        ctx.clearRect(0,0,this.W,this.H);
+        ctx.clearRect(0, 0, this.W, this.H);
 
-        const cx = this.W*0.5;
-        const cy = this.H*0.54;
+        const cx = this.W * 0.5;
+        const cy = this.H * 0.54;
 
-        const coreR = Math.min(this.W,this.H)*this.KNOBS.coreSizeMul;
-        const radarR = coreR*this.CFG.radarRadiusMul;
-        const baseR = Math.min(this.W,this.H)*0.19;
+        const coreR = Math.min(this.W, this.H) * this.KNOBS.coreSizeMul;
+        const radarR = coreR * this.CFG.radarRadiusMul;
+        const baseR = Math.min(this.W, this.H) * 0.19;
 
         this.drawStars();
         this.drawRadarGrid(cx, cy, radarR);
 
         const spawnChance = this.KNOBS.dotSpawnPerSec * dt;
-        if(this.dots.length < this.KNOBS.maxDots && Math.random() < spawnChance){
+        if (this.dots.length < this.KNOBS.maxDots && Math.random() < spawnChance) {
           this.spawnDot();
         }
 
@@ -2171,73 +2433,73 @@ drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec){
 
         this.scanDotsAndDispatch(nowSec);
 
-        this.drawRing(cx, cy, baseR, this.frameT*0.01);
+        this.drawRing(cx, cy, baseR, this.frameT * 0.01);
 
         // NEW: show scan lightning (dot discovery -> moving band)
         const ringR = baseR * this.KNOBS.ringRadiusMul;
         // ZAP FX can be numerically sensitive (always keep the core visible even if FX errors)
-try{
-  this.drawZaps(cx, cy, radarR, ringR, nowSec);
-}catch(e){
-  console.warn("[ReactorCore] drawZaps() glitch prevented:", e);
-  this.zaps.length = 0;
-}
+        try {
+          this.drawZaps(cx, cy, radarR, ringR, nowSec);
+        } catch (e) {
+          console.warn("[ReactorCore] drawZaps() glitch prevented:", e);
+          this.zaps.length = 0;
+        }
 
-try{
-  this.drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec);
-}catch(e){
-  console.warn("[ReactorCore] drawCapturedOrbs() glitch prevented:", e);
-  this.capturedOrbs.length = 0;
-}
+        try {
+          this.drawCapturedOrbs(cx, cy, radarR, ringR, baseR, nowSec);
+        } catch (e) {
+          console.warn("[ReactorCore] drawCapturedOrbs() glitch prevented:", e);
+          this.capturedOrbs.length = 0;
+        }
 
-        const pulse = (Math.sin(this.frameT*0.03)+1)*0.5;
+        const pulse = (Math.sin(this.frameT * 0.03) + 1) * 0.5;
         this.drawCoreSphere(cx, cy, coreR, pulse);
 
-        this.drawGlass(cx, cy, Math.min(this.W,this.H)*0.46);
+        this.drawGlass(cx, cy, Math.min(this.W, this.H) * 0.46);
 
         this.frameT++;
       }
     }
 
     class PacketOverlay {
-      constructor(canvas, frameEl, routerEl){
+      constructor(canvas, frameEl, routerEl) {
         this.canvas = canvas;
         this.frame = frameEl;
         this.routerEl = routerEl;
-        this.ctx = canvas.getContext("2d", { alpha:true });
+        this.ctx = canvas.getContext("2d", { alpha: true });
 
         this.DPR = 1;
         this.W = 1;
         this.H = 1;
 
         this.coreCenters = {
-          EARLY:  {x:0,y:0,r:120,w:0,h:0},
-          TREND:  {x:0,y:0,r:120,w:0,h:0},
-          RUNNER: {x:0,y:0,r:120,w:0,h:0}
+          EARLY: { x: 0, y: 0, r: 120, w: 0, h: 0 },
+          TREND: { x: 0, y: 0, r: 120, w: 0, h: 0 },
+          RUNNER: { x: 0, y: 0, r: 120, w: 0, h: 0 }
         };
 
         // ✅ Cached offsets (panel -> frame) so we DON'T call getBoundingClientRect every frame.
         // This prevents "freeze" bugs when the zap fires (layout thrash / occasional exceptions).
         this.coreOffsets = {
-          EARLY:  {x0:0, y0:0},
-          TREND:  {x0:0, y0:0},
-          RUNNER: {x0:0, y0:0}
+          EARLY: { x0: 0, y0: 0 },
+          TREND: { x0: 0, y0: 0 },
+          RUNNER: { x0: 0, y0: 0 }
         };
 
-        this.router = { x:0, y:0, r: 42 };
+        this.router = { x: 0, y: 0, r: 42 };
         this.packets = [];
         this.ripples = [];
 
         this.botCam = {
-          EARLY:  { rx:0, ry:0 },
-          TREND:  { rx:0, ry:0 },
-          RUNNER: { rx:0, ry:0 }
+          EARLY: { rx: 0, ry: 0 },
+          TREND: { rx: 0, ry: 0 },
+          RUNNER: { rx: 0, ry: 0 }
         };
 
         this.resize();
       }
 
-      resize(){
+      resize() {
         const r = this.frame.getBoundingClientRect();
         const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
         this.DPR = dpr;
@@ -2245,36 +2507,36 @@ try{
         this.W = Math.max(1, Math.floor(r.width));
         this.H = Math.max(1, Math.floor(r.height));
 
-        this.canvas.width = Math.floor(this.W*dpr);
-        this.canvas.height = Math.floor(this.H*dpr);
-        this.canvas.style.width = this.W+"px";
-        this.canvas.style.height = this.H+"px";
-        this.ctx.setTransform(dpr,0,0,dpr,0,0);
+        this.canvas.width = Math.floor(this.W * dpr);
+        this.canvas.height = Math.floor(this.H * dpr);
+        this.canvas.style.width = this.W + "px";
+        this.canvas.style.height = this.H + "px";
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         this.updateAnchors();
       }
 
-      updateAnchors(){
+      updateAnchors() {
         const frameRect = this.frame.getBoundingClientRect();
 
         const getCenter = (el) => {
           const rr = el.getBoundingClientRect();
           return {
             // Center point (in FRAME space)
-            x: (rr.left - frameRect.left) + rr.width*0.5,
-            y: (rr.top  - frameRect.top)  + rr.height*0.5,
+            x: (rr.left - frameRect.left) + rr.width * 0.5,
+            y: (rr.top - frameRect.top) + rr.height * 0.5,
             w: rr.width,
             h: rr.height,
 
             // Top-left offset of this panelBody inside the frame (for fast mapping)
             x0: (rr.left - frameRect.left),
-            y0: (rr.top  - frameRect.top)
+            y0: (rr.top - frameRect.top)
           };
         };
 
         const early = document.getElementById("coreEarly");
         const trend = document.getElementById("coreTrend");
-        const runner= document.getElementById("coreRunner");
+        const runner = document.getElementById("coreRunner");
 
         const e = getCenter(early);
         const t = getCenter(trend);
@@ -2282,50 +2544,50 @@ try{
 
         const ringR = (p) => Math.min(p.w, p.h) * 0.2584;
 
-        this.coreCenters.EARLY  = { x:e.x, y:e.y + 6, r:ringR(e), w:e.w, h:e.h };
-        this.coreCenters.TREND  = { x:t.x, y:t.y + 6, r:ringR(t), w:t.w, h:t.h };
-        this.coreCenters.RUNNER = { x:r.x, y:r.y + 6, r:ringR(r), w:r.w, h:r.h };
+        this.coreCenters.EARLY = { x: e.x, y: e.y + 6, r: ringR(e), w: e.w, h: e.h };
+        this.coreCenters.TREND = { x: t.x, y: t.y + 6, r: ringR(t), w: t.w, h: t.h };
+        this.coreCenters.RUNNER = { x: r.x, y: r.y + 6, r: ringR(r), w: r.w, h: r.h };
 
         // ✅ Cache offsets so we can map core-canvas coords -> frame coords instantly
-        this.coreOffsets.EARLY  = { x0: e.x0, y0: e.y0 };
-        this.coreOffsets.TREND  = { x0: t.x0, y0: t.y0 };
+        this.coreOffsets.EARLY = { x0: e.x0, y0: e.y0 };
+        this.coreOffsets.TREND = { x0: t.x0, y0: t.y0 };
         this.coreOffsets.RUNNER = { x0: r.x0, y0: r.y0 };
 
         const router = getCenter(this.routerEl);
-        this.router = { x: router.x, y: router.y, r: router.w*0.52 };
+        this.router = { x: router.x, y: router.y, r: router.w * 0.52 };
       }
 
-      project3D(bot, x,y,z, cx,cy){
-        const cam = this.botCam[bot] || {rx:0,ry:0};
+      project3D(bot, x, y, z, cx, cy) {
+        const cam = this.botCam[bot] || { rx: 0, ry: 0 };
 
         const cosY = Math.cos(cam.ry), sinY = Math.sin(cam.ry);
-        let x1 = x*cosY + z*sinY;
-        let z1 = -x*sinY + z*cosY;
+        let x1 = x * cosY + z * sinY;
+        let z1 = -x * sinY + z * cosY;
 
         const cosX = Math.cos(cam.rx), sinX = Math.sin(cam.rx);
-        let y2 = y*cosX - z1*sinX;
-        let z2 = y*sinX + z1*cosX;
+        let y2 = y * cosX - z1 * sinX;
+        let z2 = y * sinX + z1 * cosX;
 
         const denom = 1 + z2 * 0.0022;
-// Safety clamp so projection never explodes (prevents NaN/Infinity glitches)
-const safeDen = (Math.abs(denom) < 0.12) ? (denom < 0 ? -0.12 : 0.12) : denom;
-const p = 1 / safeDen;
-return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
+        // Safety clamp so projection never explodes (prevents NaN/Infinity glitches)
+        const safeDen = (Math.abs(denom) < 0.12) ? (denom < 0 ? -0.12 : 0.12) : denom;
+        const p = 1 / safeDen;
+        return { x: cx + x1 * p, y: cy + y2 * p, z: z2, p };
       }
 
 
       // ✅ Exact mapping: core-canvas coords -> overlay frame coords
       // This keeps the orb perfectly sitting ON the zap and ON the ring (no drifting / offset).
-      coreCanvasId(botName){
-        if(botName === "EARLY") return "coreEarly";
-        if(botName === "TREND") return "coreTrend";
+      coreCanvasId(botName) {
+        if (botName === "EARLY") return "coreEarly";
+        if (botName === "TREND") return "coreTrend";
         return "coreRunner";
       }
 
-      canvasToFrame(botName, xCanvas, yCanvas){
+      canvasToFrame(botName, xCanvas, yCanvas) {
         // ✅ Fast mapping with cached offsets (no layout reads per frame)
         const off = this.coreOffsets[botName];
-        if(!off){
+        if (!off) {
           return { x: xCanvas, y: yCanvas };
         }
         return {
@@ -2335,13 +2597,13 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
       }
 
 
-      spawnPacket(botName, startAngle){
+      spawnPacket(botName, startAngle) {
         const c = this.coreCenters[botName];
-        if(!c) return;
+        if (!c) return;
 
         this.packets.push({
           bot: botName,
-          born: performance.now()/1000,
+          born: performance.now() / 1000,
           state: "orbit",
           a: startAngle,
           traveled: 0,
@@ -2364,25 +2626,25 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
            moving ring endpoint (the sparkIdx the zap is locked onto)
          - once the zap finishes growing to the ring, THEN start orbit.
          ======================================================== */
-      spawnPacketFromZap(botName, payload){
+      spawnPacketFromZap(botName, payload) {
         const c = this.coreCenters[botName];
-        if(!c) return;
+        if (!c) return;
 
-        const now = performance.now()/1000;
+        const now = performance.now() / 1000;
 
-        const coreRef  = payload?.core || null;
+        const coreRef = payload?.core || null;
         const sparkIdx = (payload?.sparkIdx ?? 0);
-        const scanA    = (payload?.angle ?? 0);
-        const scanR01  = (payload?.r01 ?? 0.70);
-        const zapSeed  = (payload?.zapSeed ?? (Math.random()*9999));
+        const scanA = (payload?.angle ?? 0);
+        const scanR01 = (payload?.r01 ?? 0.70);
+        const zapSeed = (payload?.zapSeed ?? (Math.random() * 9999));
 
         // Match the zap timing exactly:
         // In ReactorCore.drawZaps, the bolt "reaches" the ring at t/0.55 == 1.
-        const zapLife   = coreRef?.CFG?.zapLife ?? 1.25;
-        const impactT   = zapLife * 0.55; // seconds until the bolt hits the ring
+        const zapLife = coreRef?.CFG?.zapLife ?? 1.25;
+        const impactT = zapLife * 0.55; // seconds until the bolt hits the ring
 
         // Use the SAME wob phase as the target spark so the transition stays seamless.
-        const wob = (coreRef?.sparks?.[sparkIdx]?.wob ?? (Math.random()*Math.PI*2));
+        const wob = (coreRef?.sparks?.[sparkIdx]?.wob ?? (Math.random() * Math.PI * 2));
 
         this.packets.push({
           bot: botName,
@@ -2419,67 +2681,67 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
       }
 
 
-      addRipple(x,y){
+      addRipple(x, y) {
         this.ripples.push({
-          x,y,
-          born: performance.now()/1000,
+          x, y,
+          born: performance.now() / 1000,
           life: 0.9
         });
       }
 
-      bezier(p0, p1, p2, p3, t){
+      bezier(p0, p1, p2, p3, t) {
         const u = 1 - t;
-        const tt = t*t;
-        const uu = u*u;
-        const uuu = uu*u;
-        const ttt = tt*t;
+        const tt = t * t;
+        const uu = u * u;
+        const uuu = uu * u;
+        const ttt = tt * t;
 
         return {
-          x: (uuu*p0.x) + (3*uu*t*p1.x) + (3*u*tt*p2.x) + (ttt*p3.x),
-          y: (uuu*p0.y) + (3*uu*t*p1.y) + (3*u*tt*p2.y) + (ttt*p3.y)
+          x: (uuu * p0.x) + (3 * uu * t * p1.x) + (3 * u * tt * p2.x) + (ttt * p3.x),
+          y: (uuu * p0.y) + (3 * uu * t * p1.y) + (3 * u * tt * p2.y) + (ttt * p3.y)
         };
       }
 
-      drawPacketDot(x,y,p){
+      drawPacketDot(x, y, p) {
         const ctx = this.ctx;
         ctx.save();
-        ctx.globalCompositeOperation="screen";
+        ctx.globalCompositeOperation = "screen";
 
         const glowR = p.glow;
-        const g = ctx.createRadialGradient(x,y,0,x,y,glowR);
+        const g = ctx.createRadialGradient(x, y, 0, x, y, glowR);
         g.addColorStop(0.0, rgba(WHITE, 0.90));
         g.addColorStop(0.55, rgba(WHITE, 0.22));
         g.addColorStop(1.0, "rgba(0,0,0,0)");
 
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(x,y, glowR*0.62, 0, Math.PI*2);
+        ctx.arc(x, y, glowR * 0.62, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = rgba(WHITE, 0.95);
         ctx.beginPath();
-        ctx.arc(x,y, p.size, 0, Math.PI*2);
+        ctx.arc(x, y, p.size, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
       }
 
-      drawPacketPath(p, t){
+      drawPacketPath(p, t) {
         const ctx = this.ctx;
-        if(!p.p0 || !p.p3) return;
+        if (!p.p0 || !p.p3) return;
 
         ctx.save();
-        ctx.globalCompositeOperation="screen";
-        ctx.lineCap="round";
-        ctx.lineJoin="round";
+        ctx.globalCompositeOperation = "screen";
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
 
         const steps = 18;
         ctx.beginPath();
-        for(let i=0;i<=steps;i++){
-          const tt = (i/steps) * t;
-          const pos = this.bezier(p.p0,p.p1,p.p2,p.p3,tt);
-          if(i===0) ctx.moveTo(pos.x,pos.y);
-          else ctx.lineTo(pos.x,pos.y);
+        for (let i = 0; i <= steps; i++) {
+          const tt = (i / steps) * t;
+          const pos = this.bezier(p.p0, p.p1, p.p2, p.p3, tt);
+          if (i === 0) ctx.moveTo(pos.x, pos.y);
+          else ctx.lineTo(pos.x, pos.y);
         }
 
         ctx.strokeStyle = rgba(WHITE, 0.10);
@@ -2493,9 +2755,9 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
         ctx.restore();
       }
 
-      draw(nowMs){
+      draw(nowMs) {
         const ctx = this.ctx;
-        const now = nowMs/1000;
+        const now = nowMs / 1000;
 
         // SAFETY: enforce DPR scaling every frame to avoid one-off clears / mis-scales.
         ctx.setTransform(this.DPR, 0, 0, this.DPR, 0, 0);
@@ -2503,45 +2765,45 @@ return { x: cx + x1*p, y: cy + y2*p, z: z2, p };
         ctx.globalAlpha = 1;
         ctx.filter = "none";
 
-        for(const bot of ["EARLY","TREND","RUNNER"]){
-          const target = clamp(MASTER.baseTilt + (OFFSETS[bot]||0), -MASTER.tiltClamp, MASTER.tiltClamp);
+        for (const bot of ["EARLY", "TREND", "RUNNER"]) {
+          const target = clamp(MASTER.baseTilt + (OFFSETS[bot] || 0), -MASTER.tiltClamp, MASTER.tiltClamp);
           this.botCam[bot].rx += (target - this.botCam[bot].rx) * 0.12;
           this.botCam[bot].ry += (0 - this.botCam[bot].ry) * 0.08;
         }
 
-        ctx.clearRect(0,0,this.W,this.H);
+        ctx.clearRect(0, 0, this.W, this.H);
 
-        for(let i=this.ripples.length-1;i>=0;i--){
+        for (let i = this.ripples.length - 1; i >= 0; i--) {
           const rp = this.ripples[i];
-          const t = clamp((now - rp.born)/rp.life, 0, 1);
-          const ease = 1 - Math.pow(1-t, 2.2);
+          const t = clamp((now - rp.born) / rp.life, 0, 1);
+          const ease = 1 - Math.pow(1 - t, 2.2);
           const rad = 8 + ease * 46;
-          const a = (1-t) * 0.28;
+          const a = (1 - t) * 0.28;
 
           ctx.save();
-          ctx.globalCompositeOperation="screen";
-          ctx.strokeStyle = rgba(WHITE, a*0.65);
+          ctx.globalCompositeOperation = "screen";
+          ctx.strokeStyle = rgba(WHITE, a * 0.65);
           ctx.lineWidth = 1.6;
           ctx.beginPath();
-          ctx.arc(rp.x, rp.y, rad, 0, Math.PI*2);
+          ctx.arc(rp.x, rp.y, rad, 0, Math.PI * 2);
           ctx.stroke();
           ctx.restore();
 
-          if(t >= 1) this.ripples.splice(i,1);
+          if (t >= 1) this.ripples.splice(i, 1);
         }
 
-        for(let i=this.packets.length-1;i>=0;i--){
+        for (let i = this.packets.length - 1; i >= 0; i--) {
           const p = this.packets[i];
           const core = this.coreCenters[p.bot];
-          if(!core){ this.packets.splice(i,1); continue; }
+          if (!core) { this.packets.splice(i, 1); continue; }
 
-          
-if(p.state === "zapTravel"){
+
+          if (p.state === "zapTravel") {
             // ✅ Packet orb rides INSIDE the lightning lane (not beside it)
             // ✅ The endpoint is a REAL moving spark on the ring (always matches the rotating band)
             const coreRef = p.coreRef;
-            if(!coreRef){
-              this.packets.splice(i,1);
+            if (!coreRef) {
+              this.packets.splice(i, 1);
               continue;
             }
 
@@ -2552,8 +2814,8 @@ if(p.state === "zapTravel"){
             const minWH = Math.min(coreRef.W, coreRef.H);
             const coreR = minWH * (coreRef.KNOBS?.coreSizeMul ?? 0.165);
             const radarR = coreR * (coreRef.CFG?.radarRadiusMul ?? 0.78);
-            const baseR  = minWH * 0.19;
-            const ringR  = baseR * (coreRef.KNOBS?.ringRadiusMul ?? 1.36);
+            const baseR = minWH * 0.19;
+            const ringR = baseR * (coreRef.KNOBS?.ringRadiusMul ?? 1.36);
 
             // ---- Start point (dot was discovered here) ----
             const startR = radarR * (p.scanR01 ?? 0.70);
@@ -2568,8 +2830,8 @@ if(p.state === "zapTravel"){
 
             let exC, eyC;
 
-            if(spark){
-              const y3 = Math.sin((p.wob ?? spark.wob ?? 0) + now*0.9) * (baseR * (coreRef.CFG?.ringThickness ?? 0.04));
+            if (spark) {
+              const y3 = Math.sin((p.wob ?? spark.wob ?? 0) + now * 0.9) * (baseR * (coreRef.CFG?.ringThickness ?? 0.04));
               const x3 = Math.cos(endA) * ringR;
               const z3 = Math.sin(endA) * ringR;
               const pr = coreRef.project3D(x3, y3, z3, cxC, cyC);
@@ -2586,34 +2848,34 @@ if(p.state === "zapTravel"){
             // ---- Smooth bolt growth (same timing as the core's zap) ----
             const t01 = clamp((now - p.born) / (p.zapLife ?? 1.25), 0, 1);
             const g01 = clamp(t01 / ((p.impactT ?? 0.6875) / (p.zapLife ?? 1.25)), 0, 1); // == t/0.55
-            const grow = g01*g01*(3 - 2*g01); // smoothstep
+            const grow = g01 * g01 * (3 - 2 * g01); // smoothstep
 
             // ---- Build the SAME jagged lane (so the orb sits IN the lightning) ----
             const dx = eFrame.x - sFrame.x;
             const dy = eFrame.y - sFrame.y;
             const len = Math.max(1, Math.hypot(dx, dy));
             const nx = -dy / len;
-            const ny =  dx / len;
+            const ny = dx / len;
 
             const segs = coreRef.CFG?.zapSegs ?? 28;
             const baseJitter = coreRef.CFG?.zapJitter ?? 5;
-            const jitter = baseJitter * (0.35 + 0.65*(1 - t01));
+            const jitter = baseJitter * (0.35 + 0.65 * (1 - t01));
             const flick = Math.floor(now * 14) * 0.15;
             const seed = (p.zapSeed ?? 0);
 
             const pts = [];
-            for(let k=0;k<=segs;k++){
+            for (let k = 0; k <= segs; k++) {
               const u = k / segs;
               const baseX = sFrame.x + dx * u;
               const baseY = sFrame.y + dy * u;
 
               // deterministic noise (same style as ReactorCore.drawZaps)
-              const n = coreRef._hash01(seed + k*19.19 + flick);
+              const n = coreRef._hash01(seed + k * 19.19 + flick);
               const w = (n - 0.5) * 2;
 
               // quiet at ends, strongest in the middle
               const mid = Math.sin(u * Math.PI);
-              const amp = jitter * (0.10 + 0.90*mid);
+              const amp = jitter * (0.10 + 0.90 * mid);
 
               pts.push({
                 x: baseX + nx * w * amp,
@@ -2628,7 +2890,7 @@ if(p.state === "zapTravel"){
             this.drawPacketDot(tip.x, tip.y, p);
 
             // When the bolt hits the ring, LOCK the orb at the exact impact spot for a beat
-            if(g01 >= 1){
+            if (g01 >= 1) {
               p.state = "orbitHold";
               p.a = endA;
               p.holdUntil = now + (p.holdDur ?? 0.16);
@@ -2636,23 +2898,23 @@ if(p.state === "zapTravel"){
             }
           }
 
-else if(p.state === "orbitHold"){
+          else if (p.state === "orbitHold") {
             // Hold exactly at the zap landing point (same camera + same ring geometry)
             const coreRef = p.coreRef;
-            if(!coreRef){
-              this.packets.splice(i,1);
+            if (!coreRef) {
+              this.packets.splice(i, 1);
               continue;
             }
 
             const cxC = coreRef.W * 0.5;
             const cyC = coreRef.H * 0.54;
             const minWH = Math.min(coreRef.W, coreRef.H);
-            const baseR  = minWH * 0.19;
-            const ringR  = baseR * (coreRef.KNOBS?.ringRadiusMul ?? 1.36);
+            const baseR = minWH * 0.19;
+            const ringR = baseR * (coreRef.KNOBS?.ringRadiusMul ?? 1.36);
 
             const a = p.a ?? 0;
 
-            const y3 = Math.sin((p.wob ?? 0) + now*0.9) * (baseR * (coreRef.CFG?.ringThickness ?? 0.04));
+            const y3 = Math.sin((p.wob ?? 0) + now * 0.9) * (baseR * (coreRef.CFG?.ringThickness ?? 0.04));
             const x3 = Math.cos(a) * ringR;
             const z3 = Math.sin(a) * ringR;
 
@@ -2661,36 +2923,36 @@ else if(p.state === "orbitHold"){
 
             this.drawPacketDot(fp.x, fp.y, p);
 
-            if(!p.holdUntil || now >= p.holdUntil){
+            if (!p.holdUntil || now >= p.holdUntil) {
               p.state = "orbit";
               p.traveled = 0;
             }
           }
 
 
-else if(p.state === "orbit"){
+          else if (p.state === "orbit") {
             const coreRef = p.coreRef;
-            if(!coreRef){
-              this.packets.splice(i,1);
+            if (!coreRef) {
+              this.packets.splice(i, 1);
               continue;
             }
 
             const cxC = coreRef.W * 0.5;
             const cyC = coreRef.H * 0.54;
             const minWH = Math.min(coreRef.W, coreRef.H);
-            const baseR  = minWH * 0.19;
-            const ringR  = baseR * (coreRef.KNOBS?.ringRadiusMul ?? 1.36);
+            const baseR = minWH * 0.19;
+            const ringR = baseR * (coreRef.KNOBS?.ringRadiusMul ?? 1.36);
 
-            const da = p.orbitSpeed * (1/60);
+            const da = p.orbitSpeed * (1 / 60);
 
             // tiny settle time so it doesn't instantly jump ahead
-            if(!p.holdUntil || now >= p.holdUntil){
+            if (!p.holdUntil || now >= p.holdUntil) {
               p.a += da;
               p.traveled += Math.abs(da);
             }
 
             // Same wob style as the visible ring
-            const y3 = Math.sin((p.wob ?? 0) + now*0.9) * (baseR * (coreRef.CFG?.ringThickness ?? 0.04));
+            const y3 = Math.sin((p.wob ?? 0) + now * 0.9) * (baseR * (coreRef.CFG?.ringThickness ?? 0.04));
             const x3 = Math.cos(p.a) * ringR;
             const z3 = Math.sin(p.a) * ringR;
 
@@ -2699,7 +2961,7 @@ else if(p.state === "orbit"){
 
             this.drawPacketDot(fp.x, fp.y, p);
 
-            if(p.traveled >= Math.PI*2){
+            if (p.traveled >= Math.PI * 2) {
               p.state = "launch";
               p.launchStart = now;
 
@@ -2707,30 +2969,30 @@ else if(p.state === "orbit"){
               p.p3 = { x: this.router.x, y: this.router.y };
 
               const midX = (p.p0.x + p.p3.x) * 0.5;
-              p.p1 = { x: (p.p0.x*0.70 + midX*0.30), y: p.p0.y + 140 };
-              p.p2 = { x: (p.p3.x*0.78 + midX*0.22), y: p.p3.y - 160 };
+              p.p1 = { x: (p.p0.x * 0.70 + midX * 0.30), y: p.p0.y + 140 };
+              p.p2 = { x: (p.p3.x * 0.78 + midX * 0.22), y: p.p3.y - 160 };
 
               p.launchDur = 1.55;
               this.addRipple(p.p0.x, p.p0.y);
             }
           }
 
-else if(p.state === "launch"){
-            const t = clamp((now - p.launchStart)/p.launchDur, 0, 1);
+          else if (p.state === "launch") {
+            const t = clamp((now - p.launchStart) / p.launchDur, 0, 1);
             const ease = t < 0.5
-              ? 4*t*t*t
-              : 1 - Math.pow(-2*t + 2, 3)/2;
+              ? 4 * t * t * t
+              : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
             const pos = this.bezier(p.p0, p.p1, p.p2, p.p3, ease);
 
             this.drawPacketPath(p, ease);
             this.drawPacketDot(pos.x, pos.y, p);
 
-            if(t >= 1){
+            if (t >= 1) {
               this.addRipple(this.router.x, this.router.y);
               routerReceivePulse();
               playReceive();
-              this.packets.splice(i,1);
+              this.packets.splice(i, 1);
             }
           }
         }
@@ -2746,19 +3008,19 @@ else if(p.state === "launch"){
     const SILVER_A = [205, 215, 235];
     const SILVER_B = [255, 255, 255];
 
-    const GOLD_A   = [246, 212, 139];
-    const GOLD_B   = [255, 244, 210];
+    const GOLD_A = [246, 212, 139];
+    const GOLD_B = [255, 244, 210];
 
     // NOTE: we dispatch a richer payload so the overlay can lock the orb to the zap landing point
     // until the zap finishes, then let it begin orbiting (no drifting ahead).
-    const EARLY  = new ReactorCore(document.getElementById("coreEarly"),  "EARLY",  BRONZE_A, BRONZE_B, (bot,payload)=>overlay.spawnPacketFromZap(bot,payload));
-    const TREND  = new ReactorCore(document.getElementById("coreTrend"),  "TREND",  SILVER_A, SILVER_B, (bot,payload)=>overlay.spawnPacketFromZap(bot,payload));
-    const RUNNER = new ReactorCore(document.getElementById("coreRunner"), "RUNNER", GOLD_A,   GOLD_B,   (bot,payload)=>overlay.spawnPacketFromZap(bot,payload));
+    const EARLY = new ReactorCore(document.getElementById("coreEarly"), "EARLY", BRONZE_A, BRONZE_B, (bot, payload) => overlay.spawnPacketFromZap(bot, payload));
+    const TREND = new ReactorCore(document.getElementById("coreTrend"), "TREND", SILVER_A, SILVER_B, (bot, payload) => overlay.spawnPacketFromZap(bot, payload));
+    const RUNNER = new ReactorCore(document.getElementById("coreRunner"), "RUNNER", GOLD_A, GOLD_B, (bot, payload) => overlay.spawnPacketFromZap(bot, payload));
 
     const cores = [EARLY, TREND, RUNNER];
 
-    function resizeAll(){
-      for(const c of cores) c.resize();
+    function resizeAll() {
+      for (const c of cores) c.resize();
       overlay.resize();
       resizePortal();
     }
@@ -2767,46 +3029,46 @@ else if(p.state === "launch"){
     /* ============================================================
        PORTAL LOOP (draws on top while entering)
        ============================================================ */
-    function getRouterCenterInFrame(){
+    function getRouterCenterInFrame() {
       const fr = frameEl.getBoundingClientRect();
       const rr = routerBtn.getBoundingClientRect();
       return {
-        x: (rr.left - fr.left) + rr.width/2,
-        y: (rr.top  - fr.top)  + rr.height/2,
+        x: (rr.left - fr.left) + rr.width / 2,
+        y: (rr.top - fr.top) + rr.height / 2,
         r: rr.width * 0.55
       };
     }
 
-    function loop(nowMs){
-      try{
-        for(const c of cores) c.draw(nowMs);
-      }catch(e){
+    function loop(nowMs) {
+      try {
+        for (const c of cores) c.draw(nowMs);
+      } catch (e) {
         console.warn("Core draw error:", e);
       }
 
-      try{
+      try {
         overlay.draw(nowMs);
-      }catch(e){
+      } catch (e) {
         console.warn("Overlay draw error:", e);
       }
 
       /* UPGRADE: portal transition */
-      if(openFX.active){
-        const nowSec = performance.now()/1000;
+      if (openFX.active) {
+        const nowSec = performance.now() / 1000;
         const u = clamp((nowSec - openFX.t0) / NAV.openDurSec, 0, 1);
         const c = getRouterCenterInFrame();
         drawPortal(c.x, c.y, c.r, u, nowSec);
 
-        if(u >= NAV.fadeStartAt && !openFX.faded){
+        if (u >= NAV.fadeStartAt && !openFX.faded) {
           openFX.faded = true;
           fadeOutEl.classList.add("on");
         }
-        if(u >= NAV.redirectAt && !openFX.redirected){
+        if (u >= NAV.redirectAt && !openFX.redirected) {
           openFX.redirected = true;
           window.location.href = NAV.nextUrl;
         }
       } else {
-        portalCtx.clearRect(0,0,portalCanvas.width, portalCanvas.height);
+        portalCtx.clearRect(0, 0, portalCanvas.width, portalCanvas.height);
       }
 
       requestAnimationFrame(loop);
@@ -2814,7 +3076,5 @@ else if(p.state === "launch"){
     requestAnimationFrame(loop);
   </script>
 </body>
+
 </html>
-
-
-
