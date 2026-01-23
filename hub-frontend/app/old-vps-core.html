@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>VPS Core - Particle Burst Orb (Optimized)</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #05070c;
+            overflow: hidden;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            color: #fff;
+        }
+
+        .wrap {
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+        }
+
+        .card {
+            width: min(560px, 92vw);
+            aspect-ratio: 1;
+            border-radius: 22px;
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(900px 700px at 50% 35%, rgba(0, 200, 255, 0.10), transparent 60%),
+                radial-gradient(900px 700px at 20% 75%, rgba(0, 120, 255, 0.06), transparent 55%),
+                linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+        }
+
+        canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .label {
+            position: absolute;
+            left: 18px;
+            top: 16px;
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            color: rgba(255, 255, 255, 0.65);
+            user-select: none;
+            text-transform: uppercase;
+        }
+
+        .title {
+            position: absolute;
+            left: 18px;
+            bottom: 16px;
+            user-select: none;
+        }
+
+        .title .h {
+            font-weight: 800;
+            font-size: 18px;
+            margin: 0 0 6px 0;
+        }
+
+        .title .p {
+            margin: 0;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.65);
+            max-width: 440px;
+            line-height: 1.35;
+        }
+
+        .hint {
+            position: absolute;
+            right: 18px;
+            bottom: 16px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.45);
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="card" id="card">
+            <div class="label">VPS CORE</div>
+            <canvas id="cv"></canvas>
+
+            <div class="title">
+                <div class="h">Particle Burst Orb</div>
+                <div class="p">Same look, smoother render (no per-frame allocations + no sorting + auto quality)</div>
+            </div>
+
+            <div class="hint">Move mouse</div>
+        </div>
+    </div>
+
+    <script>
+        const card = document.getElementById("card");
+        const canvas = document.getElementById("cv");
+        const ctx = canvas.getContext("2d", { alpha: true });
+
+        // =======================
+        // CONFIG (easy tuning)
+        // =======================
+        const CFG = {
+            // Auto quality will lower these if your device struggles
+            dprMax: 2,                   // biggest FPS killer on high-res screens
+            particles: 2800,             // biggest FPS killer besides DPR
+
+            // IMPORTANT: this is a big perf win
+            // With additive blending, it still looks great without sorting.
+            sortParticles: false,
+
+            particleAlpha: 0.62,
+            glowSpriteSizePx: 56,
+            glowScale: 0.11,
+
+            coreDotPx: 1.15,
+            coreDotBoost: 0.85,
+
+            orbRadiusFactor: 0.255,
+            perspective: 920,
+
+            rotationSpeedY: 0.0024,
+            rotationSpeedX: 0.0016,
+            wobble: 0.010,
+
+            rimBoost: 1.85,
+            rimPower: 2.65,
+
+            haloStrength: 1.05,
+            haloSize: 2.35,
+
+            cameraEase: 0.08,
+            mouseTilt: 0.95,
+
+            stars: 28,
+
+            burstCount: 3,
+            burstGap: 0.85,
+            burstCooldown: 5.0,
+
+            pulseDuration: 3.8,
+            pulseStrength: 1.65,
+            pulseMaxAngle: 1.65,
+            pulseSharpness: 5.8,
+            pulseCoreFill: 0.30,
+
+            neonBlue: [0, 195, 255],
+            deepBlue: [0, 120, 255],
+            white: [245, 252, 255],
+
+            // Auto quality (smooth feel)
+            autoQuality: true,
+            // If average frame time is worse than this, drop quality
+            dropIfAvgDtAbove: 0.022,      // ~45 FPS
+            // If average frame time is better than this, raise quality
+            raiseIfAvgDtBelow: 0.0165,    // ~60 FPS
+            qualityCooldownSec: 2.0
+        };
+
+        function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function rgba(rgb, a) { return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`; }
+
+        // =======================
+        // Resize
+        // =======================
+        let W = 0, H = 0, DPR = 1;
+
+        function resize() {
+            DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
+            const r = card.getBoundingClientRect();
+            W = Math.floor(r.width);
+            H = Math.floor(r.height);
+
+            canvas.width = Math.floor(W * DPR);
+            canvas.height = Math.floor(H * DPR);
+            canvas.style.width = W + "px";
+            canvas.style.height = H + "px";
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+            buildStarsLayer();
+            buildVignetteLayer();
+            buildParticles();
+            buildSprites();
+            ensureBuffers();
+        }
+        window.addEventListener("resize", resize);
+
+        // =======================
+        // Mouse camera tilt
+        // =======================
+        const cam = { rx: 0, ry: 0, trx: 0, try: 0 };
+        card.addEventListener("pointermove", (e) => {
+            const r = card.getBoundingClientRect();
+            const nx = (e.clientX - r.left) / r.width;
+            const ny = (e.clientY - r.top) / r.height;
+            cam.try = (nx - 0.5) * CFG.mouseTilt;
+            cam.trx = (ny - 0.5) * CFG.mouseTilt;
+        });
+        card.addEventListener("pointerleave", () => {
+            cam.try *= 0.18;
+            cam.trx *= 0.18;
+        });
+
+        // =======================
+        // 3D math (no allocations)
+        // =======================
+        function projectXYZ(x, y, z, cx, cy, fov, out) {
+            // camera tilt rotations using precomputed sin/cos
+            // rotateY
+            let x1 = x * camCy + z * camSy;
+            let y1 = y;
+            let z1 = -x * camSy + z * camCy;
+
+            // rotateX
+            let x2 = x1;
+            let y2 = y1 * camCx - z1 * camSx;
+            let z2 = y1 * camSx + z1 * camCx;
+
+            const zz = z2 + fov;
+            const s = fov / zz;
+
+            out.x = cx + x2 * s;
+            out.y = cy + y2 * s;
+            out.z = z2;
+            out.s = s;
+        }
+
+        // =======================
+        // Vector helpers
+        // =======================
+        function dot3(ax, ay, az, bx, by, bz) { return ax * bx + ay * by + az * bz; }
+        function norm3(x, y, z) {
+            const l = Math.sqrt(x * x + y * y + z * z) || 1;
+            return { x: x / l, y: y / l, z: z / l };
+        }
+        function smooth01(t) {
+            t = clamp(t, 0, 1);
+            return t * t * (3 - 2 * t);
+        }
+
+        // =======================
+        // Layers (static draw = faster)
+        // =======================
+        const starsLayer = document.createElement("canvas");
+        const vignetteLayer = document.createElement("canvas");
+        const starsCtx = starsLayer.getContext("2d");
+        const vigCtx = vignetteLayer.getContext("2d");
+
+        function buildStarsLayer() {
+            starsLayer.width = Math.floor(W * DPR);
+            starsLayer.height = Math.floor(H * DPR);
+            starsCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+            starsCtx.clearRect(0, 0, W, H);
+            starsCtx.globalCompositeOperation = "lighter";
+
+            for (let i = 0; i < CFG.stars; i++) {
+                const x = Math.random() * W;
+                const y = Math.random() * H;
+                const r = 0.5 + Math.random() * 0.9;
+                const a = 0.02 + Math.random() * 0.06;
+
+                starsCtx.fillStyle = `rgba(255,255,255,${a})`;
+                starsCtx.beginPath();
+                starsCtx.arc(x, y, r, 0, Math.PI * 2);
+                starsCtx.fill();
+            }
+        }
+
+        function buildVignetteLayer() {
+            vignetteLayer.width = Math.floor(W * DPR);
+            vignetteLayer.height = Math.floor(H * DPR);
+            vigCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+            const cx = W * 0.5;
+            const cy = H * 0.5;
+            const radius = Math.min(W, H) * 0.43;
+
+            vigCtx.clearRect(0, 0, W, H);
+            const vg = vigCtx.createRadialGradient(cx, cy, radius * 0.35, cx, cy, radius * 1.18);
+            vg.addColorStop(0.0, "rgba(0,0,0,0)");
+            vg.addColorStop(1.0, "rgba(0,0,0,0.82)");
+
+            vigCtx.fillStyle = vg;
+            vigCtx.beginPath();
+            vigCtx.arc(cx, cy, radius * 1.18, 0, Math.PI * 2);
+            vigCtx.fill();
+        }
+
+        function drawHalo(cx, cy, R, pulse) {
+            ctx.save();
+            ctx.globalCompositeOperation = "screen";
+
+            const haloR = R * (CFG.haloSize + pulse * 0.10);
+            const g = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, haloR);
+
+            g.addColorStop(0.0, rgba(CFG.neonBlue, 0.26 * CFG.haloStrength));
+            g.addColorStop(0.35, rgba(CFG.deepBlue, 0.12 * CFG.haloStrength));
+            g.addColorStop(1.0, "rgba(0,0,0,0)");
+
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(cx, cy, haloR, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // =======================
+        // Particles (typed arrays = no GC spikes)
+        // =======================
+        let N = 0;
+
+        // base position
+        let bx, by, bz;
+        // direction (unit)
+        let dx, dy, dz;
+        // seeds + size variance
+        let seed, psz;
+
+        // per-frame projected buffers
+        let px, py, pz, ps, pDepth, pRim, pBoom, pSpark;
+
+        // optional sort index buffer
+        let idx = null;
+
+        function randomOnSphere() {
+            const u = Math.random() * 2 - 1;
+            const t = Math.random() * Math.PI * 2;
+            const r = Math.sqrt(1 - u * u);
+            return { x: r * Math.cos(t), y: r * Math.sin(t), z: u };
+        }
+
+        function buildParticles() {
+            N = CFG.particles;
+
+            bx = new Float32Array(N);
+            by = new Float32Array(N);
+            bz = new Float32Array(N);
+
+            dx = new Float32Array(N);
+            dy = new Float32Array(N);
+            dz = new Float32Array(N);
+
+            seed = new Float32Array(N);
+            psz = new Float32Array(N);
+
+            const R = Math.min(W, H) * CFG.orbRadiusFactor;
+
+            for (let i = 0; i < N; i++) {
+                const d = randomOnSphere();
+
+                const thickness = 0.05 + Math.random() * 0.08;
+                const rr = R * (1 + (Math.random() - 0.5) * thickness);
+
+                dx[i] = d.x; dy[i] = d.y; dz[i] = d.z;
+
+                bx[i] = d.x * rr;
+                by[i] = d.y * rr;
+                bz[i] = d.z * rr;
+
+                seed[i] = Math.random() * 9999;
+                psz[i] = 0.78 + Math.random() * 1.25;
+            }
+
+            ensureBuffers();
+        }
+
+        function ensureBuffers() {
+            if (N <= 0) return;
+
+            px = new Float32Array(N);
+            py = new Float32Array(N);
+            pz = new Float32Array(N);
+            ps = new Float32Array(N);
+
+            pDepth = new Float32Array(N);
+            pRim = new Float32Array(N);
+            pBoom = new Float32Array(N);
+            pSpark = new Float32Array(N);
+
+            if (CFG.sortParticles) {
+                idx = new Uint32Array(N);
+                for (let i = 0; i < N; i++) idx[i] = i;
+            } else {
+                idx = null;
+            }
+        }
+
+        // =======================
+        // Sprites
+        // =======================
+        let spriteBlue = null, spriteWhite = null;
+
+        function makeSprite(rgb, sizePx) {
+            const c = document.createElement("canvas");
+            c.width = sizePx;
+            c.height = sizePx;
+            const g = c.getContext("2d");
+
+            const cx = sizePx / 2, cy = sizePx / 2;
+            const r1 = sizePx * 0.5;
+
+            const grd = g.createRadialGradient(cx, cy, 0, cx, cy, r1);
+            grd.addColorStop(0.00, `rgba(255,255,255,1)`);
+            grd.addColorStop(0.12, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.95)`);
+            grd.addColorStop(0.45, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.22)`);
+            grd.addColorStop(1.00, `rgba(0,0,0,0)`);
+
+            g.fillStyle = grd;
+            g.beginPath();
+            g.arc(cx, cy, r1, 0, Math.PI * 2);
+            g.fill();
+
+            return c;
+        }
+
+        function buildSprites() {
+            spriteBlue = makeSprite(CFG.neonBlue, CFG.glowSpriteSizePx);
+            spriteWhite = makeSprite(CFG.white, CFG.glowSpriteSizePx);
+        }
+
+        // =======================
+        // Burst pulses
+        // =======================
+        let pulses = [];
+        const burst = {
+            mode: "burst",
+            remaining: CFG.burstCount,
+            timer: 0
+        };
+
+        function spawnPulse(timeNow) {
+            const c = norm3(...Object.values(randomOnSphere()));
+            pulses.push({
+                start: timeNow,
+                cx: c.x, cy: c.y, cz: c.z
+            });
+        }
+
+        function updateBurst(dt, timeNow) {
+            burst.timer -= dt;
+
+            if (burst.mode === "burst") {
+                if (burst.timer <= 0) {
+                    spawnPulse(timeNow);
+                    burst.remaining--;
+
+                    if (burst.remaining > 0) {
+                        burst.timer = CFG.burstGap;
+                    } else {
+                        burst.mode = "cooldown";
+                        burst.timer = CFG.burstCooldown;
+                    }
+                }
+            } else {
+                if (burst.timer <= 0) {
+                    burst.mode = "burst";
+                    burst.remaining = CFG.burstCount;
+                    burst.timer = 0;
+                }
+            }
+        }
+
+        function pulseAtDir(pulse, dd, timeNow) {
+            const age = timeNow - pulse.start;
+            const d = CFG.pulseDuration;
+            if (age < 0 || age > d) return 0;
+
+            const u = age / d;
+            const grow = smooth01(u);
+            const waveR = grow * CFG.pulseMaxAngle;
+
+            // dd is dot(dir, pulseCenter) already
+            const ang = Math.acos(clamp(dd, -1, 1));
+
+            const sharp = CFG.pulseSharpness;
+            const band = Math.exp(-Math.pow((ang - waveR) * sharp, 2));
+
+            const fill = Math.pow(clamp(dd, 0, 1), 6.0) * (1 - u) * CFG.pulseCoreFill;
+
+            const fadeIn = smooth01(u / 0.20);
+            const fadeOut = 1 - smooth01((u - 0.62) / 0.38);
+
+            return clamp((band + fill) * fadeIn * fadeOut, 0, 1);
+        }
+
+        // =======================
+        // Render
+        // =======================
+        const tmpProj = { x: 0, y: 0, z: 0, s: 1 };
+
+        // Camera sin/cos cached each frame (faster)
+        let camSx = 0, camCx = 1, camSy = 0, camCy = 1;
+
+        function renderOrb(cx, cy, R, timeNow) {
+            const ry = timeNow * (CFG.rotationSpeedY * 60);
+            const rx = timeNow * (CFG.rotationSpeedX * 60);
+            const sry = Math.sin(ry), cry = Math.cos(ry);
+            const srx = Math.sin(rx), crx = Math.cos(rx);
+
+            // Precalc denom for rim
+            const rimDen = (R * 1.25);
+
+            // Project + compute fields (no allocations)
+            for (let i = 0; i < N; i++) {
+                const wob = 1 + CFG.wobble * Math.sin(timeNow * 1.2 + seed[i]);
+
+                // rotateY (orb rotation)
+                let x1 = (bx[i] * wob) * cry + (bz[i] * wob) * sry;
+                let y1 = (by[i] * wob);
+                let z1 = -(bx[i] * wob) * sry + (bz[i] * wob) * cry;
+
+                // rotateX (orb rotation)
+                let x2 = x1;
+                let y2 = y1 * crx - z1 * srx;
+                let z2 = y1 * srx + z1 * crx;
+
+                projectXYZ(x2, y2, z2, cx, cy, CFG.perspective, tmpProj);
+
+                px[i] = tmpProj.x;
+                py[i] = tmpProj.y;
+                pz[i] = tmpProj.z;
+                ps[i] = tmpProj.s;
+
+                // depth 0..1
+                const depth = clamp((tmpProj.z / (R * 1.35) + 1) * 0.5, 0, 1);
+                pDepth[i] = depth;
+
+                // rim
+                const rim = Math.pow(1 - Math.abs(tmpProj.z) / rimDen, CFG.rimPower);
+                pRim[i] = rim;
+
+                // sparkle
+                pSpark[i] = 0.95 + 0.05 * Math.sin(timeNow * 2.0 + seed[i]);
+
+                // boom field: compute max pulse at this particle
+                let boom = 0;
+                if (pulses.length) {
+                    // dot(dir, pulseCenter) without making objects
+                    const ddx = dx[i], ddy = dy[i], ddz = dz[i];
+
+                    for (let k = 0; k < pulses.length; k++) {
+                        const p = pulses[k];
+                        const dd = dot3(ddx, ddy, ddz, p.cx, p.cy, p.cz);
+                        const v = pulseAtDir(p, dd, timeNow);
+                        if (v > boom) boom = v;
+                    }
+                }
+                pBoom[i] = boom;
+            }
+
+            // Optional sort (off by default)
+            if (CFG.sortParticles && idx) {
+                // Sort indices by pz (back to front). This is expensive.
+                // If you want it on, keep particles lower.
+                idx.sort?.((a, b) => pz[a] - pz[b]); // some browsers don't allow sort on typed arrays
+            }
+
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+
+            // Draw order: no sort = fastest (looks fine with additive blending)
+            const drawCount = N;
+            for (let i = 0; i < drawCount; i++) {
+                const j = idx ? idx[i] : i;
+
+                const depth = pDepth[j];
+                const rim = pRim[j];
+                const boom = pBoom[j];
+
+                let a = CFG.particleAlpha * (0.18 + 0.72 * depth);
+                a *= (1 + rim * (CFG.rimBoost - 1));
+                a *= (1 + boom * CFG.pulseStrength);
+                a *= pSpark[j];
+                a = clamp(a, 0, 0.98);
+
+                const size = (0.70 + depth * 0.95) * psz[j] * ps[j];
+
+                const glowW = spriteBlue.width * CFG.glowScale * size * (1 + boom * 0.35 + rim * 0.25);
+                const whiteMix = clamp(boom * 0.62 + rim * 0.10, 0, 0.80);
+
+                // blue glow
+                ctx.globalAlpha = a * (1 - whiteMix);
+                ctx.drawImage(spriteBlue, px[j] - glowW / 2, py[j] - glowW / 2, glowW, glowW);
+
+                // white glow
+                ctx.globalAlpha = a * whiteMix;
+                const glowW2 = glowW * 0.90;
+                ctx.drawImage(spriteWhite, px[j] - glowW2 / 2, py[j] - glowW2 / 2, glowW2, glowW2);
+
+                // crisp core dot
+                ctx.globalAlpha = clamp(a * (0.65 + CFG.coreDotBoost * (boom * 0.6 + rim * 0.2)), 0, 1);
+                ctx.fillStyle = rgba(CFG.white, 1);
+                ctx.beginPath();
+                ctx.arc(px[j], py[j], CFG.coreDotPx * (0.72 + depth * 0.45), 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            // rim ring outline
+            ctx.save();
+            ctx.globalCompositeOperation = "screen";
+            const ringGrad = ctx.createRadialGradient(cx, cy, R * 0.72, cx, cy, R * 1.10);
+            ringGrad.addColorStop(0.0, "rgba(255,255,255,0)");
+            ringGrad.addColorStop(0.68, rgba(CFG.neonBlue, 0.20));
+            ringGrad.addColorStop(1.0, "rgba(255,255,255,0)");
+            ctx.strokeStyle = ringGrad;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, R * 1.02, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // =======================
+        // Auto quality (smooth feel)
+        // =======================
+        const qualityLevels = [
+            { name: "LOW", dprMax: 1.25, particles: 2000 },
+            { name: "MED", dprMax: 1.5, particles: 2400 },
+            { name: "HIGH", dprMax: 2, particles: 2800 }
+        ];
+        let qIndex = 2; // start at HIGH
+        let qualityCooldown = 0;
+
+        function applyQuality(index) {
+            qIndex = clamp(index, 0, qualityLevels.length - 1);
+            const q = qualityLevels[qIndex];
+
+            CFG.dprMax = q.dprMax;
+            CFG.particles = q.particles;
+
+            // rebuild everything so it actually takes effect
+            resize();
+        }
+
+        // =======================
+        // Loop
+        // =======================
+        let last = performance.now();
+        let tSec = 0;
+
+        // rolling average dt
+        let avgDt = 1 / 60;
+
+        function loop(now) {
+            const dt = Math.min(0.033, (now - last) / 1000);
+            last = now;
+            tSec += dt;
+
+            // average dt (low-pass)
+            avgDt = avgDt * 0.92 + dt * 0.08;
+
+            // smooth camera
+            cam.rx += (cam.trx - cam.rx) * CFG.cameraEase;
+            cam.ry += (cam.try - cam.ry) * CFG.cameraEase;
+
+            camSx = Math.sin(cam.rx); camCx = Math.cos(cam.rx);
+            camSy = Math.sin(cam.ry); camCy = Math.cos(cam.ry);
+
+            // burst pulses
+            updateBurst(dt, tSec);
+
+            // remove old pulses
+            pulses = pulses.filter(p => (tSec - p.start) <= CFG.pulseDuration);
+
+            // auto quality (avoid constant flipping)
+            if (CFG.autoQuality) {
+                qualityCooldown = Math.max(0, qualityCooldown - dt);
+
+                if (qualityCooldown === 0) {
+                    if (avgDt > CFG.dropIfAvgDtAbove && qIndex > 0) {
+                        applyQuality(qIndex - 1);
+                        qualityCooldown = CFG.qualityCooldownSec;
+                    } else if (avgDt < CFG.raiseIfAvgDtBelow && qIndex < qualityLevels.length - 1) {
+                        applyQuality(qIndex + 1);
+                        qualityCooldown = CFG.qualityCooldownSec;
+                    }
+                }
+            }
+
+            ctx.clearRect(0, 0, W, H);
+
+            const cx = W * 0.5;
+            const cy = H * 0.50;
+            const R = Math.min(W, H) * CFG.orbRadiusFactor;
+
+            // static layers = cheap
+            ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = "source-over";
+            ctx.drawImage(starsLayer, 0, 0, W, H);
+
+            const haloPulse = 0.5 + 0.5 * Math.sin(tSec * 1.1);
+            drawHalo(cx, cy, R, haloPulse);
+
+            renderOrb(cx, cy, R, tSec);
+
+            // vignette static
+            ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = "source-over";
+            ctx.drawImage(vignetteLayer, 0, 0, W, H);
+
+            requestAnimationFrame(loop);
+        }
+
+        // start
+        resize();
+        requestAnimationFrame(loop);
+    </script>
+</body>
+
+</html>

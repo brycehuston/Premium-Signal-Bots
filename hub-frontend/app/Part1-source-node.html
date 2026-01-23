@@ -1,0 +1,1911 @@
+<!-- source-node_LUX-IMPACT-PULSE_v7.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Alpha Alerts • Source Node (Impact Pulse v7)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#03040a;
+      --bg1:#05070c;
+
+      --white:#F7FBFF;
+      --text: rgba(247,251,255,0.92);
+
+      /* Premium metals */
+      --gold:#F9D976;
+      --silver:#E7EEF8;
+      --bronze:#D89A52;
+
+      --stroke: rgba(255,255,255,0.14);
+      --strokeSoft: rgba(255,255,255,0.07);
+      --radius: 26px;
+
+      /* Slightly richer grading */
+      --postSat: 2.18;
+      --postCon: 1.42;
+      --postBri: 1.15;
+      --badgeWidth: 280px;
+      --badgePadY: 8px;
+      --badgePadX: 10px;
+      --notePadY: 10px;
+      --notePadX: 12px;
+      --noteRadius: 12px;
+    }
+
+    html, body{
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg0);
+      font-family: "Sora", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
+    }
+
+    *{ box-sizing: border-box; }
+
+    .stage{
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+
+      background:
+        radial-gradient(1200px 900px at 50% 14%, rgba(255,255,255,0.060), transparent 62%),
+        radial-gradient(1100px 800px at 22% 82%, rgba(249,217,118,0.052), transparent 62%),
+        radial-gradient(900px 700px at 85% 68%, rgba(231,238,248,0.028), transparent 62%),
+        radial-gradient(900px 600px at 70% 25%, rgba(216,154,82,0.022), transparent 62%),
+        linear-gradient(to bottom, var(--bg0), var(--bg1));
+    }
+
+    .frame{
+      position: relative;
+      width: min(1680px, 96vw);
+      height: min(860px, 88vh);
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+      overflow: hidden;
+      background:
+        radial-gradient(1200px 900px at 50% 15%, rgba(255,255,255,0.018), transparent 66%),
+        linear-gradient(to bottom right, rgba(255,255,255,0.034), rgba(255,255,255,0.012));
+      box-shadow:
+        0 40px 120px rgba(0,0,0,0.74),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    canvas{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display:block;
+      filter: saturate(var(--postSat)) contrast(var(--postCon)) brightness(var(--postBri));
+    }
+
+    .brandMark{
+      position:absolute;
+      left: 16px;
+      top: 14px;
+      z-index: 6;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(247,251,255,0.52);
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--strokeSoft);
+      background: rgba(0,0,0,0.22);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      user-select:none;
+      pointer-events:none;
+          white-space: nowrap;
+}
+  
+
+/* ✅ Gold phase label (cleaner + premium) */
+.brandMark .brandText{
+  color: rgba(247,251,255,0.58);
+  font-weight: 800;
+}
+
+.brandMark .brandSep{
+  display:inline-block;
+  margin: 0 8px;
+  color: rgba(247,251,255,0.28);
+  font-weight: 800;
+  transform: translateY(-0.5px);
+}
+
+.brandMark .brandPhase{
+  display:inline-flex;
+  align-items:center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  border: 1px solid rgba(249,217,118,0.42);
+  background: rgba(249,217,118,0.10);
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.09);
+}
+
+/* ✅ Hover hint (shows only when hovering the VPS Core sphere) */
+.sphereHint{
+  position:absolute;
+  z-index: 7;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.98);
+  opacity: 0;
+  pointer-events:none;
+  user-select:none;
+
+  font-size: 10px;
+  letter-spacing: 0.30em;
+  text-transform: uppercase;
+
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.34);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  color: rgba(247,251,255,0.72);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.sphereHint.show{
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* subtle gold "ping" behind the hint */
+.sphereHint::before{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 50%, rgba(249,217,118,0.20), rgba(0,0,0,0) 70%);
+  opacity: 0.70;
+  z-index:-1;
+}
+
+/* Workflow panel */
+.infoPanel{
+  position:absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 8;
+  width: min(360px, 92vw);
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.36);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+  pointer-events: auto;
+}
+
+.infoEyebrow{
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(247,251,255,0.60);
+  font-weight: 800;
+}
+
+.infoTitle{
+  margin-top: 6px;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: rgba(247,251,255,0.92);
+}
+
+.infoText{
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: rgba(247,251,255,0.70);
+  line-height: 1.35;
+}
+
+.phaseRow{
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.phasePill{
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(247,251,255,0.72);
+  text-decoration: none;
+  background: rgba(0,0,0,0.28);
+}
+.phasePill.active{
+  border-color: rgba(249,217,118,0.48);
+  color: rgba(249,217,118,0.95);
+  background: rgba(249,217,118,0.10);
+}
+
+.infoButtons{
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.infoBtn{
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.30);
+  color: rgba(247,251,255,0.88);
+  text-decoration: none;
+  font-weight: 800;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+.infoBtn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.22);
+  background: rgba(0,0,0,0.42);
+}
+.infoBtn.primary{
+  border-color: rgba(249,217,118,0.46);
+  color: rgba(249,217,118,0.98);
+  background: rgba(249,217,118,0.08);
+}
+
+@media (max-width: 820px){
+  .infoPanel{
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}
+
+    /* Unified badge stack */
+    .badgeStack{
+      position:absolute;
+      left: 16px;
+      top: 14px;
+      z-index: 6;
+      display: inline-grid;
+      grid-template-columns: max-content;
+      gap: 8px;
+      width: max-content;
+      max-width: 80vw;
+      align-items: start;
+    }
+
+    /* Unified phase badge */
+    .brandMark{
+      position: relative;
+      left: auto;
+      top: auto;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      width: 100%;
+      padding: var(--badgePadY) var(--badgePadX);
+      border-radius: var(--noteRadius);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.34);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      white-space: nowrap;
+    }
+
+    .brandMark .brandText{
+      color: rgba(247,251,255,0.72);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+    }
+
+    .brandMark .brandSep{
+      color: rgba(247,251,255,0.28);
+      font-weight: 800;
+      font-size: 11px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .brandMark .brandPhase{
+      display:inline-flex;
+      align-items:center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      font-size: 10px;
+      color: rgba(249,217,118,0.95);
+      border: 1px solid rgba(249,217,118,0.40);
+      background: rgba(249,217,118,0.08);
+      text-transform: uppercase;
+    }
+
+    /* Compact workflow note */
+    .workflowNote{
+      position: relative;
+      left: auto;
+      top: auto;
+      width: 100%;
+      padding: var(--notePadY) var(--notePadX);
+      border-radius: var(--noteRadius);
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.30);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      pointer-events: none;
+    }
+
+    .workflowTitle{
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(247,251,255,0.78);
+      font-weight: 800;
+    }
+
+    .workflowText{
+      margin: 6px 0 0 0;
+      font-size: 11px;
+      color: rgba(247,251,255,0.62);
+      line-height: 1.35;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 820px){
+      .badgeStack{
+        left: 12px;
+        right: 12px;
+        width: auto;
+      }
+      .workflowText{
+        white-space: normal;
+      }
+    }
+
+    @media (max-width: 430px){
+      .stage{ padding: 10px; }
+      .frame{
+        width: 100vw;
+        height: 100vh;
+        border-radius: 18px;
+      }
+      .badgeStack{
+        left: 10px;
+        right: 10px;
+        top: 10px;
+        gap: 6px;
+      }
+      .brandMark{
+        padding: 7px 9px;
+      }
+      .brandMark .brandText{
+        font-size: 10px;
+        letter-spacing: 0.22em;
+      }
+      .brandMark .brandPhase{
+        font-size: 9px;
+        padding: 3px 7px;
+        letter-spacing: 0.14em;
+      }
+      .workflowTitle{
+        font-size: 10px;
+        letter-spacing: 0.14em;
+      }
+      .workflowText{
+        font-size: 10px;
+      }
+      .sphereHint{
+        font-size: 9px;
+        letter-spacing: 0.24em;
+        padding: 7px 10px;
+      }
+    }
+</style>
+</head>
+
+<body>
+  <div class="stage">
+    <div class="frame" id="frame">
+      <div class="badgeStack">
+        <div class="brandMark"><span class="brandText">ALPHA ALERTS</span><span class="brandSep">•</span><span class="brandPhase">PHASE 1</span></div>
+        <div class="workflowNote">
+          <div class="workflowTitle">SYSTEM WORKFLOW</div>
+          <p class="workflowText">PHASE 1 PULLS RAW SOURCES.</p>
+        </div>
+      </div>
+      <div class="sphereHint" id="sphereHint">TRIPPLE CLICK</div>
+      <canvas id="cv"></canvas>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const frameEl = document.getElementById("frame");
+      const canvas  = document.getElementById("cv");
+      const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+
+      const TAU = Math.PI * 2;
+
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+      const lerp  = (a, b, t) => a + (b - a) * t;
+      const rgba  = (rgb, a) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+
+      function easeInOutSine(t){ return -(Math.cos(Math.PI * t) - 1) / 2; }
+      
+      function easeOutCubic(t){
+        t = clamp(t, 0, 1);
+        return 1 - Math.pow(1 - t, 3);
+      }
+function smooth01(t){
+        t = clamp(t, 0, 1);
+        return t*t*(3 - 2*t);
+      }
+
+      function quadPoint(p0, p1, p2, t){
+        const u = 1 - t;
+        return {
+          x: u*u*p0.x + 2*u*t*p1.x + t*t*p2.x,
+          y: u*u*p0.y + 2*u*t*p1.y + t*t*p2.y
+        };
+      }
+
+      function roundRectPath(ctx, x, y, w, h, r){
+        const rr = Math.min(r, w/2, h/2);
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x+w, y, x+w, y+h, rr);
+        ctx.arcTo(x+w, y+h, x, y+h, rr);
+        ctx.arcTo(x, y+h, x, y, rr);
+        ctx.arcTo(x, y, x+w, y, rr);
+        ctx.closePath();
+      }
+
+      /* ✅ premium palette */
+      const COLORS = {
+        white:  [248, 252, 255],
+        bronze: [216, 154,  82],
+        silver: [231, 238, 248],
+        gold:   [248, 214, 120],
+        goldDeep:[216, 168,  80],
+      };
+
+      /* ============================================================
+         CALM RHYTHM (packet spawns)
+         ============================================================ */
+      const FLOW = {
+        enabled: true,
+        baseBeatMs: 1900,
+        jitterMs:   120,
+        nextAtMs:   0,
+        state: 1
+      };
+
+      function nextBeatIntervalMs(){
+        const drift = 1 + (Math.random()*2 - 1) * 0.02;
+        const jitter = (Math.random()*2 - 1) * FLOW.jitterMs;
+        return Math.max(1350, FLOW.baseBeatMs * drift + jitter);
+      }
+
+      function pickNextState(){
+        // 🔥 Packet source weighting:
+        // Dexscreener is the most important feed, so it fires more often.
+        // 0 = DEXSCREENER (LEFT)  ~50%
+        // 1 = OHLCV / CHART (MID) ~30%
+        // 2 = RPC / MEMPOOL (RIGHT) ~20%
+        const r = Math.random();
+        if (r < 0.50) return 0;
+        if (r < 0.80) return 1;
+        return 2;
+      }
+
+      /* ============================================================
+         CONFIG
+         ============================================================ */
+      const CFG = {
+        dprMax: 1.65,
+
+        stars: 70,
+
+        tagFont: "900 16px Sora, ui-sans-serif, system-ui",
+
+        srcOrbRadiusMul: 0.034,
+        srcRingCount: 2,
+
+        // packets
+        travelMs: 4300,
+        burstMin: 1,
+        burstMax: 2,
+        burstDelayMs: 170,
+        maxPackets: 22,
+
+        packetSize: 1.85,
+        packetGlow: 18,
+        trailAlpha: 0.055,
+        trailWidth: 1.25,
+
+        // core orb
+        coreRadiusMul: 0.235,
+        corePerspective: 920,
+        coreParticles: 1400,
+        coreParticleAlpha: 0.56,
+        coreGlowSpriteSizePx: 66,
+        coreGlowScale: 0.14,
+        coreDotPx: 1.05,
+
+        coreRotationSpeedY: 0.00120,
+        coreRotationSpeedX: 0.00090,
+        coreWobble: 0.006,
+
+        rimBoost: 1.75,
+        rimPower: 2.10,
+
+        cameraEase: 0.070,
+        mouseTilt: 0.40,
+
+        /* ============================================================
+           ✅ IMPACT PULSE v7 (GLITCH FIX)
+           The "reset" look was coming from using SCREEN-PROJECTED
+           2D directions to drive the ripple.
+           That causes the band to jump when a new pulse is added.
+
+           v7 FIX:
+           - Pulses are in CAMERA-SPACE 3D directions
+           - Particles evaluate ripple using their true CAMERA-SPACE 3D direction
+           - No projection distortion = no snap/reset
+
+           Also makes ripple more "alive":
+           - 3 ripple rings
+           - wavy ring edge using basis vectors + time noise
+           ============================================================ */
+        pulseDuration: 2.65,
+        pulseStrength: 1.14,
+        pulseMaxAngle: 2.70,
+        pulseSharpness: 4.45,
+
+        ripple2Offset: 0.34,
+        ripple2Amp:    0.52,
+        ripple3Offset: 0.70,
+        ripple3Amp:    0.26,
+
+        pulseCoreFill: 0.16,
+
+        rippleWobbleAmp: 0.12,
+        wobFreqA: 2.8,
+        wobFreqB: 5.1,
+        wobTimeA: 2.15,
+        wobTimeB: 1.45,
+
+        pulseMaxActive: 10,
+
+        impactPadding: 1.02,
+        impactMinGapMs: 140,
+
+        impactFlashMs: 420,
+
+        absorbMs: 320,
+
+        // heat response (NO spin jump in v7)
+        heatRise: 0.24,
+        heatDecay: 0.93,
+
+        grainAlpha: 0.012
+      };
+
+/* ============================================================
+   ✅ PORTAL DIVE (CLICK -> WARP -> NAVIGATE TO PART 2)
+   - Click the VPS Core sphere to "enter" it like a portal.
+   - Sphere expands to fill the screen.
+   - Warp streaks fly past for strong 3D depth.
+   - UI fades down (pills/labels) without hard hiding.
+   - After animation finishes, we navigate to Part 2.
+   ============================================================ */
+const DIVE = {
+  target: "Part2-python-scanner-bots.html",
+
+  active: false,
+  done: false,
+  startMs: 0,
+
+  // ✅ Keep it cinematic and smooth (1.2s–1.8s)
+  durMs: 1550,
+
+  // Sphere scale (normal → 3x–4x)
+  zoomTo: 3.75,
+
+  // UI fade target (pills/labels)
+  uiFadeTo: 0.30,
+
+  // Brand badge fade (top-left)
+  brandFadeTo: 0.34,
+
+  // Warp settings
+  warp: {
+    count: 520,        // more = denser warp, still safe on desktop
+    zMin: -7.6,        // depth start (far)
+    zMax: 0.85,        // depth end (near camera)
+    focal: 2.0,        // perspective focal length (bigger = flatter)
+    radiusMul: 1.42,   // how wide the warp spreads (relative to core radius)
+
+    fastPct: 0.58,     // % of fast streaks (rest are slow)
+    fastSpeedMin: 9.6,
+    fastSpeedMax: 13.8,
+    slowSpeedMin: 3.2,
+    slowSpeedMax: 5.8,
+
+    fastLenMin: 0.26,
+    fastLenMax: 0.58,
+    slowLenMin: 0.14,
+    slowLenMax: 0.34
+  }
+};
+
+// Current dive values (computed every frame)
+let diveU = 0;
+let diveEase = 0;
+let diveZoom = 1;
+let uiAlpha = 1;
+let warpAlpha = 0;
+
+// Expose current time to click handlers (no desync)
+let gNowMs = 0;
+
+// Track last core position so we can click-test accurately
+const lastCore = { x: 0, y: 0, r: 0 };
+
+// DOM badge (fade only, never hard hide)
+const brandEl = document.querySelector(".brandMark");
+
+// Hover hint
+const sphereHintEl = document.getElementById("sphereHint");
+
+// Helper: show/hide + position hint cleanly
+function updateSphereHint(show){
+  if(!sphereHintEl) return;
+
+  // Never show while diving (keeps it cinematic)
+  if(DIVE.active || DIVE.done) show = false;
+
+  if(show){
+    // Position slightly above the sphere center
+    const top = lastCore.y - lastCore.r - 26;
+    sphereHintEl.style.left = `${lastCore.x}px`;
+    sphereHintEl.style.top  = `${top}px`;
+    sphereHintEl.classList.add("show");
+  } else {
+    sphereHintEl.classList.remove("show");
+  }
+}
+
+// Warp streak particle pool
+const warpParticles = [];
+
+function randRange(a, b){ return a + (b - a) * Math.random(); }
+
+function respawnWarpParticle(p){
+  const ang = Math.random() * TAU;
+  const rr = Math.pow(Math.random(), 0.55); // bias toward edges (more cinematic)
+  const fast = Math.random() < DIVE.warp.fastPct;
+
+  p.dx = Math.cos(ang);
+  p.dy = Math.sin(ang);
+  p.r  = rr;
+
+  p.z  = randRange(DIVE.warp.zMin, DIVE.warp.zMax);
+  p.fast = fast;
+
+  p.speed = fast
+    ? randRange(DIVE.warp.fastSpeedMin, DIVE.warp.fastSpeedMax)
+    : randRange(DIVE.warp.slowSpeedMin, DIVE.warp.slowSpeedMax);
+
+  p.len = fast
+    ? randRange(DIVE.warp.fastLenMin, DIVE.warp.fastLenMax)
+    : randRange(DIVE.warp.slowLenMin, DIVE.warp.slowLenMax);
+
+  // alpha balance per layer
+  p.a = fast ? 0.58 : 0.28;
+}
+
+function initWarpParticles(){
+  warpParticles.length = 0;
+  for(let i=0;i<DIVE.warp.count;i++){
+    const p = {};
+    respawnWarpParticle(p);
+    warpParticles.push(p);
+  }
+}
+
+function startDive(){
+  if(DIVE.active || DIVE.done) return;
+
+  DIVE.active = true;
+  DIVE.startMs = gNowMs;
+
+  // stop new packets during portal
+  FLOW.enabled = false;
+
+  // warm the core so it stays premium gold (not dull yellow)
+  addCoreHeat(0.72);
+  addToCoreMix("gold", 0.12);
+
+  initWarpParticles();
+}
+
+function drawWarp(cx, cy, coreR, dt){
+  if(!DIVE.active) return;
+
+  // fade-in quickly, no pop
+  const inT = clamp(diveU / 0.10, 0, 1);
+  warpAlpha = smooth01(inT) * (0.55 + 0.45 * diveEase);
+
+  const R = coreR * DIVE.warp.radiusMul;
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.lineCap = "round";
+
+  // subtle gold/white mix
+  const gold = COLORS.gold;
+
+  for(let i=0;i<warpParticles.length;i++){
+    const p = warpParticles[i];
+
+    // accelerate slightly as we zoom (feels like falling in)
+    const accel = 1.0 + diveEase * 0.55;
+
+    p.z += p.speed * dt * accel;
+
+    if(p.z > DIVE.warp.zMax){
+      respawnWarpParticle(p);
+      p.z = DIVE.warp.zMin;
+    }
+
+    const zHead = p.z;
+    const zTail = p.z - p.len;
+
+    // perspective projection
+    const kHead = DIVE.warp.focal / (DIVE.warp.focal - zHead);
+    const kTail = DIVE.warp.focal / (DIVE.warp.focal - zTail);
+
+    const xh = cx + p.dx * p.r * R * kHead;
+    const yh = cy + p.dy * p.r * R * kHead;
+
+    const xt = cx + p.dx * p.r * R * kTail;
+    const yt = cy + p.dy * p.r * R * kTail;
+
+    const a = warpAlpha * p.a;
+
+    // thickness reacts to depth
+    const lw = (p.fast ? 1.55 : 1.05) * clamp(kHead, 0.85, 2.25);
+    ctx.lineWidth = lw;
+
+    // white core streak
+    ctx.strokeStyle = `rgba(255,255,255,${0.22 * a})`;
+    ctx.beginPath();
+    ctx.moveTo(xt, yt);
+    ctx.lineTo(xh, yh);
+    ctx.stroke();
+
+    // gold rim streak
+    ctx.lineWidth = lw * 0.92;
+    ctx.strokeStyle = `rgba(${gold[0]},${gold[1]},${gold[2]},${0.22 * a})`;
+    ctx.beginPath();
+    ctx.moveTo(xt, yt);
+    ctx.lineTo(xh, yh);
+    ctx.stroke();
+
+    // tiny sparkle at the head (cheap + premium)
+    ctx.fillStyle = `rgba(255,255,255,${0.20 * a})`;
+    ctx.beginPath();
+    ctx.arc(xh, yh, 0.70 * lw, 0, TAU);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+      /* ============================================================
+         Resize
+         ============================================================ */
+      let W = 0, H = 0, DPR = 1;
+      let frameRect = { left:0, top:0, width:1, height:1 };
+
+      function updateFrameRect(){
+        frameRect = frameEl.getBoundingClientRect();
+      }
+
+      function resize(){
+        updateFrameRect();
+        DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
+        W = Math.max(1, Math.floor(frameRect.width));
+        H = Math.max(1, Math.floor(frameRect.height));
+
+        canvas.width = Math.floor(W * DPR);
+        canvas.height = Math.floor(H * DPR);
+        canvas.style.width = W + "px";
+        canvas.style.height = H + "px";
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        buildStarsLayer();
+        buildVignetteLayer();
+        buildSprites();
+        buildCoreParticles();
+        buildGrainLayer();
+      }
+      window.addEventListener("resize", resize, { passive:true });
+
+      /* ============================================================
+         Static layers
+         ============================================================ */
+      const starsLayer = document.createElement("canvas");
+      const vignetteLayer = document.createElement("canvas");
+      const grainLayer = document.createElement("canvas");
+      const starsCtx = starsLayer.getContext("2d");
+      const vigCtx = vignetteLayer.getContext("2d");
+      const grainCtx = grainLayer.getContext("2d");
+
+      function buildStarsLayer(){
+        starsLayer.width = Math.floor(W * DPR);
+        starsLayer.height = Math.floor(H * DPR);
+        starsCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        starsCtx.clearRect(0,0,W,H);
+        starsCtx.globalCompositeOperation = "lighter";
+
+        for(let i=0;i<CFG.stars;i++){
+          const x = Math.random()*W;
+          const y = Math.random()*H;
+          const r = 0.6 + Math.random()*1.2;
+          const a = 0.018 + Math.random()*0.050;
+          starsCtx.fillStyle = `rgba(255,255,255,${a})`;
+          starsCtx.beginPath();
+          starsCtx.arc(x,y,r,0,TAU);
+          starsCtx.fill();
+        }
+      }
+
+      function buildVignetteLayer(){
+        vignetteLayer.width = Math.floor(W * DPR);
+        vignetteLayer.height = Math.floor(H * DPR);
+        vigCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        const cx = W*0.5, cy = H*0.5;
+        const radius = Math.min(W,H)*0.62;
+
+        vigCtx.clearRect(0,0,W,H);
+        const vg = vigCtx.createRadialGradient(cx,cy,radius*0.26, cx,cy,radius*1.22);
+        vg.addColorStop(0.0, "rgba(0,0,0,0)");
+        vg.addColorStop(1.0, "rgba(0,0,0,0.76)");
+
+        vigCtx.fillStyle = vg;
+        vigCtx.fillRect(0,0,W,H);
+      }
+
+      function buildGrainLayer(){
+        grainLayer.width = Math.floor(W * DPR);
+        grainLayer.height = Math.floor(H * DPR);
+        grainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        const img = grainCtx.createImageData(W, H);
+        const data = img.data;
+
+        for(let i=0;i<data.length;i+=4){
+          const v = 245 + Math.floor(Math.random()*10);
+          data[i] = v;
+          data[i+1] = v;
+          data[i+2] = v;
+          data[i+3] = Math.floor(255 * 0.10);
+        }
+        grainCtx.putImageData(img, 0, 0);
+      }
+
+      /* ============================================================
+         Camera tilt
+         ============================================================ */
+      const cam = { rx: 0, ry: 0, trx: 0, try: 0 };
+
+      function toLocal(clientX, clientY){
+        return { x: clientX - frameRect.left, y: clientY - frameRect.top };
+      }
+
+      // Pointer tracking (used for hover hint + camera tilt)
+const pointer = { x: -9999, y: -9999, inside: false };
+
+window.addEventListener("pointermove", (e)=>{
+  updateFrameRect();
+  const p = toLocal(e.clientX, e.clientY);
+
+  // Save last pointer position (used for hover hint)
+  pointer.x = p.x;
+  pointer.y = p.y;
+  pointer.inside = true;
+
+  // Camera tilt (premium, subtle)
+  const nx = p.x / Math.max(1, W);
+  const ny = p.y / Math.max(1, H);
+  cam.try = (nx - 0.5) * CFG.mouseTilt;
+  cam.trx = (ny - 0.5) * CFG.mouseTilt;
+}, { passive:true });
+
+window.addEventListener("pointerleave", ()=>{
+  pointer.inside = false;
+}, { passive:true });
+
+// ✅ CLICK → PORTAL DIVE
+// NOTE: We use lastCore (idle sphere) so the click always feels consistent.
+canvas.addEventListener("pointerdown", (e)=>{
+  updateFrameRect();
+  const p = toLocal(e.clientX, e.clientY);
+
+  const dx = p.x - lastCore.x;
+  const dy = p.y - lastCore.y;
+
+  if((dx*dx + dy*dy) <= (lastCore.r * lastCore.r)){
+    startDive();
+  }
+}, { passive:true });
+
+      /* ============================================================
+         Pills
+         ============================================================ */
+      function drawTab(x, y, text, rgb, boost){
+        x = Math.round(x);
+        y = Math.round(y);
+
+        ctx.save();
+        ctx.globalCompositeOperation = "source-over";
+        ctx.font = CFG.tagFont;
+
+        const w = Math.ceil(ctx.measureText(text).width + 52);
+        const h = 46;
+        const rx = x - w/2;
+        const ry = y - h/2;
+
+        // glow behind
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        const glowR = 110;
+        const gg = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+        gg.addColorStop(0, rgba(rgb, 0.25 + boost*0.30));
+        gg.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = gg;
+        ctx.beginPath();
+        ctx.arc(x, y, glowR, 0, TAU);
+        ctx.fill();
+        ctx.restore();
+
+        // base fill
+        ctx.fillStyle = "rgba(0,0,0,0.66)";
+        roundRectPath(ctx, rx, ry, w, h, 15);
+        ctx.fill();
+
+        // metal gradient fill
+        const fillGrad = ctx.createLinearGradient(rx, ry, rx, ry + h);
+        fillGrad.addColorStop(0.0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${0.24 + boost*0.08})`);
+        fillGrad.addColorStop(0.60, `rgba(0,0,0,0.44)`);
+        fillGrad.addColorStop(1.0,  `rgba(0,0,0,0.56)`);
+
+        ctx.fillStyle = fillGrad;
+        roundRectPath(ctx, rx, ry, w, h, 15);
+        ctx.fill();
+
+        // outer edge
+        ctx.strokeStyle = rgba(rgb, 0.92 + boost*0.38);
+        ctx.lineWidth = 1.6;
+        roundRectPath(ctx, rx, ry, w, h, 15);
+        ctx.stroke();
+
+        // inner highlight
+        ctx.strokeStyle = "rgba(255,255,255,0.11)";
+        ctx.lineWidth = 1;
+        roundRectPath(ctx, rx+1.2, ry+1.2, w-2.4, h-2.4, 15);
+        ctx.stroke();
+
+        // text
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.lineWidth=5;
+        ctx.strokeStyle="rgba(0,0,0,0.92)";
+        ctx.strokeText(text, x, y+0.5);
+
+        ctx.fillStyle="rgba(255,255,255,0.98)";
+        ctx.fillText(text, x, y+0.5);
+
+        ctx.restore();
+      }
+
+      function drawBottomLabel(cx, y){
+        ctx.save();
+        ctx.globalCompositeOperation = "source-over";
+        const title = "VPS CORE";
+        ctx.font = "900 18px Sora, ui-sans-serif, system-ui";
+
+        const w = Math.ceil(ctx.measureText(title).width + 46);
+        const h = 44;
+        const rx = cx - w/2;
+        const ry = y - h/2;
+
+        ctx.fillStyle = "rgba(0,0,0,0.72)";
+        roundRectPath(ctx, rx, ry, w, h, 16);
+        ctx.fill();
+
+        ctx.strokeStyle = `rgba(${COLORS.gold[0]},${COLORS.gold[1]},${COLORS.gold[2]},0.62)`;
+        ctx.lineWidth = 1.1;
+        roundRectPath(ctx, rx, ry, w, h, 16);
+        ctx.stroke();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "rgba(247,251,255,0.98)";
+        ctx.fillText(title, cx, y + 0.5);
+
+        ctx.restore();
+      }
+
+      /* ============================================================
+         Layout
+         ============================================================ */
+      function getLayout(baseCoreR){
+        const srcY = H * 0.115;
+        const bottomLabelY = clamp(H * 0.92, H * 0.80, H - 44);
+
+        let sinkY = (srcY + bottomLabelY) * 0.52;
+        const minSinkY = srcY + 110 + baseCoreR;
+        const maxSinkY = bottomLabelY - 70 - baseCoreR;
+        sinkY = clamp(sinkY, minSinkY, maxSinkY);
+
+        const leftX  = clamp(W * 0.32, 140, W * 0.44);
+        const midX   = W * 0.50;
+        const rightX = clamp(W * 0.68, W * 0.56, W - 140);
+
+        const sources = [
+          { key:"bronze", text:"DEXSCREENER",        x: leftX,  y: srcY, rgb: COLORS.bronze, idleBoost: 0.20 },
+          { key:"silver", text:"OHLCV / CHART DATA", x: midX,   y: srcY, rgb: COLORS.silver, idleBoost: 0.16 },
+          { key:"gold",   text:"RPC / MEMPOOL",      x: rightX, y: srcY, rgb: COLORS.gold,   idleBoost: 0.22 }
+        ];
+
+        return {
+          sources,
+          sink: { x: W*0.50, y: sinkY },
+          bottomLabelY
+        };
+      }
+
+      /* ============================================================
+         Packets
+         ============================================================ */
+      const packets = [];
+      const fireState = [{ hit: 0 },{ hit: 0 },{ hit: 0 }];
+
+      function makePacket(nowMs, x0,y0, x2,y2, rgb, sourceIndex, coreR){
+        const midX = lerp(x0, x2, 0.52);
+        const midY = lerp(y0, y2, 0.50);
+
+        const pullToCenter = (W*0.50 - x0) * 0.04;
+        const wiggle = (Math.random()*2 - 1) * 4.2;
+
+        return {
+          born: nowMs,
+          dur: CFG.travelMs + (Math.random()*240 - 120),
+
+          p0: {x:x0,y:y0},
+          p1: {x:midX + pullToCenter + wiggle, y:midY - 8 + (Math.random()*2 - 1)*3},
+          p2: {x:x2 + (Math.random()*2 - 1)*coreR*0.03, y:y2 + (Math.random()*2 - 1)*coreR*0.02},
+
+          rgb,
+          sourceIndex,
+
+          size: CFG.packetSize * (0.95 + Math.random()*0.18),
+          glow: CFG.packetGlow * (0.95 + Math.random()*0.20),
+
+          enteredSphere: false,
+          absorbStartMs: -1
+        };
+      }
+
+      function spawnBurst(nowMs, src, sink, sourceIndex, coreR){
+        let burst = CFG.burstMin + Math.floor(Math.random()*(CFG.burstMax - CFG.burstMin + 1));
+
+        // Dexscreener feed feels like the "main line" of the system.
+        // Give it a small +1 packet bump (without spamming).
+        if (sourceIndex === 0) burst += 1;
+        for(let k=0;k<burst;k++){
+          const delay = k * CFG.burstDelayMs;
+          const startX = src.x + (Math.random()*2 - 1) * 1.6;
+          const startY = src.y + 1;
+
+          packets.push(makePacket(nowMs + delay, startX, startY, sink.x, sink.y, src.rgb, sourceIndex, coreR));
+        }
+        while(packets.length > CFG.maxPackets) packets.shift();
+      }
+
+      function drawGlowDot(x, y, rgb, alpha, size, glow){
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+
+        const g = ctx.createRadialGradient(x,y,0, x,y,glow);
+        g.addColorStop(0.0, rgba(rgb, alpha));
+        g.addColorStop(0.45, rgba(rgb, alpha*0.20));
+        g.addColorStop(1.0, "rgba(0,0,0,0)");
+
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x,y,size,0,TAU);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(255,255,255,${alpha*0.26})`;
+        ctx.beginPath();
+        ctx.arc(x - 0.5, y - 0.5, Math.max(0.70, size*0.52), 0, TAU);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawPacketTrail(p, pos, prevPos, alpha){
+        ctx.save();
+        ctx.globalCompositeOperation="lighter";
+        ctx.strokeStyle = rgba(p.rgb, CFG.trailAlpha * alpha);
+        ctx.lineWidth = CFG.trailWidth;
+        ctx.lineCap="round";
+        ctx.beginPath();
+        ctx.moveTo(prevPos.x, prevPos.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      /* ============================================================
+         ✅ IMPACT PULSES (camera-space 3D ripple)
+         ============================================================ */
+      const pulses = [];
+      let lastImpactMs = -99999;
+
+      function dot3(ax, ay, az, bx, by, bz){ return ax*bx + ay*by + az*bz; }
+      function cross(ax,ay,az, bx,by,bz){
+        return { x: ay*bz - az*by, y: az*bx - ax*bz, z: ax*by - ay*bx };
+      }
+      function norm3(x, y, z){
+        const l = Math.sqrt(x*x + y*y + z*z) || 1;
+        return { x: x/l, y: y/l, z: z/l };
+      }
+
+      function makeBasisForPulse(pDir){
+        const helper = (Math.abs(pDir.z) < 0.85) ? {x:0,y:0,z:1} : {x:0,y:1,z:0};
+        const b1raw = cross(pDir.x,pDir.y,pDir.z, helper.x,helper.y,helper.z);
+        const b1 = norm3(b1raw.x,b1raw.y,b1raw.z);
+        const b2raw = cross(pDir.x,pDir.y,pDir.z, b1.x,b1.y,b1.z);
+        const b2 = norm3(b2raw.x,b2raw.y,b2raw.z);
+        return { b1, b2 };
+      }
+
+      function pulseValue(pulse, ux, uy, uz, timeSec){
+        // tiny temporal smoothing (reduces micro-jitter without slowing the wave)
+        const tSmooth = timeSec * 0.992 + (pulse.startSec) * 0.008;
+
+        const age = tSmooth - pulse.startSec;
+        const d = pulse.durationSec;
+        if (age < 0 || age > d) return 0;
+
+        const u = age / d;
+        const grow = smooth01(u);
+
+        let waveR = grow * CFG.pulseMaxAngle;
+
+        // wavy edge around the ring (alive)
+        const a1 = dot3(ux,uy,uz, pulse.b1x,pulse.b1y,pulse.b1z);
+        const a2 = dot3(ux,uy,uz, pulse.b2x,pulse.b2y,pulse.b2z);
+        const around = Math.atan2(a2, a1);
+
+        const wob =
+          CFG.rippleWobbleAmp * (
+            0.56 * Math.sin(around * CFG.wobFreqA + tSmooth * CFG.wobTimeA + pulse.phase) +
+            0.44 * Math.sin(around * CFG.wobFreqB - tSmooth * CFG.wobTimeB + pulse.phase * 1.15)
+          );
+
+        waveR += wob;
+
+        // angular distance on sphere (true 3D)
+        const dd = clamp(dot3(ux,uy,uz, pulse.x,pulse.y,pulse.z), -1, 1);
+        const ang = Math.acos(dd);
+
+        const sharp = CFG.pulseSharpness;
+
+        const band1 = Math.exp(-Math.pow((ang - waveR) * sharp, 2));
+        const band2 = CFG.ripple2Amp * Math.exp(-Math.pow((ang - (waveR - CFG.ripple2Offset)) * (sharp*0.92), 2));
+        const band3 = CFG.ripple3Amp * Math.exp(-Math.pow((ang - (waveR - CFG.ripple3Offset)) * (sharp*0.88), 2));
+
+        const fill = Math.pow(clamp(dd, 0, 1), 6.0) * (1 - u) * CFG.pulseCoreFill;
+
+        const fadeIn  = smooth01(u / 0.20);
+        const fadeOut = 1 - smooth01((u - 0.62) / 0.38);
+
+        return clamp((band1 + band2 + band3 + fill) * fadeIn * fadeOut, 0, 1);
+      }
+
+      function addImpactPulse(nowMs, timeSec, coreX, coreY, coreR, hitX, hitY, rgb){
+        if((nowMs - lastImpactMs) < CFG.impactMinGapMs) return;
+        lastImpactMs = nowMs;
+
+        // screen → approximate camera-space direction on the sphere surface
+        let sx = (hitX - coreX) / (coreR || 1);
+        let sy = (hitY - coreY) / (coreR || 1);
+
+        const rr = sx*sx + sy*sy;
+        if(rr > 1){
+          const inv = 1 / Math.sqrt(rr);
+          sx *= inv;
+          sy *= inv;
+        }
+
+        const sz = Math.sqrt(Math.max(0.0001, 1 - (sx*sx + sy*sy)));
+        const dir = norm3(sx, sy, sz); // camera-space (front hemisphere)
+
+        const basis = makeBasisForPulse(dir);
+
+        pulses.push({
+          startSec: timeSec,
+          durationSec: CFG.pulseDuration,
+          x: dir.x, y: dir.y, z: dir.z,
+          b1x: basis.b1.x, b1y: basis.b1.y, b1z: basis.b1.z,
+          b2x: basis.b2.x, b2y: basis.b2.y, b2z: basis.b2.z,
+          phase: Math.random() * TAU,
+          rgb
+        });
+
+        // only trim if insane amount (never cuts active ones normally)
+        while(pulses.length > CFG.pulseMaxActive) pulses.shift();
+      }
+
+      /* ============================================================
+         Heat response
+         ============================================================ */
+      let coreHeat = 0;
+      function addCoreHeat(amount){ coreHeat = clamp(coreHeat + amount, 0, 1); }
+      function decayCoreHeat(dt){
+        const keep = Math.pow(CFG.heatDecay, dt * 60);
+        coreHeat *= keep;
+      }
+
+      const coreMix = { bronze: 0.10, silver: 0.28, gold: 0.62 };
+
+      function addToCoreMix(key, amount){
+        if(key === "bronze") coreMix.bronze += amount;
+        else if(key === "silver") coreMix.silver += amount;
+        else coreMix.gold += amount;
+
+        const s = coreMix.bronze + coreMix.silver + coreMix.gold + 0.0001;
+        coreMix.bronze /= s;
+        coreMix.silver /= s;
+        coreMix.gold   /= s;
+      }
+
+      function softenCoreMix(dt){
+        const k = 1 - Math.pow(0.92, dt * 60);
+        coreMix.bronze = lerp(coreMix.bronze, 0.10, k);
+        coreMix.silver = lerp(coreMix.silver, 0.20, k);
+        coreMix.gold   = lerp(coreMix.gold,   0.70, k);
+      }
+
+      function mixedCoreMetal(){
+        const r = COLORS.bronze[0]*coreMix.bronze + COLORS.silver[0]*coreMix.silver + COLORS.gold[0]*coreMix.gold;
+        const g = COLORS.bronze[1]*coreMix.bronze + COLORS.silver[1]*coreMix.silver + COLORS.gold[1]*coreMix.gold;
+        const b = COLORS.bronze[2]*coreMix.bronze + COLORS.silver[2]*coreMix.silver + COLORS.gold[2]*coreMix.gold;
+        return [Math.round(r), Math.round(g), Math.round(b)];
+      }
+
+      /* ============================================================
+         Lens + halo (no perimeter outline ring)
+         ============================================================ */
+      function drawCoreLens(cx, cy, R){
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+
+        const metal = mixedCoreMetal();
+        const g = ctx.createRadialGradient(
+          cx - R*0.18, cy - R*0.22, R*0.18,
+          cx, cy, R*1.05
+        );
+        g.addColorStop(0.00, rgba(COLORS.white, 0.11 + coreHeat*0.14));
+        g.addColorStop(0.28, rgba(metal,       0.06 + coreHeat*0.10));
+        g.addColorStop(0.62, "rgba(0,0,0,0)");
+        g.addColorStop(1.00, "rgba(0,0,0,0)");
+
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, R*1.02, 0, TAU);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawCoreHalo(cx, cy, R){
+        ctx.save();
+        ctx.globalCompositeOperation="screen";
+
+        const metal = mixedCoreMetal();
+        const haloR = R * (2.10 + coreHeat*0.16);
+
+        const g = ctx.createRadialGradient(cx, cy, R*0.22, cx, cy, haloR);
+
+        const heatBoost = 0.07 + coreHeat*0.18;
+
+        g.addColorStop(0.0, rgba(COLORS.white, 0.18 + heatBoost));
+        g.addColorStop(0.42, rgba(metal,       0.10 + coreHeat*0.12));
+        g.addColorStop(1.0, "rgba(0,0,0,0)");
+
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, haloR, 0, TAU);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      /* ============================================================
+         Entry flash
+         ============================================================ */
+      const flashes = [];
+      function addImpactFlash(nowMs, x, y, rgb){
+        flashes.push({ t0: nowMs, x, y, rgb });
+        while(flashes.length > 10) flashes.shift();
+      }
+      function drawImpactFlashes(nowMs){
+        if(flashes.length === 0) return;
+        for(let i=flashes.length-1;i>=0;i--){
+          const f = flashes[i];
+          const age = nowMs - f.t0;
+          if(age >= CFG.impactFlashMs){
+            flashes.splice(i,1);
+            continue;
+          }
+          const u = age / CFG.impactFlashMs;
+          const a = (1 - smooth01(u)) * 0.85;
+
+          ctx.save();
+          ctx.globalCompositeOperation="lighter";
+
+          const glow = 24 + u*10;
+          const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, glow);
+          g.addColorStop(0.0, rgba(COLORS.white, 0.55*a));
+          g.addColorStop(0.30, rgba(f.rgb, 0.38*a));
+          g.addColorStop(1.0, "rgba(0,0,0,0)");
+
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, glow, 0, TAU);
+          ctx.fill();
+
+          ctx.restore();
+        }
+      }
+
+      /* ============================================================
+         Core particles (3D)
+         ============================================================ */
+      let N = 0;
+      let bx, by, bz;
+      let seed, psz;
+
+      // projected
+      let px, py, pz, ps;
+      let pDepth, pRim;
+
+      // ✅ camera-space unit direction per particle (FIX for snap/glitch)
+      let cuX, cuY, cuZ;
+
+      let spriteGold = null, spriteWhite = null;
+
+      function randomOnSphere(){
+        const u = Math.random()*2 - 1;
+        const t = Math.random()*TAU;
+        const r = Math.sqrt(1 - u*u);
+        return { x:r*Math.cos(t), y:r*Math.sin(t), z:u };
+      }
+
+      function makeSprite(rgb, sizePx, mode){
+        const c = document.createElement("canvas");
+        c.width = sizePx;
+        c.height = sizePx;
+        const g = c.getContext("2d");
+
+        const cx = sizePx/2, cy = sizePx/2;
+        const r1 = sizePx*0.5;
+
+        const grd = g.createRadialGradient(cx, cy, 0, cx, cy, r1);
+
+        if(mode === "metal"){
+          const rgb2 = (rgb[0]===COLORS.gold[0] && rgb[1]===COLORS.gold[1] && rgb[2]===COLORS.gold[2] && COLORS.goldDeep) ? COLORS.goldDeep : rgb;
+          grd.addColorStop(0.00, `rgba(255,255,255,0.92)`);
+          grd.addColorStop(0.08, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.95)`);
+          grd.addColorStop(0.24, `rgba(${rgb2[0]},${rgb2[1]},${rgb2[2]},0.52)`);
+          grd.addColorStop(0.58, `rgba(${rgb2[0]},${rgb2[1]},${rgb2[2]},0.14)`);
+          grd.addColorStop(1.00, `rgba(0,0,0,0)`);
+        } else {
+          grd.addColorStop(0.00, `rgba(255,255,255,1)`);
+          grd.addColorStop(0.16, `rgba(255,255,255,0.68)`);
+          grd.addColorStop(0.32, `rgba(255,255,255,0.26)`);
+          grd.addColorStop(1.00, `rgba(0,0,0,0)`);
+        }
+
+        g.fillStyle = grd;
+        g.beginPath();
+        g.arc(cx, cy, r1, 0, TAU);
+        g.fill();
+
+        return c;
+      }
+
+      function buildSprites(){
+        spriteGold   = makeSprite(COLORS.gold,  CFG.coreGlowSpriteSizePx, "metal");
+        spriteWhite  = makeSprite(COLORS.white, CFG.coreGlowSpriteSizePx, "white");
+      }
+
+      function buildCoreParticles(){
+        N = CFG.coreParticles;
+
+        bx = new Float32Array(N);
+        by = new Float32Array(N);
+        bz = new Float32Array(N);
+
+        seed = new Float32Array(N);
+        psz  = new Float32Array(N);
+
+        px = new Float32Array(N);
+        py = new Float32Array(N);
+        pz = new Float32Array(N);
+        ps = new Float32Array(N);
+
+        pDepth = new Float32Array(N);
+        pRim   = new Float32Array(N);
+
+        cuX = new Float32Array(N);
+        cuY = new Float32Array(N);
+        cuZ = new Float32Array(N);
+
+        const baseR = Math.min(W,H) * CFG.coreRadiusMul;
+
+        for(let i=0;i<N;i++){
+          const d = randomOnSphere();
+          const thickness = 0.05 + Math.random()*0.07;
+          const rr = baseR * (1 + (Math.random() - 0.5) * thickness);
+
+          bx[i]=d.x * rr;
+          by[i]=d.y * rr;
+          bz[i]=d.z * rr;
+
+          seed[i] = Math.random() * 9999;
+          psz[i]  = (0.85 + Math.random() * 0.95);
+        }
+      }
+
+      /* ============================================================
+         Core render (true 3D ripple)
+         ============================================================ */
+      function renderCoreOrb(coreX, coreY, R, timeSec){
+        const breathe = 1 + 0.010 * Math.sin(timeSec * 0.70);
+        const Rb = R * breathe;
+
+        const ry = timeSec * (CFG.coreRotationSpeedY * 60);
+        const rx = timeSec * (CFG.coreRotationSpeedX * 60);
+        const sry = Math.sin(ry), cry = Math.cos(ry);
+        const srx = Math.sin(rx), crx = Math.cos(rx);
+
+        const rimDen = (Rb * 1.22);
+        const scaleToR = Rb / (Math.min(W,H) * CFG.coreRadiusMul);
+
+        // remove expired pulses
+        for(let k=pulses.length-1;k>=0;k--){
+          if((timeSec - pulses[k].startSec) > pulses[k].durationSec){
+            pulses.splice(k,1);
+          }
+        }
+
+        const camSx = Math.sin(cam.rx), camCx = Math.cos(cam.rx);
+        const camSy = Math.sin(cam.ry), camCy = Math.cos(cam.ry);
+
+        // project buffers + compute camera-space unit direction
+        for(let i=0;i<N;i++){
+          const wob = 1 + CFG.coreWobble * Math.sin(timeSec*1.1 + seed[i]);
+
+          let x0 = bx[i] * wob * scaleToR;
+          let y0 = by[i] * wob * scaleToR;
+          let z0 = bz[i] * wob * scaleToR;
+
+          // core rotation Y
+          let x1 = x0 * cry + z0 * sry;
+          let y1 = y0;
+          let z1 = -x0 * sry + z0 * cry;
+
+          // core rotation X
+          let x2 = x1;
+          let y2 = y1 * crx - z1 * srx;
+          let z2 = y1 * srx + z1 * crx;
+
+          // camera Y
+          let xa = x2 * camCy + z2 * camSy;
+          let ya = y2;
+          let za = -x2 * camSy + z2 * camCy;
+
+          // camera X
+          let xb = xa;
+          let yb = ya * camCx - za * camSx;
+          let zb = ya * camSx + za * camCx;
+
+          // ✅ camera-space unit dir (prevents snap on pulse)
+          const len = Math.sqrt(xb*xb + yb*yb + zb*zb) || 1;
+          cuX[i] = xb / len;
+          cuY[i] = yb / len;
+          cuZ[i] = zb / len;
+
+          // projection
+          const zz = zb + CFG.corePerspective;
+          const s = CFG.corePerspective / zz;
+
+          px[i] = coreX + xb * s;
+          py[i] = coreY + yb * s;
+          pz[i] = zb;
+          ps[i] = s;
+
+          const depth = clamp((zb / (Rb*1.35) + 1) * 0.5, 0, 1);
+          pDepth[i]=depth;
+
+          const rim = Math.pow(1 - Math.abs(zb)/rimDen, CFG.rimPower);
+          pRim[i]=rim;
+        }
+
+        ctx.save();
+        ctx.globalCompositeOperation="lighter";
+
+        const hot = coreHeat;
+
+        for(let i=0;i<N;i++){
+          const depth = pDepth[i];
+          const rim   = pRim[i];
+
+          // ✅ use true 3D camera-space unit direction
+          const ux = cuX[i], uy = cuY[i], uz = cuZ[i];
+
+          // smooth pulse blend
+          let boom = 0;
+          if(pulses.length){
+            for(let k=0;k<pulses.length;k++){
+              const pl = pulses[k];
+              const v = pulseValue(pl, ux,uy,uz, timeSec);
+              boom = 1 - (1 - boom) * (1 - v);
+            }
+          }
+
+          let a = CFG.coreParticleAlpha * (0.22 + 0.75 * depth);
+          a *= (1 + rim * (CFG.rimBoost - 1));
+          a *= (0.97 + 0.03 * Math.sin(timeSec*1.6 + seed[i]));
+          a *= (1 + boom * CFG.pulseStrength);
+          a *= (1 + hot * 0.08);
+
+          a = clamp(a, 0, 0.98);
+
+          const size = (0.72 + depth*0.95) * psz[i] * ps[i];
+          const glowW = spriteGold.width * CFG.coreGlowScale * size * (1 + rim*0.25 + boom*0.55);
+
+          const whiteMix = clamp(rim*0.14 + hot*0.14 + boom*0.86, 0, 0.92);
+
+          ctx.globalAlpha = a * (1 - whiteMix) * 0.82;
+          ctx.drawImage(spriteGold, px[i] - glowW/2, py[i] - glowW/2, glowW, glowW);
+
+          ctx.globalAlpha = a * whiteMix * 0.95;
+          const glowW2 = glowW * 0.92;
+          ctx.drawImage(spriteWhite, px[i] - glowW2/2, py[i] - glowW2/2, glowW2, glowW2);
+
+          ctx.globalAlpha = clamp(a * (0.40 + whiteMix*0.92), 0, 1);
+          ctx.fillStyle = rgba(COLORS.white, 1);
+          ctx.beginPath();
+          ctx.arc(px[i], py[i], CFG.coreDotPx*(0.68 + depth*0.40), 0, TAU);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      /* ============================================================
+         Source orbs + firing
+         ============================================================ */
+      function drawSourceOrb(src, nowMs, chargeEase, hit){
+        const r = Math.min(W,H) * CFG.srcOrbRadiusMul;
+        const boost = clamp(src.idleBoost + chargeEase*0.45 + hit*0.70, 0, 1.0);
+
+        ctx.save();
+
+        ctx.save();
+        ctx.globalCompositeOperation="lighter";
+        for(let k=0;k<CFG.srcRingCount;k++){
+          const rr = r*(1.10 + k*0.20);
+          const a = (0.08 - k*0.014) + boost*0.12;
+          ctx.strokeStyle = rgba(src.rgb, a);
+          ctx.lineWidth = 2.0;
+          ctx.beginPath();
+          ctx.arc(src.x, src.y, rr, 0, TAU);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalCompositeOperation="lighter";
+        const pulse2 = (Math.sin(nowMs*0.0014) + 1)*0.5;
+
+        const bloom = ctx.createRadialGradient(src.x, src.y, r*0.2, src.x, src.y, r*(2.6 + pulse2*0.18));
+        bloom.addColorStop(0.0, rgba(src.rgb, 0.18 + boost*0.36));
+        bloom.addColorStop(1.0, "rgba(0,0,0,0)");
+        ctx.fillStyle=bloom;
+        ctx.beginPath();
+        ctx.arc(src.x, src.y, r*(2.6 + pulse2*0.18), 0, TAU);
+        ctx.fill();
+        ctx.restore();
+
+        drawTab(src.x, src.y, src.text, src.rgb, boost);
+        ctx.restore();
+      }
+
+      function fireSourceIndex(idx, L, nowMs){
+        const src = L.sources[idx];
+        if(!src) return;
+
+        fireState[idx].hit = 1;
+
+        const coreR = Math.min(W,H) * CFG.coreRadiusMul;
+        spawnBurst(nowMs, src, L.sink, idx, coreR);
+
+        addToCoreMix(src.key, 0.06);
+      }
+
+      /* ============================================================
+         Loop
+         ============================================================ */
+      let last = performance.now();
+      let tSec = 0;
+
+      function loop(now){
+        const dt = Math.min(0.033, (now - last)/1000);
+        last = now;
+        tSec += dt;
+        const nowMs = tSec * 1000;
+
+        
+        // Expose time to click handler (prevents timing desync)
+        gNowMs = nowMs;
+
+        // ----------------------------------------------------------
+        // ✅ PORTAL DIVE PROGRESS (0 → 1)
+        // ----------------------------------------------------------
+        if(DIVE.active){
+          diveU = clamp((nowMs - DIVE.startMs) / DIVE.durMs, 0, 1);
+          diveEase = easeOutCubic(diveU);
+
+          // Sphere scale grows to fill the screen
+          diveZoom = lerp(1, DIVE.zoomTo, diveEase);
+
+          // UI fades down (no hard hide)
+          uiAlpha = lerp(1, DIVE.uiFadeTo, diveEase);
+
+          // Warp + bloom peaks around 500–900ms
+          const glowHump = Math.sin(clamp(diveU / 0.55, 0, 1) * Math.PI);
+
+          // Keep the core hot + premium during the dive
+          coreHeat = Math.max(coreHeat, 0.28 + glowHump * 0.72);
+
+          // Fade the top-left badge too (subtle)
+          if(brandEl) brandEl.style.opacity = String(lerp(1, DIVE.brandFadeTo, diveEase));
+
+          // Navigate only AFTER animation completes (no instant jump)
+          if(diveU >= 1 && !DIVE.done){
+            DIVE.done = true;
+            window.location.href = DIVE.target;
+            return;
+          }
+        } else {
+          diveU = 0;
+          diveEase = 0;
+          diveZoom = 1;
+          uiAlpha = 1;
+          warpAlpha = 0;
+          if(brandEl) brandEl.style.opacity = "1";
+        }
+cam.rx += (cam.trx - cam.rx) * CFG.cameraEase;
+        cam.ry += (cam.try - cam.ry) * CFG.cameraEase;
+
+        for (let i = 0; i < fireState.length; i++){
+          fireState[i].hit *= 0.88;
+          fireState[i].hit = clamp(fireState[i].hit, 0, 1);
+        }
+
+        softenCoreMix(dt);
+        decayCoreHeat(dt);
+
+        ctx.clearRect(0,0,W,H);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = "source-over";
+        ctx.drawImage(starsLayer, 0, 0, W, H);
+
+        // =========================
+        // TOP LIGHT AURA (premium)
+        // Brightens the source pills region so it doesn't look faded/dim.
+        // =========================
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        const tlx = W * 0.50;
+        const tly = H * 0.16;
+        const tlR = Math.min(W, H) * 0.62;
+        const topG = ctx.createRadialGradient(tlx, tly, 0, tlx, tly, tlR);
+        topG.addColorStop(0.00, "rgba(255,255,255,0.095)");
+        topG.addColorStop(0.25, "rgba(248,214,120,0.040)");
+        topG.addColorStop(0.55, "rgba(231,238,248,0.040)");
+        topG.addColorStop(1.00, "rgba(0,0,0,0)");
+        ctx.fillStyle = topG;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+
+        
+const baseCoreR = Math.min(W,H) * CFG.coreRadiusMul;
+const L = getLayout(baseCoreR);
+
+// Core center + radius (during dive we pull it to true center)
+let coreX = L.sink.x;
+let coreY = L.sink.y;
+let coreR = baseCoreR;
+
+if(DIVE.active){
+  coreX = lerp(L.sink.x, W * 0.50, diveEase);
+  coreY = lerp(L.sink.y, H * 0.50, diveEase);
+  coreR = baseCoreR * diveZoom;
+}
+
+// Save last idle core values for click-testing
+lastCore.x = L.sink.x;
+lastCore.y = L.sink.y;
+lastCore.r = baseCoreR;
+
+// ✅ Hover hint logic (sphere only)
+const hoverCore = pointer.inside && !DIVE.active && ((pointer.x - lastCore.x) ** 2 + (pointer.y - lastCore.y) ** 2) <= (lastCore.r ** 2);
+updateSphereHint(hoverCore);
+
+        if(FLOW.enabled){
+          if(nowMs >= FLOW.nextAtMs){
+            FLOW.state = pickNextState();
+            fireSourceIndex(FLOW.state, L, nowMs);
+            FLOW.nextAtMs = nowMs + nextBeatIntervalMs();
+          }
+        }
+
+        
+// UI (source pills) fade down during portal dive (no hard hide)
+ctx.save();
+ctx.globalAlpha *= uiAlpha;
+
+for(let i=0;i<L.sources.length;i++){
+  const src = L.sources[i];
+  let chargeEase = 0.18 + 0.20 * (0.5 + 0.5*Math.sin(nowMs*0.0011 + i*1.5));
+  if(i === FLOW.state) chargeEase += 0.30;
+  drawSourceOrb(src, nowMs, chargeEase, fireState[i].hit);
+}
+
+ctx.restore();
+
+        drawCoreHalo(coreX, coreY, coreR);
+        drawCoreLens(coreX, coreY, coreR);
+
+        const impactR2 = (coreR * CFG.impactPadding) * (coreR * CFG.impactPadding);
+
+        for(let i=packets.length-1;i>=0;i--){
+          const p = packets[i];
+          const tRaw = clamp((nowMs - p.born)/p.dur, 0, 1);
+
+          const t = easeInOutSine(tRaw);
+          const pos = quadPoint(p.p0, p.p1, p.p2, t);
+
+          const backT = clamp(tRaw - 0.040, 0, 1);
+          const backPos = quadPoint(p.p0, p.p1, p.p2, easeInOutSine(backT));
+
+          if(!p.enteredSphere){
+            const dx = pos.x - coreX;
+            const dy = pos.y - coreY;
+            const d2 = dx*dx + dy*dy;
+
+            if(d2 <= impactR2){
+              p.enteredSphere = true;
+              p.absorbStartMs = nowMs;
+
+              addCoreHeat(CFG.heatRise);
+
+              const srcKey = (p.sourceIndex === 0) ? "bronze" : (p.sourceIndex === 1) ? "silver" : "gold";
+              addToCoreMix(srcKey, 0.085);
+
+              addImpactPulse(nowMs, tSec, coreX, coreY, coreR, pos.x, pos.y, p.rgb);
+              addImpactFlash(nowMs, pos.x, pos.y, p.rgb);
+            }
+          }
+
+          let absorbT = 0;
+          if(p.enteredSphere && p.absorbStartMs >= 0){
+            absorbT = clamp((nowMs - p.absorbStartMs) / CFG.absorbMs, 0, 1);
+          }
+
+          if(absorbT >= 1){
+            packets.splice(i,1);
+            continue;
+          }
+
+          let a = Math.min(1, tRaw*4.0) * (1 - tRaw) * 0.92;
+
+          // During portal dive, fade packets down so the warp feels clean
+          const packetFadeMul = DIVE.active ? lerp(1, 0.22, diveEase) : 1;
+          a *= packetFadeMul;
+
+          const fadeInside = 1 - smooth01(absorbT);
+          const sizeMul = 1 - smooth01(absorbT) * 0.55;
+
+          a *= (0.55 + 0.45 * fadeInside);
+
+          drawPacketTrail(p, pos, backPos, a);
+
+          drawGlowDot(pos.x, pos.y, COLORS.white, 0.62*a, p.size*sizeMul, p.glow);
+          drawGlowDot(pos.x, pos.y, p.rgb,        0.16*a, p.size*0.92*sizeMul, p.glow*1.02);
+        }
+
+        renderCoreOrb(coreX, coreY, coreR, tSec);
+
+        // ✅ Warp streak fly-through (portal travel)
+        drawWarp(coreX, coreY, coreR, dt);
+
+        drawImpactFlashes(nowMs);
+
+        
+// Bottom label fades down during portal dive
+ctx.save();
+ctx.globalAlpha *= uiAlpha;
+drawBottomLabel(L.sink.x, L.bottomLabelY);
+ctx.restore();
+
+        ctx.globalAlpha = 0.88;
+        ctx.globalCompositeOperation="source-over";
+        ctx.drawImage(vignetteLayer, 0, 0, W, H);
+        ctx.globalAlpha = 1;
+
+        ctx.save();
+        ctx.globalAlpha = CFG.grainAlpha;
+        ctx.globalCompositeOperation = "overlay";
+        ctx.drawImage(grainLayer, 0, 0, W, H);
+        ctx.restore();
+
+        requestAnimationFrame(loop);
+      }
+
+      resize();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

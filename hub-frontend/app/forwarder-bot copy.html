@@ -1,0 +1,1023 @@
+<!-- magnetic_router_split_smooth_UPGRADED.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Magnetic Router Split (Upgraded)</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #05070c;
+            overflow: hidden;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            color: #fff;
+        }
+
+        .wrap {
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+        }
+
+        .card {
+            width: min(980px, 96vw);
+            height: min(600px, 86vh);
+            border-radius: 22px;
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(900px 700px at 50% 35%, rgba(140, 230, 255, 0.10), transparent 60%),
+                radial-gradient(900px 700px at 20% 75%, rgba(255, 210, 140, 0.06), transparent 55%),
+                linear-gradient(to bottom right, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+        }
+
+        canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .topbar {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .brand {
+            opacity: 0.78;
+            letter-spacing: 0.16em;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            user-select: none;
+        }
+
+        .hint {
+            opacity: 0.55;
+            font-size: 11px;
+            user-select: none;
+        }
+
+        .footer {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 12px;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+        }
+
+        .title p {
+            margin: 6px 0 0 0;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.60);
+            max-width: 720px;
+            line-height: 1.35;
+        }
+
+        .kbd {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            user-select: none;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="card" id="card">
+            <div class="topbar">
+                <div class="brand">FORWARDER / ROUTER • MAGNETIC CAPTURE + SPLIT ROUTING</div>
+                <div class="hint">Mouse = tilt • Keys: 1/2/3 lock lane • 0 = auto</div>
+            </div>
+
+            <canvas id="cv"></canvas>
+
+            <div class="footer">
+                <div class="title">
+                    <h1>Magnetic Router Split (Upgraded)</h1>
+                    <p>
+                        Packet enters, gets captured by the magnetic ring, orbits smoothly, then routes into EARLY /
+                        TREND / RUNNER.
+                        (Trail only appears while routing OUT. Pill pulses on arrival.)
+                    </p>
+                </div>
+                <div class="kbd">Lock lane: [1] EARLY • [2] TREND • [3] RUNNER • [0] AUTO</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const card = document.getElementById("card");
+            const canvas = document.getElementById("cv");
+            const ctx = canvas.getContext("2d", { alpha: true });
+
+            // ============================================================
+            // CONFIG
+            // ============================================================
+            const CFG = {
+                dprMax: 2,
+
+                // Background
+                stars: 110,
+                vignette: 0.86,
+                glassAlpha: 0.10,
+
+                // Core colors
+                cyan: [120, 220, 255],
+                blue: [70, 160, 255],
+
+                // Lane colors (Bronze / Silver / Gold)
+                early: [199, 142, 84],     // BRONZE
+                trend: [215, 224, 238],    // SILVER
+                runner: [255, 205, 110],   // GOLD
+
+                // Layout positions
+                sourceX: 0.18,
+                sourceY: 0.50,
+                ringX: 0.44,
+                ringY: 0.50,
+                outX: 0.90,
+                laneOffset: 0.15,
+
+                // Timing
+                inDurMs: 1400,
+                orbitMs: 1300,
+                outDurMs: 2500,
+
+                // Orbit control (ends on RIGHT side)
+                orbitLoops: 1,
+                ringRadiusFactor: 0.115,
+
+                // Packet visuals
+                packetSize: 2.6,
+                packetGlow: 18,
+
+                // Trail ONLY while routing out
+                tailSteps: 10,
+                tailCutoffT: 0.92,   // no trail near arrival
+
+                // Split beams flash
+                splitFlashMs: 320,
+                splitBeamAlpha: 0.28,
+
+                // Lane curve pulse
+                lanePulseMs: 900,
+
+                // Pill pulse when packet arrives
+                pillFlashMs: 800,
+
+                // Magnetic pull arc
+                pullArcAlpha: 0.36,
+
+                // HOLD at the RIGHT exit before routing out
+                exitHoldMs: 260,
+
+                // Tilt motion
+                camEase: 0.08,
+                tiltAmount: 0.75,
+
+                // Random traffic spawning
+                spawnMode: "random", // "random" or "fixed"
+                spawnEveryMs: 4000,  // only used when spawnMode="fixed"
+
+                randomSpawn: {
+                    pauseChance: 0.14,
+                    pauseMinMs: 9000,
+                    pauseMaxMs: 12000,
+
+                    singleChance: 0.50,
+                    burst2Chance: 0.26,
+                    burst3Chance: 0.10,
+
+                    singleFastChance: 0.35,
+                    singleFastMinMs: 120,
+                    singleFastMaxMs: 900,
+
+                    singleSlowMinMs: 2500,
+                    singleSlowMaxMs: 5200,
+
+                    burstMinMs: 700,
+                    burstMaxMs: 2200,
+
+                    burstSpacingMs: 90
+                }
+            };
+
+            // ============================================================
+            // Helpers
+            // ============================================================
+            const TAU = Math.PI * 2;
+            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+            const lerp = (a, b, t) => a + (b - a) * t;
+            const rgba = (rgb, a) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+            const rand = (a, b) => a + Math.random() * (b - a);
+
+            function easeInOutSine(t) {
+                return -(Math.cos(Math.PI * t) - 1) / 2;
+            }
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - t, 3);
+            }
+
+            function bezierPoint(p0, p1, p2, p3, t) {
+                const u = 1 - t;
+                const tt = t * t;
+                const uu = u * u;
+                const uuu = uu * u;
+                const ttt = tt * t;
+
+                return {
+                    x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
+                    y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y
+                };
+            }
+
+            function roundRect(ctx, x, y, w, h, r) {
+                const rr = Math.min(r, w / 2, h / 2);
+                ctx.beginPath();
+                ctx.moveTo(x + rr, y);
+                ctx.arcTo(x + w, y, x + w, y + h, rr);
+                ctx.arcTo(x + w, y + h, x, y + h, rr);
+                ctx.arcTo(x, y + h, x, y, rr);
+                ctx.arcTo(x, y, x + w, y, rr);
+                ctx.closePath();
+            }
+
+            // ============================================================
+            // DPI / Resize
+            // ============================================================
+            let W = 0, H = 0, DPR = 1;
+
+            function resize() {
+                DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
+                const r = card.getBoundingClientRect();
+                W = Math.max(1, Math.floor(r.width));
+                H = Math.max(1, Math.floor(r.height));
+
+                canvas.width = Math.floor(W * DPR);
+                canvas.height = Math.floor(H * DPR);
+                canvas.style.width = W + "px";
+                canvas.style.height = H + "px";
+                ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+                initStars();
+            }
+            window.addEventListener("resize", resize);
+
+            // ============================================================
+            // Mouse tilt / parallax
+            // ============================================================
+            const cam = { x: 0, y: 0, tx: 0, ty: 0 };
+
+            card.addEventListener("pointermove", (e) => {
+                const r = card.getBoundingClientRect();
+                const nx = (e.clientX - r.left) / r.width;
+                const ny = (e.clientY - r.top) / r.height;
+                cam.tx = (nx - 0.5) * CFG.tiltAmount;
+                cam.ty = (ny - 0.5) * CFG.tiltAmount;
+            });
+
+            card.addEventListener("pointerleave", () => {
+                cam.tx *= 0.12;
+                cam.ty *= 0.12;
+            });
+
+            // ============================================================
+            // Keyboard lane lock
+            // ============================================================
+            let laneLock = null; // null = auto, 0/1/2 = locked
+            window.addEventListener("keydown", (e) => {
+                if (e.key === "0") laneLock = null;
+                if (e.key === "1") laneLock = 0;
+                if (e.key === "2") laneLock = 1;
+                if (e.key === "3") laneLock = 2;
+            });
+
+            function laneColor(laneId) {
+                if (laneId === 0) return CFG.early;
+                if (laneId === 1) return CFG.trend;
+                return CFG.runner;
+            }
+
+            // ============================================================
+            // Stars BG
+            // ============================================================
+            const stars = [];
+            function initStars() {
+                stars.length = 0;
+                for (let i = 0; i < CFG.stars; i++) {
+                    stars.push({
+                        x: Math.random() * W,
+                        y: Math.random() * H,
+                        r: 0.6 + Math.random() * 1.2,
+                        a: 0.03 + Math.random() * 0.10
+                    });
+                }
+            }
+
+            function drawStars() {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                for (const s of stars) {
+                    ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, TAU);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            // ============================================================
+            // Visual primitives
+            // ============================================================
+            function drawGlowDot(x, y, rgb, alpha, size, glow) {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                const g = ctx.createRadialGradient(x, y, 0, x, y, glow);
+                g.addColorStop(0.0, rgba(rgb, alpha));
+                g.addColorStop(0.45, rgba(rgb, alpha * 0.22));
+                g.addColorStop(1.0, "rgba(0,0,0,0)");
+
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, TAU);
+                ctx.fill();
+
+                ctx.fillStyle = `rgba(255,255,255,${alpha * 0.14})`;
+                ctx.beginPath();
+                ctx.arc(x - size * 0.35, y - size * 0.35, size * 0.42, 0, TAU);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            function drawOrb(cx, cy, r, now, rgbMain) {
+                const pulse = (Math.sin(now * 0.0018) + 1) * 0.5;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                const gOuter = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * (2.9 + pulse * 0.30));
+                gOuter.addColorStop(0.0, rgba(rgbMain, 0.20));
+                gOuter.addColorStop(0.45, "rgba(70,160,255,0.08)");
+                gOuter.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = gOuter;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * (2.9 + pulse * 0.30), 0, TAU);
+                ctx.fill();
+
+                const glass = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, 0, cx, cy, r * 1.35);
+                glass.addColorStop(0.0, "rgba(255,255,255,0.18)");
+                glass.addColorStop(0.25, rgba(rgbMain, 0.10));
+                glass.addColorStop(0.62, "rgba(10,16,26,0.14)");
+                glass.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = glass;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 1.02, 0, TAU);
+                ctx.fill();
+
+                const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.95);
+                core.addColorStop(0.0, "rgba(255,255,255,0.38)");
+                core.addColorStop(0.42, rgba(rgbMain, 0.16));
+                core.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = core;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * (0.86 + pulse * 0.03), 0, TAU);
+                ctx.fill();
+
+                ctx.strokeStyle = rgba(rgbMain, 0.52);
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 1.02, 0, TAU);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            // ✅ Pill pulse is back (flashAmt 0..1)
+            function drawPill(x, y, text, rgb, flashAmt) {
+                const padX = 12;
+                const h = 30;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "source-over";
+                ctx.font = "800 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+                const w = ctx.measureText(text).width + padX * 2;
+
+                // Base pill
+                ctx.fillStyle = "rgba(0,0,0,0.28)";
+                ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.25)`;
+                ctx.lineWidth = 1;
+                roundRect(ctx, x - w / 2, y - h / 2, w, h, 999);
+                ctx.fill();
+                ctx.stroke();
+
+                // Soft inside tint
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.05)`;
+                roundRect(ctx, x - w / 2 + 1, y - h / 2 + 1, w - 2, h - 2, 999);
+                ctx.fill();
+                ctx.restore();
+
+                // ✅ Arrival pulse glow (clean, not sparkly)
+                if (flashAmt > 0.01) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = "lighter";
+
+                    const glow = ctx.createRadialGradient(x, y, 0, x, y, 70);
+                    glow.addColorStop(0.0, rgba(rgb, 0.18 * flashAmt));
+                    glow.addColorStop(0.45, rgba(rgb, 0.09 * flashAmt));
+                    glow.addColorStop(1.0, "rgba(0,0,0,0)");
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 70, 0, TAU);
+                    ctx.fill();
+
+                    ctx.strokeStyle = rgba(rgb, 0.30 * flashAmt);
+                    ctx.lineWidth = 2.0;
+                    roundRect(ctx, x - w / 2, y - h / 2, w, h, 999);
+                    ctx.stroke();
+
+                    ctx.restore();
+                }
+
+                // Text
+                ctx.fillStyle = `rgba(255,255,255,${0.92 + flashAmt * 0.08})`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(text, x, y + 0.5);
+
+                ctx.restore();
+            }
+
+            function drawMagneticRing(cx, cy, r, now, routeHint, hintA) {
+                const t = now * 0.001;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 3.0);
+                g.addColorStop(0.0, "rgba(255,255,255,0.05)");
+                g.addColorStop(0.45, "rgba(120,220,255,0.10)");
+                g.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 3.0, 0, TAU);
+                ctx.fill();
+
+                ctx.strokeStyle = "rgba(255,255,255,0.22)";
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, TAU);
+                ctx.stroke();
+
+                ctx.strokeStyle = "rgba(255,255,255,0.10)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 0.74, 0, TAU);
+                ctx.stroke();
+
+                ctx.strokeStyle = "rgba(255,255,255,0.10)";
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, t, t + 0.8);
+                ctx.stroke();
+
+                if (routeHint >= 0 && hintA > 0.01) {
+                    const rgb = laneColor(routeHint);
+                    ctx.strokeStyle = rgba(rgb, 0.34 * hintA);
+                    ctx.lineWidth = 3.0;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, -0.35, 0.35);
+                    ctx.stroke();
+                }
+
+                const coreR = r * 0.24;
+                const mg = ctx.createRadialGradient(cx - coreR * 0.4, cy - coreR * 0.4, 0, cx, cy, coreR * 1.4);
+                mg.addColorStop(0.0, "rgba(255,255,255,0.16)");
+                mg.addColorStop(0.55, "rgba(140,230,255,0.10)");
+                mg.addColorStop(1.0, "rgba(255,215,160,0.04)");
+
+                ctx.fillStyle = mg;
+                ctx.strokeStyle = "rgba(255,255,255,0.22)";
+                ctx.lineWidth = 1.0;
+                ctx.beginPath();
+                ctx.arc(cx, cy, coreR, 0, TAU);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function drawLaneCurve(p0, p1, p2, p3, rgb, boost) {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${0.10 + boost * 0.10})`;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([7, 12]);
+                ctx.beginPath();
+                ctx.moveTo(p0.x, p0.y);
+                ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+                ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${0.06 + boost * 0.06})`;
+                ctx.lineWidth = 6 + boost * 6;
+                ctx.beginPath();
+                ctx.moveTo(p0.x, p0.y);
+                ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function drawSplitBeams(curves, chosenLaneId, flashT) {
+                const baseA = CFG.splitBeamAlpha * flashT;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.lineWidth = 2.4;
+
+                for (const c of curves) {
+                    const rgb = laneColor(c.laneId);
+                    const isChosen = c.laneId === chosenLaneId;
+                    const a = isChosen ? baseA * 1.35 : baseA * 0.65;
+
+                    const grad = ctx.createLinearGradient(c.p0.x, c.p0.y, c.p3.x, c.p3.y);
+                    grad.addColorStop(0.0, "rgba(255,255,255,0)");
+                    grad.addColorStop(0.25, rgba(rgb, a * 0.55));
+                    grad.addColorStop(0.55, rgba(rgb, a));
+                    grad.addColorStop(1.0, "rgba(0,0,0,0)");
+
+                    ctx.strokeStyle = grad;
+                    ctx.beginPath();
+                    ctx.moveTo(c.p0.x, c.p0.y);
+                    ctx.bezierCurveTo(c.p1.x, c.p1.y, c.p2.x, c.p2.y, c.p3.x, c.p3.y);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+
+            function drawMagneticPullArc(px, py, ringCx, ringCy, ringR, laneId, strength) {
+                const rgb = laneColor(laneId);
+                const a = CFG.pullArcAlpha * strength;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                const midX = lerp(px, ringCx, 0.55);
+                const midY = lerp(py, ringCy, 0.55) - 26 * strength;
+
+                const grad = ctx.createLinearGradient(px, py, ringCx, ringCy);
+                grad.addColorStop(0.0, rgba(rgb, a * 0.15));
+                grad.addColorStop(0.5, rgba(rgb, a * 0.75));
+                grad.addColorStop(1.0, rgba(rgb, 0.0));
+
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = 2.2 + strength * 2.4;
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.quadraticCurveTo(midX, midY, ringCx - ringR * 0.75, ringCy);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function drawFinishOverlay() {
+                const cx = W * 0.5, cy = H * 0.5;
+                const rad = Math.min(W, H) * 0.48;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "source-over";
+
+                ctx.strokeStyle = `rgba(255,255,255,${CFG.glassAlpha})`;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(cx, cy, rad, 0, TAU);
+                ctx.stroke();
+
+                const vg = ctx.createRadialGradient(cx, cy, rad * 0.33, cx, cy, rad * 1.18);
+                vg.addColorStop(0.0, "rgba(0,0,0,0)");
+                vg.addColorStop(1.0, `rgba(0,0,0,${CFG.vignette})`);
+                ctx.fillStyle = vg;
+                ctx.beginPath();
+                ctx.arc(cx, cy, rad * 1.25, 0, TAU);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // ============================================================
+            // Layout + Curves
+            // ============================================================
+            function getLayout() {
+                const sx = W * CFG.sourceX;
+                const sy = H * CFG.sourceY;
+
+                const rx = W * CFG.ringX;
+                const ry = H * CFG.ringY;
+
+                const outX = W * CFG.outX;
+
+                const laneY0 = H * (CFG.ringY - CFG.laneOffset);
+                const laneY1 = H * (CFG.ringY);
+                const laneY2 = H * (CFG.ringY + CFG.laneOffset);
+
+                return {
+                    sx, sy, rx, ry, outX,
+                    lanes: [
+                        { id: 0, y: laneY0, label: "EARLY" },
+                        { id: 1, y: laneY1, label: "TREND" },
+                        { id: 2, y: laneY2, label: "RUNNER" }
+                    ]
+                };
+            }
+
+            // Curves start from the RIGHT exit of the ring
+            function buildCurves(L, ringR, dx, dy) {
+                const p0 = { x: L.rx + dx + ringR * 1.02, y: L.ry + dy };
+
+                return L.lanes.map((lane) => {
+                    const p3 = { x: L.outX, y: lane.y };
+                    const bend = lane.y - L.ry;
+
+                    const p1 = { x: lerp(p0.x, p3.x, 0.35), y: (L.ry + dy) + bend * 0.20 };
+                    const p2 = { x: lerp(p0.x, p3.x, 0.65), y: lane.y - bend * 0.10 };
+
+                    return { laneId: lane.id, p0, p1, p2, p3 };
+                });
+            }
+
+            // ============================================================
+            // Packet system
+            // ============================================================
+            const packets = [];
+            let rrIndex = 0;
+
+            // Lane curve pulse timing
+            const lanePulseAt = [0, 0, 0];
+
+            // Pill pulse timing (arrival)
+            const pillFlashAt = [0, 0, 0];
+
+            // Split flash
+            let splitFlashUntil = 0;
+            let lastChosenLane = 1;
+
+            // ✅ FIRST packet is always Trend, THEN random starts after it arrives
+            let firstTrendDone = false;
+            let allowRandomSpawns = false;
+
+            function chooseLane() {
+                if (laneLock === null) {
+                    const lane = rrIndex % 3;
+                    rrIndex++;
+                    return lane;
+                }
+                return laneLock;
+            }
+
+            // ✅ spawnPacket supports lane override
+            function spawnPacket(now, laneOverride = null, isBoot = false) {
+                const laneId = (laneOverride !== null) ? laneOverride : chooseLane();
+                lastChosenLane = laneId;
+
+                packets.push({
+                    state: "in",
+                    born: now,
+                    laneId,
+                    orbitStart: 0,
+                    holdStart: 0,
+                    outStart: 0,
+                    isBoot
+                });
+
+                while (packets.length > 10) packets.shift();
+            }
+
+            // ============================================================
+            // Random traffic spawner
+            // ============================================================
+            let nextSpawnAt = performance.now() + rand(1200, 2600);
+
+            function getRandomSpawnPlan() {
+                const R = CFG.randomSpawn;
+                const r = Math.random();
+
+                if (r < R.pauseChance) {
+                    return { count: 0, delayMs: rand(R.pauseMinMs, R.pauseMaxMs) };
+                }
+
+                if (r < R.pauseChance + R.singleChance) {
+                    const fast = Math.random() < R.singleFastChance;
+                    const delayMs = fast
+                        ? rand(R.singleFastMinMs, R.singleFastMaxMs)
+                        : rand(R.singleSlowMinMs, R.singleSlowMaxMs);
+
+                    return { count: 1, delayMs };
+                }
+
+                if (r < R.pauseChance + R.singleChance + R.burst2Chance) {
+                    return { count: 2, delayMs: rand(R.burstMinMs, R.burstMaxMs) };
+                }
+
+                return { count: 3, delayMs: rand(R.burstMinMs, R.burstMaxMs) };
+            }
+
+            function handleSpawning(now) {
+                // ✅ Don't spawn random stuff until the first Trend packet finishes
+                if (!allowRandomSpawns) return;
+
+                if (now < nextSpawnAt) return;
+
+                if (CFG.spawnMode === "fixed") {
+                    spawnPacket(now);
+                    nextSpawnAt = now + CFG.spawnEveryMs;
+                    return;
+                }
+
+                const plan = getRandomSpawnPlan();
+                if (plan.count > 0) {
+                    for (let i = 0; i < plan.count; i++) {
+                        spawnPacket(now + i * CFG.randomSpawn.burstSpacingMs);
+                    }
+                }
+
+                nextSpawnAt = now + plan.delayMs;
+            }
+
+            // ============================================================
+            // Main render loop
+            // ============================================================
+            let lastNow = performance.now();
+
+            function draw(now) {
+                const dt = clamp(now - lastNow, 8, 40);
+                lastNow = now;
+
+                cam.x += (cam.tx - cam.x) * CFG.camEase;
+                cam.y += (cam.ty - cam.y) * CFG.camEase;
+
+                const dx = cam.x * 18;
+                const dy = cam.y * 18;
+
+                ctx.clearRect(0, 0, W, H);
+
+                drawStars();
+
+                // Soft wash
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                const bg = ctx.createRadialGradient(W * 0.58, H * 0.42, 0, W * 0.58, H * 0.42, Math.min(W, H) * 0.78);
+                bg.addColorStop(0.0, "rgba(120,220,255,0.03)");
+                bg.addColorStop(0.5, "rgba(70,160,255,0.02)");
+                bg.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = bg;
+                ctx.fillRect(0, 0, W, H);
+                ctx.restore();
+
+                const L = getLayout();
+                const ringR = Math.min(W, H) * CFG.ringRadiusFactor;
+                const curves = buildCurves(L, ringR, dx, dy);
+
+                // Lane curve pulse strength
+                const laneBoost = [0, 0, 0];
+                for (let i = 0; i < 3; i++) {
+                    const age = now - lanePulseAt[i];
+                    const t = clamp(1 - age / CFG.lanePulseMs, 0, 1);
+                    laneBoost[i] = easeOutCubic(t);
+                }
+
+                // Draw lane curves
+                for (const c of curves) {
+                    drawLaneCurve(c.p0, c.p1, c.p2, c.p3, laneColor(c.laneId), laneBoost[c.laneId]);
+                }
+
+                // Source orb
+                const sourceR = Math.min(W, H) * 0.060;
+                drawOrb(L.sx + dx * 0.35, L.sy + dy * 0.35, sourceR, now, CFG.blue);
+
+                // Input line
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.strokeStyle = "rgba(120,220,255,0.10)";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([7, 12]);
+                ctx.beginPath();
+                ctx.moveTo(L.sx + sourceR * 1.2 + dx * 0.35, L.sy + dy * 0.35);
+                ctx.lineTo(L.rx - ringR * 1.25 + dx, L.ry + dy);
+                ctx.stroke();
+                ctx.restore();
+
+                // Pill pulse strength (arrival pulse)
+                const pillFlashAmt = [0, 0, 0];
+                for (let i = 0; i < 3; i++) {
+                    const age = now - pillFlashAt[i];
+                    const t = clamp(1 - age / CFG.pillFlashMs, 0, 1);
+                    pillFlashAmt[i] = easeOutCubic(t);
+                }
+
+                // Pills (with pulse on arrival)
+                drawPill(L.outX, L.lanes[0].y, "EARLY", CFG.early, pillFlashAmt[0]);
+                drawPill(L.outX, L.lanes[1].y, "TREND", CFG.trend, pillFlashAmt[1]);
+                drawPill(L.outX, L.lanes[2].y, "RUNNER", CFG.runner, pillFlashAmt[2]);
+
+                // Handle random spawning (only after boot packet finishes)
+                handleSpawning(now);
+
+                // Split flash time
+                if (now < splitFlashUntil) {
+                    let flashT = clamp((splitFlashUntil - now) / CFG.splitFlashMs, 0, 1);
+                    flashT = easeOutCubic(flashT);
+                    drawSplitBeams(curves, lastChosenLane, flashT);
+                }
+
+                let routeHint = -1;
+                let hintA = 0;
+
+                // Update packets
+                for (let i = packets.length - 1; i >= 0; i--) {
+                    const p = packets[i];
+
+                    // IN: source -> ring entrance
+                    if (p.state === "in") {
+                        const t = clamp((now - p.born) / CFG.inDurMs, 0, 1);
+                        const e = easeInOutSine(t);
+
+                        const x0 = L.sx + sourceR * 1.05 + dx * 0.35;
+                        const y0 = L.sy + dy * 0.35;
+
+                        const x1 = L.rx - ringR * 1.05 + dx;
+                        const y1 = L.ry + dy;
+
+                        const x = lerp(x0, x1, e);
+                        const y = lerp(y0, y1, e);
+
+                        if (t > 0.65) {
+                            const strength = clamp((t - 0.65) / 0.35, 0, 1);
+                            drawMagneticPullArc(x, y, L.rx + dx, L.ry + dy, ringR, p.laneId, strength);
+                        }
+
+                        // No trail here
+                        drawGlowDot(x, y, CFG.cyan, 0.90, CFG.packetSize, CFG.packetGlow);
+
+                        if (t >= 1) {
+                            p.state = "orbit";
+                            p.orbitStart = now;
+                        }
+                    }
+
+                    // ORBIT: ends on RIGHT exit
+                    else if (p.state === "orbit") {
+                        const t = clamp((now - p.orbitStart) / CFG.orbitMs, 0, 1);
+                        const e = easeInOutSine(t);
+
+                        const cx = L.rx + dx;
+                        const cy = L.ry + dy;
+
+                        const total = (CFG.orbitLoops * TAU) + Math.PI;
+                        const ang = Math.PI - (e * total);
+
+                        const x = cx + Math.cos(ang) * ringR;
+                        const y = cy + Math.sin(ang) * ringR;
+
+                        // No trail here
+                        drawGlowDot(x, y, CFG.cyan, 0.92, CFG.packetSize, CFG.packetGlow);
+
+                        if (t > 0.80) {
+                            routeHint = p.laneId;
+                            hintA = clamp((t - 0.80) / 0.20, 0, 1);
+                        }
+
+                        if (t >= 1) {
+                            p.state = "holdExit";
+                            p.holdStart = now;
+                        }
+                    }
+
+                    // HOLD: pauses at RIGHT exit
+                    else if (p.state === "holdExit") {
+                        const cx = L.rx + dx;
+                        const cy = L.ry + dy;
+
+                        const x = cx + ringR;
+                        const y = cy;
+
+                        drawGlowDot(x, y, CFG.cyan, 0.95, CFG.packetSize, CFG.packetGlow);
+
+                        routeHint = p.laneId;
+                        hintA = 1;
+
+                        const holdT = clamp((now - p.holdStart) / CFG.exitHoldMs, 0, 1);
+                        if (holdT >= 1) {
+                            // pulse lane on route out
+                            lanePulseAt[p.laneId] = now;
+
+                            splitFlashUntil = now + CFG.splitFlashMs;
+                            lastChosenLane = p.laneId;
+
+                            p.state = "out";
+                            p.outStart = now;
+                        }
+                    }
+
+                    // OUT: only place we allow trail
+                    else if (p.state === "out") {
+                        const t = clamp((now - p.outStart) / CFG.outDurMs, 0, 1);
+                        const e = easeInOutSine(t);
+
+                        const c = curves.find(z => z.laneId === p.laneId);
+                        if (!c) continue;
+
+                        const pos = bezierPoint(c.p0, c.p1, c.p2, c.p3, e);
+                        const rgb = laneColor(p.laneId);
+
+                        // Tail ONLY while travelling (not at arrival)
+                        if (t < CFG.tailCutoffT) {
+                            for (let k = 0; k < CFG.tailSteps; k++) {
+                                const tt = clamp(e - (k * 0.022), 0, 1);
+                                const tp = bezierPoint(c.p0, c.p1, c.p2, c.p3, tt);
+                                const ta = (1 - k / CFG.tailSteps) * 0.18;
+                                drawGlowDot(tp.x, tp.y, rgb, ta, CFG.packetSize * 0.82, CFG.packetGlow * 0.75);
+                            }
+                        }
+
+                        // Main packet
+                        drawGlowDot(pos.x, pos.y, rgb, 0.95, CFG.packetSize * 1.12, CFG.packetGlow);
+
+                        // Arrived
+                        if (t >= 1) {
+                            // ✅ Pill pulse on arrival (clean)
+                            pillFlashAt[p.laneId] = now;
+
+                            // optional lane pulse again on arrival (nice)
+                            lanePulseAt[p.laneId] = now;
+
+                            // ✅ After first Trend packet finishes, enable random spawning
+                            if (p.isBoot && !firstTrendDone) {
+                                firstTrendDone = true;
+                                allowRandomSpawns = true;
+                                nextSpawnAt = now + rand(1400, 3200);
+                            }
+
+                            packets.splice(i, 1);
+                        }
+                    }
+                }
+
+                // Draw ring LAST (above)
+                drawMagneticRing(L.rx + dx, L.ry + dy, ringR, now, routeHint, hintA);
+
+                drawFinishOverlay();
+            }
+
+            function loop(now) {
+                draw(now);
+                requestAnimationFrame(loop);
+            }
+
+            // Boot
+            resize();
+
+            // ✅ Spawn exactly ONE packet first, forced to TREND
+            const bootNow = performance.now();
+            spawnPacket(bootNow, 1, true);
+
+            requestAnimationFrame(loop);
+        })();
+    </script>
+</body>
+
+</html>

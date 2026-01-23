@@ -199,6 +199,13 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   border-color: rgb(var(--danger) / 0.9);
   box-shadow: 0 10px 24px -16px rgb(var(--danger) / 0.6);
 }
+.fear-greed-box--neutral {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.9);
+  color: #0f0f10;
+  text-shadow: none;
+  box-shadow: 0 10px 24px -16px rgba(255, 255, 255, 0.45);
+}
 
 .fear-greed-box--extreme {
   letter-spacing: 0.28em;
@@ -400,17 +407,38 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   100% { opacity: 0; transform: translate(22px, -50%) scaleX(1.25); }
 }
 @keyframes webhookBlast {
-  0% { opacity: 0; transform: translate(0, -50%) scale(0.6); }
-  2% { opacity: 1; transform: translate(12px, -50%) scale(1); }
-  6% { opacity: 0.75; transform: translate(32px, -50%) scale(1.2); }
-  10% { opacity: 0.2; transform: translate(52px, -50%) scale(1.35); }
-  100% { opacity: 0; transform: translate(52px, -50%) scale(1.35); }
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  10% { opacity: 0.9; }
+  30% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.95); }
+  55% { opacity: 0.25; transform: translate(-50%, -50%) scale(1.25); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
 }
 @keyframes webhookRays {
-  0% { opacity: 0; transform: scale(0.7); }
-  8% { opacity: 0.75; transform: scale(1); }
-  24% { opacity: 0; transform: scale(1.25); }
-  100% { opacity: 0; transform: scale(1.25); }
+  0% { opacity: 0; transform: scale(0.92); }
+  10% { opacity: 0.9; transform: scale(1); }
+  26% { opacity: 0.35; transform: scale(1.22); }
+  50% { opacity: 0; transform: scale(1.32); }
+  100% { opacity: 0; transform: scale(1.32); }
+}
+@keyframes webhookConfettiPop {
+  0% { opacity: 0; transform: translate(0, 0) rotate(var(--rot)) scale(0.85); }
+  10% { opacity: 1; }
+  30% {
+    opacity: 0.9;
+    transform: translate(calc(var(--x) * 0.6), calc(var(--y) * 0.6)) rotate(calc(var(--rot) + 60deg)) scale(1);
+  }
+  60% {
+    opacity: 0.55;
+    transform: translate(var(--x), var(--y)) rotate(calc(var(--rot) + 110deg)) scale(1);
+  }
+  80% {
+    opacity: 0.2;
+    transform: translate(var(--x), var(--y)) rotate(calc(var(--rot) + 120deg)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) rotate(calc(var(--rot) + 120deg)) scale(1);
+  }
 }
 @keyframes bellDing {
   0% { transform: rotate(0); }
@@ -457,6 +485,22 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   90% { opacity: 0.45; transform: translate3d(-4px, 185px, 0) rotate(calc(var(--dust-rot) + 4deg)); }
   100% { opacity: 0; transform: translate3d(2px, 210px, 0) rotate(calc(var(--dust-rot) - 2deg)); }
 }
+@keyframes bellDustHeavy {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(var(--dust-rot)); }
+  12% { opacity: 1; transform: translate3d(-2px, 36px, 0) rotate(calc(var(--dust-rot) + 2deg)); }
+  25% { opacity: 0.95; transform: translate3d(3px, 60px, 0) rotate(calc(var(--dust-rot) - 2deg)); }
+  50% { opacity: 0.85; transform: translate3d(-3px, 120px, 0) rotate(calc(var(--dust-rot) + 3deg)); }
+  75% { opacity: 0.65; transform: translate3d(2px, 180px, 0) rotate(calc(var(--dust-rot) - 2deg)); }
+  100% { opacity: 0; transform: translate3d(0, 240px, 0) rotate(calc(var(--dust-rot) + 1deg)); }
+}
+@keyframes bellDustHeavyTrail {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(var(--dust-rot)); }
+  14% { opacity: 0.95; transform: translate3d(2px, 40px, 0) rotate(calc(var(--dust-rot) - 1deg)); }
+  28% { opacity: 0.9; transform: translate3d(-3px, 72px, 0) rotate(calc(var(--dust-rot) + 2deg)); }
+  50% { opacity: 0.8; transform: translate3d(4px, 132px, 0) rotate(calc(var(--dust-rot) - 3deg)); }
+  75% { opacity: 0.6; transform: translate3d(-3px, 192px, 0) rotate(calc(var(--dust-rot) + 3deg)); }
+  100% { opacity: 0; transform: translate3d(2px, 252px, 0) rotate(calc(var(--dust-rot) - 1deg)); }
+}
 .clock-hand-rotate {
   animation: rotateCW 60s steps(60, end) infinite;
   transform-origin: 50% 50%;
@@ -465,77 +509,92 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 .clock-ticks { stroke: rgb(var(--silver) / 0.5); }
 .clock-hand { stroke: rgb(var(--gold) / 0.95); stroke-linecap: round; }
 .clock-center { fill: rgb(var(--gold) / 0.95); }
-.webhook-wrap {
+.webhook-fan-shell {
   position: relative;
   display: inline-grid;
   place-items: center;
   color: rgb(var(--silver) / 0.95);
+  overflow: visible;
 }
-.webhook-rays {
+.webhook-airflow {
   position: absolute;
-  inset: -8px;
-  border-radius: 999px;
-  background: conic-gradient(
-    from 0deg,
-    rgb(var(--gold2) / 0.7) 0deg 10deg,
-    transparent 10deg 35deg
-  );
-  -webkit-mask: radial-gradient(circle, transparent 55%, #000 56%, #000 70%, transparent 71%);
-  opacity: 0;
+  left: 0;
+  top: 0;
+  transform: none;
   pointer-events: none;
-  filter: blur(0.4px);
+  z-index: 0;
+  mix-blend-mode: screen;
 }
-.webhook-rays-active { animation: webhookRays 10s ease-out infinite; }
-.webhook-wrap::before {
-  content: "";
-  position: absolute;
-  inset: -3px;
-  border-radius: 999px;
-  background: repeating-conic-gradient(
-    from 0deg,
-    rgb(var(--gold) / 0.45) 0deg 4deg,
-    transparent 4deg 28deg
-  );
-  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%, #000 72%, transparent 73%);
-  opacity: 0.7;
-  pointer-events: none;
+.webhook-rotor {
+  display: block;
+  filter:
+    drop-shadow(0 0 var(--webhook-blur, 6px) rgb(255 255 255 / 0.3))
+    drop-shadow(0 0 calc(var(--webhook-blur, 6px) * 1.5) rgb(255 214 128 / 0.22));
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+  will-change: transform;
 }
-.webhook-wrap::after {
-  content: "";
-  position: absolute;
-  right: -10px;
-  top: 50%;
-  width: 22px;
-  height: 6px;
-  background: linear-gradient(90deg, transparent, rgb(var(--gold) / 0.5), transparent);
-  opacity: 0;
-  filter: blur(0.5px);
-  pointer-events: none;
-}
-.webhook-wind::after { animation: webhookBreeze 10s ease-out infinite; }
 .webhook-blast {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 90px;
-  height: 28px;
-  background:
-    radial-gradient(circle at 6px 14px, rgba(255,255,255,0.98) 0 2.6px, transparent 4px),
-    radial-gradient(circle at 16px 6px, rgba(240,245,255,0.95) 0 2px, transparent 3px),
-    radial-gradient(circle at 24px 20px, rgba(255,255,255,0.9) 0 2px, transparent 3px),
-    radial-gradient(circle at 34px 10px, rgba(235,240,250,0.85) 0 1.8px, transparent 2.8px),
-    radial-gradient(circle at 44px 18px, rgba(255,255,255,0.85) 0 2px, transparent 3px),
-    radial-gradient(circle at 56px 8px, rgba(235,240,250,0.8) 0 1.7px, transparent 2.6px),
-    radial-gradient(circle at 66px 16px, rgba(255,255,255,0.78) 0 1.6px, transparent 2.5px),
-    radial-gradient(circle at 76px 12px, rgba(235,240,250,0.75) 0 1.5px, transparent 2.4px),
-    linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 40%, transparent 85%);
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
   opacity: 0;
-  filter: blur(0.35px);
+  transform: translate(-50%, -50%) scale(0.45);
+  filter: blur(0.2px);
   pointer-events: none;
   z-index: 2;
   mix-blend-mode: screen;
 }
-.webhook-blast-on { animation: webhookBlast 90s ease-out infinite; }
+.webhook-blast::before,
+.webhook-blast::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.webhook-blast::before {
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  margin-top: -2px;
+  background: rgba(240, 248, 255, 0.85);
+  box-shadow:
+    -32px -10px 0 0 rgba(240, 248, 255, 0.7),
+    -18px -28px 0 0 rgba(232, 240, 255, 0.65),
+    6px -34px 0 0 rgba(240, 248, 255, 0.75),
+    24px -22px 0 0 rgba(232, 240, 255, 0.6),
+    38px -6px 0 0 rgba(240, 248, 255, 0.65),
+    42px 18px 0 0 rgba(232, 240, 255, 0.55),
+    18px 32px 0 0 rgba(240, 248, 255, 0.6),
+    -10px 34px 0 0 rgba(232, 240, 255, 0.6),
+    -30px 24px 0 0 rgba(240, 248, 255, 0.55),
+    -40px 4px 0 0 rgba(232, 240, 255, 0.5);
+  filter: blur(0.25px);
+}
+.webhook-blast::after {
+  width: 2px;
+  height: 2px;
+  margin-left: -1px;
+  margin-top: -1px;
+  background: rgba(232, 240, 255, 0.7);
+  box-shadow:
+    -22px -6px 0 0 rgba(240, 248, 255, 0.55),
+    -8px -18px 0 0 rgba(232, 240, 255, 0.5),
+    10px -16px 0 0 rgba(240, 248, 255, 0.55),
+    26px -8px 0 0 rgba(232, 240, 255, 0.5),
+    30px 8px 0 0 rgba(240, 248, 255, 0.45),
+    16px 20px 0 0 rgba(232, 240, 255, 0.45),
+    -4px 22px 0 0 rgba(240, 248, 255, 0.45),
+    -20px 16px 0 0 rgba(232, 240, 255, 0.4);
+  filter: blur(0.2px);
+  opacity: 0.8;
+}
+.webhook-blast-on { animation: webhookBlast 10s ease-out infinite; }
 .webhook-icon {
   display: block;
   filter: drop-shadow(0 0 6px rgb(var(--gold) / 0.25));
@@ -582,10 +641,10 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 .bell-dust-local {
   position: absolute;
   left: 50%;
-  top: calc(100% - 4px);
+  top: calc(100% - 2px);
   transform: translateX(-50%);
-  width: 180px;
-  height: 240px;
+  width: 150px;
+  height: 210px;
   z-index: 3;
 }
 .dust-cycle {
@@ -628,202 +687,112 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 .bell-dust-shower::before {
   top: 0;
   left: 50%;
-  width: 1px;
+  width: 2px;
   height: 2px;
-  margin-left: -0.5px;
-  border-radius: 0.2px;
+  margin-left: -1px;
+  border-radius: 999px;
   --dust-rot: 0deg;
-  background: rgba(255, 216, 140, 0.6);
+  background: rgba(255, 236, 190, 0.7);
   box-shadow:
-    -40px 4px 0 -0.2px rgba(255, 216, 140, 0.45),
-    -32px 8px 0 -0.2px rgba(255, 244, 214, 0.55),
-    -24px 6px 0 -0.2px rgba(255, 232, 180, 0.5),
-    -16px 10px 0 -0.2px rgba(255, 210, 120, 0.45),
-    -8px 8px 0 -0.2px rgba(255, 248, 225, 0.5),
-    0 6px 0 -0.2px rgba(255, 214, 128, 0.5),
-    8px 8px 0 -0.2px rgba(255, 244, 214, 0.5),
-    16px 10px 0 -0.2px rgba(255, 232, 180, 0.45),
-    24px 8px 0 -0.2px rgba(255, 214, 128, 0.4),
-    32px 6px 0 -0.2px rgba(255, 248, 225, 0.45),
-    40px 10px 0 -0.2px rgba(255, 210, 120, 0.4),
-    -30px 6px 0 -0.2px rgba(255, 216, 140, 0.4),
-    -18px 10px 0 -0.1px rgba(255, 244, 214, 0.55),
-    -6px 8px 0 -0.15px rgba(255, 232, 180, 0.55),
-    8px 12px 0 -0.1px rgba(255, 210, 120, 0.4),
-    20px 14px 0 0.1px rgba(255, 248, 225, 0.45),
-    32px 10px 0 -0.15px rgba(255, 214, 128, 0.35),
-    42px 12px 0 -0.25px rgba(255, 232, 180, 0.35),
-    -42px 14px 0 -0.25px rgba(255, 210, 120, 0.35),
-    -24px 20px 0 -0.15px rgba(255, 200, 110, 0.35),
-    -10px 22px 0 -0.1px rgba(255, 236, 190, 0.5),
-    2px 20px 0 -0.15px rgba(255, 214, 128, 0.45),
-    16px 22px 0 -0.2px rgba(255, 244, 214, 0.4),
-    28px 24px 0 -0.15px rgba(255, 232, 180, 0.35),
-    -34px 30px 0 -0.25px rgba(255, 216, 140, 0.3),
-    -22px 34px 0 -0.15px rgba(255, 248, 225, 0.45),
-    -8px 36px 0 -0.15px rgba(255, 210, 120, 0.4),
-    6px 38px 0 0.1px rgba(255, 244, 214, 0.45),
-    20px 40px 0 -0.2px rgba(255, 232, 180, 0.35),
-    34px 42px 0 -0.2px rgba(255, 214, 128, 0.32),
-    46px 44px 0 -0.25px rgba(255, 248, 225, 0.3),
-    -46px 46px 0 -0.25px rgba(255, 216, 140, 0.28),
-    -28px 50px 0 -0.2px rgba(255, 206, 110, 0.3),
-    -12px 52px 0 -0.1px rgba(255, 232, 180, 0.45),
-    0 50px 0 -0.15px rgba(255, 214, 128, 0.42),
-    14px 52px 0 0.15px rgba(255, 244, 214, 0.4),
-    26px 54px 0 -0.2px rgba(255, 210, 120, 0.32),
-    -32px 66px 0 -0.2px rgba(255, 216, 140, 0.3),
-    -18px 68px 0 -0.15px rgba(255, 248, 225, 0.4),
-    -4px 70px 0 -0.2px rgba(255, 232, 180, 0.38),
-    10px 70px 0 -0.15px rgba(255, 214, 128, 0.36),
-    24px 72px 0 0.1px rgba(255, 244, 214, 0.38),
-    36px 74px 0 -0.25px rgba(255, 210, 120, 0.28),
-    48px 76px 0 -0.25px rgba(255, 244, 214, 0.28),
-    -48px 78px 0 -0.25px rgba(255, 216, 140, 0.26),
-    -26px 88px 0 -0.2px rgba(255, 232, 180, 0.3),
-    -10px 90px 0 -0.2px rgba(255, 214, 128, 0.34),
-    4px 92px 0 0.1px rgba(255, 244, 214, 0.36),
-    18px 94px 0 -0.2px rgba(255, 232, 180, 0.3),
-    30px 96px 0 -0.2px rgba(255, 214, 128, 0.3),
-    42px 98px 0 -0.25px rgba(255, 248, 225, 0.28),
-    -42px 100px 0 -0.25px rgba(255, 206, 110, 0.26),
-    -34px 108px 0 -0.25px rgba(255, 206, 110, 0.28),
-    -20px 112px 0 -0.2px rgba(255, 232, 180, 0.3),
-    -6px 114px 0 -0.2px rgba(255, 214, 128, 0.3),
-    8px 116px 0 0.1px rgba(255, 244, 214, 0.3),
-    22px 118px 0 -0.2px rgba(255, 210, 120, 0.28),
-    34px 120px 0 -0.25px rgba(255, 232, 180, 0.28),
-    46px 122px 0 -0.25px rgba(255, 244, 214, 0.26),
-    -46px 124px 0 -0.25px rgba(255, 210, 120, 0.24),
-    -28px 132px 0 -0.25px rgba(255, 216, 140, 0.26),
-    -14px 134px 0 -0.2px rgba(255, 244, 214, 0.3),
-    0 136px 0 -0.2px rgba(255, 232, 180, 0.28),
-    14px 138px 0 0.1px rgba(255, 214, 128, 0.26),
-    28px 140px 0 -0.25px rgba(255, 244, 214, 0.28),
-    40px 142px 0 -0.25px rgba(255, 232, 180, 0.24),
-    -40px 144px 0 -0.25px rgba(255, 216, 140, 0.24),
-    -22px 152px 0 -0.25px rgba(255, 206, 110, 0.24),
-    -6px 154px 0 -0.2px rgba(255, 232, 180, 0.26),
-    10px 156px 0 0.1px rgba(255, 214, 128, 0.24),
-    24px 158px 0 -0.25px rgba(255, 244, 214, 0.26),
-    36px 160px 0 -0.25px rgba(255, 232, 180, 0.22),
-    -36px 162px 0 -0.25px rgba(255, 214, 128, 0.22),
-    48px 164px 0 -0.25px rgba(255, 244, 214, 0.22),
-    -48px 166px 0 -0.25px rgba(255, 210, 120, 0.2),
-    12px 170px 0 -0.25px rgba(255, 232, 180, 0.2),
-    -12px 172px 0 -0.25px rgba(255, 214, 128, 0.2),
-    30px 174px 0 -0.25px rgba(255, 244, 214, 0.2),
-    -30px 176px 0 -0.25px rgba(255, 206, 110, 0.2),
-    0 168px 0 -0.25px rgba(255, 244, 214, 0.22),
-    44px 178px 0 -0.25px rgba(255, 232, 180, 0.18),
-    -44px 180px 0 -0.25px rgba(255, 214, 128, 0.18),
-    18px 184px 0 -0.25px rgba(255, 244, 214, 0.18),
-    -18px 186px 0 -0.25px rgba(255, 210, 120, 0.18),
-    0 190px 0 -0.25px rgba(255, 232, 180, 0.18);
+    -10px 6px 0 0 rgba(255, 236, 190, 0.55),
+    6px 12px 0 -0.3px rgba(255, 248, 225, 0.6),
+    18px 18px 0 -0.4px rgba(255, 214, 128, 0.45),
+    -18px 20px 0 -0.2px rgba(255, 244, 214, 0.5),
+    0 26px 0 -0.2px rgba(255, 232, 180, 0.52),
+    14px 34px 0 -0.4px rgba(255, 244, 214, 0.5),
+    -12px 38px 0 -0.3px rgba(255, 214, 128, 0.45),
+    22px 44px 0 -0.4px rgba(255, 248, 225, 0.45),
+    -22px 48px 0 -0.4px rgba(255, 214, 128, 0.4),
+    4px 58px 0 -0.2px rgba(255, 244, 214, 0.5),
+    -8px 64px 0 -0.3px rgba(255, 232, 180, 0.45),
+    12px 72px 0 -0.4px rgba(255, 244, 214, 0.46),
+    -18px 80px 0 -0.3px rgba(255, 214, 128, 0.4),
+    20px 88px 0 -0.4px rgba(255, 232, 180, 0.38),
+    -6px 96px 0 -0.2px rgba(255, 244, 214, 0.42),
+    8px 108px 0 -0.3px rgba(255, 214, 128, 0.38),
+    -16px 116px 0 -0.3px rgba(255, 232, 180, 0.36),
+    16px 128px 0 -0.4px rgba(255, 244, 214, 0.38),
+    -10px 140px 0 -0.3px rgba(255, 214, 128, 0.34),
+    10px 152px 0 -0.4px rgba(255, 232, 180, 0.32),
+    -4px 166px 0 -0.3px rgba(255, 244, 214, 0.3),
+    6px 184px 0 -0.4px rgba(255, 214, 128, 0.28);
   animation: none;
-  filter: none;
+  filter: blur(0.2px);
   transform-origin: center;
   mix-blend-mode: screen;
 }
+
 .bell-dust-shower::after {
   top: 0;
   left: 50%;
-  width: 0.9px;
-  height: 0.9px;
-  margin-left: -0.45px;
-  border-radius: 0.1px;
-  --dust-rot: 45deg;
-  background: rgba(255, 244, 214, 0.38);
+  width: 1px;
+  height: 1px;
+  margin-left: -0.5px;
+  border-radius: 999px;
+  --dust-rot: 35deg;
+  background: rgba(255, 244, 214, 0.45);
   box-shadow:
-    -44px 6px 0 -0.35px rgba(255, 226, 160, 0.22),
-    -36px 10px 0 -0.35px rgba(255, 244, 214, 0.26),
-    -28px 8px 0 -0.35px rgba(255, 255, 255, 0.28),
-    -20px 12px 0 -0.35px rgba(255, 214, 128, 0.24),
-    -12px 10px 0 -0.35px rgba(255, 236, 190, 0.24),
-    -4px 12px 0 -0.35px rgba(255, 214, 128, 0.22),
-    4px 12px 0 -0.35px rgba(255, 244, 214, 0.24),
-    12px 10px 0 -0.35px rgba(255, 232, 180, 0.22),
-    20px 12px 0 -0.35px rgba(255, 214, 128, 0.22),
-    28px 10px 0 -0.35px rgba(255, 244, 214, 0.22),
-    36px 12px 0 -0.35px rgba(255, 210, 120, 0.2),
-    44px 14px 0 -0.35px rgba(255, 226, 160, 0.2),
-    -36px 8px 0 -0.3px rgba(255, 226, 160, 0.26),
-    -24px 12px 0 0.05px rgba(255, 244, 214, 0.34),
-    -10px 10px 0 -0.2px rgba(255, 255, 255, 0.4),
-    6px 12px 0 -0.25px rgba(255, 214, 128, 0.32),
-    18px 14px 0 -0.3px rgba(255, 236, 190, 0.3),
-    32px 12px 0 -0.3px rgba(255, 214, 128, 0.26),
-    44px 14px 0 -0.35px rgba(255, 244, 214, 0.22),
-    -30px 22px 0 -0.25px rgba(255, 236, 190, 0.28),
-    -14px 24px 0 -0.25px rgba(255, 210, 120, 0.24),
-    0 24px 0 0.1px rgba(255, 244, 214, 0.32),
-    12px 26px 0 0.1px rgba(255, 232, 180, 0.28),
-    26px 28px 0 -0.3px rgba(255, 214, 128, 0.24),
-    -34px 36px 0 -0.3px rgba(255, 226, 160, 0.24),
-    -20px 38px 0 -0.25px rgba(255, 244, 214, 0.3),
-    -6px 40px 0 -0.25px rgba(255, 210, 120, 0.24),
-    8px 42px 0 -0.3px rgba(255, 244, 214, 0.28),
-    20px 44px 0 0.1px rgba(255, 232, 180, 0.24),
-    34px 46px 0 -0.3px rgba(255, 214, 128, 0.22),
-    46px 48px 0 -0.35px rgba(255, 244, 214, 0.2),
-    -28px 56px 0 -0.3px rgba(255, 236, 190, 0.24),
-    -12px 58px 0 -0.25px rgba(255, 210, 120, 0.22),
-    2px 58px 0 -0.3px rgba(255, 244, 214, 0.26),
-    14px 60px 0 -0.3px rgba(255, 232, 180, 0.24),
-    28px 62px 0 -0.3px rgba(255, 214, 128, 0.22),
-    -32px 72px 0 -0.3px rgba(255, 226, 160, 0.22),
-    -18px 74px 0 -0.3px rgba(255, 244, 214, 0.26),
-    -4px 76px 0 -0.3px rgba(255, 232, 180, 0.22),
-    10px 76px 0 0.1px rgba(255, 214, 128, 0.22),
-    24px 78px 0 -0.3px rgba(255, 244, 214, 0.24),
-    36px 80px 0 -0.35px rgba(255, 210, 120, 0.2),
-    48px 82px 0 -0.35px rgba(255, 232, 180, 0.18),
-    -26px 92px 0 -0.3px rgba(255, 236, 190, 0.2),
-    -10px 94px 0 -0.3px rgba(255, 214, 128, 0.22),
-    4px 96px 0 -0.3px rgba(255, 244, 214, 0.22),
-    18px 98px 0 0.1px rgba(255, 232, 180, 0.2),
-    30px 100px 0 -0.3px rgba(255, 214, 128, 0.2),
-    42px 102px 0 -0.35px rgba(255, 244, 214, 0.18),
-    -34px 112px 0 -0.35px rgba(255, 226, 160, 0.2),
-    -20px 114px 0 -0.3px rgba(255, 244, 214, 0.22),
-    -6px 116px 0 -0.3px rgba(255, 210, 120, 0.2),
-    8px 118px 0 -0.3px rgba(255, 244, 214, 0.22),
-    22px 120px 0 0.1px rgba(255, 232, 180, 0.2),
-    34px 122px 0 -0.35px rgba(255, 214, 128, 0.2),
-    46px 124px 0 -0.35px rgba(255, 244, 214, 0.18),
-    -28px 134px 0 -0.35px rgba(255, 236, 190, 0.2),
-    -14px 136px 0 -0.3px rgba(255, 244, 214, 0.2),
-    0 138px 0 -0.3px rgba(255, 232, 180, 0.2),
-    14px 140px 0 0.1px rgba(255, 214, 128, 0.18),
-    28px 142px 0 -0.35px rgba(255, 244, 214, 0.2),
-    40px 144px 0 -0.35px rgba(255, 232, 180, 0.16),
-    -22px 154px 0 -0.35px rgba(255, 226, 160, 0.18),
-    -6px 156px 0 -0.3px rgba(255, 232, 180, 0.2),
-    10px 158px 0 0.1px rgba(255, 214, 128, 0.18),
-    24px 160px 0 -0.35px rgba(255, 244, 214, 0.2),
-    36px 162px 0 -0.35px rgba(255, 232, 180, 0.16),
-    -36px 164px 0 -0.35px rgba(255, 214, 128, 0.16),
-    48px 166px 0 -0.35px rgba(255, 244, 214, 0.16),
-    -48px 168px 0 -0.35px rgba(255, 226, 160, 0.16),
-    12px 172px 0 -0.35px rgba(255, 232, 180, 0.16),
-    -12px 174px 0 -0.35px rgba(255, 214, 128, 0.16),
-    30px 176px 0 -0.35px rgba(255, 244, 214, 0.16),
-    -30px 178px 0 -0.35px rgba(255, 210, 120, 0.14),
-    0 170px 0 -0.35px rgba(255, 244, 214, 0.18),
-    44px 182px 0 -0.35px rgba(255, 232, 180, 0.14),
-    -44px 184px 0 -0.35px rgba(255, 214, 128, 0.14),
-    18px 186px 0 -0.35px rgba(255, 244, 214, 0.14),
-    -18px 188px 0 -0.35px rgba(255, 210, 120, 0.14),
-    0 192px 0 -0.35px rgba(255, 232, 180, 0.14);
+    -6px 4px 0 -0.2px rgba(255, 248, 225, 0.35),
+    10px 8px 0 -0.2px rgba(255, 232, 180, 0.3),
+    -16px 14px 0 -0.3px rgba(255, 214, 128, 0.28),
+    4px 18px 0 -0.2px rgba(255, 244, 214, 0.3),
+    18px 24px 0 -0.3px rgba(255, 232, 180, 0.26),
+    -12px 28px 0 -0.3px rgba(255, 244, 214, 0.26),
+    8px 34px 0 -0.3px rgba(255, 214, 128, 0.24),
+    -20px 40px 0 -0.3px rgba(255, 232, 180, 0.22),
+    2px 46px 0 -0.2px rgba(255, 244, 214, 0.26),
+    14px 52px 0 -0.3px rgba(255, 214, 128, 0.22),
+    -8px 60px 0 -0.3px rgba(255, 232, 180, 0.22),
+    20px 66px 0 -0.3px rgba(255, 244, 214, 0.2),
+    -4px 74px 0 -0.2px rgba(255, 214, 128, 0.22),
+    12px 82px 0 -0.3px rgba(255, 232, 180, 0.2),
+    -18px 90px 0 -0.3px rgba(255, 244, 214, 0.2),
+    6px 98px 0 -0.2px rgba(255, 214, 128, 0.2),
+    -10px 108px 0 -0.3px rgba(255, 232, 180, 0.18),
+    16px 116px 0 -0.3px rgba(255, 244, 214, 0.18),
+    -2px 126px 0 -0.2px rgba(255, 214, 128, 0.18),
+    10px 136px 0 -0.3px rgba(255, 232, 180, 0.18),
+    -14px 146px 0 -0.3px rgba(255, 244, 214, 0.16),
+    4px 158px 0 -0.2px rgba(255, 214, 128, 0.16),
+    18px 170px 0 -0.3px rgba(255, 232, 180, 0.16),
+    -6px 184px 0 -0.3px rgba(255, 244, 214, 0.14);
   animation: none;
   filter: blur(0.15px);
   transform-origin: center;
   mix-blend-mode: screen;
 }
+
 .bell-dust-on::before { animation: bellDustBurst 6s ease-out 1; }
 .bell-dust-on::after {
   animation: bellDustTrailBurst 6s ease-out 1;
   animation-delay: 0.35s;
+}
+.bell-dust-heavy {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.22);
+}
+.bell-dust-heavy::before {
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  background: rgba(255, 236, 190, 0.85);
+  filter: blur(0.25px);
+  animation: bellDustHeavy 9.6s linear infinite;
+}
+.bell-dust-heavy::after {
+  width: 2px;
+  height: 2px;
+  margin-left: -1px;
+  background: rgba(255, 244, 214, 0.6);
+  filter: blur(0.2px);
+  animation: bellDustHeavyTrail 10.4s linear infinite;
+  animation-delay: 0.5s;
+}
+.bell-dust-heavy-2 {
+  left: calc(50% + 8px);
+  top: calc(100% - 6px);
+  opacity: 0.85;
+  transform: translateX(-50%) scale(1.12) rotate(6deg);
 }
 
 .bell-dust-loop::before { animation: bellDustBurst 6.8s linear infinite; }
@@ -1364,8 +1333,8 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   .bundle-alerts-platinum, .best-value-buzz, .best-value-pulse::after { animation: none !important; }
   .dust-cycle { visibility: visible !important; animation: none !important; }
   .clock-hand-rotate,
-  .webhook-spin,
-  .webhook-rays-active,
+  .webhook-rotor,
+  .webhook-confetti-on .webhook-confetti-piece,
   .how-it-works--active::before,
   .how-it-works--active::after,
   .how-it-works--active .how-step-badge,
@@ -1377,9 +1346,16 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   .bell-ringing-heavy .bell-ring,
   .bell-dust-shower::before,
   .bell-dust-shower::after,
-  .alert-reel-item--active::after {
+  .alert-reel-item--active::after,
+  .flow-diagram::before,
+  .flow-diagram::after,
+  .flow-line--pulse,
+  .flow-line--muted,
+  .flow-float,
+  .flow-pulse-ring {
     animation: none !important;
   }
+  .flow-dot { display: none !important; }
   .webhook-wind::after { animation: none !important; }
   .webhook-blast-on { animation: none !important; }
   [class*="transition"], [class*="animate-"] { transition: none !important; animation: none !important; }

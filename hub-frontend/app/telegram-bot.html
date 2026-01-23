@@ -1,0 +1,1159 @@
+<!-- signal_emitter_gallery.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Signal Emitter Gallery (8 Variations)</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #05070c;
+            overflow: hidden;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            color: #fff;
+        }
+
+        .wrap {
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+        }
+
+        .card {
+            width: min(820px, 96vw);
+            height: min(560px, 86vh);
+            border-radius: 22px;
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(900px 700px at 50% 35%, rgba(140, 230, 255, 0.10), transparent 60%),
+                radial-gradient(900px 700px at 20% 75%, rgba(255, 210, 140, 0.06), transparent 55%),
+                linear-gradient(to bottom right, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+        }
+
+        canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .topbar {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 12px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .brand {
+            pointer-events: none;
+            opacity: 0.75;
+            letter-spacing: 0.16em;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            user-select: none;
+        }
+
+        .buttons {
+            pointer-events: auto;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(0, 0, 0, 0.22);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 8px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            user-select: none;
+            transition: transform 0.15s ease, background 0.15s ease, border 0.15s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            background: rgba(0, 0, 0, 0.34);
+            border-color: rgba(120, 220, 255, 0.25);
+        }
+
+        .btn.active {
+            border-color: rgba(120, 220, 255, 0.55);
+            box-shadow: 0 0 0 1px rgba(120, 220, 255, 0.20) inset;
+            background: rgba(10, 14, 22, 0.40);
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .footer {
+            position: absolute;
+            left: 16px;
+            bottom: 12px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .title {
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+        }
+
+        .title p {
+            margin: 6px 0 0 0;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.60);
+            max-width: 520px;
+            line-height: 1.35;
+        }
+
+        .hint {
+            pointer-events: none;
+            user-select: none;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.45);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="card" id="card">
+            <div class="topbar">
+                <div class="brand">TELEGRAM BOT • SIGNAL EMITTER</div>
+                <div class="buttons" id="buttons"></div>
+            </div>
+
+            <canvas id="cv"></canvas>
+
+            <div class="footer">
+                <div class="title">
+                    <h1 id="modeTitle">—</h1>
+                    <p id="modeDesc">—</p>
+                </div>
+                <div class="hint">Mouse = subtle tilt • Click modes to compare</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const card = document.getElementById("card");
+            const canvas = document.getElementById("cv");
+            const ctx = canvas.getContext("2d", { alpha: true });
+
+            const modeTitleEl = document.getElementById("modeTitle");
+            const modeDescEl = document.getElementById("modeDesc");
+            const buttonsEl = document.getElementById("buttons");
+
+            // ============================================
+            // GLOBAL CONFIG (feel free to tweak)
+            // ============================================
+            const CFG = {
+                dprMax: 2,
+                stars: 85,
+                vignette: 0.82,
+                glassAlpha: 0.12,
+
+                // common colors
+                cyan: [120, 220, 255],
+                blue: [70, 160, 255],
+                warm: [255, 215, 160],
+
+                // emitter location
+                ex: 0.35,   // left side
+                ey: 0.52,
+
+                // target direction
+                tx: 0.86
+            };
+
+            const rgba = (rgb, a) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+            const lerp = (a, b, t) => a + (b - a) * t;
+            const TAU = Math.PI * 2;
+
+            function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+            function easeInOutSine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
+
+            // ============================================
+            // DPI / Resize
+            // ============================================
+            let W = 0, H = 0, DPR = 1;
+
+            function resize() {
+                DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
+                const r = card.getBoundingClientRect();
+                W = Math.max(1, Math.floor(r.width));
+                H = Math.max(1, Math.floor(r.height));
+
+                canvas.width = Math.floor(W * DPR);
+                canvas.height = Math.floor(H * DPR);
+                canvas.style.width = W + "px";
+                canvas.style.height = H + "px";
+                ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+                initStars();
+            }
+            window.addEventListener("resize", resize);
+
+            // ============================================
+            // Mouse tilt (subtle)
+            // ============================================
+            const cam = { rx: 0, ry: 0, trx: 0, try: 0 };
+            const tiltAmount = 0.8;
+            const camEase = 0.09;
+
+            card.addEventListener("pointermove", (e) => {
+                const r = card.getBoundingClientRect();
+                const nx = (e.clientX - r.left) / r.width;
+                const ny = (e.clientY - r.top) / r.height;
+                cam.try = (nx - 0.5) * tiltAmount;
+                cam.trx = (ny - 0.5) * tiltAmount;
+            });
+            card.addEventListener("pointerleave", () => {
+                cam.try *= 0.15;
+                cam.trx *= 0.15;
+            });
+
+            // ============================================
+            // Background stars
+            // ============================================
+            const stars = [];
+            function initStars() {
+                stars.length = 0;
+                for (let i = 0; i < CFG.stars; i++) {
+                    stars.push({
+                        x: Math.random() * W,
+                        y: Math.random() * H,
+                        r: 0.6 + Math.random() * 1.2,
+                        a: 0.04 + Math.random() * 0.10
+                    });
+                }
+            }
+            function drawStars() {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                for (const s of stars) {
+                    ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, TAU);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            // ============================================
+            // Orb (shared premium glass ball)
+            // ============================================
+            function drawOrb(cx, cy, r, now) {
+                const pulse = (Math.sin(now * 0.002) + 1) * 0.5;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                // bloom
+                const gOuter = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * (2.8 + pulse * 0.35));
+                gOuter.addColorStop(0.0, rgba(CFG.cyan, 0.22));
+                gOuter.addColorStop(0.35, rgba(CFG.blue, 0.10));
+                gOuter.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = gOuter;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * (2.8 + pulse * 0.35), 0, TAU);
+                ctx.fill();
+
+                // glass body
+                const glass = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, 0, cx, cy, r * 1.35);
+                glass.addColorStop(0.0, "rgba(255,255,255,0.22)");
+                glass.addColorStop(0.24, rgba(CFG.cyan, 0.12));
+                glass.addColorStop(0.60, "rgba(10,16,26,0.14)");
+                glass.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = glass;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 1.02, 0, TAU);
+                ctx.fill();
+
+                // inner core
+                const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.95);
+                core.addColorStop(0.0, "rgba(255,255,255,0.40)");
+                core.addColorStop(0.40, rgba(CFG.cyan, 0.18));
+                core.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = core;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * (0.86 + pulse * 0.03), 0, TAU);
+                ctx.fill();
+
+                // rim
+                ctx.strokeStyle = rgba(CFG.cyan, 0.55);
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 1.02, 0, TAU);
+                ctx.stroke();
+
+                // spec highlight
+                ctx.fillStyle = "rgba(255,255,255,0.22)";
+                ctx.beginPath();
+                ctx.arc(cx - r * 0.28, cy - r * 0.28, r * 0.18, 0, TAU);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // ============================================
+            // Finishing overlay (bubble + vignette)
+            // ============================================
+            function drawFinish() {
+                const cx = W * 0.5, cy = H * 0.5;
+                const rad = Math.min(W, H) * 0.46;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "source-over";
+
+                ctx.strokeStyle = `rgba(255,255,255,${CFG.glassAlpha})`;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(cx, cy, rad, 0, TAU);
+                ctx.stroke();
+
+                const h = ctx.createRadialGradient(cx - rad * 0.25, cy - rad * 0.35, 0, cx, cy, rad);
+                h.addColorStop(0.0, "rgba(255,255,255,0.10)");
+                h.addColorStop(0.35, "rgba(255,255,255,0.04)");
+                h.addColorStop(1.0, "rgba(255,255,255,0)");
+                ctx.fillStyle = h;
+                ctx.beginPath();
+                ctx.arc(cx, cy, rad, 0, TAU);
+                ctx.fill();
+
+                const vg = ctx.createRadialGradient(cx, cy, rad * 0.35, cx, cy, rad * 1.15);
+                vg.addColorStop(0.0, "rgba(0,0,0,0)");
+                vg.addColorStop(1.0, `rgba(0,0,0,${CFG.vignette})`);
+                ctx.fillStyle = vg;
+                ctx.beginPath();
+                ctx.arc(cx, cy, rad * 1.2, 0, TAU);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // ============================================
+            // PACKET helper (shared)
+            // ============================================
+            function makePacket(now, x0, y0, x1, y1, dur) {
+                return {
+                    born: now,
+                    dur,
+                    x0, y0, x1, y1,
+                    seed: Math.random() * 999,
+                    size: 1.6 + Math.random() * 1.6,
+                    glow: 7 + Math.random() * 12
+                };
+            }
+
+            function drawPacketDot(x, y, alpha, size, glow) {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                const g = ctx.createRadialGradient(x, y, 0, x, y, glow);
+                g.addColorStop(0.0, rgba(CFG.cyan, alpha));
+                g.addColorStop(0.4, rgba(CFG.blue, alpha * 0.35));
+                g.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, TAU);
+                ctx.fill();
+                ctx.fillStyle = `rgba(255,255,255,${alpha * 0.28})`;
+                ctx.beginPath();
+                ctx.arc(x - 0.6, y - 0.6, size * 0.45, 0, TAU);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // ============================================
+            // MODES (8 variations)
+            // ============================================
+            let engine = null;
+
+            const MODES = [
+                {
+                    id: "radar",
+                    name: "1) Radar Pulse Emitter",
+                    desc: "Clean radar sweep + tiny packets shoot right. Instant “signal” meaning.",
+                    createEngine() {
+                        const packets = [];
+                        let lastSpawn = 0;
+                        return {
+                            reset() { packets.length = 0; lastSpawn = 0; },
+                            draw(now) {
+                                const ex = W * CFG.ex;
+                                const ey = H * CFG.ey;
+                                const tx = W * CFG.tx;
+                                const r = Math.min(W, H) * 0.085;
+
+                                // Radar rings
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                for (let i = 1; i <= 3; i++) {
+                                    ctx.strokeStyle = `rgba(120,220,255,${0.06 - i * 0.01})`;
+                                    ctx.lineWidth = 1;
+                                    ctx.beginPath();
+                                    ctx.arc(ex, ey, r * (1.35 + i * 0.55), 0, TAU);
+                                    ctx.stroke();
+                                }
+                                // sweep arc
+                                const sweep = (now * 0.0012) % TAU;
+                                ctx.beginPath();
+                                ctx.strokeStyle = "rgba(120,220,255,0.14)";
+                                ctx.lineWidth = 3;
+                                ctx.arc(ex, ey, r * 2.15, sweep, sweep + 0.55);
+                                ctx.stroke();
+                                ctx.restore();
+
+                                // spawn packet on sweep "hit"
+                                if (now - lastSpawn > 950) {
+                                    lastSpawn = now;
+                                    packets.push(makePacket(now, ex, ey, tx, ey, 1200));
+                                    if (packets.length > 14) packets.shift();
+                                }
+
+                                // guide line
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                ctx.strokeStyle = "rgba(120,220,255,0.09)";
+                                ctx.lineWidth = 1;
+                                ctx.setLineDash([6, 10]);
+                                ctx.beginPath();
+                                ctx.moveTo(ex + r * 1.1, ey);
+                                ctx.lineTo(tx, ey);
+                                ctx.stroke();
+                                ctx.restore();
+
+                                // packets
+                                for (let i = packets.length - 1; i >= 0; i--) {
+                                    const p = packets[i];
+                                    const u = clamp((now - p.born) / p.dur, 0, 1);
+                                    if (u >= 1) { packets.splice(i, 1); continue; }
+                                    const e = easeOutCubic(u);
+                                    const wob = Math.sin(u * 10 + p.seed) * 12;
+                                    const x = lerp(p.x0, p.x1, e);
+                                    const y = lerp(p.y0, p.y1, e) + wob * 0.08;
+                                    const a = Math.min(1, u * 4) * (1 - u) * 0.95;
+                                    drawPacketDot(x, y, a, p.size, p.glow);
+                                }
+
+                                // orb on top
+                                drawOrb(ex, ey, r, now);
+                            }
+                        };
+                    }
+                },
+
+                {
+                    id: "cannon",
+                    name: "2) Packet Cannon",
+                    desc: "Orb inside a subtle tunnel. It charges, then fires a burst to the right.",
+                    createEngine() {
+                        const packets = [];
+                        let lastFire = 0;
+                        return {
+                            reset() { packets.length = 0; lastFire = 0; },
+                            draw(now) {
+                                const ex = W * CFG.ex;
+                                const ey = H * CFG.ey;
+                                const tx = W * CFG.tx;
+                                const r = Math.min(W, H) * 0.082;
+
+                                const period = 1200;
+                                const phase = ((now % period) / period); // 0..1
+                                const charge = phase < 0.75 ? (phase / 0.75) : (1 - (phase - 0.75) / 0.25);
+                                const chargeEase = easeInOutSine(charge);
+
+                                // tunnel / aperture
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                for (let i = 0; i < 4; i++) {
+                                    const rr = r * (1.25 + i * 0.22);
+                                    const a = 0.09 - i * 0.018;
+                                    ctx.strokeStyle = rgba(CFG.blue, a);
+                                    ctx.lineWidth = 2;
+                                    ctx.beginPath();
+                                    ctx.arc(ex, ey, rr, 0, TAU);
+                                    ctx.stroke();
+                                }
+                                // glow mouth
+                                const g = ctx.createRadialGradient(ex, ey, r * 0.8, ex, ey, r * 2.2);
+                                g.addColorStop(0.0, rgba(CFG.cyan, 0.18 + chargeEase * 0.12));
+                                g.addColorStop(1.0, "rgba(0,0,0,0)");
+                                ctx.fillStyle = g;
+                                ctx.beginPath();
+                                ctx.arc(ex, ey, r * 2.2, 0, TAU);
+                                ctx.fill();
+                                ctx.restore();
+
+                                // fire burst
+                                if (phase > 0.72 && now - lastFire > 900) {
+                                    lastFire = now;
+                                    const burst = 4 + Math.floor(Math.random() * 3);
+                                    for (let k = 0; k < burst; k++) {
+                                        const off = (k - (burst - 1) / 2) * (8 + Math.random() * 6);
+                                        packets.push(makePacket(now + k * 30, ex, ey, tx, ey + off, 980 + Math.random() * 420));
+                                    }
+                                    while (packets.length > 22) packets.shift();
+                                }
+
+                                // packets
+                                for (let i = packets.length - 1; i >= 0; i--) {
+                                    const p = packets[i];
+                                    const u = clamp((now - p.born) / p.dur, 0, 1);
+                                    if (u >= 1) { packets.splice(i, 1); continue; }
+                                    const e = easeOutCubic(u);
+                                    const x = lerp(p.x0, p.x1, e);
+                                    const y = lerp(p.y0, p.y1, e);
+                                    const a = Math.min(1, u * 6) * (1 - u) * 0.95;
+                                    drawPacketDot(x, y, a, p.size, p.glow);
+                                }
+
+                                // orb
+                                drawOrb(ex, ey, r, now);
+
+                                // tiny charge shimmer
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                ctx.strokeStyle = rgba(CFG.warm, 0.12 + chargeEase * 0.12);
+                                ctx.lineWidth = 1.4;
+                                ctx.beginPath();
+                                ctx.arc(ex, ey, r * 1.55, now * 0.0018, now * 0.0018 + 1.1);
+                                ctx.stroke();
+                                ctx.restore();
+                            }
+                        };
+                    }
+                },
+
+                {
+                    id: "iris",
+                    name: "3) Laser Aperture / Iris",
+                    desc: "Premium iris blades open slightly to release a packet. Looks expensive.",
+                    createEngine() {
+                        const packets = [];
+                        let lastSpawn = 0;
+                        return {
+                            reset() { packets.length = 0; lastSpawn = 0; },
+                            draw(now) {
+                                const ex = W * CFG.ex;
+                                const ey = H * CFG.ey;
+                                const tx = W * CFG.tx;
+                                const r = Math.min(W, H) * 0.080;
+
+                                // iris open/close cycle
+                                const period = 1400;
+                                const u = (now % period) / period;
+                                // open around middle
+                                const open = Math.max(0, 1 - Math.abs(u - 0.55) / 0.25);
+                                const openEase = easeInOutSine(clamp(open, 0, 1));
+
+                                // spawn packet near open peak
+                                if (openEase > 0.92 && now - lastSpawn > 900) {
+                                    lastSpawn = now;
+                                    packets.push(makePacket(now, ex, ey, tx, ey, 1150));
+                                    if (packets.length > 16) packets.shift();
+                                }
+
+                                // iris blades
+                                const blades = 7;
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                for (let i = 0; i < blades; i++) {
+                                    const a0 = (i / blades) * TAU + now * 0.0005;
+                                    const a1 = a0 + TAU / blades * 0.9;
+
+                                    const inner = r * (1.10 - openEase * 0.26);
+                                    const outer = r * (2.05);
+
+                                    const p0x = ex + Math.cos(a0) * inner;
+                                    const p0y = ey + Math.sin(a0) * inner;
+                                    const p1x = ex + Math.cos(a1) * inner;
+                                    const p1y = ey + Math.sin(a1) * inner;
+
+                                    const q0x = ex + Math.cos(a0) * outer;
+                                    const q0y = ey + Math.sin(a0) * outer;
+                                    const q1x = ex + Math.cos(a1) * outer;
+                                    const q1y = ey + Math.sin(a1) * outer;
+
+                                    ctx.fillStyle = `rgba(120,220,255,${0.03 + openEase * 0.02})`;
+                                    ctx.beginPath();
+                                    ctx.moveTo(p0x, p0y);
+                                    ctx.lineTo(q0x, q0y);
+                                    ctx.lineTo(q1x, q1y);
+                                    ctx.lineTo(p1x, p1y);
+                                    ctx.closePath();
+                                    ctx.fill();
+                                }
+                                // rim ring
+                                ctx.strokeStyle = rgba(CFG.cyan, 0.25 + openEase * 0.20);
+                                ctx.lineWidth = 2;
+                                ctx.beginPath();
+                                ctx.arc(ex, ey, r * 2.05, 0, TAU);
+                                ctx.stroke();
+                                ctx.restore();
+
+                                // packets
+                                for (let i = packets.length - 1; i >= 0; i--) {
+                                    const p = packets[i];
+                                    const t = clamp((now - p.born) / p.dur, 0, 1);
+                                    if (t >= 1) { packets.splice(i, 1); continue; }
+                                    const e = easeOutCubic(t);
+                                    const x = lerp(p.x0, p.x1, e);
+                                    const y = lerp(p.y0, p.y1, e);
+                                    const a = Math.min(1, t * 6) * (1 - t) * 0.95;
+                                    drawPacketDot(x, y, a, p.size, p.glow);
+                                }
+
+                                // orb on top
+                                drawOrb(ex, ey, r, now);
+                            }
+                        };
+                    }
+                },
+
+                {
+                    id: "wavefront",
+                    name: "4) Wavefront Rings",
+                    desc: "Minimal + pretty. Expanding wave rings drift to the right as “sent signals.”",
+                    createEngine() {
+                        const waves = [];
+                        let last = 0;
+                        return {
+                            reset() { waves.length = 0; last = 0; },
+                            draw(now) {
+                                const ex = W * CFG.ex;
+                                const ey = H * CFG.ey;
+                                const r = Math.min(W, H) * 0.085;
+
+                                if (now - last > 900) {
+                                    last = now;
+                                    waves.push({ born: now, dur: 1500, s: 0.0 });
+                                    if (waves.length > 10) waves.shift();
+                                }
+
+                                // draw waves
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                for (let i = waves.length - 1; i >= 0; i--) {
+                                    const w = waves[i];
+                                    const t = clamp((now - w.born) / w.dur, 0, 1);
+                                    if (t >= 1) { waves.splice(i, 1); continue; }
+
+                                    const e = easeOutCubic(t);
+                                    const x = lerp(ex + r * 1.2, W * CFG.tx, e);
+                                    const rr = lerp(r * 0.6, r * 2.6, e);
+                                    const a = (1 - t) * 0.18;
+
+                                    ctx.strokeStyle = rgba(CFG.cyan, a);
+                                    ctx.lineWidth = 2;
+                                    ctx.beginPath();
+                                    ctx.arc(x, ey, rr, 0, TAU);
+                                    ctx.stroke();
+
+                                    // inner faint
+                                    ctx.strokeStyle = rgba(CFG.blue, a * 0.6);
+                                    ctx.lineWidth = 1;
+                                    ctx.beginPath();
+                                    ctx.arc(x, ey, rr * 0.75, 0, TAU);
+                                    ctx.stroke();
+                                }
+                                ctx.restore();
+
+                                // guiding line
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                ctx.strokeStyle = "rgba(120,220,255,0.08)";
+                                ctx.lineWidth = 1;
+                                ctx.setLineDash([6, 10]);
+                                ctx.beginPath();
+                                ctx.moveTo(ex + r * 1.1, ey);
+                                ctx.lineTo(W * CFG.tx, ey);
+                                ctx.stroke();
+                                ctx.restore();
+
+                                drawOrb(ex, ey, r, now);
+                            }
+                        };
+                    }
+                },
+
+                {
+                    id: "neural",
+                    name: "5) Neural Spark Node",
+                    desc: "Orb + small satellites. Sparks jump, then a packet shoots right (AI vibes).",
+                    createEngine() {
+                        const packets = [];
+                        let lastSpawn = 0;
+
+                        // satellites around orb
+                        const sats = [];
+                        const satCount = 5;
+
+                        function resetSats() {
+                            sats.length = 0;
+                            for (let i = 0; i < satCount; i++) {
+                                sats.push({ a: (i / satCount) * TAU, rMul: 1.7 + Math.random() * 0.35 });
+                            }
+                        }
+                        resetSats();
+
+                        return {
+                            reset() { packets.length = 0; lastSpawn = 0; resetSats(); },
+                            draw(now) {
+                                const ex = W * CFG.ex;
+                                const ey = H * CFG.ey;
+                                const tx = W * CFG.tx;
+                                const r = Math.min(W, H) * 0.078;
+
+                                // animate sats
+                                const spin = now * 0.0012;
+                                const pts = sats.map((s, i) => {
+                                    const a = s.a + spin * (0.55 + i * 0.08);
+                                    return {
+                                        x: ex + Math.cos(a) * r * s.rMul,
+                                        y: ey + Math.sin(a) * r * s.rMul * 0.75
+                                    };
+                                });
+
+                                // sparks
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+
+                                for (let k = 0; k < 3; k++) {
+                                    const i = Math.floor(Math.random() * pts.length);
+                                    const j = (i + 1 + Math.floor(Math.random() * (pts.length - 1))) % pts.length;
+
+                                    const p0 = pts[i], p1 = pts[j];
+                                    const a = 0.08;
+
+                                    ctx.strokeStyle = rgba(CFG.cyan, a);
+                                    ctx.lineWidth = 1.6;
+                                    ctx.beginPath();
+                                    ctx.moveTo(p0.x, p0.y);
+
+                                    // jagged line segments
+                                    const seg = 6;
+                                    for (let s = 1; s < seg; s++) {
+                                        const t = s / seg;
+                                        const x = lerp(p0.x, p1.x, t) + (Math.random() * 2 - 1) * 8;
+                                        const y = lerp(p0.y, p1.y, t) + (Math.random() * 2 - 1) * 8;
+                                        ctx.lineTo(x, y);
+                                    }
+                                    ctx.lineTo(p1.x, p1.y);
+                                    ctx.stroke();
+                                }
+
+                                // satellites dots
+                                for (const p of pts) {
+                                    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 10);
+                                    g.addColorStop(0, "rgba(255,255,255,0.18)");
+                                    g.addColorStop(1, "rgba(0,0,0,0)");
+                                    ctx.fillStyle = g;
+                                    ctx.beginPath();
+                                    ctx.arc(p.x, p.y, 2.2, 0, TAU);
+                                    ctx.fill();
+                                }
+                                ctx.restore();
+
+                                // spawn packet from a random satellite to right
+                                if (now - lastSpawn > 980) {
+                                    lastSpawn = now;
+                                    const pick = pts[Math.floor(Math.random() * pts.length)];
+                                    packets.push(makePacket(now, pick.x, pick.y, tx, ey, 1200));
+                                    if (packets.length > 16) packets.shift();
+                                }
+
+                                // packets
+                                for (let i = packets.length - 1; i >= 0; i--) {
+                                    const p = packets[i];
+                                    const t = clamp((now - p.born) / p.dur, 0, 1);
+                                    if (t >= 1) { packets.splice(i, 1); continue; }
+                                    const e = easeOutCubic(t);
+                                    const x = lerp(p.x0, p.x1, e);
+                                    const y = lerp(p.y0, p.y1, e);
+                                    const a = Math.min(1, t * 5) * (1 - t) * 0.95;
+                                    drawPacketDot(x, y, a, p.size, p.glow);
+                                }
+
+                                drawOrb(ex, ey, r, now);
+                            }
+                        };
+                    }
+                },
+
+                {
+                    id: "jetstream",
+                    name: "6) Telegram Jetstream",
+                    desc: "One smooth ribbon wraps the orb and peels into a stream to the right.",
+                    createEngine() {
+                        const packets = [];
+                        let lastSpawn = 0;
+
+                        // ribbon particles
+                        const ribbonBits = [];
+                        for (let i = 0; i < 120; i++) {
+                            ribbonBits.push({ t: i / 120, s: 0.6 + Math.random() * 1.0 });
+                        }
+
+                        return {
+                            reset() { packets.length = 0; lastSpawn = 0; },
+                            draw(now) {
+                                const ex = W * CFG.ex;
+                                const ey = H * CFG.ey;
+                                const tx = W * CFG.tx;
+                                const r = Math.min(W, H) * 0.082;
+
+                                // ribbon path (wrap + stream)
+                                // We'll define it as a param curve:
+                                // - first part: loop around orb
+                                // - second: exit stream to right
+                                function path(u) {
+                                    // u: 0..1
+                                    if (u < 0.65) {
+                                        const t = u / 0.65;
+                                        const ang = t * TAU * 1.2 + now * 0.001;
+                                        const rad = r * (1.35 + 0.15 * Math.sin(t * TAU));
+                                        const x = ex + Math.cos(ang) * rad;
+                                        const y = ey + Math.sin(ang) * rad * 0.65;
+                                        return { x, y };
+                                    } else {
+                                        const t = (u - 0.65) / 0.35;
+                                        const x = lerp(ex + r * 1.2, tx, easeOutCubic(t));
+                                        const y = ey + Math.sin(t * TAU + now * 0.002) * 10 * (1 - t);
+                                        return { x, y };
+                                    }
+                                }
+
+                                // draw ribbon glow line
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                ctx.beginPath();
+                                for (let i = 0; i <= 160; i++) {
+                                    const u = i / 160;
+                                    const p = path(u);
+                                    if (i === 0) ctx.moveTo(p.x, p.y);
+                                    else ctx.lineTo(p.x, p.y);
+                                }
+                                const grad = ctx.createLinearGradient(ex, ey, tx, ey);
+                                grad.addColorStop(0.0, "rgba(70,160,255,0.08)");
+                                grad.addColorStop(0.4, "rgba(120,220,255,0.18)");
+                                grad.addColorStop(1.0, "rgba(255,215,160,0.10)");
+                                ctx.strokeStyle = grad;
+                                ctx.lineWidth = 4;
+                                ctx.lineCap = "round";
+                                ctx.stroke();
+
+                                // ribbon particles (moving)
+                                for (const b of ribbonBits) {
+                                    const u = (b.t + (now * 0.00012)) % 1;
+                                    const p = path(u);
+                                    const a = 0.10;
+                                    drawPacketDot(p.x, p.y, a, 1.2 * b.s, 10 * b.s);
+                                }
+                                ctx.restore();
+
+                                // spawn actual packet on the stream
+                                if (now - lastSpawn > 950) {
+                                    lastSpawn = now;
+                                    // spawn at ribbon exit area
+                                    const p0 = path(0.70);
+                                    const p1 = path(1.0);
+                                    packets.push(makePacket(now, p0.x, p0.y, p1.x, p1.y, 900));
+                                    if (packets.length > 14) packets.shift();
+                                }
+
+                                for (let i = packets.length - 1; i >= 0; i--) {
+                                    const p = packets[i];
+                                    const t = clamp((now - p.born) / p.dur, 0, 1);
+                                    if (t >= 1) { packets.splice(i, 1); continue; }
+                                    const e = easeOutCubic(t);
+                                    const x = lerp(p.x0, p.x1, e);
+                                    const y = lerp(p.y0, p.y1, e);
+                                    const a = Math.min(1, t * 6) * (1 - t) * 0.95;
+                                    drawPacketDot(x, y, a, p.size * 1.1, p.glow * 1.1);
+                                }
+
+                                drawOrb(ex, ey, r, now);
+                            }
+                        };
+                    }
+                },
+
+                {
+                    id: "oscillator",
+                    name: "7) Oscillator Bar",
+                    desc: "Very UI-tech: waveform line to the right + packets ride along it.",
+                    createEngine() {
+                        const packets = [];
+                        let lastSpawn = 0;
+
+                        return {
+                            reset() { packets.length = 0; lastSpawn = 0; },
+                            draw(now) {
+                                const ex = W * CFG.ex;
+                                const ey = H * CFG.ey;
+                                const tx = W * CFG.tx;
+                                const r = Math.min(W, H) * 0.082;
+
+                                const amp = 16 + (Math.sin(now * 0.002) + 1) * 0.5 * 10;
+
+                                // waveform line
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                ctx.strokeStyle = "rgba(120,220,255,0.12)";
+                                ctx.lineWidth = 2;
+                                ctx.beginPath();
+                                const startX = ex + r * 1.2;
+                                for (let i = 0; i <= 220; i++) {
+                                    const t = i / 220;
+                                    const x = lerp(startX, tx, t);
+                                    const y = ey + Math.sin(t * TAU * 2 + now * 0.004) * amp * (1 - t * 0.45);
+                                    if (i === 0) ctx.moveTo(x, y);
+                                    else ctx.lineTo(x, y);
+                                }
+                                ctx.stroke();
+                                ctx.restore();
+
+                                // spawn packet
+                                if (now - lastSpawn > 950) {
+                                    lastSpawn = now;
+                                    packets.push({ born: now, dur: 1050, prog: 0 });
+                                    if (packets.length > 14) packets.shift();
+                                }
+
+                                // packets ride waveform
+                                for (let i = packets.length - 1; i >= 0; i--) {
+                                    const p = packets[i];
+                                    const t = clamp((now - p.born) / p.dur, 0, 1);
+                                    if (t >= 1) { packets.splice(i, 1); continue; }
+                                    const e = easeOutCubic(t);
+
+                                    const x = lerp(startX, tx, e);
+                                    const y = ey + Math.sin(e * TAU * 2 + now * 0.004) * amp * (1 - e * 0.45);
+                                    const a = Math.min(1, t * 6) * (1 - t) * 0.95;
+                                    drawPacketDot(x, y, a, 2.0, 14);
+                                }
+
+                                drawOrb(ex, ey, r, now);
+                            }
+                        };
+                    }
+                },
+
+                {
+                    id: "routerseed",
+                    name: "8) Router Seed (Y Split)",
+                    desc: "Packet leaves orb → hits split → chooses top or bottom lane (routing vibe).",
+                    createEngine() {
+                        const packets = [];
+                        let lastSpawn = 0;
+                        return {
+                            reset() { packets.length = 0; lastSpawn = 0; },
+                            draw(now) {
+                                const ex = W * CFG.ex;
+                                const ey = H * CFG.ey;
+                                const r = Math.min(W, H) * 0.082;
+
+                                const midX = W * 0.62;
+                                const topY = H * 0.40;
+                                const botY = H * 0.64;
+                                const endX = W * CFG.tx;
+
+                                // draw split lanes
+                                ctx.save();
+                                ctx.globalCompositeOperation = "lighter";
+                                ctx.strokeStyle = "rgba(120,220,255,0.09)";
+                                ctx.lineWidth = 1.8;
+                                ctx.setLineDash([7, 10]);
+
+                                ctx.beginPath();
+                                ctx.moveTo(ex + r * 1.2, ey);
+                                ctx.lineTo(midX, ey);
+                                ctx.stroke();
+
+                                ctx.beginPath();
+                                ctx.moveTo(midX, ey);
+                                ctx.lineTo(endX, topY);
+                                ctx.stroke();
+
+                                ctx.beginPath();
+                                ctx.moveTo(midX, ey);
+                                ctx.lineTo(endX, botY);
+                                ctx.stroke();
+                                ctx.restore();
+
+                                // spawn packet every second
+                                if (now - lastSpawn > 980) {
+                                    lastSpawn = now;
+                                    const branch = Math.random() < 0.5 ? "top" : "bot";
+                                    packets.push({
+                                        born: now,
+                                        dur: 1350,
+                                        branch,
+                                        stage: 0 // 0 = to split, 1 = to branch
+                                    });
+                                    if (packets.length > 10) packets.shift();
+                                }
+
+                                // animate packets
+                                for (let i = packets.length - 1; i >= 0; i--) {
+                                    const p = packets[i];
+                                    const t = clamp((now - p.born) / p.dur, 0, 1);
+                                    if (t >= 1) { packets.splice(i, 1); continue; }
+
+                                    // two-stage move
+                                    const splitT = 0.52;
+                                    let x, y;
+
+                                    if (t < splitT) {
+                                        const u = easeOutCubic(t / splitT);
+                                        x = lerp(ex, midX, u);
+                                        y = lerp(ey, ey, u);
+                                    } else {
+                                        const u = easeOutCubic((t - splitT) / (1 - splitT));
+                                        x = lerp(midX, endX, u);
+                                        y = lerp(ey, (p.branch === "top" ? topY : botY), u);
+                                    }
+
+                                    const a = Math.min(1, t * 6) * (1 - t) * 0.95;
+                                    drawPacketDot(x, y, a, 2.2, 16);
+
+                                    // highlight chosen branch slightly
+                                    if (t > splitT) {
+                                        ctx.save();
+                                        ctx.globalCompositeOperation = "lighter";
+                                        ctx.strokeStyle = rgba(CFG.cyan, 0.06);
+                                        ctx.lineWidth = 3;
+                                        ctx.setLineDash([]);
+                                        ctx.beginPath();
+                                        ctx.moveTo(midX, ey);
+                                        ctx.lineTo(endX, p.branch === "top" ? topY : botY);
+                                        ctx.stroke();
+                                        ctx.restore();
+                                    }
+                                }
+
+                                drawOrb(ex, ey, r, now);
+                            }
+                        };
+                    }
+                },
+            ];
+
+            // ============================================
+            // UI Buttons
+            // ============================================
+            let activeModeId = MODES[0].id;
+
+            function setMode(id) {
+                activeModeId = id;
+                const m = MODES.find(x => x.id === id);
+                if (!m) return;
+                engine = m.createEngine();
+                engine.reset?.();
+
+                // update text
+                modeTitleEl.textContent = m.name;
+                modeDescEl.textContent = m.desc;
+
+                // update active button
+                [...buttonsEl.querySelectorAll(".btn")].forEach(b => {
+                    b.classList.toggle("active", b.dataset.id === id);
+                });
+            }
+
+            function buildButtons() {
+                buttonsEl.innerHTML = "";
+                MODES.forEach(m => {
+                    const b = document.createElement("div");
+                    b.className = "btn";
+                    b.textContent = m.name.split(") ")[1] || m.name;
+                    b.dataset.id = m.id;
+                    b.addEventListener("click", () => setMode(m.id));
+                    buttonsEl.appendChild(b);
+                });
+            }
+
+            // ============================================
+            // Main loop
+            // ============================================
+            function loop(now) {
+                // camera smooth
+                cam.rx += (cam.trx - cam.rx) * camEase;
+                cam.ry += (cam.try - cam.ry) * camEase;
+
+                ctx.clearRect(0, 0, W, H);
+
+                drawStars();
+
+                // small subtle drift background glow (helps "premium")
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                const bg = ctx.createRadialGradient(W * 0.55, H * 0.45, 0, W * 0.55, H * 0.45, Math.min(W, H) * 0.75);
+                bg.addColorStop(0.0, "rgba(120,220,255,0.03)");
+                bg.addColorStop(0.5, "rgba(70,160,255,0.02)");
+                bg.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = bg;
+                ctx.fillRect(0, 0, W, H);
+                ctx.restore();
+
+                // engine draw
+                engine?.draw?.(now);
+
+                drawFinish();
+
+                requestAnimationFrame(loop);
+            }
+
+            // ============================================
+            // Boot
+            // ============================================
+            buildButtons();
+            resize();
+            setMode(MODES[0].id);
+            requestAnimationFrame(loop);
+
+            // Keyboard shortcuts 1..8
+            window.addEventListener("keydown", (e) => {
+                const n = parseInt(e.key, 10);
+                if (!isNaN(n) && n >= 1 && n <= MODES.length) {
+                    setMode(MODES[n - 1].id);
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>

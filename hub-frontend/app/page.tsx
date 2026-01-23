@@ -211,12 +211,209 @@ function ClockIcon({ active }: { active: boolean }) {
 }
 
 function WebhookIconSpin({ active }: { active: boolean }) {
+  const prefersReduced = useReducedMotion();
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rotorRef = useRef<SVGSVGElement | null>(null);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    const canvas = canvasRef.current;
+    const rotor = rotorRef.current;
+    if (!shell || !canvas || !rotor) return;
+
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
+
+    const spinRPM = 180;
+    const airflowStrength = 0.9;
+    const particleCount = 56;
+    const blurAmount = 6;
+    const spinUpMs = 700;
+    const spinHoldMs = 2300;
+    const spinDownMs = 10000;
+    const restMs = 2000;
+
+    const effectiveRPM = prefersReduced ? Math.min(spinRPM, 120) : spinRPM;
+    const effectiveStrength = prefersReduced ? 0 : airflowStrength;
+
+    shell.style.setProperty("--webhook-blur", `${blurAmount}px`);
+
+    const TAU = Math.PI * 2;
+    const dprMax = 2;
+    const pad = 24;
+    const cycleMs = spinUpMs + spinHoldMs + spinDownMs + restMs;
+
+    let W = 0;
+    let H = 0;
+    let dpr = 1;
+    let cx = 0;
+    let cy = 0;
+    let angle = 0;
+    let startTime = performance.now() + 10000;
+    let lastTime = startTime;
+    let rafId = 0;
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    const easeOutHinge = (t: number) => {
+      const k = 2.6;
+      const base = (Math.exp(-k * t) - Math.exp(-k)) / (1 - Math.exp(-k));
+      const tail = Math.pow(1 - t, 2.8);
+      return base * tail;
+    };
+
+    const rpmForCycle = (elapsedMs: number) => {
+      if (cycleMs <= 0) return 0;
+      const t = elapsedMs % cycleMs;
+      if (t < spinUpMs) {
+        const p = spinUpMs === 0 ? 1 : t / spinUpMs;
+        return effectiveRPM * easeOutCubic(p);
+      }
+      if (t < spinUpMs + spinHoldMs) {
+        return effectiveRPM;
+      }
+      if (t < spinUpMs + spinHoldMs + spinDownMs) {
+        const p = spinDownMs === 0 ? 1 : (t - spinUpMs - spinHoldMs) / spinDownMs;
+        return effectiveRPM * easeOutHinge(p);
+      }
+      return 0;
+    };
+
+    const resize = () => {
+      const rect = shell.getBoundingClientRect();
+      dpr = Math.min(dprMax, window.devicePixelRatio || 1);
+      W = rect.width + pad * 2;
+      H = rect.height + pad * 2;
+
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = `${W}px`;
+      canvas.style.height = `${H}px`;
+      canvas.style.left = `${-pad}px`;
+      canvas.style.top = `${-pad}px`;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cx = W / 2;
+      cy = H / 2;
+    };
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(shell);
+    resize();
+
+    const mulberry32 = (seed: number) => {
+      let t = seed;
+      return () => {
+        t += 0x6d2b79f5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+
+    const rand = mulberry32(1337);
+    const colors = {
+      white: [248, 252, 255],
+      gold: [255, 214, 128],
+    };
+
+    const particles = Array.from({ length: particleCount }, () => {
+      const tone = rand() > 0.45 ? colors.white : colors.gold;
+      return {
+        baseAngle: rand() * TAU,
+        phase: rand(),
+        speed: 0.16 + rand() * 0.32,
+        drift: (rand() - 0.5) * 0.8,
+        length: 8 + rand() * 18,
+        width: 0.8 + rand() * 1.4,
+        tone,
+        seed: rand() * 10,
+      };
+    });
+
+    const draw = (now: number) => {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      const elapsed = Math.max(0, now - startTime);
+      const rpm = active ? rpmForCycle(elapsed) : 0;
+      const omega = rpm * TAU / 60;
+      angle += omega * dt;
+      rotor.style.transform = `translateZ(0) rotate(${angle}rad)`;
+
+      const spinIntensity = effectiveRPM > 0 ? rpm / effectiveRPM : 0;
+      const strengthNow = effectiveStrength * spinIntensity;
+
+      ctx.clearRect(0, 0, W, H);
+      if (strengthNow <= 0.001) {
+        rafId = requestAnimationFrame(draw);
+        return;
+      }
+
+      const t = now / 1000;
+      const spinPhase = angle * 0.12;
+      const inner = 12;
+      const outer = 52 * (0.7 + strengthNow);
+
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      ctx.lineCap = "round";
+
+      for (const p of particles) {
+        const life = (t * p.speed + p.phase) % 1;
+        const ease = life * life * (3 - 2 * life);
+        const radius = inner + ease * outer;
+        const wobble = Math.sin((t + p.seed) * 1.2) * 0.15;
+        const swirl = (1 - life) * 0.45 * (p.drift + wobble);
+        const angle = p.baseAngle + spinPhase + swirl;
+
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+
+        const tangent = angle + Math.PI / 2;
+        const curl = (1 - life) * 0.55 * p.drift;
+        const dx = Math.cos(tangent + curl);
+        const dy = Math.sin(tangent + curl);
+
+        const len = p.length * (0.65 + strengthNow) * (0.4 + ease);
+        const alpha = (1 - life) * 0.65 * strengthNow;
+        if (alpha <= 0.01) continue;
+
+        const startX = x - dx * len;
+        const startY = y - dy * len;
+        const ctrlX = x - dx * len * 0.5 + Math.cos(angle) * len * 0.2 * p.drift;
+        const ctrlY = y - dy * len * 0.5 + Math.sin(angle) * len * 0.2 * p.drift;
+
+        const grad = ctx.createLinearGradient(startX, startY, x, y);
+        grad.addColorStop(0, `rgba(${p.tone[0]},${p.tone[1]},${p.tone[2]},0)`);
+        grad.addColorStop(0.6, `rgba(${p.tone[0]},${p.tone[1]},${p.tone[2]},${alpha})`);
+        grad.addColorStop(1, `rgba(${p.tone[0]},${p.tone[1]},${p.tone[2]},${alpha * 0.8})`);
+
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = p.width;
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.quadraticCurveTo(ctrlX, ctrlY, x, y);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+      rafId = requestAnimationFrame(draw);
+    };
+
+    rafId = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(rafId);
+      ro.disconnect();
+    };
+  }, [active, prefersReduced]);
+
   return (
-    <div className={`relative h-5 w-5 webhook-wrap ${active ? "webhook-wind" : ""}`}>
-      <span className={`webhook-rays ${active ? "webhook-rays-active" : ""}`} aria-hidden="true" />
-      <span className={`webhook-blast ${active ? "webhook-blast-on" : ""}`} aria-hidden="true" />
+    <div ref={shellRef} className="relative h-5 w-5 webhook-fan-shell">
+      <canvas ref={canvasRef} className="webhook-airflow" aria-hidden="true" />
       <Webhook
-        className={`h-5 w-5 webhook-icon ${active ? "webhook-spin" : ""}`}
+        ref={rotorRef}
+        className="h-5 w-5 webhook-rotor"
         strokeWidth={2.2}
       />
     </div>
@@ -275,7 +472,7 @@ function BellIconDing({ active, heavy }: { active: boolean; heavy: boolean }) {
   );
 }
 
-function SectionDivider() {
+function SectionDivider({ showDust = true }: { showDust?: boolean }) {
   const prefersReduced = useReducedMotion();
   const dividerRef = useRef<HTMLDivElement | null>(null);
   const { scrollYProgress } = useScroll({
@@ -290,11 +487,18 @@ function SectionDivider() {
   return (
     <div ref={dividerRef} aria-hidden className="relative flex items-center justify-center py-12 md:py-20">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-stroke/70 to-transparent" />
-      <span className="divider-dust bell-dust-shower bell-dust-loop bell-dust-boost dust-cycle" aria-hidden="true" />
-      <span
-        className="divider-dust bell-dust-shower bell-dust-loop bell-dust-boost-2 dust-cycle"
-        aria-hidden="true"
-      />
+      {showDust ? (
+        <>
+          <span
+            className="divider-dust bell-dust-shower bell-dust-loop bell-dust-boost dust-cycle"
+            aria-hidden="true"
+          />
+          <span
+            className="divider-dust bell-dust-shower bell-dust-loop bell-dust-boost-2 dust-cycle"
+            aria-hidden="true"
+          />
+        </>
+      ) : null}
       <motion.div
         className="pointer-events-none absolute top-1/2 h-px w-40 -translate-y-1/2 bg-gradient-to-r from-transparent via-gold/80 to-transparent shadow-[0_0_18px_rgb(var(--gold)/0.45)] md:w-56"
         style={{
@@ -311,14 +515,18 @@ function SectionDivider() {
           translateX: "-50%",
         }}
       >
-        <span
-          className="divider-dust divider-dust--trail bell-dust-shower bell-dust-loop bell-dust-boost dust-cycle"
-          aria-hidden="true"
-        />
-        <span
-          className="divider-dust divider-dust--trail bell-dust-shower bell-dust-loop bell-dust-boost-2 dust-cycle"
-          aria-hidden="true"
-        />
+        {showDust ? (
+          <>
+            <span
+              className="divider-dust divider-dust--trail bell-dust-shower bell-dust-loop bell-dust-boost dust-cycle"
+              aria-hidden="true"
+            />
+            <span
+              className="divider-dust divider-dust--trail bell-dust-shower bell-dust-loop bell-dust-boost-2 dust-cycle"
+              aria-hidden="true"
+            />
+          </>
+        ) : null}
         <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_12px_rgb(var(--gold)/0.55)]" />
         <span className="h-1 w-1 rounded-full bg-gold/40" />
         <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_12px_rgb(var(--gold)/0.55)]" />
@@ -329,9 +537,36 @@ function SectionDivider() {
 
 function FeatureRow({ active }: { active: boolean }) {
   const [heavyRing, setHeavyRing] = useState(false);
+  const [bellActive, setBellActive] = useState(false);
+  const [dustActive, setDustActive] = useState(false);
+  const bellDelayRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!active) {
+      if (bellDelayRef.current) {
+        window.clearTimeout(bellDelayRef.current);
+        bellDelayRef.current = null;
+      }
+      setBellActive(false);
+      return;
+    }
+
+    if (bellDelayRef.current || bellActive) return;
+    bellDelayRef.current = window.setTimeout(() => {
+      bellDelayRef.current = null;
+      setBellActive(true);
+    }, 7000);
+
+    return () => {
+      if (bellDelayRef.current) {
+        window.clearTimeout(bellDelayRef.current);
+        bellDelayRef.current = null;
+      }
+    };
+  }, [active, bellActive]);
+
+  useEffect(() => {
+    if (!bellActive) {
       setHeavyRing(false);
       return;
     }
@@ -358,10 +593,18 @@ function FeatureRow({ active }: { active: boolean }) {
       if (triggerId) window.clearTimeout(triggerId);
       if (resetId) window.clearTimeout(resetId);
     };
-  }, [active]);
+  }, [bellActive]);
+
+  useEffect(() => {
+    if (!bellActive) {
+      setDustActive(false);
+      return;
+    }
+    if (heavyRing) setDustActive(true);
+  }, [bellActive, heavyRing]);
 
   return (
-    <div className="mt-6 flex flex-wrap gap-3 md:flex-nowrap">
+    <div className="mt-6 flex flex-wrap justify-center gap-3 md:flex-nowrap md:justify-start">
       <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
         <ClockIcon active={active} />
         <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
@@ -376,16 +619,20 @@ function FeatureRow({ active }: { active: boolean }) {
       </div>
       <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
         <span className="relative inline-flex overflow-visible">
-          <BellIconDing active={active} heavy={heavyRing} />
-          <span className="bell-dust-shower bell-dust-loop bell-dust-local dust-cycle" aria-hidden="true" />
+          <BellIconDing active={bellActive} heavy={heavyRing} />
           <span
-            className="bell-dust-shower bell-dust-loop bell-dust-local bell-dust-boost dust-cycle"
+            className={[
+              "bell-dust-shower bell-dust-local",
+              dustActive ? "bell-dust-heavy" : "",
+            ].join(" ")}
             aria-hidden="true"
           />
-          <span
-            className="bell-dust-shower bell-dust-loop bell-dust-local bell-dust-boost-2 dust-cycle"
-            aria-hidden="true"
-          />
+          {dustActive ? (
+            <span
+              className="bell-dust-shower bell-dust-local bell-dust-heavy bell-dust-heavy-2"
+              aria-hidden="true"
+            />
+          ) : null}
         </span>
         <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           24/7 Alerts
@@ -790,7 +1037,7 @@ const RoadmapSection = memo(function RoadmapSection() {
       <div className="relative mt-10">
         <div
           aria-hidden
-          className="absolute left-4 top-0 h-full w-px bg-gradient-to-b from-gold/60 via-gold/25 to-transparent shadow-[0_0_14px_rgb(var(--gold)/0.35)] md:left-1/2"
+          className="absolute left-3 top-0 h-full w-px bg-gradient-to-b from-gold/60 via-gold/25 to-transparent shadow-[0_0_14px_rgb(var(--gold)/0.35)] sm:left-4 md:left-1/2"
         />
 
         <div className="space-y-8 md:space-y-10">
@@ -852,7 +1099,7 @@ const RoadmapSection = memo(function RoadmapSection() {
                     delay: shouldReduceMotion ? 0 : index * 0.08,
                   }}
                   whileHover={shouldReduceMotion ? undefined : { y: -6 }}
-                  className={`order-2 md:order-none md:col-span-4 ${cardCol} pl-10 md:pl-0`}
+                  className={`order-2 md:order-none md:col-span-4 ${cardCol} pl-8 sm:pl-10 md:pl-0`}
                 >
                   <div
                     className={[
@@ -1019,6 +1266,8 @@ export default function Page() {
     };
   }, []);
 
+
+
   const revealProps = {
     initial: shouldReduceMotion
       ? { opacity: 1, y: 0, filter: "blur(0px)" }
@@ -1033,7 +1282,7 @@ export default function Page() {
   };
 
   return (
-    <div className="relative flex flex-col gap-8 md:gap-12">
+    <div className="relative flex flex-col gap-10 md:gap-12">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute -top-36 left-10 h-[26rem] w-[26rem] rounded-full bg-gold/10 blur-[140px]"
@@ -1045,8 +1294,11 @@ export default function Page() {
         />
       </div>
 
-      <motion.section {...revealProps} className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16">
-        <div ref={featuresScope as any} className="md:col-span-6 md:pr-10">
+      <motion.section
+        {...revealProps}
+        className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16"
+      >
+        <div ref={featuresScope as any} className="text-center md:col-span-6 md:pr-10 md:text-left">
           <div className="space-y-5">
             <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">AlphaAlerts</div>
             <h1 className="font-display text-silver">
@@ -1055,20 +1307,25 @@ export default function Page() {
               </span>
               <span className="block text-hero font-black text-metal-silver">AlphaAlerts</span>
             </h1>
-            <p className="max-w-[56ch] text-body text-muted">
+            <p className="mx-auto max-w-[56ch] text-body text-muted md:mx-0">
               AI-powered Solana alerts. Catch new tokens, trends, and runners before the crowd.
             </p>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Button
               href="/pricing#plans"
               size="lg"
-              className="min-w-[180px] !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
+              className="w-full sm:min-w-[180px] sm:w-auto !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
             >
               GO ALPHA
             </Button>
-            <Button href="#sample-alerts" variant="outline" size="lg" className="min-w-[180px]">
+            <Button
+              href="#sample-alerts"
+              variant="outline"
+              size="lg"
+              className="w-full sm:min-w-[180px] sm:w-auto"
+            >
               SAMPLE ALERTS
             </Button>
           </div>
@@ -1078,7 +1335,7 @@ export default function Page() {
 
         <div className="md:col-span-6 md:pl-4">
           <div className="space-y-4 md:space-y-6">
-            <div className="flex justify-end">
+            <div className="flex justify-center md:justify-end">
               <div
                 className="flex items-center gap-2 rounded-full border border-stroke/60 bg-surface/60 px-2 py-1"
                 role="tablist"
@@ -1111,7 +1368,7 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="relative isolate min-h-[360px] md:min-h-[380px] overflow-visible">
+            <div className="relative isolate min-h-[320px] sm:min-h-[360px] md:min-h-[380px] overflow-visible">
               <motion.div
                 aria-hidden={heroView !== "chart"}
                 className="absolute inset-0"
@@ -1151,7 +1408,7 @@ export default function Page() {
         </div>
       </motion.section>
 
-      <SectionDivider />
+      <SectionDivider showDust={false} />
 
       <motion.section
         {...revealProps}
@@ -1184,6 +1441,391 @@ export default function Page() {
             description="Clean signals with links, filters, and scoring in real time."
           />
         </ol>
+      </motion.section>
+
+      <SectionDivider />
+
+      <motion.section {...revealProps} className="space-y-8">
+        <SectionHeading
+          align="center"
+          title="Explore The 3 Phases"
+          subtitle="Step inside the pipeline. Watch signals become alerts."
+        />
+        <div className="mx-auto w-full max-w-4xl">
+          {/* NEW: premium phase flow card */}
+          <Card className="phase-flow-card relative overflow-hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            />
+            {/* NEW: subtle ambient glow */}
+            <div aria-hidden className="phase-card-ambient" />
+            <CardBody className="phase-body relative text-left">
+              <div className="phase-grid">
+                <div className="phase-left">
+                  <div className="phase-kicker">SYSTEM FLOW</div>
+                  {/* NEW: hero line */}
+                  <div className="phase-hero-line">SOURCE → SCANNER → ROUTER</div>
+                  {/* NEW: supporting line */}
+                  <div className="phase-support-line">Captured → Scored → Dispatched.</div>
+                  {/* NEW: CTA aligned left */}
+                  <div className="phase-cta-wrap">
+                    <Button href="/phase-1" size="md" className="phase-cta">
+                      Enter The Workflow
+                    </Button>
+                  </div>
+                </div>
+                {/* NEW: beam pulse module */}
+                <div className="phase-right" aria-hidden>
+                  <div className="beam-module">
+                    <span className="beam-track" />
+                    <span className="beam-glow" />
+                    <span className="beam-pulse" />
+                    <span className="beam-station beam-station--source">
+                      <span className="beam-ring" />
+                      <span className="beam-label">SOURCE</span>
+                    </span>
+                    <span className="beam-station beam-station--scanner">
+                      <span className="beam-ring" />
+                      <span className="beam-label">SCANNER</span>
+                    </span>
+                    <span className="beam-station beam-station--router">
+                      <span className="beam-ring" />
+                      <span className="beam-label">ROUTER</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </div>
+        {/* NEW: scoped styles for this section */}
+        <style jsx>{`
+          .phase-flow-card {
+            --phase-bronze: 199 142 84;
+            --phase-silver: 215 224 238;
+            --phase-gold: 255 205 110;
+            --phase-ink: 8 11 16;
+            background: linear-gradient(150deg, rgba(14, 18, 26, 0.86), rgba(8, 10, 16, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+          }
+          .phase-body {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 20px 28px 22px;
+            text-align: left;
+          }
+          .phase-card-ambient {
+            position: absolute;
+            inset: -30% -20%;
+            background: radial-gradient(
+                circle at 20% 20%,
+                rgba(var(--phase-gold), 0.08),
+                transparent 60%
+              ),
+              radial-gradient(circle at 80% 20%, rgba(120, 220, 255, 0.07), transparent 55%);
+            opacity: 0.12;
+            animation: none;
+            pointer-events: none;
+          }
+          .phase-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 36px;
+            align-items: center;
+          }
+          .phase-hero-line {
+            font-size: 19px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.92);
+            font-weight: 800;
+          }
+          .phase-kicker {
+            font-size: 11px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.55);
+          }
+          .phase-support-line {
+            font-size: 13px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+          }
+          .phase-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 380px;
+          }
+          .phase-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-self: center;
+            padding-left: 8px;
+          }
+          .beam-module {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: min(360px, 100%);
+            height: 90px;
+            min-width: 260px;
+            margin-left: 8px;
+            transform: scale(1.15);
+            transform-origin: center;
+          }
+          .beam-track {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            top: 50%;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 0 6px rgba(244, 198, 90, 0.1);
+          }
+          .beam-glow {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            top: 50%;
+            height: 18px;
+            border-radius: 999px;
+            background: rgba(244, 198, 90, 0.08);
+            transform: translateY(-50%);
+            filter: blur(10px);
+          }
+          .beam-pulse {
+            position: absolute;
+            left: 10%;
+            top: calc(50% - 19px);
+            width: 11px;
+            height: 11px;
+            border-radius: 999px;
+            transform: translate(-50%, -50%);
+            background: rgba(244, 198, 90, 0.95);
+            box-shadow: 0 0 12px rgba(244, 198, 90, 0.2);
+            animation: beamPulse 6s ease-in-out infinite;
+          }
+          .beam-station {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            top: calc(50% - 26px);
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.75);
+            animation: stationLabel 6s ease-in-out infinite;
+          }
+          .beam-station--source {
+            left: 10%;
+            transform: translateX(-50%);
+            animation-delay: 0s;
+          }
+          .beam-station--scanner {
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: 2s;
+          }
+          .beam-station--router {
+            left: 90%;
+            transform: translateX(-50%);
+            animation-delay: 4s;
+          }
+          .beam-ring {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 0 10px rgba(244, 198, 90, 0);
+            animation: stationHit 6s ease-in-out infinite;
+          }
+          .beam-station--source .beam-ring {
+            animation-delay: 0s;
+          }
+          .beam-station--scanner .beam-ring {
+            animation-delay: 2s;
+          }
+          .beam-station--router .beam-ring {
+            animation-delay: 4s;
+          }
+          .beam-label {
+            font-size: 12px;
+            letter-spacing: 0.18em;
+          }
+          .phase-cta-wrap {
+            position: relative;
+            display: flex;
+            justify-content: flex-start;
+            padding-top: 12px;
+          }
+          .phase-cta {
+            position: relative;
+            padding: 1.05rem 2.8rem;
+            font-size: 1.02rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border-radius: 999px;
+            box-shadow: 0 10px 26px rgba(var(--phase-gold), 0.18),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+            overflow: hidden;
+            transition: transform 160ms ease, box-shadow 200ms ease;
+          }
+          .phase-cta::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(
+              120deg,
+              transparent 0%,
+              rgba(255, 255, 255, 0.45) 45%,
+              transparent 70%
+            );
+            transform: translateX(-120%);
+            transition: transform 600ms ease;
+          }
+          .phase-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 34px rgba(var(--phase-gold), 0.28),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+          }
+          .phase-cta:hover::after {
+            transform: translateX(120%);
+          }
+          .phase-cta:active {
+            transform: translateY(1px) scale(0.98);
+          }
+          @keyframes beamPulse {
+            0% {
+              left: 10%;
+            }
+            25% {
+              left: 10%;
+            }
+            33% {
+              left: 50%;
+            }
+            58% {
+              left: 50%;
+            }
+            66% {
+              left: 90%;
+            }
+            91% {
+              left: 90%;
+            }
+            100% {
+              left: 90%;
+            }
+          }
+          @keyframes stationHit {
+            0%,
+            100% {
+              border-color: rgba(255, 255, 255, 0.18);
+              box-shadow: 0 0 10px rgba(244, 198, 90, 0);
+            }
+            3% {
+              border-color: rgba(244, 198, 90, 0.7);
+              box-shadow: 0 0 16px rgba(244, 198, 90, 0.35);
+            }
+            15% {
+              border-color: rgba(255, 255, 255, 0.18);
+              box-shadow: 0 0 10px rgba(244, 198, 90, 0);
+            }
+          }
+          @keyframes stationLabel {
+            0%,
+            100% {
+              color: rgba(255, 255, 255, 0.75);
+            }
+            3% {
+              color: rgba(255, 255, 255, 1);
+            }
+            15% {
+              color: rgba(255, 255, 255, 0.75);
+            }
+          }
+          @keyframes phaseGlowDrift {
+            0% {
+              transform: translate(-8%, -6%) scale(1);
+              opacity: 0.35;
+            }
+            50% {
+              transform: translate(6%, 8%) scale(1.08);
+              opacity: 0.55;
+            }
+            100% {
+              transform: translate(-8%, -6%) scale(1);
+              opacity: 0.35;
+            }
+          }
+          @keyframes phaseCardPulse {
+            0%,
+            100% {
+              opacity: 0.38;
+            }
+            50% {
+              opacity: 0.55;
+            }
+          }
+          @media (max-width: 640px) {
+            .phase-hero-line {
+              font-size: 16px;
+              letter-spacing: 0.14em;
+            }
+            .phase-support-line {
+              font-size: 11px;
+              letter-spacing: 0.14em;
+            }
+            .phase-kicker {
+              letter-spacing: 0.28em;
+            }
+            .phase-body {
+              text-align: center;
+              padding: 22px 20px 24px;
+            }
+            .phase-grid {
+              grid-template-columns: 1fr;
+              gap: 18px;
+            }
+            .phase-left {
+              align-items: center;
+            }
+            .phase-right {
+              justify-content: center;
+              width: 100%;
+            }
+            .beam-module {
+              width: min(320px, 100%);
+              height: 90px;
+              transform: scale(1.2);
+              transform-origin: center;
+            }
+            .beam-track {
+              height: 8px;
+            }
+            .beam-label {
+              font-size: 11px;
+              letter-spacing: 0.16em;
+            }
+            .phase-cta {
+              width: 100%;
+              max-width: 260px;
+              min-width: 0;
+            }
+          }
+        `}</style>
       </motion.section>
 
       <SectionDivider />
@@ -1246,9 +1888,9 @@ export default function Page() {
       <motion.section
         {...revealProps}
         id="sample-alerts"
-        className="grid items-start gap-8 md:grid-cols-2 scroll-mt-24 md:scroll-mt-32"
+        className="grid items-start gap-10 md:grid-cols-2 md:gap-8 scroll-mt-24 md:scroll-mt-32"
       >
-        <div className="space-y-5">
+        <div className="space-y-6 md:space-y-5">
           <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">Sample Alerts</div>
           <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
             See What Hits Your Telegram
@@ -1265,7 +1907,7 @@ export default function Page() {
             <Button
               href="/pricing#plans"
               size="md"
-              className="h-10 !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
+              className="w-full sm:w-auto h-10 !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
             >
               GO ALPHA
             </Button>
@@ -1327,12 +1969,12 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="w-full !h-9 !rounded-pill !px-2 text-[11px] uppercase tracking-[0.25em]"
+                className="w-full !h-10 sm:!h-9 !rounded-pill !px-3 sm:!px-2 text-[12px] sm:text-[11px] uppercase tracking-[0.25em]"
               >
                 AXIOM
               </Button>
@@ -1340,7 +1982,7 @@ export default function Page() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="w-full !h-9 !rounded-pill !px-2 text-[11px] uppercase tracking-[0.25em]"
+                className="w-full !h-10 sm:!h-9 !rounded-pill !px-3 sm:!px-2 text-[12px] sm:text-[11px] uppercase tracking-[0.25em]"
               >
                 PUMP.FUN
               </Button>
@@ -1348,7 +1990,7 @@ export default function Page() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="w-full !h-9 !rounded-pill !px-2 text-[11px] uppercase tracking-[0.25em]"
+                className="w-full !h-10 sm:!h-9 !rounded-pill !px-3 sm:!px-2 text-[12px] sm:text-[11px] uppercase tracking-[0.25em]"
               >
                 RUGCHECK
               </Button>
@@ -1366,7 +2008,7 @@ export default function Page() {
           title="Speed And Transparency"
           subtitle="Live metrics from recent activity."
         />
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3 md:gap-4">
           <StatCard
             id="median"
             label="Median alert time"

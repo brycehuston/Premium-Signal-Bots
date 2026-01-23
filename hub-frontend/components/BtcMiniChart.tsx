@@ -1,18 +1,22 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { createChart, IChartApi, Time, UTCTimestamp } from 'lightweight-charts';
 
-type Props = { height?: number; paused?: boolean };
-const WS_URL = 'wss://stream.binance.com:9443/ws/btcusdt@kline_1m';
-const HIST_URL =
-  'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=300';
+type BtcInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
+type Props = { height?: number; paused?: boolean; interval?: BtcInterval };
 
-export default function BtcMiniChart({ height = 280, paused = false }: Props) {
+export default function BtcMiniChart({ height = 280, paused = false, interval = '1m' }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ReturnType<IChartApi['addCandlestickSeries']> | null>(null);
   const pausedRef = useRef(paused);
+  const urls = useMemo(() => {
+    return {
+      ws: `wss://stream.binance.com:9443/ws/btcusdt@kline_${interval}`,
+      hist: `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=300`,
+    };
+  }, [interval]);
 
   useEffect(() => {
     pausedRef.current = paused;
@@ -59,7 +63,7 @@ export default function BtcMiniChart({ height = 280, paused = false }: Props) {
 
     // Seed with recent candles
     (async () => {
-      const res = await fetch(HIST_URL);
+      const res = await fetch(urls.hist);
       const rows: any[] = await res.json();
       const data = rows.map((r) => ({
         time: (r[0] / 1000) as UTCTimestamp,
@@ -73,7 +77,7 @@ export default function BtcMiniChart({ height = 280, paused = false }: Props) {
     })().catch(() => {});
 
     // Live updates
-    const ws = new WebSocket(WS_URL);
+    const ws = new WebSocket(urls.ws);
     ws.onmessage = (ev) => {
       try {
         if (pausedRef.current) return;
@@ -102,7 +106,7 @@ export default function BtcMiniChart({ height = 280, paused = false }: Props) {
       ws.close();
       chart.remove();
     };
-  }, [height]);
+  }, [height, urls]);
 
   return <div ref={containerRef} className="w-full" style={{ height }} />;
 }

@@ -267,17 +267,17 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-12">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-5 sm:py-12">
       <div className="text-center">
-        <h1 className="font-display text-[84px] font-semibold tracking-tight text-silver leading-none md:text-[120px]">
+        <h1 className="font-display text-[50px] font-semibold tracking-tight text-silver leading-[0.95] sm:text-[78px] sm:leading-none md:text-[104px]">
           PRICING
         </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-small text-muted">
+        <p className="mx-auto mt-3 whitespace-nowrap text-[10px] text-muted sm:text-[11px] md:text-[12px]">
           Choose the alerts you want. Payments are manual for now via USDC on Solana.
         </p>
       </div>
 
-      <div className="mt-10 flex justify-center">
+      <div className="mt-8 flex justify-center sm:mt-9">
         <div
           className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 p-1"
           role="group"
@@ -332,7 +332,7 @@ export default function PricingPage() {
               )}`}
             />
 
-            <CardBody className="space-y-5">
+            <CardBody className="space-y-6 sm:space-y-5">
               <div className="flex items-center gap-2">
                 <div className="grid h-8 w-8 place-items-center rounded-full border border-stroke/60 bg-surface/70">
                   <span className="text-[18px]">{p.emoji}</span>
@@ -363,7 +363,7 @@ export default function PricingPage() {
                 </div>
               </div>
 
-              <ul className="space-y-2.5 text-small text-muted">
+              <ul className="space-y-3 text-small text-muted sm:space-y-2.5">
                 {p.bullets.map((b: string, i: number) => (
                   <li key={i} className="flex gap-2.5">
                     <Check tone={p.tone} />
@@ -377,7 +377,7 @@ export default function PricingPage() {
                   variant="primary"
                   size="sm"
                   full
-                  className={tonePrimaryButtonClass(p.tone)}
+                  className={[tonePrimaryButtonClass(p.tone), "!h-11 sm:!h-10"].join(" ")}
                   href={`/pay/${p.slug}?period=${billing}`}
                 >
                   {billing === "annual" ? "Choose Annual" : "Choose Monthly"}
@@ -413,9 +413,9 @@ export default function PricingPage() {
               "gold"
             )}`}
           />
-          <CardBody className="relative z-10 space-y-5 md:space-y-0 md:flex md:items-center md:justify-between md:gap-10">
+          <CardBody className="relative z-10 space-y-6 md:space-y-0 md:flex md:items-center md:justify-between md:gap-10">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold">
                   <span className="text-[18px]">{BUNDLE.emoji}</span>
                 </div>
@@ -424,7 +424,7 @@ export default function PricingPage() {
                 </h3>
                 <Pill
                   tone="accent"
-                  className="ml-2 best-value-pulse text-[11px] font-semibold uppercase tracking-[0.25em]"
+                  className="ml-0 best-value-pulse text-[11px] font-semibold uppercase tracking-[0.25em] sm:ml-2"
                 >
                   Best Value
                 </Pill>
@@ -446,7 +446,7 @@ export default function PricingPage() {
                 </div>
               </div>
 
-              <ul className="space-y-2.5 text-[14px] md:text-[15px] text-muted">
+              <ul className="space-y-3 text-[14px] text-muted md:space-y-2.5 md:text-[15px]">
                 {BUNDLE.bullets.map((b: string, i: number) => (
                   <li key={i} className="flex gap-2.5">
                     <Check tone="gold" />
@@ -477,7 +477,7 @@ export default function PricingPage() {
         </div>
       </div>
 
-      <section className="mt-12 grid items-start gap-8 lg:grid-cols-2">
+      <section className="mt-12 grid items-start gap-10 md:gap-8 lg:grid-cols-2">
         <Card className="h-full">
           <CardBody className="space-y-6">
             <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">
@@ -607,7 +607,7 @@ export default function PricingPage() {
             <Button
               href="/waitlist"
               size="lg"
-              className="mx-auto mt-8 px-9 font-bold uppercase tracking-[0.28em] shadow-[0_10px_36px_rgb(var(--gold)/0.5)] hover:shadow-[0_12px_42px_rgb(var(--gold)/0.6)]"
+              className="mx-auto mt-8 w-full px-9 font-bold uppercase tracking-[0.28em] shadow-[0_10px_36px_rgb(var(--gold)/0.5)] hover:shadow-[0_12px_42px_rgb(var(--gold)/0.6)] sm:w-auto"
             >
               JOIN WAITLIST
             </Button>

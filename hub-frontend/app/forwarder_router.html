@@ -1,0 +1,811 @@
+<!-- forwarder_router_object.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Forwarder / Router (Early / Trend / Runner)</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #05070c;
+            overflow: hidden;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            color: #fff;
+        }
+
+        .wrap {
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+        }
+
+        .card {
+            width: min(980px, 96vw);
+            height: min(600px, 86vh);
+            border-radius: 22px;
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(900px 700px at 50% 35%, rgba(140, 230, 255, 0.10), transparent 60%),
+                radial-gradient(900px 700px at 20% 75%, rgba(255, 210, 140, 0.06), transparent 55%),
+                linear-gradient(to bottom right, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+        }
+
+        canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .topbar {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .brand {
+            opacity: 0.78;
+            letter-spacing: 0.16em;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            user-select: none;
+        }
+
+        .hint {
+            opacity: 0.55;
+            font-size: 11px;
+            user-select: none;
+        }
+
+        .footer {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 12px;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+        }
+
+        .title p {
+            margin: 6px 0 0 0;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.60);
+            max-width: 640px;
+            line-height: 1.35;
+        }
+
+        .kbd {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            user-select: none;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="card" id="card">
+            <div class="topbar">
+                <div class="brand">FORWARDER / ROUTER • HEADER-BASED ROUTING</div>
+                <div class="hint">Mouse = subtle tilt • Keys: 1/2/3 lock lane • 0 = auto</div>
+            </div>
+
+            <canvas id="cv"></canvas>
+
+            <div class="footer">
+                <div class="title">
+                    <h1>Signal Router (Early / Trend / Runner)</h1>
+                    <p>
+                        Packets enter from the left, hit the router core, and split into 3 lanes.
+                        This is the “Forwarder / Router” object that visually explains your header routing.
+                    </p>
+                </div>
+                <div class="kbd">Lock lane: [1] EARLY • [2] TREND • [3] RUNNER • [0] AUTO</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const card = document.getElementById("card");
+            const canvas = document.getElementById("cv");
+            const ctx = canvas.getContext("2d", { alpha: true });
+
+            // =========================
+            // Config (tweak here)
+            // =========================
+            const CFG = {
+                dprMax: 2,
+                stars: 90,
+                vignette: 0.84,
+                glassAlpha: 0.11,
+
+                // Main colors
+                cyan: [120, 220, 255],
+                blue: [70, 160, 255],
+                warm: [255, 215, 160],
+
+                // Lane colors
+                early: [255, 205, 140],   // warm gold
+                trend: [120, 220, 255],   // cyan
+                runner: [160, 140, 255],  // purple-ish
+
+                // Router placement
+                routerX: 0.56,
+                routerY: 0.50,
+
+                // Input source orb placement
+                sourceX: 0.18,
+                sourceY: 0.50,
+
+                // Output endpoints
+                outX: 0.90,
+
+                // Lane offsets
+                laneOffset: 0.15,
+
+                // Packet behavior
+                spawnEveryMs: 560,
+                inDur: 950,
+                outDur: 1050,
+
+                // Packet visuals
+                packetGlow: 18,
+                packetSize: 2.4,
+
+                // Motion
+                camEase: 0.09,
+                tiltAmount: 0.8
+            };
+
+            const TAU = Math.PI * 2;
+            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+            const lerp = (a, b, t) => a + (b - a) * t;
+            const rgba = (rgb, a) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+
+            function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+            function easeInOutSine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
+
+            // =========================
+            // DPI / Resize
+            // =========================
+            let W = 0, H = 0, DPR = 1;
+
+            function resize() {
+                DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
+                const r = card.getBoundingClientRect();
+                W = Math.max(1, Math.floor(r.width));
+                H = Math.max(1, Math.floor(r.height));
+
+                canvas.width = Math.floor(W * DPR);
+                canvas.height = Math.floor(H * DPR);
+                canvas.style.width = W + "px";
+                canvas.style.height = H + "px";
+                ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+                initStars();
+            }
+            window.addEventListener("resize", resize);
+
+            // =========================
+            // Mouse tilt
+            // =========================
+            const cam = { rx: 0, ry: 0, trx: 0, try: 0 };
+
+            card.addEventListener("pointermove", (e) => {
+                const r = card.getBoundingClientRect();
+                const nx = (e.clientX - r.left) / r.width;
+                const ny = (e.clientY - r.top) / r.height;
+                cam.try = (nx - 0.5) * CFG.tiltAmount;
+                cam.trx = (ny - 0.5) * CFG.tiltAmount;
+            });
+
+            card.addEventListener("pointerleave", () => {
+                cam.try *= 0.15;
+                cam.trx *= 0.15;
+            });
+
+            // =========================
+            // Keyboard lane lock
+            // =========================
+            // laneLock: null = auto, 0 = early, 1 = trend, 2 = runner
+            let laneLock = null;
+            window.addEventListener("keydown", (e) => {
+                if (e.key === "0") laneLock = null;
+                if (e.key === "1") laneLock = 0;
+                if (e.key === "2") laneLock = 1;
+                if (e.key === "3") laneLock = 2;
+            });
+
+            // =========================
+            // Stars BG
+            // =========================
+            const stars = [];
+            function initStars() {
+                stars.length = 0;
+                for (let i = 0; i < CFG.stars; i++) {
+                    stars.push({
+                        x: Math.random() * W,
+                        y: Math.random() * H,
+                        r: 0.6 + Math.random() * 1.2,
+                        a: 0.03 + Math.random() * 0.10
+                    });
+                }
+            }
+
+            function drawStars() {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                for (const s of stars) {
+                    ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, TAU);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            // =========================
+            // Helpers
+            // =========================
+            function drawGlowDot(x, y, rgb, alpha, size, glow) {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                const g = ctx.createRadialGradient(x, y, 0, x, y, glow);
+                g.addColorStop(0.0, rgba(rgb, alpha));
+                g.addColorStop(0.45, rgba(rgb, alpha * 0.25));
+                g.addColorStop(1.0, "rgba(0,0,0,0)");
+
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, TAU);
+                ctx.fill();
+
+                // tiny highlight
+                ctx.fillStyle = `rgba(255,255,255,${alpha * 0.22})`;
+                ctx.beginPath();
+                ctx.arc(x - size * 0.35, y - size * 0.35, size * 0.40, 0, TAU);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            function bezierPoint(p0, p1, p2, p3, t) {
+                // cubic bezier
+                const u = 1 - t;
+                const tt = t * t;
+                const uu = u * u;
+                const uuu = uu * u;
+                const ttt = tt * t;
+
+                return {
+                    x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
+                    y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y
+                };
+            }
+
+            // =========================
+            // Premium Orb (source + router core glow)
+            // =========================
+            function drawOrb(cx, cy, r, now, rgbMain) {
+                const pulse = (Math.sin(now * 0.002) + 1) * 0.5;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                // bloom
+                const gOuter = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * (2.7 + pulse * 0.35));
+                gOuter.addColorStop(0.0, rgba(rgbMain, 0.22));
+                gOuter.addColorStop(0.45, rgba(CFG.blue, 0.10));
+                gOuter.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = gOuter;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * (2.7 + pulse * 0.35), 0, TAU);
+                ctx.fill();
+
+                // glass body
+                const glass = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, 0, cx, cy, r * 1.35);
+                glass.addColorStop(0.0, "rgba(255,255,255,0.20)");
+                glass.addColorStop(0.25, rgba(rgbMain, 0.10));
+                glass.addColorStop(0.62, "rgba(10,16,26,0.14)");
+                glass.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = glass;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 1.02, 0, TAU);
+                ctx.fill();
+
+                // inner core
+                const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.95);
+                core.addColorStop(0.0, "rgba(255,255,255,0.40)");
+                core.addColorStop(0.42, rgba(rgbMain, 0.18));
+                core.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = core;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * (0.86 + pulse * 0.03), 0, TAU);
+                ctx.fill();
+
+                // rim
+                ctx.strokeStyle = rgba(rgbMain, 0.55);
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 1.02, 0, TAU);
+                ctx.stroke();
+
+                // spec highlight
+                ctx.fillStyle = "rgba(255,255,255,0.22)";
+                ctx.beginPath();
+                ctx.arc(cx - r * 0.28, cy - r * 0.28, r * 0.18, 0, TAU);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // =========================
+            // Router Node (not a boring square)
+            // =========================
+            function drawRouterNode(cx, cy, size, now) {
+                const t = now * 0.001;
+
+                // outer glow
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                const g = ctx.createRadialGradient(cx, cy, size * 0.2, cx, cy, size * 2.2);
+                g.addColorStop(0.0, rgba(CFG.cyan, 0.20));
+                g.addColorStop(0.45, rgba(CFG.blue, 0.10));
+                g.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(cx, cy, size * 2.2, 0, TAU);
+                ctx.fill();
+
+                // core shape: rounded hex
+                const s = size * 1.35;
+                const pts = [];
+                const sides = 6;
+                const rot = t * 0.35;
+
+                for (let i = 0; i < sides; i++) {
+                    const a = (i / sides) * TAU + rot;
+                    pts.push({
+                        x: cx + Math.cos(a) * s,
+                        y: cy + Math.sin(a) * s * 0.92
+                    });
+                }
+
+                // fill
+                ctx.fillStyle = "rgba(10,14,22,0.55)";
+                ctx.beginPath();
+                ctx.moveTo(pts[0].x, pts[0].y);
+                for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                ctx.closePath();
+                ctx.fill();
+
+                // rim
+                ctx.strokeStyle = "rgba(120,220,255,0.28)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // inside routing glyph (3-way split icon)
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.strokeStyle = "rgba(120,220,255,0.28)";
+                ctx.lineWidth = 2.4;
+                ctx.lineCap = "round";
+
+                const arm = size * 0.95;
+                const centerY = cy + Math.sin(t) * 0.8;
+
+                // left input stem
+                ctx.beginPath();
+                ctx.moveTo(cx - arm * 0.75, centerY);
+                ctx.lineTo(cx - arm * 0.15, centerY);
+                ctx.stroke();
+
+                // split branches
+                ctx.beginPath();
+                ctx.moveTo(cx - arm * 0.15, centerY);
+                ctx.lineTo(cx + arm * 0.35, centerY - arm * 0.38);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(cx - arm * 0.15, centerY);
+                ctx.lineTo(cx + arm * 0.42, centerY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(cx - arm * 0.15, centerY);
+                ctx.lineTo(cx + arm * 0.35, centerY + arm * 0.38);
+                ctx.stroke();
+
+                // tiny pulse ring
+                const pulse = (Math.sin(now * 0.003) + 1) * 0.5;
+                ctx.strokeStyle = `rgba(255,215,160,${0.06 + pulse * 0.08})`;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(cx, cy, size * (0.9 + pulse * 0.25), 0, TAU);
+                ctx.stroke();
+
+                ctx.restore();
+                ctx.restore();
+            }
+
+            // =========================
+            // Pills (lane endpoints)
+            // =========================
+            function drawPill(x, y, text, rgb) {
+                const padX = 12;
+                const padY = 8;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "source-over";
+                ctx.font = "800 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+                const w = ctx.measureText(text).width + padX * 2;
+                const h = 30;
+
+                // pill background
+                ctx.fillStyle = "rgba(0,0,0,0.28)";
+                ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.25)`;
+                ctx.lineWidth = 1;
+
+                roundRect(ctx, x - w / 2, y - h / 2, w, h, 999);
+                ctx.fill();
+                ctx.stroke();
+
+                // pill inner glow
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.05)`;
+                roundRect(ctx, x - w / 2 + 1, y - h / 2 + 1, w - 2, h - 2, 999);
+                ctx.fill();
+                ctx.restore();
+
+                // text
+                ctx.fillStyle = "rgba(255,255,255,0.90)";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(text, x, y + 0.5);
+
+                ctx.restore();
+            }
+
+            function roundRect(ctx, x, y, w, h, r) {
+                const rr = Math.min(r, w / 2, h / 2);
+                ctx.beginPath();
+                ctx.moveTo(x + rr, y);
+                ctx.arcTo(x + w, y, x + w, y + h, rr);
+                ctx.arcTo(x + w, y + h, x, y + h, rr);
+                ctx.arcTo(x, y + h, x, y, rr);
+                ctx.arcTo(x, y, x + w, y, rr);
+                ctx.closePath();
+            }
+
+            // =========================
+            // Packets + Flow
+            // =========================
+            const incoming = [];
+            const outgoing = [];
+
+            let lastSpawn = 0;
+            let rrIndex = 0; // round-robin lane index
+
+            function spawnIncoming(now) {
+                incoming.push({
+                    born: now,
+                    dur: CFG.inDur,
+                    seed: Math.random() * 999
+                });
+                // keep it clean
+                while (incoming.length > 8) incoming.shift();
+            }
+
+            function spawnOutgoing(now, laneId) {
+                outgoing.push({
+                    born: now,
+                    dur: CFG.outDur,
+                    laneId,
+                    seed: Math.random() * 999
+                });
+                while (outgoing.length > 16) outgoing.shift();
+            }
+
+            function laneColor(laneId) {
+                if (laneId === 0) return CFG.early;
+                if (laneId === 1) return CFG.trend;
+                return CFG.runner;
+            }
+
+            function laneName(laneId) {
+                if (laneId === 0) return "EARLY";
+                if (laneId === 1) return "TREND";
+                return "RUNNER";
+            }
+
+            // =========================
+            // Flow Lanes (curves)
+            // =========================
+            function getLayout() {
+                const sx = W * CFG.sourceX;
+                const sy = H * CFG.sourceY;
+
+                const rx = W * CFG.routerX;
+                const ry = H * CFG.routerY;
+
+                const outX = W * CFG.outX;
+
+                const laneY0 = H * (CFG.routerY - CFG.laneOffset);
+                const laneY1 = H * (CFG.routerY);
+                const laneY2 = H * (CFG.routerY + CFG.laneOffset);
+
+                return {
+                    sx, sy, rx, ry, outX,
+                    lanes: [
+                        { id: 0, y: laneY0 },
+                        { id: 1, y: laneY1 },
+                        { id: 2, y: laneY2 }
+                    ]
+                };
+            }
+
+            function drawLaneCurve(p0, p1, p2, p3, rgb) {
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+
+                // faint guide
+                ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.10)`;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([7, 12]);
+                ctx.beginPath();
+                ctx.moveTo(p0.x, p0.y);
+                ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+                ctx.stroke();
+
+                // soft glow line under it
+                ctx.setLineDash([]);
+                ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.06)`;
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(p0.x, p0.y);
+                ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            // =========================
+            // Finish Overlay
+            // =========================
+            function drawFinishOverlay() {
+                const cx = W * 0.5, cy = H * 0.5;
+                const rad = Math.min(W, H) * 0.48;
+
+                ctx.save();
+                ctx.globalCompositeOperation = "source-over";
+
+                // bubble edge
+                ctx.strokeStyle = `rgba(255,255,255,${CFG.glassAlpha})`;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(cx, cy, rad, 0, TAU);
+                ctx.stroke();
+
+                // top-left highlight
+                const h = ctx.createRadialGradient(cx - rad * 0.25, cy - rad * 0.35, 0, cx, cy, rad);
+                h.addColorStop(0.0, "rgba(255,255,255,0.10)");
+                h.addColorStop(0.35, "rgba(255,255,255,0.04)");
+                h.addColorStop(1.0, "rgba(255,255,255,0)");
+                ctx.fillStyle = h;
+                ctx.beginPath();
+                ctx.arc(cx, cy, rad, 0, TAU);
+                ctx.fill();
+
+                // vignette
+                const vg = ctx.createRadialGradient(cx, cy, rad * 0.33, cx, cy, rad * 1.18);
+                vg.addColorStop(0.0, "rgba(0,0,0,0)");
+                vg.addColorStop(1.0, `rgba(0,0,0,${CFG.vignette})`);
+                ctx.fillStyle = vg;
+                ctx.beginPath();
+                ctx.arc(cx, cy, rad * 1.25, 0, TAU);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // =========================
+            // Main Draw
+            // =========================
+            function draw(now) {
+                // camera smooth
+                cam.rx += (cam.trx - cam.rx) * CFG.camEase;
+                cam.ry += (cam.try - cam.ry) * CFG.camEase;
+
+                ctx.clearRect(0, 0, W, H);
+
+                // background stars
+                drawStars();
+
+                // subtle background bloom wash
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                const bg = ctx.createRadialGradient(W * 0.58, H * 0.42, 0, W * 0.58, H * 0.42, Math.min(W, H) * 0.78);
+                bg.addColorStop(0.0, "rgba(120,220,255,0.03)");
+                bg.addColorStop(0.5, "rgba(70,160,255,0.02)");
+                bg.addColorStop(1.0, "rgba(0,0,0,0)");
+                ctx.fillStyle = bg;
+                ctx.fillRect(0, 0, W, H);
+                ctx.restore();
+
+                const L = getLayout();
+
+                // SOURCE orb (left)
+                const sourceR = Math.min(W, H) * 0.060;
+                drawOrb(L.sx, L.sy, sourceR, now, CFG.blue);
+
+                // ROUTER node (center)
+                const routerSize = Math.min(W, H) * 0.050;
+                drawRouterNode(L.rx, L.ry, routerSize, now);
+
+                // Input path line
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.strokeStyle = "rgba(120,220,255,0.10)";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([7, 12]);
+                ctx.beginPath();
+                ctx.moveTo(L.sx + sourceR * 1.2, L.sy);
+                ctx.lineTo(L.rx - routerSize * 2.1, L.ry);
+                ctx.stroke();
+                ctx.restore();
+
+                // Lanes curves (from router to endpoints)
+                const curves = L.lanes.map((lane) => {
+                    const y = lane.y;
+
+                    const p0 = { x: L.rx + routerSize * 1.65, y: L.ry };
+                    const p3 = { x: L.outX, y };
+
+                    // pull the curve upward/downward slightly depending on lane
+                    const bend = (y - L.ry);
+
+                    const p1 = { x: lerp(p0.x, p3.x, 0.35), y: L.ry + bend * 0.15 };
+                    const p2 = { x: lerp(p0.x, p3.x, 0.65), y: y - bend * 0.08 };
+
+                    return { laneId: lane.id, p0, p1, p2, p3 };
+                });
+
+                // Draw lane guides
+                for (const c of curves) {
+                    drawLaneCurve(c.p0, c.p1, c.p2, c.p3, laneColor(c.laneId));
+                }
+
+                // Lane pills at endpoints
+                drawPill(L.outX, L.lanes[0].y, "EARLY", CFG.early);
+                drawPill(L.outX, L.lanes[1].y, "TREND", CFG.trend);
+                drawPill(L.outX, L.lanes[2].y, "RUNNER", CFG.runner);
+
+                // Spawn incoming packets
+                if (now - lastSpawn > CFG.spawnEveryMs) {
+                    lastSpawn = now;
+                    spawnIncoming(now);
+                }
+
+                // Incoming packet motion: source -> router
+                for (let i = incoming.length - 1; i >= 0; i--) {
+                    const p = incoming[i];
+                    const t = clamp((now - p.born) / p.dur, 0, 1);
+                    const e = easeOutCubic(t);
+
+                    // line interpolation
+                    const x = lerp(L.sx + sourceR * 1.05, L.rx - routerSize * 1.55, e);
+                    const y = lerp(L.sy, L.ry, e) + Math.sin(t * TAU * 2 + p.seed) * 2.2;
+
+                    const a = Math.min(1, t * 5) * (1 - t) * 0.95;
+                    drawGlowDot(x, y, CFG.cyan, a, CFG.packetSize, CFG.packetGlow);
+
+                    // when it reaches router, split to a lane
+                    if (t >= 1) {
+                        incoming.splice(i, 1);
+
+                        // determine which lane
+                        let laneId;
+                        if (laneLock === null) {
+                            laneId = rrIndex % 3;
+                            rrIndex++;
+                        } else {
+                            laneId = laneLock;
+                        }
+                        spawnOutgoing(now, laneId);
+                    }
+                }
+
+                // Outgoing packets: router -> selected lane curve
+                for (let i = outgoing.length - 1; i >= 0; i--) {
+                    const p = outgoing[i];
+                    const t = clamp((now - p.born) / p.dur, 0, 1);
+                    const e = easeOutCubic(t);
+
+                    const c = curves.find(x => x.laneId === p.laneId);
+                    if (!c) continue;
+
+                    const pos = bezierPoint(c.p0, c.p1, c.p2, c.p3, e);
+
+                    const rgb = laneColor(p.laneId);
+                    const a = Math.min(1, t * 6) * (1 - t) * 0.98;
+
+                    // tail streak behind packet (premium feel)
+                    const tailSteps = 8;
+                    for (let k = 0; k < tailSteps; k++) {
+                        const tt = clamp(e - (k * 0.02), 0, 1);
+                        const tailPos = bezierPoint(c.p0, c.p1, c.p2, c.p3, tt);
+                        const ta = a * (1 - k / tailSteps) * 0.32;
+                        drawGlowDot(tailPos.x, tailPos.y, rgb, ta, CFG.packetSize * 0.85, CFG.packetGlow * 0.75);
+                    }
+
+                    // main packet
+                    drawGlowDot(pos.x, pos.y, rgb, a, CFG.packetSize * 1.15, CFG.packetGlow);
+
+                    if (t >= 1) outgoing.splice(i, 1);
+                }
+
+                // Router “receive” burst when traffic is happening
+                // (tiny shimmer based on packet count)
+                const activity = clamp((incoming.length + outgoing.length) / 10, 0, 1);
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.strokeStyle = `rgba(255,215,160,${0.03 + activity * 0.12})`;
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.arc(L.rx, L.ry, routerSize * (2.0 + activity * 0.45), now * 0.0012, now * 0.0012 + 1.2);
+                ctx.stroke();
+                ctx.restore();
+
+                // finish overlay
+                drawFinishOverlay();
+            }
+
+            // =========================
+            // Loop
+            // =========================
+            function loop(now) {
+                draw(now);
+                requestAnimationFrame(loop);
+            }
+
+            // =========================
+            // Boot
+            // =========================
+            resize();
+            requestAnimationFrame(loop);
+        })();
+    </script>
+</body>
+
+</html>

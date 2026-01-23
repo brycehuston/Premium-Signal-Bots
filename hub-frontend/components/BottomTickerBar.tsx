@@ -2,14 +2,15 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Send, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 type Sym = "BTC" | "ETH" | "SOL";
 type PriceState = Record<Sym, number | null>;
 type DirState = Record<Sym, "up" | "down" | "flat">;
-type FearGreedTone = "green" | "red";
+type FearGreedTone = "green" | "red" | "neutral";
 type FearGreedState = {
-  label: "GREED" | "FEAR" | "EXTREME";
+  label: "GREED" | "FEAR" | "EXTREME" | "NEUTRAL";
   tone: FearGreedTone;
   isExtreme: boolean;
 };
@@ -17,7 +18,8 @@ type FearGreedState = {
 function mapFearGreed(value: number | null): FearGreedState {
   if (value == null) return { label: "GREED", tone: "green", isExtreme: false };
   if (value >= 75) return { label: "EXTREME", tone: "green", isExtreme: true };
-  if (value >= 50) return { label: "GREED", tone: "green", isExtreme: false };
+  if (value >= 55) return { label: "GREED", tone: "green", isExtreme: false };
+  if (value >= 45) return { label: "NEUTRAL", tone: "neutral", isExtreme: false };
   if (value <= 25) return { label: "EXTREME", tone: "red", isExtreme: true };
   return { label: "FEAR", tone: "red", isExtreme: false };
 }
@@ -189,9 +191,15 @@ export default function BottomTickerBar({
 
   const fearGreedClass = [
     "fear-greed-box",
-    fearGreed.tone === "green" ? "fear-greed-box--green" : "fear-greed-box--red",
+    fearGreed.tone === "green"
+      ? "fear-greed-box--green"
+      : fearGreed.tone === "red"
+      ? "fear-greed-box--red"
+      : "fear-greed-box--neutral",
     fearGreed.isExtreme ? "fear-greed-box--extreme" : "",
   ].join(" ");
+  const pathname = usePathname();
+  const showFearGreed = pathname.startsWith("/dashboard") || fearGreed.tone === "green";
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50">
@@ -206,7 +214,7 @@ export default function BottomTickerBar({
         </div>
 
         {/* LEFT FEAR/GREED */}
-        {fearGreed.tone === "green" ? (
+        {showFearGreed ? (
           <div className="absolute left-4 flex items-center gap-2">
             <div className={fearGreedClass}>{fearGreed.label}</div>
           </div>

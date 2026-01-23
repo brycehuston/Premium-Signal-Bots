@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fan Spin Airflow</title>
+  <style>
+    :root {
+      --fan-size: 120px;
+      --fan-color: #edf2f7;
+      --fan-gold: #f7d38a;
+      --blur-amount: 6px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #07090f;
+      font-family: "Space Grotesk", "Sora", "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
+      color: #e6edf6;
+    }
+
+    .stage {
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .fan-shell {
+      position: relative;
+      width: var(--fan-size);
+      height: var(--fan-size);
+      display: grid;
+      place-items: center;
+    }
+
+    #airflow {
+      position: absolute;
+      left: 0;
+      top: 0;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(0px);
+    }
+
+    .fan-rotor {
+      width: 72px;
+      height: 72px;
+      color: var(--fan-color);
+      z-index: 1;
+      transform-origin: 50% 50%;
+      will-change: transform;
+      filter:
+        drop-shadow(0 0 var(--blur-amount) rgba(255, 255, 255, 0.32))
+        drop-shadow(0 0 calc(var(--blur-amount) * 1.5) rgba(255, 214, 128, 0.22));
+    }
+
+    .fan-rotor path {
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="fan-shell" id="fanShell">
+      <canvas id="airflow"></canvas>
+      <svg
+        class="fan-rotor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2" stroke-width="2.2" />
+        <path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06" stroke-width="2.2" />
+        <path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8" stroke-width="2.2" />
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      // Knobs
+      const spinRPM = 520;
+      const airflowStrength = 0.9;
+      const particleCount = 56;
+      const blurAmount = 6;
+      const spinUpMs = 700;
+      const spinHoldMs = 2300;
+      const spinDownMs = 10000;
+      const restMs = 2000;
+
+      const fanShell = document.getElementById("fanShell");
+      const fanRotor = document.querySelector(".fan-rotor");
+      const canvas = document.getElementById("airflow");
+      const ctx = canvas.getContext("2d", { alpha: true });
+      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const effectiveRPM = prefersReduced ? Math.min(spinRPM, 120) : spinRPM;
+      const effectiveStrength = prefersReduced ? 0 : airflowStrength;
+
+      if (!fanRotor) return;
+      document.documentElement.style.setProperty("--blur-amount", `${blurAmount}px`);
+
+      const TAU = Math.PI * 2;
+      const dprMax = 2;
+      const pad = 52;
+
+      let W = 0;
+      let H = 0;
+      let dpr = 1;
+      let cx = 0;
+      let cy = 0;
+      let angle = 0;
+      let startTime = performance.now();
+      let lastTime = startTime;
+
+      const cycleMs = spinUpMs + spinHoldMs + spinDownMs + restMs;
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function easeOutHinge(t) {
+        const k = 2.6;
+        const base = (Math.exp(-k * t) - Math.exp(-k)) / (1 - Math.exp(-k));
+        const tail = Math.pow(1 - t, 2.8);
+        return base * tail;
+      }
+
+      function rpmForCycle(ms) {
+        if (cycleMs <= 0) return 0;
+        const t = ms % cycleMs;
+        if (t < spinUpMs) {
+          const p = spinUpMs === 0 ? 1 : t / spinUpMs;
+          return effectiveRPM * easeOutCubic(p);
+        }
+        if (t < spinUpMs + spinHoldMs) {
+          return effectiveRPM;
+        }
+        if (t < spinUpMs + spinHoldMs + spinDownMs) {
+          const p = spinDownMs === 0 ? 1 : (t - spinUpMs - spinHoldMs) / spinDownMs;
+          return effectiveRPM * easeOutHinge(p);
+        }
+        return 0;
+      }
+
+      function resize() {
+        const rect = fanShell.getBoundingClientRect();
+        dpr = Math.min(dprMax, window.devicePixelRatio || 1);
+        W = rect.width + pad * 2;
+        H = rect.height + pad * 2;
+
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        canvas.style.width = `${W}px`;
+        canvas.style.height = `${H}px`;
+        canvas.style.left = `${-pad}px`;
+        canvas.style.top = `${-pad}px`;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cx = W / 2;
+        cy = H / 2;
+      }
+
+      const ro = new ResizeObserver(resize);
+      ro.observe(fanShell);
+      resize();
+
+      function mulberry32(seed) {
+        let t = seed;
+        return () => {
+          t += 0x6d2b79f5;
+          let r = Math.imul(t ^ (t >>> 15), 1 | t);
+          r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+          return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      const rand = mulberry32(1337);
+      const colors = {
+        white: [248, 252, 255],
+        gold: [255, 214, 128]
+      };
+
+      const particles = [];
+      for (let i = 0; i < particleCount; i += 1) {
+        const tone = rand() > 0.45 ? colors.white : colors.gold;
+        particles.push({
+          baseAngle: rand() * TAU,
+          phase: rand(),
+          speed: 0.16 + rand() * 0.32,
+          drift: (rand() - 0.5) * 0.8,
+          length: 8 + rand() * 18,
+          width: 0.8 + rand() * 1.4,
+          tone,
+          seed: rand() * 10
+        });
+      }
+
+      function draw(now) {
+        const dt = Math.min(0.05, (now - lastTime) / 1000);
+        lastTime = now;
+
+        const rpm = rpmForCycle(now - startTime);
+        const omega = rpm * TAU / 60;
+        angle += omega * dt;
+        fanRotor.style.transform = `translateZ(0) rotate(${angle}rad)`;
+
+        const spinIntensity = effectiveRPM > 0 ? rpm / effectiveRPM : 0;
+        const strengthNow = effectiveStrength * spinIntensity;
+
+        ctx.clearRect(0, 0, W, H);
+        if (strengthNow <= 0.001) {
+          requestAnimationFrame(draw);
+          return;
+        }
+
+        const t = now / 1000;
+        const spinPhase = angle * 0.12;
+        const inner = 16;
+        const outer = 58 * (0.7 + strengthNow);
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.lineCap = "round";
+
+        for (const p of particles) {
+          const life = (t * p.speed + p.phase) % 1;
+          const ease = life * life * (3 - 2 * life);
+          const radius = inner + ease * outer;
+          const wobble = Math.sin((t + p.seed) * 1.2) * 0.15;
+          const swirl = (1 - life) * 0.45 * (p.drift + wobble);
+          const angle = p.baseAngle + spinPhase + swirl;
+
+          const x = cx + Math.cos(angle) * radius;
+          const y = cy + Math.sin(angle) * radius;
+
+          const tangent = angle + Math.PI / 2;
+          const curl = (1 - life) * 0.55 * p.drift;
+          const dx = Math.cos(tangent + curl);
+          const dy = Math.sin(tangent + curl);
+
+          const len = p.length * (0.65 + strengthNow) * (0.4 + ease);
+          const alpha = (1 - life) * 0.65 * strengthNow;
+          if (alpha <= 0.01) continue;
+
+          const startX = x - dx * len;
+          const startY = y - dy * len;
+          const ctrlX = x - dx * len * 0.5 + Math.cos(angle) * len * 0.2 * p.drift;
+          const ctrlY = y - dy * len * 0.5 + Math.sin(angle) * len * 0.2 * p.drift;
+
+          const grad = ctx.createLinearGradient(startX, startY, x, y);
+          grad.addColorStop(0, `rgba(${p.tone[0]},${p.tone[1]},${p.tone[2]},0)`);
+          grad.addColorStop(0.6, `rgba(${p.tone[0]},${p.tone[1]},${p.tone[2]},${alpha})`);
+          grad.addColorStop(1, `rgba(${p.tone[0]},${p.tone[1]},${p.tone[2]},${alpha * 0.8})`);
+
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = p.width;
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.quadraticCurveTo(ctrlX, ctrlY, x, y);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+        requestAnimationFrame(draw);
+      }
+
+      requestAnimationFrame(draw);
+    })();
+  </script>
+</body>
+</html>

@@ -60,9 +60,7 @@ export function SectionHeading({
       {eyebrow ? (
         <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">{eyebrow}</div>
       ) : null}
-      <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
-        {title}
-      </h2>
+      <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">{title}</h2>
       {subtitle ? <p className="text-body text-muted">{subtitle}</p> : null}
     </div>
   );
@@ -146,15 +144,15 @@ export function Button({
   children,
   onClick,
   href,
-  type,
+  type = "button", // ✅ default prevents accidental form submits
   variant = "primary",
   size = "md",
   className = "",
-  disabled,
+  disabled = false,
   full,
 }: ButtonProps) {
   const base =
-    "relative inline-flex items-center justify-center rounded-control whitespace-nowrap select-none antialiased overflow-hidden " +
+    "group relative inline-flex items-center justify-center rounded-control whitespace-nowrap select-none antialiased overflow-hidden " +
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-0 " +
     "transition-all duration-200";
 
@@ -165,22 +163,56 @@ export function Button({
       ? "h-11 px-5 text-[15px] leading-[1.15]"
       : "h-10 px-4 text-[14px] leading-[1.1]";
 
+  /**
+   * ✅ Premium gold button:
+   * - Uses bg-metal-gold (now real from tailwind.config.js)
+   * - Has a slow shine sweep on hover
+   */
   const styles =
     variant === "primary" || variant === "gold"
-      ? "font-bold tracking-[0.02em] text-black bg-metal-gold border border-gold/70 " +
-        "shadow-[0_10px_30px_rgb(var(--gold)/0.35)] " +
-        "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/60 before:opacity-70 " +
-        "after:absolute after:inset-0 after:bg-[radial-gradient(80%_120%_at_50%_-40%,rgba(255,255,255,0.35),transparent_60%)] after:opacity-0 " +
-        "hover:after:opacity-100 after:transition-opacity after:duration-200 " +
-        "hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgb(var(--gold)/0.45)]"
+      ? cn(
+          "font-bold tracking-[0.02em] text-black",
+          "bg-metal-gold border border-gold/70",
+          "shadow-[0_10px_30px_rgb(var(--gold)/0.35)]",
+          "hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgb(var(--gold)/0.45)]",
+          "active:translate-y-0 active:shadow-[0_10px_24px_rgb(var(--gold)/0.32)]",
+          // top highlight line
+          "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/60 before:opacity-70",
+          // subtle radial punch (nice on hover)
+          "after:absolute after:inset-0 after:bg-[radial-gradient(80%_120%_at_50%_-40%,rgba(255,255,255,0.35),transparent_60%)] after:opacity-0 after:transition-opacity after:duration-200",
+          "hover:after:opacity-100"
+        )
       : variant === "outline"
-      ? "font-bold tracking-[0.02em] text-silver border border-stroke/70 bg-surface/30 " +
-        "hover:bg-surface2/70 hover:border-silver/50"
-      : "font-bold text-silver/80 bg-surface/30 border border-stroke/60 " +
-        "hover:text-silver hover:bg-surface2/60";
+      ? "font-bold tracking-[0.02em] text-silver border border-stroke/70 bg-surface/30 hover:bg-surface2/70 hover:border-silver/50"
+      : "font-bold text-silver/80 bg-surface/30 border border-stroke/60 hover:text-silver hover:bg-surface2/60";
 
   const width = full ? "w-full" : "";
-  const classes = cn(base, sizes, styles, width, "disabled:opacity-60", className);
+
+  // ✅ Make disabled links ACTUALLY disabled
+  const disabledClass = disabled
+    ? "opacity-60 pointer-events-none cursor-not-allowed"
+    : "";
+
+  const classes = cn(base, sizes, styles, width, disabledClass, className);
+
+  const Shine = (
+    <span
+      aria-hidden
+      className={cn(
+        "pointer-events-none absolute inset-0",
+        // slow sweep highlight that only plays on hover
+        "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+      )}
+    >
+      <span
+        className={cn(
+          "absolute -inset-y-8 left-[-60%] w-[55%]",
+          "bg-gradient-to-r from-transparent via-white/35 to-transparent",
+          "group-hover:animate-shine-sweep"
+        )}
+      />
+    </span>
+  );
 
   if (href) {
     return (
@@ -191,13 +223,16 @@ export function Button({
         data-no-link-style
         onClick={onClick}
       >
-        {children}
+        {Shine}
+        <span className="relative z-[1]">{children}</span>
       </Link>
     );
   }
+
   return (
     <button className={classes} onClick={onClick} disabled={disabled} type={type}>
-      {children}
+      {Shine}
+      <span className="relative z-[1]">{children}</span>
     </button>
   );
 }
