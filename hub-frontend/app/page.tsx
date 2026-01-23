@@ -229,10 +229,10 @@ function WebhookIconSpin({ active }: { active: boolean }) {
     const airflowStrength = 0.9;
     const particleCount = 56;
     const blurAmount = 6;
-    const spinUpMs = 700;
-    const spinHoldMs = 2300;
-    const spinDownMs = 10000;
-    const restMs = 2000;
+    const spinUpMs: number = 700;
+    const spinHoldMs: number = 2300;
+    const spinDownMs: number = 10000;
+    const restMs: number = 2000;
 
     const effectiveRPM = prefersReduced ? Math.min(spinRPM, 120) : spinRPM;
     const effectiveStrength = prefersReduced ? 0 : airflowStrength;
