@@ -2129,8 +2129,9 @@
 
             // Timing (router behavior)
             intakeDurMs: 1150,
-            sortMs: 3600,          // must match cube flip duration visually
-            rotateMs: 520,
+            sortMs: 3000,          // must match cube flip duration visually
+            sortDelayMs: 220,      // let intake orb settle into the cube before sorting
+            rotateMs: 420,
             emitGapMs: 340,
             outDurMs: 2200,
 
@@ -2154,10 +2155,11 @@
             // How often batches arrive (no new batch while sorting/routing)
             batch: {
               minCount: 1,
-              maxCount: 1,
+              maxCount: 2,
               spacingMs: 180,  // staggered intake into the core
               idleMinMs: 2000,
               idleMaxMs: 5200,
+              doubleChance: 0.22,
               pauseChance: 0.10,
               pauseMinMs: 9000,
               pauseMaxMs: 12000
@@ -2170,7 +2172,7 @@
             CFG.pillH = 32;
             CFG.pillFont = 11;
             CFG.pillYOffset = 30;
-            CFG.laneOffsetX = 0.14;
+            CFG.laneOffsetX = 0.12;
             CFG.outOffsetY = 0.26;
           }
 
@@ -2392,14 +2394,18 @@
           }
 
           function pickLane() {
-            // subtle round-robin so it feels intentional
-            const next = (router.lastLaneUsed + 1) % 3;
-            router.lastLaneUsed = next;
-            return next;
+            // Weighted randomness: trend most, early some, runner least
+            const r = Math.random();
+            if (r < 0.62) return 1; // TREND
+            if (r < 0.85) return 0; // EARLY
+            return 2; // RUNNER
           }
 
           function startBatch(now) {
-            const count = Math.floor(rand(CFG.batch.minCount, CFG.batch.maxCount + 1));
+            let count = CFG.batch.minCount;
+            if (CFG.batch.maxCount > 1 && Math.random() < CFG.batch.doubleChance) {
+              count = 2;
+            }
 
             router.mode = "intake";
             router.queue.length = 0;
@@ -2556,16 +2562,15 @@
             const r = 999;
 
             // flashT (0..1) comes from packet arrival at destination
-            // ✅ glow is *circular*, not a box.
             const glow = easeOutCubic(clamp(flashT, 0, 1));
 
-            // Natural halo (circular) behind the pill
+            // Subtle pill glow (tight, not giant)
             if (glow > 0.001) {
               ctx.save();
-              const rad = 34 + glow * 90;
+              const rad = 22 + glow * 36;
               const g = ctx.createRadialGradient(x, y, rad * 0.10, x, y, rad);
-              g.addColorStop(0.00, rgba(color, 0.28 * glow));
-              g.addColorStop(0.55, rgba(color, 0.12 * glow));
+              g.addColorStop(0.00, rgba(color, 0.22 * glow));
+              g.addColorStop(0.55, rgba(color, 0.10 * glow));
               g.addColorStop(1.00, "rgba(0,0,0,0)");
               ctx.fillStyle = g;
               ctx.beginPath();
@@ -2578,14 +2583,21 @@
             ctx.translate(x - w / 2, y - h / 2);
 
             // glass background
-            ctx.fillStyle = "rgba(0,0,0,0.36)";
+            const fillGlow = 0.28 * glow;
+            ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${fillGlow})`;
             roundRect(0, 0, w, h, r);
             ctx.fill();
 
+            if (glow > 0.001) {
+              ctx.fillStyle = "rgba(0,0,0,0.16)";
+              roundRect(0, 0, w, h, r);
+              ctx.fill();
+            }
+
             // border (premium + subtle)
-            ctx.lineWidth = 1.6;
-            ctx.strokeStyle = rgba(color, (isCenter ? 0.60 : 0.46) + glow * 0.18);
-            ctx.shadowBlur = 16 + glow * 28;
+            ctx.lineWidth = 2.0;
+            ctx.strokeStyle = rgba(color, (isCenter ? 0.60 : 0.46) + glow * 0.36);
+            ctx.shadowBlur = 14 + glow * 24;
             ctx.shadowColor = rgba(color, 0.85);
             ctx.stroke();
 
@@ -2602,38 +2614,8 @@
 
           // ✅ Extra arrival pulse ring (circular + natural)
           function drawArrivalPulse(x, y, color, flashT) {
-            const t = clamp(flashT, 0, 1);
-            if (t <= 0) return;
-
-            const p = 1 - t;                 // progress 0→1
-            const a = easeOutCubic(t);        // intensity
-
-            // ✅ NO RING: just a soft expanding glow "puff" when the packet arrives
-            const radOuter = 26 + p * 120;
-            const radInner = 10 + p * 40;
-
-            ctx.save();
-
-            // outer bloom
-            let g = ctx.createRadialGradient(x, y, radInner * 0.10, x, y, radOuter);
-            g.addColorStop(0.00, rgba(color, 0.16 * a));
-            g.addColorStop(0.35, rgba(color, 0.08 * a));
-            g.addColorStop(1.00, "rgba(0,0,0,0)");
-            ctx.fillStyle = g;
-            ctx.beginPath();
-            ctx.arc(x, y, radOuter, 0, TAU);
-            ctx.fill();
-
-            // hot core puff
-            g = ctx.createRadialGradient(x, y, 0, x, y, radInner);
-            g.addColorStop(0.00, rgba(color, 0.22 * a));
-            g.addColorStop(1.00, "rgba(0,0,0,0)");
-            ctx.fillStyle = g;
-            ctx.beginPath();
-            ctx.arc(x, y, radInner, 0, TAU);
-            ctx.fill();
-
-            ctx.restore();
+            // pill glow handles arrival cue
+            return;
           }
 
 
@@ -2744,15 +2726,17 @@
               }
 
               if (allEntered) {
-                // start sorting (flip sequence)
+                // start sorting (flip sequence) after a short settle delay
                 router.mode = "sort";
-                router.sortStart = now;
-                setSortActive(true);
+                router.sortStart = now + CFG.sortDelayMs;
+                setSortActive(false);
               }
             }
 
             // Sorting (cube does its flip/shift as "calculation")
             if (router.mode === "sort") {
+              if (now < router.sortStart) return;
+              setSortActive(true);
               // pulse intensity based on progress (simple)
               const prog = clamp((now - router.sortStart) / CFG.sortMs, 0, 1);
               forwarder3d.style.setProperty("--pulse", (0.9 + 0.35 * Math.sin(prog * Math.PI)).toFixed(3));
@@ -2804,6 +2788,7 @@
                   laneId,
                   emitAt: now + CFG.rotateMs
                 };
+                lanePulseAt[laneId] = now;
 
                 // keep routeNextAt far enough that we don't spam rotations
                 router.routeNextAt = now + CFG.rotateMs + 20;
@@ -2846,8 +2831,7 @@
                 if (t < 1) {
                   keep.push(op);
                 } else {
-                  // ✅ destination impact pulse (lane + pill)
-                  lanePulseAt[op.laneId] = now;
+                  // ✅ destination impact pulse (pill only)
                   pillFlashAt[op.laneId] = now;
                 }
               }

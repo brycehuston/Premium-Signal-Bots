@@ -1449,7 +1449,7 @@ export default function Page() {
         <SectionHeading
           align="center"
           eyebrow="System Flow"
-          title="Explore The 3 Phases"
+          title="EXPLORE 3 PHASES"
           subtitle="Step inside the pipeline. Watch signals become alerts."
         />
         <div className="mx-auto w-full max-w-4xl">
@@ -1465,13 +1465,13 @@ export default function Page() {
               <div className="phase-grid">
                 <div className="phase-left">
                   {/* NEW: hero line */}
-                  <div className="phase-hero-line">SOURCE → SCANNER → ROUTER</div>
+                  <div className="phase-hero-line">Signal Pipeline</div>
                   {/* NEW: supporting line */}
-                  <div className="phase-support-line">Captured → Scored → Dispatched.</div>
+                  <div className="phase-support-line">Collected → Validated → Delivered</div>
                   {/* NEW: CTA aligned left */}
                   <div className="phase-cta-wrap">
                     <Button href="/phase-1" size="md" className="phase-cta">
-                      Enter The Workflow
+                      ALPHA WORKFLOW
                     </Button>
                   </div>
                 </div>
@@ -1613,7 +1613,7 @@ export default function Page() {
             transform: translate(-50%, -50%);
             background: rgba(244, 198, 90, 0.95);
             box-shadow: 0 0 12px rgba(244, 198, 90, 0.2);
-            animation: beamPulse 14s ease-in-out infinite;
+            animation: beamPulse 20s ease-in-out infinite;
           }
           .beam-station {
             position: absolute;
@@ -1677,8 +1677,10 @@ export default function Page() {
             letter-spacing: 0.1em;
             text-transform: uppercase;
             border-radius: 999px;
-            box-shadow: 0 10px 26px rgba(var(--phase-gold), 0.18),
-              inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(246, 212, 139, 0.34);
+            background: linear-gradient(180deg, rgba(246, 212, 139, 0.14), rgba(0, 0, 0, 0.18));
+            box-shadow: 0 0 22px rgba(246, 212, 139, 0.10),
+              inset 0 0 14px rgba(246, 212, 139, 0.06);
             overflow: hidden;
             transition: transform 160ms ease, box-shadow 200ms ease;
           }
@@ -1698,8 +1700,8 @@ export default function Page() {
           }
           .phase-cta:hover {
             transform: translateY(-1px);
-            box-shadow: 0 16px 34px rgba(var(--phase-gold), 0.28),
-              inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+            box-shadow: 0 0 34px rgba(246, 212, 139, 0.14),
+              inset 0 0 18px rgba(246, 212, 139, 0.08);
           }
           .phase-cta:hover::after {
             transform: translateX(120%);
@@ -1710,21 +1712,30 @@ export default function Page() {
           @keyframes beamPulse {
             0% {
               left: 10%;
+              opacity: 0;
             }
-            30% {
+            6% {
+              opacity: 1;
+            }
+            40% {
               left: 50%;
+              opacity: 1;
             }
-            36% {
-              left: 50%;
-            }
-            63% {
+            70% {
               left: 90%;
+              opacity: 1;
             }
-            69% {
+            78% {
               left: 90%;
+              opacity: 0;
+            }
+            79% {
+              left: 10%;
+              opacity: 0;
             }
             100% {
-              left: 90%;
+              left: 10%;
+              opacity: 0;
             }
           }
           @keyframes stationHit {
