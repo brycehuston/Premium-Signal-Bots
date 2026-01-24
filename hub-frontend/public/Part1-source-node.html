@@ -679,7 +679,7 @@ function smooth01(t){
    - After animation finishes, we navigate to Part 2.
    ============================================================ */
 const DIVE = {
-  target: "Part2-python-scanner-bots.html",
+  target: "/phase-2",
 
   active: false,
   done: false,
@@ -1814,7 +1814,8 @@ canvas.addEventListener("pointerdown", (e)=>{
           // Navigate only AFTER animation completes (no instant jump)
           if(diveU >= 1 && !DIVE.done){
             DIVE.done = true;
-            window.location.href = DIVE.target;
+            const navTarget = (window.top && window.top !== window) ? window.top : window;
+            navTarget.location.href = DIVE.target;
             return;
           }
         } else {

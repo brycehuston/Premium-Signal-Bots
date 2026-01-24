@@ -59,7 +59,11 @@ function Container({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${sans.variable} ${display.variable}`} suppressHydrationWarning>
+      <html
+        lang="en"
+        className={`${sans.variable} ${display.variable} overflow-x-hidden`}
+        suppressHydrationWarning
+      >
       <body className="min-h-screen bg-bg text-text antialiased font-sans overflow-x-hidden">
         {/* decorative bg layers */}
         <div className="pointer-events-none fixed inset-0 -z-10">

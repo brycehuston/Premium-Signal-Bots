@@ -296,7 +296,6 @@
     }
 
     @keyframes cubeWrapSpin {
-
       from,
       to,
       20%,
@@ -304,7 +303,6 @@
         animation-timing-function: step-start;
         transform: none;
       }
-
       40% {
         transform: rotateY(1turn);
       }
@@ -1387,7 +1385,7 @@
 
       .badgeStack {
         position: static;
-        margin: 8px auto 0;
+        margin: 6px auto 0;
         width: fit-content;
         max-width: 92vw;
         padding: 0;
@@ -1422,14 +1420,14 @@
 
 
       .mobileHeroTitle {
-        margin: 10px auto 0;
+        margin: 8px auto 0;
         width: min(980px, 92%);
         display: flex;
         justify-content: center;
         gap: 6px;
-        font-size: 20px;
+        font-size: 24px;
         font-weight: 900;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.12em;
         line-height: 1.1;
         text-transform: uppercase;
         text-align: center;
@@ -1445,41 +1443,41 @@
       }
 
       .brandWrap {
-        padding: 7px 9px;
+        padding: 8px 10px;
       }
 
       .brandMark {
-        font-size: 10px;
-        letter-spacing: 0.22em;
+        font-size: 11px;
+        letter-spacing: 0.2em;
       }
 
       .phaseTag {
-        font-size: 9px;
-        padding: 3px 7px;
-        letter-spacing: 0.14em;
+        font-size: 10px;
+        padding: 4px 8px;
+        letter-spacing: 0.12em;
       }
 
       .workflowTitle {
-        font-size: 10px;
-        letter-spacing: 0.14em;
+        font-size: 11px;
+        letter-spacing: 0.12em;
       }
 
       .workflowText {
-        font-size: 10px;
+        font-size: 11px;
       }
 
       .goAlphaWrap {
         left: 50% !important;
         right: auto !important;
-        bottom: 88px !important;
+        bottom: 78px !important;
         transform: translateX(-50%) !important;
         z-index: 6;
       }
 
       .goAlphaBtn {
-        font-size: 11px;
-        padding: 10px 14px;
-        min-height: 44px;
+        font-size: 12px;
+        padding: 12px 18px;
+        min-height: 48px;
       }
 
       .hintBubble {
@@ -1489,7 +1487,7 @@
       }
 
       .forwarder3d {
-        transform: translate(-50%, -50%) scale(0.82);
+        transform: translate(-50%, -50%) scale(0.9);
       }
 
       .infoBtn {
@@ -2125,6 +2123,7 @@
             sourceOffsetY: -0.27,
 
             laneOffsetX: 0.22,
+            laneOffsetMin: 150,
             outYPad: 0,
 
             // Timing (router behavior)
@@ -2172,8 +2171,11 @@
             CFG.pillH = 32;
             CFG.pillFont = 11;
             CFG.pillYOffset = 30;
-            CFG.laneOffsetX = 0.12;
-            CFG.outOffsetY = 0.26;
+            CFG.laneOffsetX = 0.10;
+            CFG.laneOffsetMin = 110;
+            CFG.outOffsetY = 0.25;
+            CFG.forwarderOffsetY = -0.07;
+            CFG.centerY = 0.44;
           }
 
           let DPR = 1;
@@ -2260,7 +2262,7 @@
             const sx = W * CFG.sourceX;
             const rx = W * CFG.forwarderX;
 
-            const laneOffsetPx = clamp(W * CFG.laneOffsetX, 150, 350);
+            const laneOffsetPx = clamp(W * CFG.laneOffsetX, CFG.laneOffsetMin, 350);
 
             const laneX0 = rx - laneOffsetPx;
             const laneX1 = rx;

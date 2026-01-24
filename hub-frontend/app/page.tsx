@@ -1296,27 +1296,34 @@ export default function Page() {
 
       <motion.section
         {...revealProps}
-        className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-16"
+        className="grid grid-cols-1 items-center gap-12 md:grid-cols-12 md:gap-16"
       >
-        <div ref={featuresScope as any} className="text-center md:col-span-6 md:pr-10 md:text-left">
+        <div
+          ref={featuresScope as any}
+          className="text-center md:col-span-6 md:pr-10 md:text-left"
+        >
           <div className="space-y-5">
-            <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">AlphaAlerts</div>
-            <h1 className="font-display text-silver">
-              <span className="block font-semibold tracking-[-0.01em] text-[clamp(22px,4vw,40px)] sm:text-hero-sub">
+            <div className="text-[0.8rem] uppercase tracking-[0.4em] text-muted/80 sm:text-eyebrow">
+              AlphaAlerts
+            </div>
+            <h1 className="font-display text-silver leading-[1.05]">
+              <span className="block font-semibold tracking-[-0.01em] text-[clamp(1.3rem,5.6vw,2.3rem)] sm:text-hero-sub">
                 Your Solana edge, delivered by
               </span>
-              <span className="block text-hero font-black text-metal-silver">AlphaAlerts</span>
+              <span className="block text-[clamp(3.1rem,12vw,5rem)] font-black text-metal-silver sm:text-hero">
+                AlphaAlerts
+              </span>
             </h1>
-            <p className="mx-auto max-w-[56ch] text-body text-muted md:mx-0">
+            <p className="mx-auto max-w-[56ch] text-[1.05rem] leading-relaxed text-muted sm:text-body md:mx-0">
               AI-powered Solana alerts. Catch new tokens, trends, and runners before the crowd.
             </p>
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Button
               href="/pricing#plans"
               size="lg"
-              className="w-full sm:min-w-[180px] sm:w-auto !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
+              className="w-full !h-12 text-[0.95rem] sm:min-w-[180px] sm:w-auto !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_8px_20px_rgb(var(--gold3)/0.45)] hover:!shadow-[0_14px_28px_rgb(var(--gold3)/0.55)] !before:opacity-0 !after:opacity-0"
             >
               GO ALPHA
             </Button>
@@ -1324,7 +1331,7 @@ export default function Page() {
               href="#sample-alerts"
               variant="outline"
               size="lg"
-              className="w-full sm:min-w-[180px] sm:w-auto"
+              className="w-full !h-12 text-[0.95rem] sm:min-w-[180px] sm:w-auto"
             >
               SAMPLE ALERTS
             </Button>
@@ -1368,7 +1375,7 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="relative isolate min-h-[320px] sm:min-h-[360px] md:min-h-[380px] overflow-visible">
+            <div className="relative isolate min-h-[360px] sm:min-h-[380px] md:min-h-[420px] overflow-hidden sm:overflow-visible">
               <motion.div
                 aria-hidden={heroView !== "chart"}
                 className="absolute inset-0"
@@ -1383,7 +1390,7 @@ export default function Page() {
                   pointerEvents: heroView === "chart" ? "auto" : "none",
                 }}
               >
-                <HeroChart height={340} />
+                <HeroChart height={360} />
               </motion.div>
               <motion.div
                 aria-hidden={heroView !== "reel"}
@@ -1445,14 +1452,26 @@ export default function Page() {
 
       <SectionDivider />
 
-      <motion.section {...revealProps} className="space-y-8">
-        <SectionHeading
-          align="center"
-          eyebrow="System Flow"
-          title="EXPLORE 3 PHASES"
-          subtitle="Step inside the pipeline. Watch signals become alerts."
-        />
-        <div className="mx-auto w-full max-w-4xl">
+      <motion.section {...revealProps} className="phase-section space-y-8">
+        <div className="phase-container">
+          <SectionHeading
+            align="center"
+            eyebrow="System Flow"
+            title={
+              <>
+                <span>Real-time flow.</span>
+                <span className="hidden md:inline"> </span>
+                <br className="md:hidden" />
+                <span>Real signals.</span>
+                <br className="hidden md:block" />
+                <span>Real Alpha.</span>
+              </>
+            }
+            subtitle="A cinematic walkthrough of the system powering Alpha Alerts."
+            className="phase-heading"
+          />
+        </div>
+        <div className="phase-container">
           {/* NEW: premium phase flow card */}
           <Card className="phase-flow-card relative overflow-hidden">
             <div
@@ -1464,10 +1483,8 @@ export default function Page() {
             <CardBody className="phase-body relative text-left">
               <div className="phase-grid">
                 <div className="phase-left">
-                  {/* NEW: hero line */}
                   <div className="phase-hero-line">Signal Pipeline</div>
-                  {/* NEW: supporting line */}
-                  <div className="phase-support-line">Collected → Validated → Delivered</div>
+                  <div className="phase-support-line">Collected • Validated • Delivered</div>
                   {/* NEW: CTA aligned left */}
                   <div className="phase-cta-wrap">
                     <Button href="/phase-1" size="md" className="phase-cta">
@@ -1480,7 +1497,6 @@ export default function Page() {
                   <div className="beam-module">
                     <span className="beam-track" />
                     <span className="beam-glow" />
-                    <span className="beam-pulse" />
                     <span className="beam-station beam-station--source">
                       <span className="beam-ring" />
                       <span className="beam-label">SOURCE</span>
@@ -1501,6 +1517,28 @@ export default function Page() {
         </div>
         {/* NEW: scoped styles for this section */}
         <style jsx>{`
+          .phase-section {
+            padding-top: 80px;
+          }
+          .phase-container {
+            width: 100%;
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 24px;
+          }
+          .phase-heading {
+            text-align: center;
+          }
+          .phase-heading :global(h2) {
+            max-width: 760px;
+            margin: 0 auto;
+            line-height: 1.05;
+          }
+          .phase-heading :global(p) {
+            max-width: 560px;
+            margin: 0 auto;
+            color: rgba(255, 255, 255, 0.72);
+          }
           .phase-flow-card {
             --phase-bronze: 199 142 84;
             --phase-silver: 215 224 238;
@@ -1508,13 +1546,15 @@ export default function Page() {
             --phase-ink: 8 11 16;
             background: linear-gradient(150deg, rgba(14, 18, 26, 0.86), rgba(8, 10, 16, 0.9));
             border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
             box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.06);
           }
           .phase-body {
             display: flex;
             flex-direction: column;
             gap: 14px;
-            padding: 20px 28px 22px;
+            padding: 28px;
+            min-height: 200px;
             text-align: left;
           }
           .phase-card-ambient {
@@ -1533,25 +1573,19 @@ export default function Page() {
           .phase-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 44px;
+            gap: 36px;
             align-items: center;
           }
           .phase-hero-line {
-            font-size: 19px;
-            letter-spacing: 0.14em;
+            font-size: 18px;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.92);
             font-weight: 800;
           }
-          .phase-kicker {
-            font-size: 11px;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.55);
-          }
           .phase-support-line {
-            font-size: 13px;
-            letter-spacing: 0.1em;
+            font-size: 12px;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.7);
             margin-top: 2px;
@@ -1603,18 +1637,6 @@ export default function Page() {
             transform: translateY(-50%);
             filter: blur(10px);
           }
-          .beam-pulse {
-            position: absolute;
-            left: 10%;
-            top: calc(50% - 19px);
-            width: 11px;
-            height: 11px;
-            border-radius: 999px;
-            transform: translate(-50%, -50%);
-            background: rgba(244, 198, 90, 0.95);
-            box-shadow: 0 0 12px rgba(244, 198, 90, 0.2);
-            animation: beamPulse 20s ease-in-out infinite;
-          }
           .beam-station {
             position: absolute;
             display: flex;
@@ -1626,7 +1648,7 @@ export default function Page() {
             letter-spacing: 0.18em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.75);
-            animation: stationLabel 14s ease-in-out infinite;
+            animation: stationLabel 15s ease-in-out infinite;
           }
           .beam-station--source {
             left: 10%;
@@ -1636,12 +1658,12 @@ export default function Page() {
           .beam-station--scanner {
             left: 50%;
             transform: translateX(-50%);
-            animation-delay: 3s;
+            animation-delay: 5s;
           }
           .beam-station--router {
             left: 90%;
             transform: translateX(-50%);
-            animation-delay: 6s;
+            animation-delay: 10s;
           }
           .beam-ring {
             width: 14px;
@@ -1649,16 +1671,16 @@ export default function Page() {
             border-radius: 999px;
             border: 1px solid rgba(255, 255, 255, 0.18);
             box-shadow: 0 0 10px rgba(244, 198, 90, 0);
-            animation: stationHit 14s ease-in-out infinite;
+            animation: stationHit 15s ease-in-out infinite;
           }
           .beam-station--source .beam-ring {
             animation-delay: 0s;
           }
           .beam-station--scanner .beam-ring {
-            animation-delay: 3s;
+            animation-delay: 5s;
           }
           .beam-station--router .beam-ring {
-            animation-delay: 6s;
+            animation-delay: 10s;
           }
           .beam-label {
             font-size: 12px;
@@ -1709,59 +1731,43 @@ export default function Page() {
           .phase-cta:active {
             transform: translateY(1px) scale(0.98);
           }
-          @keyframes beamPulse {
-            0% {
-              left: 10%;
-              opacity: 0;
-            }
-            6% {
-              opacity: 1;
-            }
-            40% {
-              left: 50%;
-              opacity: 1;
-            }
-            70% {
-              left: 90%;
-              opacity: 1;
-            }
-            78% {
-              left: 90%;
-              opacity: 0;
-            }
-            79% {
-              left: 10%;
-              opacity: 0;
-            }
-            100% {
-              left: 10%;
-              opacity: 0;
-            }
-          }
           @keyframes stationHit {
-            0%,
-            100% {
+            0% {
               border-color: rgba(255, 255, 255, 0.18);
               box-shadow: 0 0 10px rgba(244, 198, 90, 0);
+              background-color: transparent;
+              transform: scale(1);
             }
-            3% {
+            5% {
               border-color: rgba(244, 198, 90, 0.7);
               box-shadow: 0 0 16px rgba(244, 198, 90, 0.35);
+              background-color: rgba(244, 198, 90, 0.95);
+              transform: scale(1.1);
             }
-            15% {
+            12% {
               border-color: rgba(255, 255, 255, 0.18);
               box-shadow: 0 0 10px rgba(244, 198, 90, 0);
+              background-color: transparent;
+              transform: scale(1);
+            }
+            100% {
+              border-color: rgba(255, 255, 255, 0.18);
+              box-shadow: 0 0 10px rgba(244, 198, 90, 0);
+              background-color: transparent;
+              transform: scale(1);
             }
           }
           @keyframes stationLabel {
-            0%,
-            100% {
+            0% {
               color: rgba(255, 255, 255, 0.75);
             }
-            3% {
+            5% {
               color: rgba(255, 255, 255, 1);
             }
-            15% {
+            12% {
+              color: rgba(255, 255, 255, 0.75);
+            }
+            100% {
               color: rgba(255, 255, 255, 0.75);
             }
           }
@@ -1789,16 +1795,25 @@ export default function Page() {
             }
           }
           @media (max-width: 640px) {
+            .phase-section {
+              padding-top: 56px;
+            }
+            .phase-container {
+              padding: 0 18px;
+            }
+            .phase-heading :global(h2) {
+              max-width: 320px;
+            }
+            .phase-heading :global(p) {
+              max-width: 320px;
+            }
             .phase-hero-line {
-              font-size: 16px;
-              letter-spacing: 0.14em;
+              font-size: 15px;
+              letter-spacing: 0.16em;
             }
             .phase-support-line {
               font-size: 11px;
-              letter-spacing: 0.14em;
-            }
-            .phase-kicker {
-              letter-spacing: 0.28em;
+              letter-spacing: 0.16em;
             }
             .phase-body {
               text-align: center;

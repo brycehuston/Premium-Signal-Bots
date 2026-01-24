@@ -48,7 +48,7 @@ export function SectionHeading({
   className,
   align = "left",
 }: {
-  title: string;
+  title: ReactNode;
   subtitle?: string;
   eyebrow?: string;
   className?: string;

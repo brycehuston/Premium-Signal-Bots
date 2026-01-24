@@ -383,7 +383,7 @@
       justify-content: center;
       gap: 10px;
       align-items: center;
-      font-size: 14px;
+      font-size: 18px;
       font-weight: 900;
       letter-spacing: 0.22em;
       text-transform: uppercase;
@@ -1142,7 +1142,7 @@
        ============================================================ */
     const NAV = {
       enabled: true,
-      nextUrl: "Part3-magnetic-router-forwarder.html", /* ✅ CHANGE THIS if your page3 filename differs */
+      nextUrl: "/phase-3", /* ✅ CHANGE THIS if your page3 filename differs */
       tripleMs: 700,
 
       /* UPGRADE: portal transition */
@@ -1151,12 +1151,12 @@
       redirectAt: 0.93
     };
 
-    const OFFSETS = { EARLY: 0.59, TREND: 0.11, RUNNER: -0.59 };
+    const OFFSETS = { EARLY: -0.49, TREND: 0.49, RUNNER: -0.49 };
     const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 430px)").matches;
     if (IS_MOBILE) {
       OFFSETS.EARLY = 0.30;
-      OFFSETS.TREND = 0.28;
-      OFFSETS.RUNNER = -0.36;
+      OFFSETS.TREND = 0.30;
+      OFFSETS.RUNNER = 0.46;
     }
 
     const MASTER = {
@@ -1613,7 +1613,7 @@
         };
 
         this.CFG = {
-          sparkSpeed: 0.011,
+          sparkSpeed: 0.012,
           ringThickness: 0.30,
           ringBrightness: profile.ringBrightness,
           sparks: 270,
@@ -1628,9 +1628,14 @@
           vignette: 0.46,
 
           // NEW: scan zap (slower so you can see it)
-          zapLife: 1.25,
+          zapLife: 1.15,
           zapSegs: 28,
-          zapJitter: 5
+          zapJitter: 5,
+
+          // Radar sweep pacing
+          sweepDur: 0.9,
+          interPause: 0.32,
+          longPause: 5.0
         };
         if (IS_MOBILE) {
           this.KNOBS.maxDots = 2;
@@ -1653,15 +1658,38 @@
 
         this.frameT = 0;
         this.lastMs = 0;
+        this.spawnClock = 0;
 
         this.lastDispatchSec = -999;
+        this.firstSeedAtSec =
+          botName === "TREND" ? (performance.now() / 1000) + (5 + Math.random() * 3) : null;
+        this.firstSeeded = false;
+        const ringPhaseByBot = {
+          EARLY: 0.12,
+          TREND: -0.06,
+          RUNNER: 0.22
+        };
+        this.ringPhase = ringPhaseByBot[botName] ?? 0;
+        const ringYOffsetByBot = {
+          EARLY: -10,
+          TREND: -10,
+          RUNNER: -10
+        };
+        this.ringYOffset = ringYOffsetByBot[botName] ?? 0;
+        const cadence = this.CFG.sweepDur + this.CFG.interPause;
+        const scanOffsetByBot = {
+          EARLY: 0,
+          TREND: cadence,
+          RUNNER: cadence * 2
+        };
+        this.scanOffsetSec = scanOffsetByBot[botName] ?? 0;
         this.resize();
       }
 
       getBotProfile(name) {
-        if (name === "EARLY") return { dotSpawnPerSec: 0.02, ringBrightness: 1.18, cooldown: 35 };
-        if (name === "TREND") return { dotSpawnPerSec: 0.06, ringBrightness: 1.28, cooldown: 45 };
-        return { dotSpawnPerSec: 0.015, ringBrightness: 1.22, cooldown: 55 };
+        if (name === "EARLY") return { dotSpawnPerSec: 0.023, ringBrightness: 1.18, cooldown: 35 };
+        if (name === "TREND") return { dotSpawnPerSec: 0.069, ringBrightness: 1.28, cooldown: 45 };
+        return { dotSpawnPerSec: 0.01725, ringBrightness: 1.22, cooldown: 55 };
       }
 
       resize() {
@@ -1704,6 +1732,14 @@
         while (d > Math.PI) d -= Math.PI * 2;
         while (d < -Math.PI) d += Math.PI * 2;
         return d;
+      }
+
+      getSparkAngle(s) {
+        return s.a + this.ringPhase;
+      }
+
+      getRingCenterY(cy) {
+        return cy + this.ringYOffset;
       }
 
       initStars() {
@@ -1774,13 +1810,59 @@
       }
 
       getSweepAngle(nowSec) {
-        const turnsPerSec = 0.18;
-        return (-Math.PI / 2) + nowSec * (Math.PI * 2 * turnsPerSec);
+        const start = -Math.PI / 2;
+        const sweepDur = this.CFG.sweepDur;
+        const interPause = this.CFG.interPause;
+        const longPause = this.CFG.longPause;
+        const cycle = (sweepDur * 2) + interPause + longPause;
+        const t = ((nowSec - this.scanOffsetSec) % cycle + cycle) % cycle;
+
+        if (t < sweepDur) {
+          const u = t / sweepDur;
+          const ease = u * u * (3 - 2 * u);
+          return start + (Math.PI * 2) * ease;
+        }
+        if (t < sweepDur + interPause) {
+          return start;
+        }
+        if (t < sweepDur + interPause + sweepDur) {
+          const t2 = t - (sweepDur + interPause);
+          const u = t2 / sweepDur;
+          const ease = u * u * (3 - 2 * u);
+          return start + (Math.PI * 2) * ease;
+        }
+        return start;
+      }
+
+      getSweepAlpha(nowSec) {
+        const sweepDur = this.CFG.sweepDur;
+        const interPause = this.CFG.interPause;
+        const longPause = this.CFG.longPause;
+        const cycle = (sweepDur * 2) + interPause + longPause;
+        const t = ((nowSec - this.scanOffsetSec) % cycle + cycle) % cycle;
+
+        if (t < sweepDur) {
+          const u = t / sweepDur;
+          const ease = u * u * (3 - 2 * u);
+          return 0.85 + (0.55 * ease);
+        }
+        if (t < sweepDur + interPause) {
+          return 0.7;
+        }
+        if (t < sweepDur + interPause + sweepDur) {
+          const t2 = t - (sweepDur + interPause);
+          const u = t2 / sweepDur;
+          const ease = u * u * (3 - 2 * u);
+          return 0.85 + (0.55 * ease);
+        }
+        const restT = (t - (sweepDur * 2) - interPause) / longPause;
+        return 0.35 + (0.35 * (1 - Math.min(1, restT)));
       }
 
       drawRadarFan(cx, cy, coreR, nowSec) {
         const ctx = this.ctx;
         const ang = this.getSweepAngle(nowSec);
+        const alphaMul = this.getSweepAlpha(nowSec);
         const arc = (this.KNOBS.radarFanDeg * Math.PI) / 180;
 
         const radarR = coreR * this.CFG.radarRadiusMul;
@@ -1792,8 +1874,8 @@
 
         const g = ctx.createRadialGradient(cx, cy, rIn, cx, cy, rOut);
         g.addColorStop(0.00, rgba(this.KNOBS.coreA, 0.00));
-        g.addColorStop(0.22, rgba(this.KNOBS.coreA, this.KNOBS.radarFanAlpha));
-        g.addColorStop(0.92, rgba(this.KNOBS.coreB, this.KNOBS.radarFanAlpha * 0.38));
+        g.addColorStop(0.22, rgba(this.KNOBS.coreA, this.KNOBS.radarFanAlpha * alphaMul));
+        g.addColorStop(0.92, rgba(this.KNOBS.coreB, this.KNOBS.radarFanAlpha * 0.38 * alphaMul));
         g.addColorStop(1.00, "rgba(0,0,0,0)");
 
         ctx.save();
@@ -1939,6 +2021,7 @@
         }
       }
 
+
       addCapturedOrb(payload) {
         // payload: {angle, r01, sparkIdx, zapSeed, born}
         this.capturedOrbs.push({
@@ -1962,14 +2045,16 @@
       getRingPointForSpark(s, cx, cy, ringR, baseR, nowSec) {
         // SAME ring math as drawRing() + drawZaps() so it always stays IN the ring
         const y3 = Math.sin(s.wob + nowSec * 0.8) * (baseR * this.CFG.ringThickness);
-        const x3 = Math.cos(s.a) * ringR;
-        const z3 = Math.sin(s.a) * ringR;
-        const pr = this.project3D(x3, y3, z3, cx, cy);
+        const a = this.getSparkAngle(s);
+        const x3 = Math.cos(a) * ringR;
+        const z3 = Math.sin(a) * ringR;
+        const ringCy = this.getRingCenterY(cy);
+        const pr = this.project3D(x3, y3, z3, cx, ringCy);
         return { x: pr.x, y: pr.y, p: pr.p };
       }
 
       // returns a point ON the same jagged lane used by drawZaps()
-      getZapPoint(sx, sy, ex, ey, seed, nowSec, u01) {
+      getZapPoint(sx, sy, ex, ey, seed, nowSec, u01, lifeT) {
         const dx = ex - sx;
         const dy = ey - sy;
         const len = Math.max(1, Math.hypot(dx, dy));
@@ -1977,7 +2062,8 @@
         const ny = dx / len;
 
         const segs = this.CFG.zapSegs;
-        const jitter = this.CFG.zapJitter;
+        const jitterScale = 0.35 + 0.65 * (1 - clamp(lifeT ?? 0, 0, 1));
+        const jitter = this.CFG.zapJitter * jitterScale;
         const flick = Math.floor(nowSec * 14) * 0.15;
 
         // choose a segment index based on u01
@@ -2018,6 +2104,7 @@
         for (let i = this.capturedOrbs.length - 1; i >= 0; i--) {
           const o = this.capturedOrbs[i];
           const age = nowSec - o.born;
+          const lifeT = clamp(age / this.CFG.zapLife, 0, 1);
 
           // ring endpoint (always moving with spark)
           const s = this.sparks[o.sparkIdx];
@@ -2036,12 +2123,25 @@
           let px, py, alpha;
 
           if (age < o.transferDur) {
-            // transfer along the zap lane
-            const tt = clamp(age / o.transferDur, 0, 1);
-            const u = tt * tt * (3 - 2 * tt); // smoothstep
-            const p = this.getZapPoint(sx, sy, end.x, end.y, o.seed, nowSec, u);
-            px = p.x;
-            py = p.y;
+            // transfer along the ACTIVE zap lane (lock to the live bolt)
+            const zap = this.zaps.find((z) => z.seed === o.seed);
+            if (zap) {
+              const zapAge = nowSec - zap.born;
+              const zapT = clamp(zapAge / Math.max(0.001, zap.life), 0, 1);
+              const grow = clamp(zapT / 0.55, 0, 1);
+              const startR = radarR * (zap.r01 ?? o.r01 ?? 1.0);
+              const zsx = cx + Math.cos(zap.a) * startR;
+              const zsy = cy + Math.sin(zap.a) * startR;
+              const p = this.getZapPoint(zsx, zsy, end.x, end.y, zap.seed, nowSec, grow, zapT);
+              px = p.x;
+              py = p.y;
+            } else {
+              const tt = clamp(age / o.transferDur, 0, 1);
+              const u = tt * tt * (3 - 2 * tt); // smoothstep
+              const p = this.getZapPoint(sx, sy, end.x, end.y, o.seed, nowSec, u, lifeT);
+              px = p.x;
+              py = p.y;
+            }
             alpha = 0.92;
           } else {
             // joined ring: sit INSIDE the moving ring and rotate with it
@@ -2104,7 +2204,7 @@
                ======================================================== */
       addZap(angle, r01) {
         const now = performance.now() / 1000;
-        const born = payload?.born ?? now;
+        const born = now;
 
         // pick the spark that is CURRENTLY closest to this scan angle
         // (this makes the bolt land ON the moving ring instead of empty space)
@@ -2129,7 +2229,7 @@
         let bestAbs = 1e9;
         for (let i = 0; i < this.sparks.length; i++) {
           const s = this.sparks[i];
-          const d = Math.abs(this.angleDiff(s.a, angle));
+          const d = Math.abs(this.angleDiff(this.getSparkAngle(s), angle));
           if (d < bestAbs) {
             bestAbs = d;
             best = i;
@@ -2147,6 +2247,7 @@
       drawZaps(cx, cy, radarR, ringR, nowSec) {
         const ctx = this.ctx;
         if (!this.zaps.length) return;
+        const ringCy = this.getRingCenterY(cy);
 
         for (let i = this.zaps.length - 1; i >= 0; i--) {
           const z = this.zaps[i];
@@ -2170,16 +2271,17 @@
             // baseR is needed for the ring's vertical wobble, ringR for the horizontal orbit
             const baseR = ringR / this.KNOBS.ringRadiusMul;
             const y3 = Math.sin(s.wob + nowSec * 0.8) * (baseR * this.CFG.ringThickness);
-            const x3 = Math.cos(s.a) * ringR;
-            const z3 = Math.sin(s.a) * ringR;
-            const pr = this.project3D(x3, y3, z3, cx, cy);
+            const a = this.getSparkAngle(s);
+            const x3 = Math.cos(a) * ringR;
+            const z3 = Math.sin(a) * ringR;
+            const pr = this.project3D(x3, y3, z3, cx, ringCy);
             ex = pr.x;
             ey = pr.y;
           } else {
             // fallback: still land on the ring geometry if something ever goes weird
             const x3 = Math.cos(z.a) * ringR;
             const z3 = Math.sin(z.a) * ringR;
-            const pr = this.project3D(x3, 0, z3, cx, cy);
+            const pr = this.project3D(x3, 0, z3, cx, ringCy);
             ex = pr.x;
             ey = pr.y;
           }
@@ -2188,7 +2290,7 @@
           if (!Number.isFinite(ex) || !Number.isFinite(ey)) {
             const x3 = Math.cos(z.a) * ringR;
             const z3 = Math.sin(z.a) * ringR;
-            const pr = this.project3D(x3, 0, z3, cx, cy);
+            const pr = this.project3D(x3, 0, z3, cx, ringCy);
             ex = pr.x;
             ey = pr.y;
           }
@@ -2289,16 +2391,18 @@
       drawRing(cx, cy, baseR, t) {
         const ctx = this.ctx;
         const ringR = baseR * this.KNOBS.ringRadiusMul;
+        const ringCy = this.getRingCenterY(cy);
 
         const list = [];
         for (const s of this.sparks) {
           s.a += s.sp;
 
           const y = Math.sin(s.wob + t * 0.9) * (baseR * this.CFG.ringThickness);
-          const x = Math.cos(s.a) * ringR;
-          const z = Math.sin(s.a) * ringR;
+          const a = this.getSparkAngle(s);
+          const x = Math.cos(a) * ringR;
+          const z = Math.sin(a) * ringR;
 
-          const pr = this.project3D(x, y, z, cx, cy);
+          const pr = this.project3D(x, y, z, cx, ringCy);
           const depth = clamp((pr.p - 0.75) * 1.8, 0.15, 1);
           const alpha = s.o * depth * this.CFG.ringBrightness;
 
@@ -2432,9 +2536,25 @@
         this.drawStars();
         this.drawRadarGrid(cx, cy, radarR);
 
-        const spawnChance = this.KNOBS.dotSpawnPerSec * dt;
-        if (this.dots.length < this.KNOBS.maxDots && Math.random() < spawnChance) {
-          this.spawnDot();
+        this.spawnClock += dt;
+        const spawnInterval = 1 / Math.max(0.001, this.KNOBS.dotSpawnPerSec);
+        if (this.dots.length >= this.KNOBS.maxDots) {
+          this.spawnClock = Math.min(this.spawnClock, spawnInterval);
+        } else {
+          while (this.spawnClock >= spawnInterval && this.dots.length < this.KNOBS.maxDots) {
+            this.spawnDot();
+            this.spawnClock -= spawnInterval;
+          }
+        }
+
+        if (this.firstSeedAtSec && !this.firstSeeded && nowSec >= this.firstSeedAtSec) {
+          const ang = this.getSweepAngle(nowSec);
+          const r01 = 0.42 + Math.random() * 0.22;
+          if (this.dots.length >= this.KNOBS.maxDots) {
+            this.dots.shift();
+          }
+          this.dots.push({ a: ang, r01, scanned: false, scannedAt: 0, toRemoveAt: 0 });
+          this.firstSeeded = true;
         }
 
         this.drawRadarFan(cx, cy, coreR, nowSec);
@@ -2981,7 +3101,7 @@
               p.p1 = { x: (p.p0.x * 0.70 + midX * 0.30), y: p.p0.y + 140 };
               p.p2 = { x: (p.p3.x * 0.78 + midX * 0.22), y: p.p3.y - 160 };
 
-              p.launchDur = 1.55;
+              p.launchDur = 2.05;
               this.addRipple(p.p0.x, p.p0.y);
             }
           }
@@ -3078,7 +3198,8 @@
         }
         if (u >= NAV.redirectAt && !openFX.redirected) {
           openFX.redirected = true;
-          window.location.href = NAV.nextUrl;
+          const navTarget = (window.top && window.top !== window) ? window.top : window;
+          navTarget.location.href = NAV.nextUrl;
         }
       } else {
         portalCtx.clearRect(0, 0, portalCanvas.width, portalCanvas.height);
