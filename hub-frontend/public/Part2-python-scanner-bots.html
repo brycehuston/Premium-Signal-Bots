@@ -54,6 +54,11 @@
       --notePadY: 10px;
       --notePadX: 12px;
       --noteRadius: 12px;
+
+      /* portal + mobile transition tuning */
+      --portalEnterScale: 1.05;
+      --portalEnterDur: 1100ms;
+      --mobileTopPadExtra: 230px;
     }
 
     html,
@@ -90,8 +95,8 @@
       box-shadow:
         0 40px 120px rgba(0, 0, 0, 0.72),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      transition: transform 1100ms cubic-bezier(0.2, 0.8, 0.2, 1),
-        filter 1100ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      transition: transform var(--portalEnterDur) cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter var(--portalEnterDur) cubic-bezier(0.2, 0.8, 0.2, 1);
       padding: var(--framePad);
       will-change: transform;
     }
@@ -140,7 +145,7 @@
     }
 
     .frame.entering {
-      transform: scale(1.05);
+      transform: scale(var(--portalEnterScale));
       filter: saturate(1.02);
     }
 
@@ -164,9 +169,9 @@
     .frame.entering .routerBtn {
       /* ✅ premium zoom-in on button during portal */
       transform: translateY(-1px) scale(3.3);
-      transition: transform 1100ms cubic-bezier(0.2, 0.8, 0.2, 1),
-        box-shadow 1100ms cubic-bezier(0.2, 0.8, 0.2, 1),
-        border-color 1100ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      transition: transform var(--portalEnterDur) cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow var(--portalEnterDur) cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color var(--portalEnterDur) cubic-bezier(0.2, 0.8, 0.2, 1);
       border-color: rgba(248, 216, 112, 0.40);
       box-shadow:
         0 38px 120px rgba(0, 0, 0, 0.70),
@@ -880,6 +885,9 @@
         --panelRadius: 18px;
         --mobileHeaderInset: 220px;
         --mobileDockInset: 90px;
+        --portalEnterScale: 1.025;
+        --portalEnterDur: 820ms;
+        --mobileTopPadExtra: 200px;
       }
 
       .stage {
@@ -1002,7 +1010,7 @@
         overscroll-behavior: contain;
         flex: 1;
         min-height: 0;
-        padding-top: 480px;
+        padding-top: clamp(340px, calc(var(--mobileHeaderInset, 220px) + var(--mobileTopPadExtra, 230px)), 520px);
         padding-bottom: calc(var(--mobileDockInset) + .01px);
         max-height: calc(100dvh - var(--mobileHeaderInset) - var(--mobileDockInset));
       }
@@ -1153,11 +1161,32 @@
 
     const OFFSETS = { EARLY: -0.49, TREND: 0.49, RUNNER: -0.49 };
     const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 430px)").matches;
+    const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    const MOBILE_PORTAL = IS_MOBILE || IS_COARSE_POINTER || (window.matchMedia && window.matchMedia("(max-width: 820px)").matches);
     if (IS_MOBILE) {
       OFFSETS.EARLY = 0.30;
       OFFSETS.TREND = 0.30;
       OFFSETS.RUNNER = 0.46;
     }
+    if (MOBILE_PORTAL) {
+      // Shorter, lighter portal timing on mobile/coarse pointers reduces jank.
+      NAV.tripleMs = 820;
+      NAV.openDurSec = 0.80;
+      NAV.fadeStartAt = 0.60;
+      NAV.redirectAt = 0.84;
+    }
+
+    const PORTAL_PROFILE = MOBILE_PORTAL ? {
+      fastCount: 60,
+      slowCount: 28,
+      ringBoost: 3.4,
+      swirlArcs: 4
+    } : {
+      fastCount: 90,
+      slowCount: 45,
+      ringBoost: 4.2,
+      swirlArcs: 6
+    };
 
     const MASTER = {
       baseTilt: 0,
@@ -1233,9 +1262,24 @@
       root.style.setProperty("--mobileDockInset", `${dockInset}px`);
     }
 
-    updateMobileInsets();
-    window.addEventListener("resize", () => requestAnimationFrame(updateMobileInsets), { passive: true });
-    window.addEventListener("orientationchange", () => requestAnimationFrame(updateMobileInsets), { passive: true });
+    const scheduleInsetsUpdate = () => requestAnimationFrame(updateMobileInsets);
+    scheduleInsetsUpdate();
+
+    // Fonts and viewport chrome can change layout after first paint on mobile.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => setTimeout(scheduleInsetsUpdate, 0));
+    }
+
+    window.addEventListener("resize", scheduleInsetsUpdate, { passive: true });
+    window.addEventListener("orientationchange", scheduleInsetsUpdate, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", scheduleInsetsUpdate, { passive: true });
+    }
+
+    // Reset any preserved scroll position inside the mobile scroller.
+    const clusterWrapForReset = document.querySelector(".clusterWrap");
+    if (clusterWrapForReset) clusterWrapForReset.scrollTop = 0;
+    if (window.scrollTo) window.scrollTo(0, 0);
 
     /* ============================================================
        SFX (kept)
@@ -1462,8 +1506,8 @@
       portalCtx.save();
       portalCtx.globalCompositeOperation = "lighter";
 
-      const fastCount = 90;   // ✅ more = more intense (keep <120 for safety)
-      const slowCount = 45;
+      const fastCount = PORTAL_PROFILE.fastCount;   // tuned per device profile
+      const slowCount = PORTAL_PROFILE.slowCount;
 
       const maxLenFast = baseR * (7.0 + 10.0 * s);
       const maxLenSlow = baseR * (3.8 + 6.5 * s);
@@ -1534,7 +1578,7 @@
       drawWarpStreaks(x, y, baseR, u, tSec);
 
       const s = easeOutCubic(u);
-      const ringR = baseR * (1.0 + s * 4.2);
+      const ringR = baseR * (1.0 + s * PORTAL_PROFILE.ringBoost);
 
       portalCtx.save();
       portalCtx.globalCompositeOperation = "lighter";
@@ -1557,7 +1601,7 @@
       portalCtx.stroke();
 
       const swirl = tSec * (2.2 + s * 2.8);
-      for (let k = 0; k < 6; k++) {
+      for (let k = 0; k < PORTAL_PROFILE.swirlArcs; k++) {
         const a0 = swirl + k * 0.92;
         const a1 = a0 + 0.50 + s * 0.25;
 

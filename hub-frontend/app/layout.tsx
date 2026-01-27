@@ -4,10 +4,9 @@ import "./globals.css";
 import { Manrope, Sora } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
-import Link from "next/link";
 import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
-import { Button } from "@/components/ui";
+import Header from "@/components/Header";
 import { ClerkProvider } from "@clerk/nextjs";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
@@ -76,54 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster richColors position="top-center" />
 
         {/* navbar */}
-        <header className="sticky top-0 z-30 border-b border-stroke/60 bg-bg/80 backdrop-blur">
-          <Container>
-            <div className="flex h-16 items-center justify-between gap-4">
-              <Link href="/" className="text-lg sm:text-xl font-semibold tracking-tight">
-                <span className="text-metal-silver">{BRAND}</span>
-                <span className="ml-1 text-muted">Pro</span>
-              </Link>
-
-              <nav className="flex items-center gap-2">
-                <Link
-                  className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text"
-                  href="/pricing"
-                  data-no-link-style
-                >
-                  Pricing
-                </Link>
-                <Link
-                  className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text hidden md:inline-flex"
-                  href="/dashboard"
-                  data-no-link-style
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text hidden md:inline-flex"
-                  href="/billing"
-                  data-no-link-style
-                >
-                  Billing
-                </Link>
-                <Link
-                  className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text hidden sm:inline-flex"
-                  href="/login"
-                  data-no-link-style
-                >
-                  Login
-                </Link>
-                <Button
-                  href="/pricing#plans"
-                  size="sm"
-                  className="hidden h-9 px-4 text-small sm:inline-flex font-extrabold tracking-[0.06em] !text-black !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
-                >
-                  GO ALPHA
-                </Button>
-              </nav>
-            </div>
-          </Container>
-        </header>
+        <Header brand={BRAND} />
 
         {/*
           IMPORTANT:

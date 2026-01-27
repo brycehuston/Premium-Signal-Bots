@@ -32,6 +32,10 @@
       --notePadY: 10px;
       --notePadX: 12px;
       --noteRadius: 12px;
+
+      /* portal dive tuning */
+      --portalDiveScale: 3.65;
+      --portalDiveMs: 1450ms;
     }
 
     html,
@@ -1370,6 +1374,11 @@
     }
 
     @media (max-width: 430px) {
+      :root {
+        --portalDiveScale: 3.1;
+        --portalDiveMs: 1100ms;
+      }
+
       .stage {
         padding: 8px;
       }
@@ -1625,9 +1634,9 @@
 
     /* Scale the whole frame like "camera dives" */
     .portalDiving #frame {
-      transform: scale(3.65);
+      transform: scale(var(--portalDiveScale));
       transform-origin: 50% 50%;
-      transition: transform 1450ms cubic-bezier(.18, .85, .2, 1);
+      transition: transform var(--portalDiveMs) cubic-bezier(.18, .85, .2, 1);
     }
   </style>
 </head>
@@ -2925,13 +2934,22 @@
           if (!btn || !bubble || !portalLayer || !warpCv) return;
 
           const TARGET_URL = "/pricing";
+          const IS_SMALL_MOBILE = window.matchMedia && window.matchMedia("(max-width: 430px)").matches;
+          const MOBILE_PORTAL = window.matchMedia && window.matchMedia("(max-width: 820px), (pointer: coarse)").matches;
 
           // ✅ tweakables (feel free to adjust)
-          const DIVE_MS = 1450;         // 1.2s–1.8s range
-          const GLOW_BOOST_MS = 780;    // glow peak timing
-          const MAX_STREAKS = 140;      // warp density (performance-safe)
+          const DIVE_MS = MOBILE_PORTAL ? 1100 : 1450;         // 1.0s–1.8s range
+          const GLOW_BOOST_MS = MOBILE_PORTAL ? 560 : 780;     // glow peak timing
+          const MAX_STREAKS = MOBILE_PORTAL ? 90 : 140;        // warp density (performance-safe)
           const SPEED_MIN = 18;
           const SPEED_MAX = 44;
+
+          // Align CSS dive timing/scale with the JS profile on tablets/coarse pointers.
+          if (MOBILE_PORTAL && !IS_SMALL_MOBILE && document.documentElement?.style) {
+            const rootStyle = document.documentElement.style;
+            rootStyle.setProperty("--portalDiveScale", "3.25");
+            rootStyle.setProperty("--portalDiveMs", `${DIVE_MS}ms`);
+          }
 
           let armed = false;
           let running = false;
