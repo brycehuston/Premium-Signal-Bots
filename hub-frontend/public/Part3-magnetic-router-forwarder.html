@@ -1503,6 +1503,33 @@
       .infoBtn {
         min-height: 44px;
       }
+
+      /* Mobile safety: keep flip, but strip heavy FX during sorting */
+      .forwarder3d.reduceFx.isActive .large-shadows {
+        opacity: 0.12;
+      }
+
+      .forwarder3d.reduceFx.isActive .large-shadow {
+        animation: none !important;
+        opacity: 0.12;
+        filter: blur(calc(var(--shadowBlur) * 0.6));
+      }
+
+      .forwarder3d.reduceFx.isActive .cube-top,
+      .forwarder3d.reduceFx.isActive .cube-bottom,
+      .forwarder3d.reduceFx.isActive .cube-front-left,
+      .forwarder3d.reduceFx.isActive .cube-front-right,
+      .forwarder3d.reduceFx.isActive .cube-back-left,
+      .forwarder3d.reduceFx.isActive .cube-back-right {
+        animation: none !important;
+      }
+
+      .forwarder3d.reduceFx.isActive .cube-top::after,
+      .forwarder3d.reduceFx.isActive .cube-bottom::after {
+        animation: none !important;
+        mix-blend-mode: normal;
+        opacity: 0.35;
+      }
     }
 
     @media (max-width: 360px) {
@@ -2176,6 +2203,7 @@
           };
 
           const mobileMQ = window.matchMedia("(max-width: 430px)");
+          let reduceFxDuringSort = false;
           if (mobileMQ.matches) {
             CFG.pillW = 104;
             CFG.pillH = 32;
@@ -2186,14 +2214,18 @@
             CFG.outOffsetY = 0.25;
             CFG.forwarderOffsetY = -0.07;
             CFG.centerY = 0.44;
-            CFG.intakeDurMs = 950;
-            CFG.sortMs = 2000;
-            CFG.sortDelayMs = 140;
-            CFG.rotateMs = 320;
-            CFG.emitGapMs = 240;
-            CFG.outDurMs = 1700;
-            CFG.dprMax = 1.5;
-            CFG.stars = 70;
+            CFG.intakeDurMs = 1100;
+            CFG.sortMs = 2600;
+            CFG.sortDelayMs = 200;
+            CFG.rotateMs = 420;
+            CFG.emitGapMs = 300;
+            CFG.outDurMs = 2200;
+            CFG.dprMax = 1.25;
+            CFG.stars = 60;
+            reduceFxDuringSort = true;
+          }
+          if (reduceFxDuringSort) {
+            forwarder3d.classList.add("reduceFx");
           }
 
           let DPR = 1;
@@ -2243,8 +2275,13 @@
           function resize() {
             DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
             const rect = frame.getBoundingClientRect();
-            W = Math.max(1, Math.floor(rect.width));
-            H = Math.max(1, Math.floor(rect.height));
+            const nextW = Math.max(1, Math.floor(rect.width));
+            const nextH = Math.max(1, Math.floor(rect.height));
+
+            if (nextW < 50 || nextH < 50) return;
+
+            W = nextW;
+            H = nextH;
 
             canvas.width = Math.floor(W * DPR);
             canvas.height = Math.floor(H * DPR);
@@ -2259,6 +2296,10 @@
           const scheduleResize = () => requestAnimationFrame(resize);
           window.addEventListener("resize", scheduleResize);
           window.addEventListener("orientationchange", scheduleResize);
+          window.addEventListener("pageshow", scheduleResize, { passive: true });
+          document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) scheduleResize();
+          });
           if (window.visualViewport) {
             window.visualViewport.addEventListener("resize", scheduleResize, { passive: true });
           }
@@ -2914,7 +2955,12 @@
           }
 
           function loop(now) {
-            draw(now);
+            try {
+              draw(now);
+            } catch (err) {
+              console.error("phase-3 loop error", err);
+              scheduleResize();
+            }
             requestAnimationFrame(loop);
           }
 
