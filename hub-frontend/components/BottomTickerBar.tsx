@@ -16,7 +16,7 @@ type FearGreedState = {
 };
 
 function mapFearGreed(value: number | null): FearGreedState {
-  if (value == null) return { label: "GREED", tone: "green", isExtreme: false };
+  if (value == null) return { label: "NEUTRAL", tone: "neutral", isExtreme: false };
   if (value >= 75) return { label: "EXTREME", tone: "green", isExtreme: true };
   if (value >= 55) return { label: "GREED", tone: "green", isExtreme: false };
   if (value >= 45) return { label: "NEUTRAL", tone: "neutral", isExtreme: false };
@@ -99,11 +99,19 @@ export default function BottomTickerBar({
     SOL: null,
   });
   const [fearGreed, setFearGreed] = useState<FearGreedState>(mapFearGreed(null));
+  const [fearGreedValue, setFearGreedValue] = useState<number | null>(null);
 
   const timerRef = useRef<number | null>(null);
   const inFlightRef = useRef<boolean>(false);
   const fearGreedTimerRef = useRef<number | null>(null);
   const fearGreedInFlightRef = useRef<boolean>(false);
+  const pathname = usePathname();
+  const shouldFetch =
+    pathname === "/" ||
+    pathname.startsWith("/pricing") ||
+    pathname.startsWith("/waitlist") ||
+    pathname.startsWith("/stage-") ||
+    pathname.startsWith("/pay");
 
   const url = useMemo(() => {
     const ids = "bitcoin,ethereum,solana";
@@ -162,6 +170,7 @@ export default function BottomTickerBar({
       const raw = j?.data?.[0]?.value;
       const parsed = raw != null ? Number(raw) : null;
       if (parsed != null && !Number.isNaN(parsed)) {
+        setFearGreedValue(parsed);
         setFearGreed(mapFearGreed(parsed));
       }
     } catch {
@@ -172,22 +181,30 @@ export default function BottomTickerBar({
   }
 
   useEffect(() => {
+    if (!shouldFetch) {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+      return;
+    }
     fetchPrices();
     timerRef.current = window.setInterval(fetchPrices, refreshMs);
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshMs]);
+  }, [refreshMs, shouldFetch]);
 
   useEffect(() => {
+    if (!shouldFetch) {
+      if (fearGreedTimerRef.current) window.clearInterval(fearGreedTimerRef.current);
+      return;
+    }
     fetchFearGreed();
     fearGreedTimerRef.current = window.setInterval(fetchFearGreed, 60_000);
     return () => {
       if (fearGreedTimerRef.current) window.clearInterval(fearGreedTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [shouldFetch]);
 
   const fearGreedClass = [
     "fear-greed-box",
@@ -198,8 +215,9 @@ export default function BottomTickerBar({
       : "fear-greed-box--neutral",
     fearGreed.isExtreme ? "fear-greed-box--extreme" : "",
   ].join(" ");
-  const pathname = usePathname();
-  const showFearGreed = pathname.startsWith("/dashboard") || fearGreed.tone === "green";
+  const showFearGreed =
+    pathname.startsWith("/dashboard") ||
+    (shouldFetch && fearGreedValue != null && fearGreed.tone === "green");
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50">

@@ -4,7 +4,17 @@ import { BUNDLE, PLANS } from "@/lib/plans";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["", "/pricing", "/waitlist", "/phase-1", "/phase-2", "/phase-3"];
+  const routes = [
+    "",
+    "/pricing",
+    "/waitlist",
+    "/privacy",
+    "/terms",
+    "/contact",
+    "/stage-1",
+    "/stage-2",
+    "/stage-3",
+  ];
   const payRoutes = [...PLANS, BUNDLE].map((plan) => `/pay/${plan.slug}`);
 
   const now = new Date();

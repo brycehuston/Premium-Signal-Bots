@@ -1310,6 +1310,51 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   100% { transform: translateX(130%); opacity: 0; }
 }
 
+/* --- Roadmap LIVE pill pulse ---------------------------------------- */
+.badge-live-pulse {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.08));
+  box-shadow: inset 0 0 8px rgba(16, 185, 129, 0.22);
+}
+
+.badge-live-pulse::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 50%, rgba(110, 231, 183, 0.4), transparent 70%);
+  opacity: 0.5;
+  animation: badgeLiveGlow 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.badge-live-pulse::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(34, 211, 153, 0.9);
+  box-shadow: 0 0 6px rgba(34, 211, 153, 0.55);
+  transform: translateY(-50%);
+  opacity: 0.85;
+  animation: badgeLiveDot 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes badgeLiveGlow {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes badgeLiveDot {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.95; }
+}
+
 .bundle-alerts-marble {
   font-size: 1.15em;
   font-weight: 800;
@@ -1331,6 +1376,7 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 @media (prefers-reduced-motion: reduce) {
   .shimmer-1, .shimmer-2, .shimmer-3 { animation: none !important; }
   .bundle-alerts-platinum, .best-value-buzz, .best-value-pulse::after { animation: none !important; }
+  .badge-live-pulse::before, .badge-live-pulse::after { animation: none !important; }
   .dust-cycle { visibility: visible !important; animation: none !important; }
   .clock-hand-rotate,
   .webhook-rotor,

@@ -1064,10 +1064,10 @@
     <div class="frame" id="frame">
       <div class="badgeStack">
         <div class="brandMark"><span class="brandText">ALPHA ALERTS</span><span class="brandSep">•</span><span
-            class="phaseTag">PHASE 2</span></div>
+            class="phaseTag">STAGE 2</span></div>
         <div class="workflowNote">
           <div class="workflowTitle">SYSTEM WORKFLOW</div>
-          <p class="workflowText">PHASE 2 SCANS, SCORES AND FILTERS.</p>
+          <p class="workflowText">STAGE 2 SCANS, SCORES AND FILTERS.</p>
         </div>
       </div>
       <div class="header">
@@ -1151,7 +1151,7 @@
        ============================================================ */
     const NAV = {
       enabled: true,
-      nextUrl: "/phase-3", /* ✅ CHANGE THIS if your page3 filename differs */
+      nextUrl: "/stage-3", /* ✅ CHANGE THIS if your page3 filename differs */
       tripleMs: 700,
 
       /* UPGRADE: portal transition */
@@ -1164,6 +1164,7 @@
     const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 430px)").matches;
     const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
     const MOBILE_PORTAL = IS_MOBILE || IS_COARSE_POINTER || (window.matchMedia && window.matchMedia("(max-width: 820px)").matches);
+    const ORBIT_SPEED = IS_MOBILE ? 2.6 : 1.6;
     if (IS_MOBILE) {
       OFFSETS.EARLY = 0.30;
       OFFSETS.TREND = 0.30;
@@ -2781,7 +2782,7 @@
           state: "orbit",
           a: startAngle,
           traveled: 0,
-          orbitSpeed: 2.15,
+          orbitSpeed: ORBIT_SPEED,
           size: 4.8,  /* FIX: slightly larger orbs (requested) */
           glow: 20
         });
@@ -2845,7 +2846,7 @@
           // orbit behavior
           a: scanA,
           traveled: 0,
-          orbitSpeed: 2.15,
+          orbitSpeed: ORBIT_SPEED,
           size: 4.8,
           glow: 20,
 

@@ -2,11 +2,13 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { animate, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import type { Variants } from "framer-motion";
 import type { Easing } from "motion-utils";
 import { Webhook } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
 import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
+import RollingNumber from "@/components/RollingNumber";
 
 declare global {
   interface Window {
@@ -87,11 +89,9 @@ function SmoothCounter({
   onDone,
 }: CounterProps) {
   const spanRef = useRef<HTMLSpanElement | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const startRef = useRef<number | null>(null);
   const finishedRef = useRef(false);
   const doneNotifiedRef = useRef(false);
-  const abortedRef = useRef(false);
+  const lastShownRef = useRef<number | null>(null);
   const format = useFormatter(decimals);
 
   const prefersReduced = useMemo(
@@ -121,7 +121,6 @@ function SmoothCounter({
 
   useEffect(() => {
     if (!start || finishedRef.current) return;
-    abortedRef.current = false;
 
     if (prefersReduced) {
       if (spanRef.current) spanRef.current.textContent = `${prefix}${format(target)}${suffix}`;
@@ -131,48 +130,41 @@ function SmoothCounter({
       return;
     }
 
-    const eps = Math.pow(10, -decimals) * 0.5;
-    const cap = target - eps;
-
-    const ease = (t: number) => {
-      const x = Math.min(1, Math.max(0, t));
-      return x * x * x * (x * (x * 6 - 15) + 10);
-    };
-
-    const run = (ts: number) => {
-      if (abortedRef.current) return;
-      if (startRef.current === null) startRef.current = ts;
-
-      const p = Math.min(1, (ts - startRef.current) / durationMs);
-      const v = ease(p) * target;
-      const safe = p < 1 ? Math.min(v, cap) : target;
-      const shown = decimals ? safe : Math.round(safe);
-      const txt = `${prefix}${format(shown)}${suffix}`;
-
-      if (spanRef.current && spanRef.current.textContent !== txt) spanRef.current.textContent = txt;
-
-      if (p < 1) {
-        rafRef.current = requestAnimationFrame(run);
-      } else {
-        if (spanRef.current) spanRef.current.textContent = `${prefix}${format(target)}${suffix}`;
-        finishedRef.current = true;
-        window.__counterDone![id] = true;
-        if (!doneNotifiedRef.current) {
-          doneNotifiedRef.current = true;
-          onDone && onDone();
-        }
-      }
-    };
-
+    lastShownRef.current = null;
+    const tickStep = decimals ? Math.pow(10, -decimals) : 1;
+    const snapEps = tickStep * 0.5;
+    let controls: ReturnType<typeof animate> | null = null;
     const tid = window.setTimeout(() => {
-      rafRef.current = requestAnimationFrame(run);
+      controls = animate(0, target, {
+        duration: durationMs / 1000,
+        ease: [0.16, 1, 0.3, 1],
+        onUpdate: (v) => {
+          const nearTarget = Math.abs(v - target) <= snapEps;
+          const stepped = nearTarget
+            ? target
+            : Math.floor(v / tickStep) * tickStep;
+          const stable = decimals ? Number(stepped.toFixed(decimals)) : Math.round(stepped);
+          if (lastShownRef.current === stable) return;
+          lastShownRef.current = stable;
+          if (spanRef.current) {
+            spanRef.current.textContent = `${prefix}${format(stable)}${suffix}`;
+          }
+        },
+        onComplete: () => {
+          if (spanRef.current) spanRef.current.textContent = `${prefix}${format(target)}${suffix}`;
+          finishedRef.current = true;
+          window.__counterDone![id] = true;
+          if (!doneNotifiedRef.current) {
+            doneNotifiedRef.current = true;
+            onDone && onDone();
+          }
+        },
+      });
     }, delayMs);
 
     return () => {
-      abortedRef.current = true;
       window.clearTimeout(tid);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      startRef.current = null;
+      if (controls) controls.stop();
     };
   }, [id, start, durationMs, delayMs, target, decimals, prefix, suffix, prefersReduced, format, onDone]);
 
@@ -225,14 +217,14 @@ function WebhookIconSpin({ active }: { active: boolean }) {
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const spinRPM = 180;
+    const spinRPM = 170;
     const airflowStrength = 0.9;
-    const particleCount = 56;
+    const particleCount = 52;
     const blurAmount = 6;
-    const spinUpMs: number = 700;
-    const spinHoldMs: number = 2300;
-    const spinDownMs: number = 10000;
-    const restMs: number = 2000;
+    const spinUpMs: number = 1200;
+    const spinHoldMs: number = 2200;
+    const spinDownMs: number = 1600;
+    const restMs: number = 1800;
 
     const effectiveRPM = prefersReduced ? Math.min(spinRPM, 120) : spinRPM;
     const effectiveStrength = prefersReduced ? 0 : airflowStrength;
@@ -250,17 +242,12 @@ function WebhookIconSpin({ active }: { active: boolean }) {
     let cx = 0;
     let cy = 0;
     let angle = 0;
-    let startTime = performance.now() + 10000;
+    let startTime = performance.now() + 800;
     let lastTime = startTime;
     let rafId = 0;
 
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-    const easeOutHinge = (t: number) => {
-      const k = 2.6;
-      const base = (Math.exp(-k * t) - Math.exp(-k)) / (1 - Math.exp(-k));
-      const tail = Math.pow(1 - t, 2.8);
-      return base * tail;
-    };
+    const easeInCubic = (t: number) => t * t * t;
 
     const rpmForCycle = (elapsedMs: number) => {
       if (cycleMs <= 0) return 0;
@@ -274,7 +261,7 @@ function WebhookIconSpin({ active }: { active: boolean }) {
       }
       if (t < spinUpMs + spinHoldMs + spinDownMs) {
         const p = spinDownMs === 0 ? 1 : (t - spinUpMs - spinHoldMs) / spinDownMs;
-        return effectiveRPM * easeOutHinge(p);
+        return effectiveRPM * (1 - easeInCubic(p));
       }
       return 0;
     };
@@ -536,10 +523,34 @@ function SectionDivider({ showDust = true }: { showDust?: boolean }) {
 }
 
 function FeatureRow({ active }: { active: boolean }) {
+  const prefersReduced = useReducedMotion();
   const [heavyRing, setHeavyRing] = useState(false);
   const [bellActive, setBellActive] = useState(false);
   const [dustActive, setDustActive] = useState(false);
   const bellDelayRef = useRef<number | null>(null);
+  // Premium pill row sequence (1 → 2 → 3) with reduced-motion safety.
+  const pillRowContainer: Variants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: prefersReduced ? 0 : 0.12,
+        delayChildren: prefersReduced ? 0 : 0.18,
+      },
+    },
+  };
+  const pillRowItem: Variants = {
+    hidden: prefersReduced
+      ? { opacity: 1, x: 0 }
+      : { opacity: 0, x: -12 },
+    show: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: prefersReduced ? 0 : 0.34,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  };
 
   useEffect(() => {
     if (!active) {
@@ -604,20 +615,39 @@ function FeatureRow({ active }: { active: boolean }) {
   }, [bellActive, heavyRing]);
 
   return (
-    <div className="mt-6 flex flex-wrap justify-center gap-3 md:flex-nowrap md:justify-start">
-      <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
+    // Pill sequence animation: keep layout stable and stagger each chip.
+    <motion.div
+      className="mt-6 flex flex-wrap justify-center gap-3 md:flex-nowrap md:justify-start"
+      variants={pillRowContainer}
+      initial={prefersReduced ? false : "hidden"}
+      whileInView={prefersReduced ? undefined : "show"}
+      viewport={prefersReduced ? undefined : { once: true, amount: 0.35 }}
+    >
+      <motion.div
+        className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
+        variants={pillRowItem}
+        style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
+      >
         <ClockIcon active={active} />
         <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           Live Trade Signals
         </div>
-      </div>
-      <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
+      </motion.div>
+      <motion.div
+        className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
+        variants={pillRowItem}
+        style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
+      >
         <WebhookIconSpin active={active} />
         <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           Webhook-Ready
         </div>
-      </div>
-      <div className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2">
+      </motion.div>
+      <motion.div
+        className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
+        variants={pillRowItem}
+        style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
+      >
         <span className="relative inline-flex overflow-visible">
           <BellIconDing active={bellActive} heavy={heavyRing} />
           <span
@@ -637,8 +667,8 @@ function FeatureRow({ active }: { active: boolean }) {
         <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
           24/7 Alerts
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -834,48 +864,34 @@ function StepItem({ step, order, title, description }: StepItemProps) {
 }
 
 function StatCard({
-  id,
   label,
-  start,
-  target,
+  value,
   decimals = 0,
   suffix = "",
-  delayMs = 0,
-  onDone,
+  variants,
 }: {
-  id: string;
   label: string;
-  start: boolean;
-  target: number;
+  value: number;
   decimals?: number;
   suffix?: string;
-  delayMs?: number;
-  onDone?: () => void;
+  variants?: Variants;
 }) {
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    if (start) setReady(true);
-  }, [start]);
-
   return (
-    <div
-      className="rounded-card border border-stroke/70 bg-surface/80 p-5 text-center shadow-soft transition-transform duration-500 will-change-transform"
-      style={{ transform: ready ? "translateY(0)" : "translateY(6px)", opacity: ready ? 1 : 0 }}
+    <motion.div
+      className="rounded-card border border-stroke/70 bg-surface/80 p-5 text-center shadow-soft"
+      variants={variants}
+      style={{ willChange: "transform, opacity" }}
     >
       <div className="mb-2 flex items-baseline justify-center gap-1">
-        <SmoothCounter
-          id={id}
-          start={start}
-          target={target}
+        <RollingNumber
+          value={value}
           decimals={decimals}
           suffix={suffix}
-          durationMs={2600}
-          delayMs={delayMs}
-          onDone={onDone}
+          className="font-display tabular-nums text-2xl md:text-3xl font-semibold tracking-tight text-silver"
         />
       </div>
       <div className="text-[11px] uppercase tracking-[0.28em] text-muted/80">{label}</div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -896,7 +912,7 @@ const EASE_OUT: Easing = "easeOut";
 const ROADMAP_ITEMS: RoadmapItem[] = [
   {
     step: 1,
-    title: "Phase 1 ⚡ Solana AlphaAlerts",
+    title: "Stage 1 ⚡ Solana AlphaAlerts",
     tag: "LIVE",
     bullets: [
       "Alpha Early Alerts (ultra-early Solana pools + tokens)",
@@ -909,7 +925,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 2,
-    title: "Phase 2 🤖 ALPHA-X Auto Trader",
+    title: "Stage 2 🤖 ALPHA-X Auto Trader",
     tag: "NEXT",
     bullets: [
       "Auto entries on high-probability setups",
@@ -923,7 +939,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 3,
-    title: "Phase 3 🌐 Multi-Chain Alerts",
+    title: "Stage 3 🌐 Multi-Chain Alerts",
     tag: "IN BUILD",
     bullets: [
       "BSC alerts (extra scam and trap filters)",
@@ -934,7 +950,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 4,
-    title: "Phase 4 🪙 ALPHA Access Token",
+    title: "Stage 4 🪙 ALPHA Access Token",
     tag: "PLANNED",
     bullets: [
       "Pay for subscriptions with $ALPHA (optional)",
@@ -946,7 +962,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 5,
-    title: "Phase 5 🧭 Pro Dashboard + Self-Serve Billing",
+    title: "Stage 5 🧭 Pro Dashboard + Self-Serve Billing",
     tag: "PLANNED",
     bullets: [
       "Self-serve checkout (no more manual payments)",
@@ -963,6 +979,25 @@ const ROADMAP_STATUS_TONES: Record<RoadmapItem["tag"], "live" | "next" | "build"
   "IN BUILD": "build",
   PLANNED: "planned",
 };
+
+const FAQ_ITEMS = [
+  {
+    q: "How do alerts get delivered?",
+    a: "Alerts are delivered in private Telegram channels tied to your plan. Each alert includes a clean summary, safety checks, and one-tap links.",
+  },
+  {
+    q: "How does payment verification work?",
+    a: "Payments are manual for now via USDC on Solana. We verify on-chain, then invite you to the correct channels.",
+  },
+  {
+    q: "Can I upgrade or cancel?",
+    a: "Yes. You can upgrade by selecting a higher tier and messaging support after payment. Cancel before your next cycle by contacting support.",
+  },
+  {
+    q: "What chains are supported?",
+    a: "AlphaAlerts is optimized for Solana. Future stages include expansion to additional chains with the same scoring system.",
+  },
+];
 
 const RoadmapSection = memo(function RoadmapSection() {
   const shouldReduceMotion = useReducedMotion();
@@ -1025,7 +1060,7 @@ const RoadmapSection = memo(function RoadmapSection() {
               className="absolute left-0 top-2 hidden h-10 w-px bg-gradient-to-b from-gold/70 via-gold/30 to-transparent md:block"
             />
             <p className="text-body text-muted leading-relaxed">
-              We ship in phases. Each phase makes alerts{" "}
+              We ship in stages. Each stage makes alerts{" "}
               <span className="text-silver">cleaner</span>,{" "}
               <span className="text-silver">faster</span>, and{" "}
               <span className="text-silver">easier to use</span>.
@@ -1046,8 +1081,8 @@ const RoadmapSection = memo(function RoadmapSection() {
             const cardCol = side === "left" ? "md:col-start-1" : "md:col-start-6";
             const spacerCol = side === "left" ? "md:col-start-6" : "md:col-start-1";
             const isActive = activeIndex === index;
-            const phaseMatch = item.title.match(/^Phase\s+\d+/);
-            const phaseLabel = phaseMatch?.[0] ?? `Phase ${item.step}`;
+            const phaseMatch = item.title.match(/^Stage\s+\d+/);
+            const phaseLabel = phaseMatch?.[0] ?? `Stage ${item.step}`;
             const titleRest = phaseMatch ? item.title.slice(phaseLabel.length).trim() : item.title;
             const previewBullets = item.bullets.slice(0, ROADMAP_PREVIEW_COUNT);
             const extraBullets = item.bullets.slice(ROADMAP_PREVIEW_COUNT);
@@ -1135,7 +1170,12 @@ const RoadmapSection = memo(function RoadmapSection() {
                           </span>
                         </h3>
                       </div>
-                      <Badge tone={ROADMAP_STATUS_TONES[item.tag]}>{item.tag}</Badge>
+                      <Badge
+                        tone={ROADMAP_STATUS_TONES[item.tag]}
+                        className={item.tag === "LIVE" ? "badge-live-pulse" : undefined}
+                      >
+                        {item.tag}
+                      </Badge>
                     </div>
 
                     <div className="mt-4 h-px w-full bg-gradient-to-r from-stroke/70 via-stroke/40 to-transparent" />
@@ -1221,7 +1261,7 @@ const RoadmapSection = memo(function RoadmapSection() {
 
 export default function Page() {
   const { ref: featuresScope, inView: featuresInView } = useInView({ threshold: 0.2, once: true });
-  const { ref: statsRef, inView: statsInView } = useInView({ threshold: 0.35, once: true });
+  const { ref: statsRef } = useInView({ threshold: 0.35, once: true });
   const { ref: howRef, inView: howInView } = useInView({ threshold: 0.35, once: false });
   const shouldReduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
@@ -1230,12 +1270,8 @@ export default function Page() {
   const glowOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.35, 0.7, 0.35]);
 
   const [heroView, setHeroView] = useState<"chart" | "reel">("chart");
-  const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const [showStealthCta, setShowStealthCta] = useState(false);
   const stealthTimerRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (statsInView && step === 0) setStep(1);
-  }, [statsInView, step]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -1275,6 +1311,26 @@ export default function Page() {
     whileInView: { opacity: 1, y: 0, filter: "blur(0px)" },
     viewport: { once: true, amount: 0.18 },
     transition: { duration: shouldReduceMotion ? 0 : 0.85, ease: EASE_OUT },
+  };
+  const statsStagger = {
+    hidden: { opacity: 0, y: 16 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.7,
+        ease: [0.22, 1, 0.36, 1] as Easing,
+      },
+    },
+  };
+  const statsGroup = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: shouldReduceMotion ? 0 : 0.35,
+        delayChildren: shouldReduceMotion ? 0 : 0.2,
+      },
+    },
   };
   const heroSwapTransition = {
     duration: shouldReduceMotion ? 0 : 0.9,
@@ -1423,6 +1479,31 @@ export default function Page() {
         </div>
       </motion.section>
 
+      <motion.section {...revealProps} className="rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft md:p-8">
+        <div className="grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+          <div className="space-y-3">
+            <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">Trust & Access</div>
+            <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
+              Built For Fast, Safe Signals
+            </h2>
+            <p className="text-body text-muted">
+              Private delivery, manual payment verification, and clear risk filters so you stay early without the noise.
+            </p>
+          </div>
+          <div className="grid gap-3">
+            <div className="rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
+              Manual payment verification before invites go live
+            </div>
+            <div className="rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
+              Private Telegram channels tied to your plan
+            </div>
+            <div className="rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
+              Risk filters and scoring on every alert
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
       <SectionDivider showDust={false} />
 
       <motion.section
@@ -1495,7 +1576,7 @@ export default function Page() {
                   <div className="phase-support-line">Collected • Validated • Delivered</div>
                   {/* NEW: CTA aligned left */}
                   <div className="phase-cta-wrap">
-                    <Button href="/phase-1" size="md" className="phase-cta">
+                    <Button href="/stage-1" size="md" className="phase-cta">
                       ALPHA WORKFLOW
                     </Button>
                   </div>
@@ -2036,37 +2117,26 @@ export default function Page() {
 
       <SectionDivider />
 
-      <motion.section ref={statsRef as any} {...revealProps} className="space-y-7">
+      <motion.section {...revealProps} id="faq" className="space-y-8 scroll-mt-24 md:scroll-mt-32">
         <SectionHeading
-          eyebrow="Performance"
-          title="Speed And Transparency"
-          subtitle="Live metrics from recent activity."
+          align="center"
+          eyebrow="FAQ"
+          title="Answers Before You Commit"
+          subtitle="Quick clarity on delivery, payments, and access."
         />
-        <div className="grid gap-5 md:grid-cols-3 md:gap-4">
-          <StatCard
-            id="median"
-            label="Median alert time"
-            start={step >= 1}
-            target={120}
-            suffix="ms"
-            onDone={() => setTimeout(() => setStep(2), 600)}
-          />
-          <StatCard
-            id="pairs"
-            label="Pairs watched"
-            start={step >= 2}
-            target={100}
-            suffix="+"
-            onDone={() => setTimeout(() => setStep(3), 600)}
-          />
-          <StatCard
-            id="uptime"
-            label="Uptime"
-            start={step >= 3}
-            target={99.9}
-            decimals={1}
-            suffix="%"
-          />
+        <div className="mx-auto max-w-3xl space-y-3">
+          {FAQ_ITEMS.map((item) => (
+            <details
+              key={item.q}
+              className="group rounded-card border border-stroke/70 bg-surface/70 p-4 shadow-soft"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-silver font-semibold">
+                <span>{item.q}</span>
+                <span className="text-muted transition group-open:rotate-45">+</span>
+              </summary>
+              <div className="mt-3 text-body text-muted">{item.a}</div>
+            </details>
+          ))}
         </div>
         <div className="flex justify-center">
           <Button
@@ -2077,6 +2147,55 @@ export default function Page() {
             GO ALPHA
           </Button>
         </div>
+      </motion.section>
+
+      <SectionDivider />
+
+      <motion.section ref={statsRef as any} className="space-y-7">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          className="space-y-7"
+        >
+          <motion.div variants={statsStagger}>
+            <SectionHeading
+              eyebrow="Performance"
+              title="Speed And Transparency"
+              subtitle="Live metrics from recent activity."
+            />
+          </motion.div>
+          <motion.div variants={statsGroup} className="grid gap-5 md:grid-cols-3 md:gap-4">
+            <StatCard
+              label="Median alert time"
+              value={120}
+              suffix="ms"
+              variants={statsStagger}
+            />
+            <StatCard
+              label="Pairs watched"
+              value={100}
+              suffix="+"
+              variants={statsStagger}
+            />
+            <StatCard
+              label="Uptime"
+              value={99.9}
+              decimals={1}
+              suffix="%"
+              variants={statsStagger}
+            />
+          </motion.div>
+          <motion.div variants={statsStagger} className="flex justify-center">
+            <Button
+              href="/pricing#plans"
+              size="md"
+              className="min-w-[150px] !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
+            >
+              GO ALPHA
+            </Button>
+          </motion.div>
+        </motion.div>
       </motion.section>
 
       <SectionDivider />

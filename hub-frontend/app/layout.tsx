@@ -1,4 +1,4 @@
-// app/layout.tsx
+﻿// app/layout.tsx
 // Updates: refined layout structure, spacing rhythm, performance hooks, and motion polish.
 import "./globals.css";
 import { Manrope, Sora } from "next/font/google";
@@ -98,8 +98,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           <footer className="mt-14 border-t border-stroke/60">
             <Container>
-              <div className="py-8 text-small text-muted">
-                © {new Date().getFullYear()} HUSTON SOLUTIONS
+              <div className="flex flex-col gap-3 py-8 text-small text-muted sm:flex-row sm:items-center sm:justify-between">
+                <div>© {new Date().getFullYear()} HUSTON SOLUTIONS</div>
+                <div className="flex flex-wrap items-center gap-4">
+                  <a className="hover:text-text" href="/privacy" data-no-link-style>
+                    Privacy
+                  </a>
+                  <a className="hover:text-text" href="/terms" data-no-link-style>
+                    Terms
+                  </a>
+                  <a className="hover:text-text" href="/contact" data-no-link-style>
+                    Contact
+                  </a>
+                </div>
               </div>
             </Container>
           </footer>

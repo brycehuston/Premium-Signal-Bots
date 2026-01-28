@@ -5,10 +5,10 @@ const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
-  title: `Phase 2 | ${BRAND}`,
-  description: `Phase 2 system flow visualization for ${BRAND}.`,
+  title: `Stage 1 | ${BRAND}`,
+  description: `Stage 1 system flow visualization for ${BRAND}.`,
   alternates: {
-    canonical: `${SITE_URL}/phase-2`,
+    canonical: `${SITE_URL}/stage-1`,
   },
   robots: {
     index: false,
@@ -16,6 +16,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Phase2Page() {
-  return <StaticHtmlPage src="/Part2-python-scanner-bots.html" phaseId="phase-2" />;
+export default function Stage1Page() {
+  return <StaticHtmlPage src="/Part1-source-node.html" phaseId="stage-1" />;
 }
