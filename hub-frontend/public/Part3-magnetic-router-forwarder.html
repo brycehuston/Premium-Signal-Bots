@@ -2186,6 +2186,14 @@
             CFG.outOffsetY = 0.25;
             CFG.forwarderOffsetY = -0.07;
             CFG.centerY = 0.44;
+            CFG.intakeDurMs = 950;
+            CFG.sortMs = 2000;
+            CFG.sortDelayMs = 140;
+            CFG.rotateMs = 320;
+            CFG.emitGapMs = 240;
+            CFG.outDurMs = 1700;
+            CFG.dprMax = 1.5;
+            CFG.stars = 70;
           }
 
           let DPR = 1;
@@ -2248,7 +2256,12 @@
             updateForwarderSize();
           }
 
-          window.addEventListener("resize", resize);
+          const scheduleResize = () => requestAnimationFrame(resize);
+          window.addEventListener("resize", scheduleResize);
+          window.addEventListener("orientationchange", scheduleResize);
+          if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", scheduleResize, { passive: true });
+          }
 
           /* ==========================
              Layout + routing geometry
