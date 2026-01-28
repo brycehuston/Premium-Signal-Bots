@@ -32,6 +32,7 @@ export default function Billing() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <h1 className="sr-only">Billing</h1>
       <Section title="Billing" subtitle="Secure payments by Stripe. Your card never touches our servers.">
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => go("/billing/create-checkout-session")} variant="primary" disabled={busy}>

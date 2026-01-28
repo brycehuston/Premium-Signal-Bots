@@ -272,7 +272,7 @@ export default function PricingPage() {
         <h1 className="font-display text-[50px] font-semibold tracking-tight text-silver leading-[0.95] sm:text-[78px] sm:leading-none md:text-[104px]">
           PRICING
         </h1>
-        <p className="mx-auto mt-3 whitespace-nowrap text-[10px] text-muted sm:text-[11px] md:text-[12px]">
+        <p className="mx-auto mt-3 text-[10px] text-muted sm:text-[11px] md:text-[12px]">
           Choose the alerts you want. Payments are manual for now via USDC on Solana.
         </p>
       </div>

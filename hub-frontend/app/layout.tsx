@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
 import Header from "@/components/Header";
+import StructuredData from "@/components/StructuredData";
 import { ClerkProvider } from "@clerk/nextjs";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
@@ -32,11 +33,17 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: BRAND,
     type: "website",
+    images: [
+      {
+        url: "/favicon.ico",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${BRAND} Pro`,
     description: "Premium crypto alerts with clean signals, smart filters, and fast delivery.",
+    images: ["/favicon.ico"],
   },
 
   // Force favicon paths (App Router)
@@ -71,6 +78,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="absolute -top-56 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-gold/10 blur-[140px]" />
           <div className="absolute bottom-0 right-10 h-[22rem] w-[22rem] rounded-full bg-silver/10 blur-[120px]" />
         </div>
+
+        {/* Global JSON-LD structured data */}
+        <StructuredData />
 
         <Toaster richColors position="top-center" />
 

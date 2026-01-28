@@ -37,31 +37,41 @@ export default function WaitlistPage() {
 
   return (
     <div className="mx-auto max-w-md">
+      <h1 className="sr-only">Join the Alpha-X Waitlist</h1>
       <div className="rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft">
         <h2 className="mb-4 text-center font-display text-h3 font-semibold text-silver">
           Join the Alpha-X Waitlist
         </h2>
         <form onSubmit={submit} className="grid gap-3">
-          <input
-            className="input"
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <input
-            className="input"
-            placeholder="Your email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <textarea
-            className="input min-h-[90px]"
-            placeholder="Got an idea? Share it here..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
+          <label className="block">
+            <span className="sr-only">Your name</span>
+            <input
+              className="input"
+              placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="sr-only">Your email</span>
+            <input
+              className="input"
+              placeholder="Your email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+          <label className="block">
+            <span className="sr-only">Comment</span>
+            <textarea
+              className="input min-h-[90px]"
+              placeholder="Got an idea? Share it here..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+          </label>
           <Button type="submit" disabled={busy} className="mt-2">
             {busy ? "Working..." : "Join Waitlist"}
           </Button>

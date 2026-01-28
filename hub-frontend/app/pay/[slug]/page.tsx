@@ -132,11 +132,42 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
   searchParams?: Promise<SearchParams>;
 }) {
+  const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const { slug } = await params;
   const sp = (await searchParams) ?? {};
   const period = normalizePeriod(sp);
+  const allPlans = [...PLANS, BUNDLE];
+  const plan = allPlans.find((pl) => pl.slug === slug);
+  const planTitle = getPlanTitle(plan ?? { title: slug });
+
+  const title = `Subscribe - ${planTitle} (${period}) | ${BRAND}`;
+  const description = `Complete your ${planTitle} subscription with ${period} billing on ${BRAND}.`;
+  const canonical = `${SITE_URL}/pay/${slug}?period=${period}`;
+
   return {
-    title: `Subscribe - ${slug} (${period})`,
-    description: `Complete your ${slug} subscription with ${period} billing.`,
+    title,
+    description,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+      siteName: BRAND,
+      images: [
+        {
+          url: `${SITE_URL}/favicon.ico`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${SITE_URL}/favicon.ico`],
+    },
   };
 }
