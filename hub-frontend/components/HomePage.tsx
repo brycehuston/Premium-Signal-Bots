@@ -223,8 +223,8 @@ function WebhookIconSpin({ active }: { active: boolean }) {
     const blurAmount = 6;
     const spinUpMs: number = 1200;
     const spinHoldMs: number = 2200;
-    const spinDownMs: number = 1600;
-    const restMs: number = 1800;
+    const spinDownMs: number = 3200;
+    const restMs: number = 3000;
 
     const effectiveRPM = prefersReduced ? Math.min(spinRPM, 120) : spinRPM;
     const effectiveStrength = prefersReduced ? 0 : airflowStrength;
@@ -242,12 +242,11 @@ function WebhookIconSpin({ active }: { active: boolean }) {
     let cx = 0;
     let cy = 0;
     let angle = 0;
-    let startTime = performance.now() + 800;
+    let startTime = performance.now() + 7000;
     let lastTime = startTime;
     let rafId = 0;
 
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-    const easeInCubic = (t: number) => t * t * t;
 
     const rpmForCycle = (elapsedMs: number) => {
       if (cycleMs <= 0) return 0;
@@ -261,7 +260,7 @@ function WebhookIconSpin({ active }: { active: boolean }) {
       }
       if (t < spinUpMs + spinHoldMs + spinDownMs) {
         const p = spinDownMs === 0 ? 1 : (t - spinUpMs - spinHoldMs) / spinDownMs;
-        return effectiveRPM * (1 - easeInCubic(p));
+        return effectiveRPM * (1 - easeOutCubic(p));
       }
       return 0;
     };
