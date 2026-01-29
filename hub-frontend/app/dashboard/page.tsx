@@ -349,25 +349,27 @@ export default function Dashboard() {
             className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
           />
           <CardBody className="flex h-full flex-col gap-4 pt-4 pb-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1.5">
+            <div className="space-y-2">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-3">
                 <div className="text-[11px] uppercase tracking-[0.3em] text-muted/70">
                   Account
                 </div>
-                <div className="break-all text-base font-semibold text-silver">{me.email}</div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                  className="!h-7 !px-2 !rounded-md text-[10px] uppercase tracking-[0.2em] opacity-80 hover:opacity-100"
+                >
+                  Sign Out
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={signOut}
-                className="!h-7 !px-2 !rounded-md text-[10px] uppercase tracking-[0.2em] opacity-80 hover:opacity-100"
-              >
-                Sign Out
-              </Button>
+              <div className="w-full break-all rounded-md border border-stroke/70 bg-surface/70 px-3 py-2 text-base font-semibold text-silver">
+                {me.email}
+              </div>
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-muted/70">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-muted/70">
                 <span>Signal Stack</span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-muted">
                   <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_8px_rgb(var(--gold)/0.45)]" />
@@ -393,7 +395,7 @@ export default function Dashboard() {
                       </div>
                       <span
                         className={[
-                          "inline-flex min-w-[92px] items-center justify-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.22em]",
+                          "inline-flex min-w-[92px] items-center justify-center rounded-md border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.22em]",
                           active
                             ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
                             : "border-red-400/40 bg-red-500/10 text-red-200",
@@ -408,7 +410,7 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-auto pt-1">
-              <div className="rounded-control border border-stroke/70 bg-surface/70 px-3 py-2 text-xs text-muted">
+              <div className="rounded-control border border-stroke/70 bg-surface/70 px-3 py-2 text-center text-xs text-muted">
                 Unlock Tier 5 to access the full Alpha stack.
               </div>
             </div>

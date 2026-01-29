@@ -896,25 +896,22 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   text-shadow: none;
 }
 
-.how-it-works--active .how-step-1 .how-step-badge {
-  animation: step1Badge var(--how-cycle) infinite;
+.how-it-works--active .how-step-badge {
+  background-color: rgb(var(--gold) / 0.18);
+  color: rgb(var(--gold2));
+  border-color: rgb(var(--gold) / 0.45);
+  box-shadow: 0 0 14px rgb(var(--gold) / 0.25);
 }
 .how-it-works--active .how-step-1 .how-step-title,
 .how-it-works--active .how-step-1 .how-step-desc {
   animation: step1Text var(--how-cycle) infinite;
 }
 
-.how-it-works--active .how-step-2 .how-step-badge {
-  animation: step2Badge var(--how-cycle) infinite;
-}
 .how-it-works--active .how-step-2 .how-step-title,
 .how-it-works--active .how-step-2 .how-step-desc {
   animation: step2Text var(--how-cycle) infinite;
 }
 
-.how-it-works--active .how-step-3 .how-step-badge {
-  animation: step3Badge var(--how-cycle) infinite;
-}
 .how-it-works--active .how-step-3 .how-step-title,
 .how-it-works--active .how-step-3 .how-step-desc {
   animation: step3Text var(--how-cycle) infinite;
@@ -1036,6 +1033,129 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   box-shadow: 0 0 0 1px rgb(var(--gold) / 0.12), 0 20px 44px -32px var(--reel-color);
   transform: translateY(-1px);
   opacity: 1;
+}
+
+/* --- FAQ premium ------------------------------------------------------ */
+.faq-item {
+  position: relative;
+  overflow: hidden;
+  transition: border-color 280ms ease, box-shadow 320ms ease, padding 320ms ease;
+}
+.faq-item::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 46px;
+  bottom: 46px;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 214, 128, 0.22),
+    rgba(255, 214, 128, 0.04)
+  );
+  transition: background 320ms ease, box-shadow 320ms ease, opacity 320ms ease;
+  opacity: 0.45;
+}
+.faq-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 215, 128, 0.08), transparent 55%);
+  opacity: 0;
+  transition: opacity 320ms ease;
+  pointer-events: none;
+}
+.faq-item:not(:last-child) {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32), inset 0 -1px rgba(255, 255, 255, 0.06);
+}
+.faq-item[open] {
+  border-color: rgba(246, 212, 139, 0.32);
+  box-shadow: 0 0 0 1px rgba(246, 212, 139, 0.14), 0 16px 32px rgba(0, 0, 0, 0.38);
+  padding-bottom: 22px;
+}
+.faq-item[open]::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 214, 128, 0.85),
+    rgba(255, 214, 128, 0.25)
+  );
+  box-shadow: 0 0 12px rgba(244, 198, 90, 0.28);
+  opacity: 0.72;
+}
+.faq-item[open]::after {
+  opacity: 0.55;
+}
+.faq-summary::-webkit-details-marker {
+  display: none;
+}
+.faq-summary {
+  padding-left: 10px;
+}
+.faq-question {
+  transition: color 240ms ease;
+}
+.faq-item[open] .faq-question {
+  color: rgb(var(--silver));
+}
+.faq-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  transition: transform 320ms ease, color 240ms ease, border-color 240ms ease, background 240ms ease;
+  background: rgba(255, 255, 255, 0.02);
+}
+.faq-chevron svg {
+  width: 14px;
+  height: 14px;
+}
+.faq-item[open] .faq-chevron {
+  transform: rotate(180deg);
+  color: rgba(246, 212, 139, 0.9);
+  border-color: rgba(246, 212, 139, 0.35);
+  background: rgba(246, 212, 139, 0.08);
+}
+.faq-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 360ms ease, opacity 260ms ease, margin-top 260ms ease;
+  opacity: 0.6;
+  margin-top: 0;
+  margin-left: 10px;
+}
+.faq-content-inner {
+  overflow: hidden;
+}
+.faq-answer {
+  position: relative;
+  border-radius: 16px;
+  border: 1px solid rgba(164, 130, 60, 0.58);
+  background:
+    linear-gradient(165deg, rgba(28, 22, 14, 1), rgba(6, 6, 8, 1)),
+    linear-gradient(180deg, rgba(255, 214, 128, 0.08), rgba(0, 0, 0, 0) 55%),
+    radial-gradient(120% 140% at 0% 0%, rgba(164, 130, 60, 0.28), transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, rgba(255, 255, 255, 0.06), transparent 65%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 18px 40px rgba(0, 0, 0, 0.65),
+    0 0 22px rgba(164, 130, 60, 0.12);
+  padding: 14px 16px;
+  color: #D7D8DC;
+}
+.faq-answer.text-muted {
+  color: #D7D8DC;
+}
+.faq-answer .text-muted {
+  color: #B7B8C2;
+}
+.faq-item[open] .faq-content {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 12px;
 }
 
 .alert-reel-item--active::after {
@@ -1314,8 +1434,11 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 .badge-live-pulse {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.08));
-  box-shadow: inset 0 0 8px rgba(16, 185, 129, 0.22);
+  color: rgb(var(--silver-strong));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.12));
+  box-shadow:
+    inset 0 0 10px rgba(16, 185, 129, 0.28),
+    inset 0 0 18px rgba(16, 185, 129, 0.18);
 }
 
 .badge-live-pulse::before {
@@ -1323,36 +1446,15 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   position: absolute;
   inset: 2px;
   border-radius: inherit;
-  background: radial-gradient(circle at 50% 50%, rgba(110, 231, 183, 0.4), transparent 70%);
-  opacity: 0.5;
-  animation: badgeLiveGlow 2.4s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.badge-live-pulse::after {
-  content: "";
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(34, 211, 153, 0.9);
-  box-shadow: 0 0 6px rgba(34, 211, 153, 0.55);
-  transform: translateY(-50%);
-  opacity: 0.85;
-  animation: badgeLiveDot 2.2s ease-in-out infinite;
+  background: radial-gradient(circle at 50% 50%, rgba(110, 231, 183, 0.55), transparent 68%);
+  opacity: 0.55;
+  animation: badgeLiveGlow 2.1s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes badgeLiveGlow {
   0%, 100% { opacity: 0.45; }
-  50% { opacity: 0.8; }
-}
-
-@keyframes badgeLiveDot {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.95; }
+  50% { opacity: 0.9; }
 }
 
 .bundle-alerts-marble {

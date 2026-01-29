@@ -614,60 +614,65 @@ function FeatureRow({ active }: { active: boolean }) {
   }, [bellActive, heavyRing]);
 
   return (
-    // Pill sequence animation: keep layout stable and stagger each chip.
-    <motion.div
-      className="mt-6 flex flex-wrap justify-center gap-3 md:flex-nowrap md:justify-start"
-      variants={pillRowContainer}
-      initial={prefersReduced ? false : "hidden"}
-      whileInView={prefersReduced ? undefined : "show"}
-      viewport={prefersReduced ? undefined : { once: true, amount: 0.35 }}
-    >
-      <motion.div
-        className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
-        variants={pillRowItem}
-        style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
-      >
-        <ClockIcon active={active} />
-        <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
-          Live Trade Signals
+      <div className="mt-4 space-y-1.5">
+        {/* Pill sequence animation: keep layout stable and stagger each chip. */}
+        <motion.div
+          className="flex flex-wrap justify-center gap-3 md:flex-nowrap md:justify-start"
+          variants={pillRowContainer}
+          initial={prefersReduced ? false : "hidden"}
+          whileInView={prefersReduced ? undefined : "show"}
+          viewport={prefersReduced ? undefined : { once: true, amount: 0.35 }}
+        >
+          <motion.div
+            className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
+            variants={pillRowItem}
+            style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
+          >
+            <ClockIcon active={active} />
+            <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
+              Live Trade Signals
+            </div>
+          </motion.div>
+          <motion.div
+            className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
+            variants={pillRowItem}
+            style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
+          >
+            <WebhookIconSpin active={active} />
+            <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
+              Webhook-Ready
+            </div>
+          </motion.div>
+          <motion.div
+            className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
+            variants={pillRowItem}
+            style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
+          >
+            <span className="relative inline-flex overflow-visible">
+              <BellIconDing active={bellActive} heavy={heavyRing} />
+              <span
+                className={[
+                  "bell-dust-shower bell-dust-local",
+                  dustActive ? "bell-dust-heavy" : "",
+                ].join(" ")}
+                aria-hidden="true"
+              />
+              {dustActive ? (
+                <span
+                  className="bell-dust-shower bell-dust-local bell-dust-heavy bell-dust-heavy-2"
+                  aria-hidden="true"
+                />
+              ) : null}
+            </span>
+            <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
+              24/7 Alerts
+            </div>
+          </motion.div>
+        </motion.div>
+        <div className="mx-auto text-[10px] leading-relaxed text-muted/70 text-center md:mx-0 md:text-left md:max-w-[420px]">
+          Informational alerts only. No profit guarantees.
         </div>
-      </motion.div>
-      <motion.div
-        className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
-        variants={pillRowItem}
-        style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
-      >
-        <WebhookIconSpin active={active} />
-        <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
-          Webhook-Ready
-        </div>
-      </motion.div>
-      <motion.div
-        className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 px-4 py-2"
-        variants={pillRowItem}
-        style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
-      >
-        <span className="relative inline-flex overflow-visible">
-          <BellIconDing active={bellActive} heavy={heavyRing} />
-          <span
-            className={[
-              "bell-dust-shower bell-dust-local",
-              dustActive ? "bell-dust-heavy" : "",
-            ].join(" ")}
-            aria-hidden="true"
-          />
-          {dustActive ? (
-            <span
-              className="bell-dust-shower bell-dust-local bell-dust-heavy bell-dust-heavy-2"
-              aria-hidden="true"
-            />
-          ) : null}
-        </span>
-        <div className="text-small font-medium leading-none text-silver whitespace-nowrap">
-          24/7 Alerts
-        </div>
-      </motion.div>
-    </motion.div>
+      </div>
   );
 }
 
@@ -848,10 +853,10 @@ type StepItemProps = {
 
 function StepItem({ step, order, title, description }: StepItemProps) {
   return (
-    <li
-      className={`how-step how-step-${order} flex gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4.5 shadow-soft md:p-5`}
-    >
-      <div className="how-step-badge mt-0.5 grid h-9 w-9 place-items-center rounded-full text-sm font-semibold">
+      <li
+        className={`how-step how-step-${order} flex h-full gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4.5 shadow-soft md:p-5`}
+      >
+      <div className="how-step-badge mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-semibold tabular-nums leading-none">
         {step}
       </div>
       <div className="space-y-1">
@@ -985,16 +990,28 @@ const FAQ_ITEMS = [
     a: "Alerts are delivered in private Telegram channels tied to your plan. Each alert includes a clean summary, safety checks, and one-tap links.",
   },
   {
+    q: "What's inside an alert?",
+    a: "A score, quick risk checks, and fast links (Axiom, explorer, and trading tools) so you can verify before you enter.",
+  },
+  {
     q: "How does payment verification work?",
-    a: "Payments are manual for now via USDC on Solana. We verify on-chain, then invite you to the correct channels.",
+    a: "Payments are manual for now via USDC on Solana. We verify on-chain, then invite you to the correct private channels.",
   },
   {
-    q: "Can I upgrade or cancel?",
-    a: "Yes. You can upgrade by selecting a higher tier and messaging support after payment. Cancel before your next cycle by contacting support.",
+    q: "Do you guarantee profits?",
+    a: "No. These are informational alerts, not financial advice. This market is high-risk and you are responsible for your own decisions.",
   },
   {
-    q: "What chains are supported?",
-    a: "AlphaAlerts is optimized for Solana. Future stages include expansion to additional chains with the same scoring system.",
+    q: "What is a honeypot, bundlers, or fake volume?",
+    a: "Honeypot means you can buy but you can't sell. Bundlers and fake volume can make a chart look \"busy\" even when activity is manipulated. Use Axiom to verify.",
+  },
+  {
+    q: "Why do some tokens dump after Dex Paid or migration?",
+    a: "Not always, but it happens a lot. Treat Dex Paid and migration as volatility events, not bullish signals. Wait for the reaction and real strength.",
+  },
+  {
+    q: "How do I verify faster with Axiom?",
+    a: "Use Axiom to check holder concentration, insiders, bundlers, and dev activity. It helps you spot traps faster before risking money.",
   },
 ];
 
@@ -1262,15 +1279,24 @@ export default function Page() {
   const { ref: featuresScope, inView: featuresInView } = useInView({ threshold: 0.2, once: true });
   const { ref: statsRef } = useInView({ threshold: 0.35, once: true });
   const { ref: howRef, inView: howInView } = useInView({ threshold: 0.35, once: false });
-  const shouldReduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const glowDrift = useTransform(scrollYProgress, [0, 1], [0, 120]);
   const glowDriftAlt = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const glowOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.35, 0.7, 0.35]);
 
+  const { ref: trustRef, inView: trustInView } = useInView({
+    threshold: 0.1,
+    rootMargin: "0px 0px 20% 0px",
+    once: false,
+  });
+  const shouldReduceMotion = useReducedMotion();
+
   const [heroView, setHeroView] = useState<"chart" | "reel">("chart");
   const [showStealthCta, setShowStealthCta] = useState(false);
   const stealthTimerRef = useRef<number | null>(null);
+  const [trustStep, setTrustStep] = useState(0);
+  const trustTimersRef = useRef<number[]>([]);
+  const trustCycleRef = useRef<number | null>(null);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -1300,6 +1326,62 @@ export default function Page() {
       if (stealthTimerRef.current) window.clearTimeout(stealthTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    const clearTimers = () => {
+      trustTimersRef.current.forEach((id) => window.clearTimeout(id));
+      trustTimersRef.current = [];
+      if (trustCycleRef.current) {
+        window.clearTimeout(trustCycleRef.current);
+        trustCycleRef.current = null;
+      }
+    };
+
+    if (shouldReduceMotion) {
+      clearTimers();
+      setTrustStep(1);
+      return () => clearTimers();
+    }
+
+    if (!trustInView) {
+      clearTimers();
+      setTrustStep(0);
+      return () => clearTimers();
+    }
+
+    const runCycle = () => {
+      clearTimers();
+      setTrustStep(0);
+
+      const startDelay = 1000;
+      const stepDelay = 5000;
+      const groupDelay = 5000;
+      const groupDuration = 2200;
+      const ctaDuration = 1800;
+      const cooldown = 2600;
+
+      let t = startDelay;
+      trustTimersRef.current.push(window.setTimeout(() => setTrustStep(1), t));
+      t += stepDelay;
+      trustTimersRef.current.push(window.setTimeout(() => setTrustStep(2), t));
+      t += stepDelay;
+      trustTimersRef.current.push(window.setTimeout(() => setTrustStep(3), t));
+      t += stepDelay;
+      trustTimersRef.current.push(window.setTimeout(() => setTrustStep(4), t));
+      t += groupDelay;
+      trustTimersRef.current.push(window.setTimeout(() => setTrustStep(5), t));
+      t += groupDuration;
+      trustTimersRef.current.push(window.setTimeout(() => setTrustStep(6), t));
+      t += ctaDuration;
+      trustTimersRef.current.push(window.setTimeout(() => setTrustStep(0), t));
+
+      trustCycleRef.current = window.setTimeout(runCycle, t + cooldown);
+    };
+
+    runCycle();
+    return () => clearTimers();
+  }, [shouldReduceMotion, trustInView]);
+
 
 
 
@@ -1337,7 +1419,7 @@ export default function Page() {
   };
 
   return (
-    <div className="relative flex flex-col gap-10 md:gap-12">
+    <div className="relative flex flex-col gap-8 md:gap-10">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute -top-36 left-10 h-[26rem] w-[26rem] rounded-full bg-gold/10 blur-[140px]"
@@ -1351,34 +1433,41 @@ export default function Page() {
 
       <motion.section
         {...revealProps}
-        className="grid grid-cols-1 items-center gap-12 md:grid-cols-12 md:gap-16"
+        className="grid grid-cols-1 items-start gap-10 md:grid-cols-12 md:gap-4"
       >
         <div
           ref={featuresScope as any}
-          className="text-center md:col-span-6 md:pr-10 md:text-left"
+          className="text-center md:col-span-6 md:pr-2 md:pt-8 lg:pt-10 md:text-left"
         >
           <div className="space-y-5">
             <div className="text-[0.8rem] uppercase tracking-[0.4em] text-muted/80 sm:text-eyebrow">
               AlphaAlerts
             </div>
-            <h1 className="font-display text-silver leading-[1.05]">
-              <span className="block font-semibold tracking-[-0.01em] text-[clamp(1.3rem,5.6vw,2.3rem)] sm:text-hero-sub">
-                Your Solana edge, delivered by
-              </span>
-              <span className="block text-[clamp(3.1rem,12vw,5rem)] font-black text-metal-silver sm:text-hero">
-                AlphaAlerts
+            <h1 className="font-display text-silver leading-[1.12]">
+              <span className="block text-[clamp(2rem,6.4vw,4rem)] font-black tracking-[-0.03em] text-metal-silver">
+                <span className="block whitespace-nowrap">SOLANA</span>
+                <span className="block whitespace-nowrap">SIGNALS THAT</span>
+                <span className="block whitespace-nowrap">CUT THE NOISE.</span>
               </span>
             </h1>
-            <p className="mx-auto max-w-[56ch] text-[1.05rem] leading-relaxed text-muted sm:text-body md:mx-0">
-              AI-powered Solana alerts. Catch new tokens, trends, and runners before the crowd.
+            <p className="mx-auto max-w-[62ch] text-[0.98rem] leading-relaxed text-muted sm:text-[1rem] md:mx-0">
+              We scan new tokens and on-chain activity, filter obvious traps,
+              <span className="block">and send clean Telegram alerts with risk scoring.</span>
             </p>
           </div>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Button
-              href="/pricing#plans"
+              href="/pricing"
               size="lg"
-              className="w-full !h-12 text-[0.95rem] sm:min-w-[180px] sm:w-auto !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_8px_20px_rgb(var(--gold3)/0.45)] hover:!shadow-[0_14px_28px_rgb(var(--gold3)/0.55)] !before:opacity-0 !after:opacity-0"
+              className={[
+                "w-full !h-12 text-[0.95rem] sm:min-w-[180px] sm:w-auto !rounded-[6px]",
+                "!bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))]",
+                "!border-[rgb(var(--gold3)_/_0.9)]",
+                "!shadow-[0_8px_20px_rgb(var(--gold3)/0.45)] hover:!shadow-[0_14px_28px_rgb(var(--gold3)/0.55)]",
+                "!before:opacity-0 !after:opacity-0",
+                trustStep === 6 ? "trust-cta--pulse" : "",
+              ].join(" ")}
             >
               GO ALPHA
             </Button>
@@ -1395,7 +1484,7 @@ export default function Page() {
           <FeatureRow active={featuresInView} />
         </div>
 
-        <div className="md:col-span-6 md:pl-4">
+        <div className="md:col-span-6 md:pl-2">
           <div className="space-y-4 md:space-y-6">
             <div className="flex justify-center md:justify-end">
               <div
@@ -1438,7 +1527,7 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="relative isolate min-h-[360px] sm:min-h-[380px] md:min-h-[420px] overflow-hidden sm:overflow-visible">
+            <div className="relative isolate min-h-[400px] sm:min-h-[420px] md:min-h-[460px] overflow-hidden sm:overflow-visible">
               <motion.div
                 aria-hidden={heroView !== "chart"}
                 className="absolute inset-0"
@@ -1453,7 +1542,7 @@ export default function Page() {
                   pointerEvents: heroView === "chart" ? "auto" : "none",
                 }}
               >
-                <HeroChart height={360} />
+                <HeroChart height={420} />
               </motion.div>
               <motion.div
                 aria-hidden={heroView !== "reel"}
@@ -1469,7 +1558,7 @@ export default function Page() {
                   pointerEvents: heroView === "reel" ? "auto" : "none",
                 }}
               >
-                <div className="w-full max-w-[520px]">
+                <div className="w-full max-w-[640px]">
                   <HeroAlertReel />
                 </div>
               </motion.div>
@@ -1478,29 +1567,142 @@ export default function Page() {
         </div>
       </motion.section>
 
-      <motion.section {...revealProps} className="rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft md:p-8">
-        <div className="grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+      <SectionDivider />
+
+      <motion.section
+        {...revealProps}
+        ref={trustRef as any}
+        className={[
+          "trust-card mt-6 rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft md:mt-8 md:p-8",
+          shouldReduceMotion ? "trust-card--static" : "",
+        ].join(" ")}
+      >
+        <span
+          aria-hidden
+          className={`trust-glow ${shouldReduceMotion ? "trust-glow--static" : ""}`}
+        />
+        <div className="relative z-10 grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-center">
           <div className="space-y-3">
             <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">Trust & Access</div>
             <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
               Built For Fast, Safe Signals
             </h2>
             <p className="text-body text-muted">
-              Private delivery, manual payment verification, and clear risk filters so you stay early without the noise.
+              Private delivery, manual verification, and clear risk filters to keep your feed clean.
             </p>
           </div>
           <div className="grid gap-3">
-            <div className="rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
-              Manual payment verification before invites go live
-            </div>
-            <div className="rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
-              Private Telegram channels tied to your plan
-            </div>
-            <div className="rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
-              Risk filters and scoring on every alert
-            </div>
+              <div
+                className={[
+                  "trust-pill trust-pill--1 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted",
+                  trustStep >= 1 ? "trust-pill--active" : "",
+                  trustStep === 1 ? "trust-pill--pulse" : "",
+                  trustStep === 5 ? "trust-pill--group" : "",
+                ].join(" ")}
+              >
+                Manual payment verification before invites go live
+              </div>
+              <div
+                className={[
+                  "trust-pill trust-pill--2 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted",
+                  trustStep >= 2 ? "trust-pill--active" : "",
+                  trustStep === 2 ? "trust-pill--pulse" : "",
+                  trustStep === 5 ? "trust-pill--group" : "",
+                ].join(" ")}
+              >
+                Private Telegram channels tied to your plan
+              </div>
+              <div
+                className={[
+                  "trust-pill trust-pill--3 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted",
+                  trustStep >= 3 ? "trust-pill--active" : "",
+                  trustStep === 3 ? "trust-pill--pulse" : "",
+                  trustStep === 5 ? "trust-pill--group" : "",
+                ].join(" ")}
+              >
+                Risk filters and scoring on every alert
+              </div>
+              <div
+                className={[
+                  "trust-pill trust-pill--4 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted",
+                  trustStep >= 4 ? "trust-pill--active" : "",
+                  trustStep === 4 ? "trust-pill--pulse" : "",
+                  trustStep === 5 ? "trust-pill--group" : "",
+                ].join(" ")}
+              >
+                We never ask for seed phrases.
+              </div>
           </div>
         </div>
+        <style jsx>{`
+          .trust-card {
+            position: relative;
+            overflow: hidden;
+          }
+          .trust-glow {
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.18),
+              0 0 28px rgba(244, 198, 90, 0.22);
+            opacity: 0.28;
+            animation: trustGlow 8s ease-in-out infinite;
+            pointer-events: none;
+          }
+          .trust-glow--static {
+            animation: none;
+            opacity: 0.22;
+          }
+            .trust-pill {
+              position: relative;
+              transition: border-color 1600ms ease;
+              border-color: rgba(255, 255, 255, 0.18);
+            }
+          .trust-pill--active {
+            border-color: rgba(255, 214, 128, 0.32);
+          }
+          .trust-card--static .trust-pill--1 {
+            border-color: rgba(255, 214, 128, 0.32);
+          }
+          .trust-pill--pulse {
+            animation: pillPulse 3.8s ease-in-out;
+          }
+          .trust-pill--group {
+            animation: groupPulse 3.4s ease-in-out;
+          }
+          .trust-cta--pulse {
+            animation: ctaPulse 2.2s ease-in-out;
+          }
+          @keyframes pillPulse {
+            0%,
+            100% {
+              border-color: rgba(255, 214, 128, 0.28);
+            }
+            50% {
+              border-color: rgba(255, 214, 128, 0.4);
+            }
+          }
+          @keyframes groupPulse {
+            0%,
+            100% {
+              border-color: rgba(255, 214, 128, 0.3);
+            }
+            50% {
+              border-color: rgba(255, 214, 128, 0.45);
+            }
+          }
+          @keyframes ctaPulse {
+            0%,
+            100% {
+              transform: translateZ(0);
+              box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+            }
+              50% {
+                transform: translateY(-1px) scale(1.004);
+                box-shadow: 0 0 16px rgba(244, 198, 90, 0.2);
+              }
+            }
+          `}</style>
       </motion.section>
 
       <SectionDivider showDust={false} />
@@ -1512,28 +1714,28 @@ export default function Page() {
       >
         <SectionHeading
           eyebrow="How it works"
-          title="Three Steps To Go Live"
-          subtitle="Pick a tier, pay in USDC, and get clean alerts in Telegram."
+          title="Go Live In 3 Steps"
+          subtitle="Pick a plan, pay in USDC, get invited to your private Telegram channel."
           className="space-y-3"
         />
-        <ol className="mt-6 grid gap-4 md:grid-cols-3">
+        <ol className="mt-6 grid items-stretch gap-4 md:grid-cols-3 md:auto-rows-fr">
           <StepItem
             step={1}
             order={1}
-            title="Pick Your Tier"
-            description="Choose Early, Trend, Runner, or the Alpha Alerts Bundle."
+            title="Pick Your Plan"
+            description="Early, Trend, Runner, or Bundle."
           />
           <StepItem
             step={2}
             order={2}
-            title="Pay and Connect"
-            description="Manual USDC payment, then we invite you to Telegram."
+            title="Pay + Send Proof"
+            description="Pay USDC on Solana, then message your transaction link + Telegram username."
           />
           <StepItem
             step={3}
             order={3}
-            title="Get Alerts Live"
-            description="Clean signals with links, filters, and scoring in real time."
+            title="Get Your Invite"
+            description="We verify and invite you. Alerts start flowing."
           />
         </ol>
       </motion.section>
@@ -1572,7 +1774,7 @@ export default function Page() {
               <div className="phase-grid">
                 <div className="phase-left">
                   <div className="phase-hero-line">Signal Pipeline</div>
-                  <div className="phase-support-line">Collected • Validated • Delivered</div>
+                  <div className="phase-support-line">ON-CHAIN IN • FILTER SCORE • ALERTS OUT</div>
                   {/* NEW: CTA aligned left */}
                   <div className="phase-cta-wrap">
                     <Button href="/stage-1" size="md" className="phase-cta">
@@ -1587,15 +1789,15 @@ export default function Page() {
                     <span className="beam-glow" />
                     <span className="beam-station beam-station--source">
                       <span className="beam-ring" />
-                      <span className="beam-label">SOURCE</span>
+                      <span className="beam-label">Source</span>
                     </span>
                     <span className="beam-station beam-station--scanner">
                       <span className="beam-ring" />
-                      <span className="beam-label">SCANNER</span>
+                      <span className="beam-label">Scanner</span>
                     </span>
                     <span className="beam-station beam-station--router">
                       <span className="beam-ring" />
-                      <span className="beam-label">ROUTER</span>
+                      <span className="beam-label">Router</span>
                     </span>
                   </div>
                 </div>
@@ -1773,6 +1975,12 @@ export default function Page() {
           .beam-label {
             font-size: 12px;
             letter-spacing: 0.18em;
+          }
+          .beam-sub {
+            font-size: 9px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.55);
           }
           .phase-cta-wrap {
             position: relative;
@@ -1962,7 +2170,7 @@ export default function Page() {
                 Smart Risk Filters
               </h3>
               <p className="text-small text-muted">
-                Rugs, honeypots, and thin liquidity get filtered out before they hit your feed.
+                We try to block obvious traps before they hit your feed.
               </p>
             </CardBody>
           </Card>
@@ -1976,7 +2184,7 @@ export default function Page() {
                 Alpha-Grade Alerts
               </h3>
               <p className="text-small text-muted">
-                Early, Trend, and Runner alerts delivered to Telegram with only the essentials.
+                One clean message with key stats and fast links.
               </p>
             </CardBody>
           </Card>
@@ -1990,7 +2198,7 @@ export default function Page() {
                 Stacked Alpha Flow
               </h3>
               <p className="text-small text-muted">
-                Track a token from birth to breakout with one clean alert stack.
+                Early tokens, trend momentum, and runner moves in one system.
               </p>
             </CardBody>
           </Card>
@@ -2026,6 +2234,9 @@ export default function Page() {
               GO ALPHA
             </Button>
           </div>
+          <p className="text-[12px] text-muted/70">
+            Pro tip: open Axiom first to check holders, bundles, insiders, and dev buys or sells before entering.
+          </p>
         </div>
 
         <Card className="bg-surface2/80">
@@ -2085,26 +2296,32 @@ export default function Page() {
 
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Button
-                type="button"
                 variant="outline"
                 size="sm"
                 className="w-full !h-10 sm:!h-9 !rounded-pill !px-3 sm:!px-2 text-[12px] sm:text-[11px] uppercase tracking-[0.25em]"
+                href="https://axiom.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 AXIOM
               </Button>
               <Button
-                type="button"
                 variant="outline"
                 size="sm"
                 className="w-full !h-10 sm:!h-9 !rounded-pill !px-3 sm:!px-2 text-[12px] sm:text-[11px] uppercase tracking-[0.25em]"
+                href="https://pump.fun"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 PUMP.FUN
               </Button>
               <Button
-                type="button"
                 variant="outline"
                 size="sm"
                 className="w-full !h-10 sm:!h-9 !rounded-pill !px-3 sm:!px-2 text-[12px] sm:text-[11px] uppercase tracking-[0.25em]"
+                href="https://rugcheck.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 RUGCHECK
               </Button>
@@ -2123,21 +2340,29 @@ export default function Page() {
           title="Answers Before You Commit"
           subtitle="Quick clarity on delivery, payments, and access."
         />
-        <div className="mx-auto max-w-3xl space-y-3">
+        <div className="faq-list mx-auto max-w-3xl space-y-2">
           {FAQ_ITEMS.map((item) => (
             <details
               key={item.q}
-              className="group rounded-card border border-stroke/70 bg-surface/70 p-4 shadow-soft"
+              className="faq-item group rounded-card border border-stroke/70 bg-surface/70 p-4 shadow-soft md:p-5"
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-silver font-semibold">
-                <span>{item.q}</span>
-                <span className="text-muted transition group-open:rotate-45">+</span>
+              <summary className="faq-summary flex cursor-pointer list-none items-center justify-between gap-3 text-silver font-semibold">
+                <span className="faq-question">{item.q}</span>
+                <span className="faq-chevron" aria-hidden>
+                  <svg viewBox="0 0 24 24" role="presentation">
+                    <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
               </summary>
-              <div className="mt-3 text-body text-muted">{item.a}</div>
+              <div className="faq-content">
+                <div className="faq-content-inner">
+                  <div className="faq-answer text-body text-muted">{item.a}</div>
+                </div>
+              </div>
             </details>
           ))}
         </div>
-        <div className="flex justify-center">
+        <div className="mt-2 flex flex-col items-center gap-3">
           <Button
             href="/pricing#plans"
             size="md"
@@ -2145,6 +2370,13 @@ export default function Page() {
           >
             GO ALPHA
           </Button>
+          <a
+            className="text-[9px] leading-none uppercase tracking-[0.2em] text-gold/70 hover:text-gold"
+            href="/safety"
+            data-no-link-style
+          >
+            FULL SAFETY GUIDE
+          </a>
         </div>
       </motion.section>
 
@@ -2161,7 +2393,7 @@ export default function Page() {
             <SectionHeading
               eyebrow="Performance"
               title="Speed And Transparency"
-              subtitle="Live metrics from recent activity."
+              subtitle="Beta metrics - directional only."
             />
           </motion.div>
           <motion.div variants={statsGroup} className="grid gap-5 md:grid-cols-3 md:gap-4">

@@ -1,9 +1,9 @@
 const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-const TITLE = `Solana Alerts Pricing | ${BRAND}`;
+const TITLE = `Pricing | ${BRAND}`;
 const DESCRIPTION =
-  "Compare AlphaAlerts plans for AI-powered Solana alerts. Pick Early, Trend, Runner, or the full bundle.";
+  "Choose your lane for Solana alerts. Private Telegram delivery, manual verification, and USDC on Solana payments.";
 
 export default function Head() {
   return (

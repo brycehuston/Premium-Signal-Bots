@@ -132,6 +132,8 @@ type ButtonProps = {
   children: ReactNode;
   onClick?: () => void;
   href?: string;
+  target?: string;
+  rel?: string;
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "ghost" | "outline" | "gold";
   size?: "sm" | "md" | "lg";
@@ -144,6 +146,8 @@ export function Button({
   children,
   onClick,
   href,
+  target,
+  rel,
   type = "button", // ✅ default prevents accidental form submits
   variant = "primary",
   size = "md",
@@ -222,6 +226,8 @@ export function Button({
         aria-disabled={disabled}
         data-no-link-style
         onClick={onClick}
+        target={target}
+        rel={rel}
       >
         {Shine}
         <span className="relative z-[1]">{children}</span>

@@ -243,7 +243,7 @@ export default function BottomTickerBar({
           <a
             href={telegramUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             aria-label="Telegram"
             title="Telegram"
             data-no-link-style
@@ -255,7 +255,7 @@ export default function BottomTickerBar({
           <a
             href={xUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             aria-label="X"
             title="X"
             data-no-link-style

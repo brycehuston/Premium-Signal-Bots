@@ -18,10 +18,10 @@ export default function ContactPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button href={TELEGRAM_URL} size="md">
+            <Button href={TELEGRAM_URL} size="md" target="_blank" rel="noopener noreferrer">
               Message on Telegram
             </Button>
-            <Button href={X_URL} size="md" variant="outline">
+            <Button href={X_URL} size="md" variant="outline" target="_blank" rel="noopener noreferrer">
               Follow on X
             </Button>
           </div>

@@ -1,30 +1,26 @@
 import type { Metadata } from "next";
-import HomePage from "@/components/HomePage";
+import type { ReactNode } from "react";
 
 const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-const TITLE = `${BRAND} Pro - Solana signals that cut the noise`;
+const TITLE = `Pricing | ${BRAND}`;
 const DESCRIPTION =
-  "We scan new tokens and on-chain activity, filter obvious traps, and send clean Telegram alerts with risk scoring.";
+  "Choose your lane for Solana alerts. Private Telegram delivery, manual verification, and USDC on Solana payments.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: {
-    canonical: `${SITE_URL}/`,
+    canonical: `${SITE_URL}/pricing`,
   },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: `${SITE_URL}/`,
+    url: `${SITE_URL}/pricing`,
     siteName: BRAND,
     type: "website",
-    images: [
-      {
-        url: "/favicon.ico",
-      },
-    ],
+    images: [{ url: "/favicon.ico" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -34,6 +30,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <HomePage />;
+export default function PricingLayout({ children }: { children: ReactNode }) {
+  return children;
 }

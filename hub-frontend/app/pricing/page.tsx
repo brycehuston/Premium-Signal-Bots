@@ -232,6 +232,11 @@ export default function PricingPage() {
   const bundleTitle = BUNDLE.title;
   const bundleKey = "ALERTS";
   const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
+  const bundleBullets = [
+    ...BUNDLE.bullets,
+    "All 3 channels in one.",
+    "Best value if you want the full pipeline.",
+  ];
   const bundleTitleNode =
     bundleKeyIndex === -1 ? (
       bundleTitle
@@ -272,6 +277,12 @@ export default function PricingPage() {
         <h1 className="font-display text-[50px] font-semibold tracking-tight text-silver leading-[0.95] sm:text-[78px] sm:leading-none md:text-[104px]">
           PRICING
         </h1>
+        <p className="mx-auto mt-3 text-[11px] text-muted sm:text-[12px] md:text-[13px]">
+          Pick your lane: Early = new tokens. Trend = momentum. Runner = continuation. Bundle = everything.
+        </p>
+        <p className="mx-auto mt-2 text-[10px] text-muted/80 sm:text-[11px] md:text-[12px]">
+          Manual verification. Private Telegram delivery. No keys ever.
+        </p>
         <p className="mx-auto mt-3 text-[10px] text-muted sm:text-[11px] md:text-[12px]">
           Choose the alerts you want. Payments are manual for now via USDC on Solana.
         </p>
@@ -447,7 +458,7 @@ export default function PricingPage() {
               </div>
 
               <ul className="space-y-3 text-[14px] text-muted md:space-y-2.5 md:text-[15px]">
-                {BUNDLE.bullets.map((b: string, i: number) => (
+                {bundleBullets.map((b: string, i: number) => (
                   <li key={i} className="flex gap-2.5">
                     <Check tone="gold" />
                     <span>{b}</span>
@@ -493,7 +504,7 @@ export default function PricingPage() {
                     We confirm your payment
                   </div>
                   <div className="text-small text-muted leading-relaxed">
-                    Manual USDC on Solana, verified by the team.
+                    Manual USDC on Solana, verified by the team. After payment, send your transaction link + Telegram username to support.
                   </div>
                 </div>
               </li>
@@ -541,7 +552,7 @@ export default function PricingPage() {
               <div className="p-4">
                 <div className="text-small font-semibold text-silver">Payment method</div>
                 <div className="mt-2 text-small text-muted leading-relaxed">
-                  Manual USDC on Solana for now. We confirm and invite you quickly.
+                  Manual USDC on Solana for now. We confirm and invite you quickly. Manual verification keeps access clean and stops shared invites.
                 </div>
               </div>
               <div className="p-4">
@@ -588,8 +599,7 @@ export default function PricingPage() {
             </div>
 
             <p className="mx-auto mt-5 max-w-3xl text-balance text-body leading-relaxed text-muted">
-              A hands-free auto-trader that hunts high-probability setups, sizes risk, and manages
-              exits for you while you sleep.
+              Alpha-X is the future auto layer. It only goes live after enough data, testing, and risk rules.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-5 text-small text-muted/85">

@@ -2,7 +2,7 @@ const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 const TITLE = `Privacy Policy | ${BRAND}`;
-const DESCRIPTION = `Learn how ${BRAND} collects and uses data.`;
+const DESCRIPTION = `Clear and transparent privacy practices for ${BRAND} Pro.`;
 
 export default function Head() {
   return (
