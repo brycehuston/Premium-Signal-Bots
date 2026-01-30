@@ -1458,6 +1458,9 @@
        UPGRADE: TRIPLE CLICK ON ROUTER -> PORTAL DIVE -> Page 3
        ============================================================ */
     const frameEl = document.getElementById("frame");
+    const IS_COARSE = window.matchMedia && window.matchMedia("(max-width: 820px), (pointer: coarse)").matches;
+    const PREFERS_REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const DPR_CAP = PREFERS_REDUCED ? 1.2 : (IS_COARSE ? 1.35 : 1.75);
     const fadeOutEl = document.getElementById("fadeOut");
     const portalCanvas = document.getElementById("portalFx");
     const portalCtx = portalCanvas.getContext("2d", { alpha: true, desynchronized: true });
@@ -1466,7 +1469,7 @@
 
     function resizePortal() {
       const r = frameEl.getBoundingClientRect();
-      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const dpr = Math.max(1, Math.min(DPR_CAP, window.devicePixelRatio || 1));
       portalCanvas.width = Math.floor(r.width * dpr);
       portalCanvas.height = Math.floor(r.height * dpr);
       portalCanvas.style.width = r.width + "px";
@@ -1664,7 +1667,7 @@
           ringBrightness: profile.ringBrightness,
           sparks: 270,
           bgStars: 55,
-          dprMax: 2,
+          dprMax: DPR_CAP,
           radarRadiusMul: 0.78,
           gridAlpha: 0.105,
           gridRings: 4,
@@ -2676,7 +2679,7 @@
 
       resize() {
         const r = this.frame.getBoundingClientRect();
-        const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        const dpr = Math.max(1, Math.min(DPR_CAP, window.devicePixelRatio || 1));
         this.DPR = dpr;
 
         this.W = Math.max(1, Math.floor(r.width));
@@ -3218,7 +3221,23 @@
       };
     }
 
+    let rafId = 0;
+    let paused = document.hidden;
+    function setPaused(next) {
+      paused = next;
+      if (!paused && !rafId) {
+        rafId = requestAnimationFrame(loop);
+      }
+    }
+    document.addEventListener("visibilitychange", () => setPaused(document.hidden), { passive: true });
+    window.addEventListener("blur", () => setPaused(true), { passive: true });
+    window.addEventListener("focus", () => setPaused(false), { passive: true });
+
     function loop(nowMs) {
+      if (paused) {
+        rafId = 0;
+        return;
+      }
       try {
         for (const c of cores) c.draw(nowMs);
       } catch (e) {
@@ -3251,9 +3270,9 @@
         portalCtx.clearRect(0, 0, portalCanvas.width, portalCanvas.height);
       }
 
-      requestAnimationFrame(loop);
+      rafId = requestAnimationFrame(loop);
     }
-    requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
   </script>
 </body>
 

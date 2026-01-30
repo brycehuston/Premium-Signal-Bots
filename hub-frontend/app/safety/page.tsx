@@ -244,7 +244,7 @@ export default function SafetyPage() {
       </section>
 
       <section className="flex flex-col items-center gap-3 text-center">
-        <Button href="/pricing" size="xl" className="w-full sm:w-auto px-10">
+        <Button href="/pricing" size="lg" className="w-full sm:w-auto px-10">
           View Pricing
         </Button>
         <a className="text-[12px] text-gold/80 hover:text-gold" href="/#sample-alerts" data-no-link-style>

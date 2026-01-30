@@ -521,6 +521,8 @@
       const frameEl = document.getElementById("frame");
       const canvas = document.getElementById("cv");
       const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+      const IS_COARSE = window.matchMedia && window.matchMedia("(max-width: 820px), (pointer: coarse)").matches;
+      const PREFERS_REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       const TAU = Math.PI * 2;
 
@@ -741,6 +743,14 @@
           slowLenMax: 0.34
         }
       };
+
+      if (IS_COARSE || PREFERS_REDUCED) {
+        CFG.dprMax = PREFERS_REDUCED ? 1.1 : 1.35;
+        CFG.stars = Math.round(CFG.stars * 0.7);
+        CFG.coreParticles = Math.round(CFG.coreParticles * 0.7);
+        CFG.maxPackets = Math.max(12, Math.round(CFG.maxPackets * 0.75));
+        DIVE.warp.count = Math.round(DIVE.warp.count * 0.7);
+      }
 
       const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 430px)").matches;
       const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
@@ -1818,8 +1828,25 @@
          ============================================================ */
       let last = performance.now();
       let tSec = 0;
+      let rafId = 0;
+      let paused = document.hidden;
+
+      function setPaused(next) {
+        paused = next;
+        if (!paused && !rafId) {
+          rafId = requestAnimationFrame(loop);
+        }
+      }
+
+      document.addEventListener("visibilitychange", () => setPaused(document.hidden), { passive: true });
+      window.addEventListener("blur", () => setPaused(true), { passive: true });
+      window.addEventListener("focus", () => setPaused(false), { passive: true });
 
       function loop(now) {
+        if (paused) {
+          rafId = 0;
+          return;
+        }
         const dt = Math.min(0.033, (now - last) / 1000);
         last = now;
         tSec += dt;
@@ -2032,11 +2059,11 @@
         ctx.drawImage(grainLayer, 0, 0, W, H);
         ctx.restore();
 
-        requestAnimationFrame(loop);
+        rafId = requestAnimationFrame(loop);
       }
 
       resize();
-      requestAnimationFrame(loop);
+      rafId = requestAnimationFrame(loop);
     })();
   </script>
 
