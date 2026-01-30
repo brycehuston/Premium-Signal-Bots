@@ -1,4 +1,4 @@
-# SaaS Landing Audit Report
+Ôªø# SaaS Landing Audit Report
 
 Project: hub-frontend (Next.js App Router)
 Date: 2026-01-27
@@ -10,23 +10,23 @@ No code changes were made during Phases 1-5.
 ## Route Inventory (Phase 1)
 
 Public marketing and flows:
-- `/` ó Main landing page
-- `/pricing` ó Plans, bundle, billing toggle, onboarding steps, ALPHA-X promo
-- `/pay/[slug]` ó Payment instructions and transaction submission
-- `/waitlist` ó Alpha-X waitlist capture form
-- `/phase-1` ó Static HTML fullscreen animation (Part 1)
-- `/phase-2` ó Static HTML fullscreen animation (Part 2)
-- `/phase-3` ó Static HTML fullscreen animation (Part 3)
+- `/` ‚Äî Main landing page
+- `/pricing` ‚Äî Plans, bundle, billing toggle, onboarding steps, ALPHA-X promo
+- `/pay/[slug]` ‚Äî Payment instructions and transaction submission
+- `/waitlist` ‚Äî Alpha-X waitlist capture form
+- `/phase-1` ‚Äî Static HTML fullscreen animation (Part 1)
+- `/phase-2` ‚Äî Static HTML fullscreen animation (Part 2)
+- `/phase-3` ‚Äî Static HTML fullscreen animation (Part 3)
 
 Auth/app routes:
-- `/login` ó Clerk sign-in
-- `/register` ó Clerk sign-up
-- `/dashboard` ó Authenticated dashboard
-- `/billing` ó Billing actions
+- `/login` ‚Äî Clerk sign-in
+- `/register` ‚Äî Clerk sign-up
+- `/dashboard` ‚Äî Authenticated dashboard
+- `/billing` ‚Äî Billing actions
 
 Technical routes:
-- `/sitemap.xml` ó Generated sitemap
-- `/robots.txt` ó Generated robots
+- `/sitemap.xml` ‚Äî Generated sitemap
+- `/robots.txt` ‚Äî Generated robots
 
 Global layout:
 - Sticky `Header`, footer, `BottomTickerBar`, background effects, Sonner toaster, Clerk provider
@@ -87,7 +87,7 @@ Global layout:
 
 ### P2
 - Manual USDC payment introduces friction without stronger reassurance.
-  - Suggested fix: Add a compact ìhow we verify paymentsî trust block near pricing/pay CTAs.
+  - Suggested fix: Add a compact ‚Äúhow we verify payments‚Äù trust block near pricing/pay CTAs.
 
 ## Accessibility + Mobile Audit (Phase 5)
 
@@ -103,8 +103,8 @@ Global layout:
   - Suggested fix: Allow wrapping while preserving styling.
 
 ### P2
-- Several areas use very small (10ñ11px) muted text.
-  - Suggested fix: Increment key body text to 12ñ13px where possible.
+- Several areas use very small (10‚Äì11px) muted text.
+  - Suggested fix: Increment key body text to 12‚Äì13px where possible.
 
 ## SaaS Completeness Checklist
 
@@ -126,3 +126,4 @@ Global layout:
 - Social proof (logos/testimonials/stats band)
 - Custom 404/not-found page
 - Analytics funnel tracking
+

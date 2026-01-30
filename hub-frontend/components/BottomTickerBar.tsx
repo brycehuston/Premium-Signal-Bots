@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Send, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 type Sym = "BTC" | "ETH" | "SOL";
 type PriceState = Record<Sym, number | null>;
@@ -106,12 +107,13 @@ export default function BottomTickerBar({
   const fearGreedTimerRef = useRef<number | null>(null);
   const fearGreedInFlightRef = useRef<boolean>(false);
   const pathname = usePathname();
+  const hideBar = pathname.startsWith("/stage-");
   const shouldFetch =
-    pathname === "/" ||
-    pathname.startsWith("/pricing") ||
-    pathname.startsWith("/waitlist") ||
-    pathname.startsWith("/stage-") ||
-    pathname.startsWith("/pay");
+    !hideBar &&
+    (pathname === "/" ||
+      pathname.startsWith("/pricing") ||
+      pathname.startsWith("/waitlist") ||
+      pathname.startsWith("/pay"));
 
   const url = useMemo(() => {
     const ids = "bitcoin,ethereum,solana";
@@ -219,6 +221,8 @@ export default function BottomTickerBar({
     pathname.startsWith("/dashboard") ||
     (shouldFetch && fearGreedValue != null && fearGreed.tone === "green");
 
+  if (hideBar) return null;
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50">
       <div className="h-px w-full bg-stroke/70" />
@@ -248,6 +252,7 @@ export default function BottomTickerBar({
             title="Telegram"
             data-no-link-style
             className="flex h-7 w-7 items-center justify-center rounded-lg border border-stroke/60 bg-surface/70 text-muted hover:text-text hover:border-gold/40 transition sm:h-9 sm:w-9"
+            onClick={() => track("telegram_access_click", { location: "ticker" })}
           >
             <Send className="h-3 w-3 sm:h-4 sm:w-4" />
           </a>

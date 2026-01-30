@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Card, CardBody, Button, SectionHeading } from "@/components/ui";
+import Link from "next/link";
 
 const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -10,15 +11,15 @@ const DESCRIPTION =
 
 const SAFETY_FAQ = [
   {
-    question: "What is a honeypot?",
+    question: "What is a honeypot-",
     answer: "A honeypot lets you buy but blocks selling or makes selling impossible.",
   },
   {
-    question: "What are bundlers or bundled buys?",
+    question: "What are bundlers or bundled buys-",
     answer: "Coordinated wallets buying together to manufacture hype.",
   },
   {
-    question: "What is fake volume or wash trading?",
+    question: "What is fake volume or wash trading-",
     answer: "Bots trading to fake activity and trick real buyers.",
   },
   {
@@ -87,7 +88,7 @@ export default function SafetyPage() {
           <Card>
             <CardBody className="space-y-3">
               <h3 className="font-display text-title-lg font-semibold text-silver">
-                What is a honeypot?
+                What is a honeypot-
               </h3>
               <p className="text-small text-muted">
                 A honeypot lets you buy but blocks selling or makes selling impossible.
@@ -97,7 +98,7 @@ export default function SafetyPage() {
           <Card>
             <CardBody className="space-y-3">
               <h3 className="font-display text-title-lg font-semibold text-silver">
-                What are bundlers or bundled buys?
+                What are bundlers or bundled buys-
               </h3>
               <p className="text-small text-muted">
                 Coordinated wallets buying together to manufacture hype.
@@ -107,7 +108,7 @@ export default function SafetyPage() {
           <Card>
             <CardBody className="space-y-3">
               <h3 className="font-display text-title-lg font-semibold text-silver">
-                What is fake volume or wash trading?
+                What is fake volume or wash trading-
               </h3>
               <p className="text-small text-muted">
                 Bots trading to fake activity and trick real buyers.
@@ -217,23 +218,23 @@ export default function SafetyPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex items-center justify-between gap-3 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
                 <span>MC min</span>
-                <span className="font-semibold text-silver">30–50k</span>
+                <span className="font-semibold text-silver">30-50k</span>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
                 <span>Liquidity min</span>
-                <span className="font-semibold text-silver">15–20k</span>
+                <span className="font-semibold text-silver">15-20k</span>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
                 <span>Volume (5m) min</span>
-                <span className="font-semibold text-silver">10–15k</span>
+                <span className="font-semibold text-silver">10-15k</span>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted">
                 <span>M5 TX min</span>
-                <span className="font-semibold text-silver">150–250</span>
+                <span className="font-semibold text-silver">150-250</span>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-control border border-stroke/60 bg-surface/70 px-4 py-3 text-small text-muted sm:col-span-2">
                 <span>B/S ratio</span>
-                <span className="font-semibold text-silver">≥ 1.2</span>
+                <span className="font-semibold text-silver">{">= 1.2"}</span>
               </div>
             </div>
             <p className="text-small text-muted/80">
@@ -247,9 +248,9 @@ export default function SafetyPage() {
         <Button href="/pricing" size="lg" className="w-full sm:w-auto px-10">
           View Pricing
         </Button>
-        <a className="text-[12px] text-gold/80 hover:text-gold" href="/#sample-alerts" data-no-link-style>
+        <Link className="text-[12px] text-gold/80 hover:text-gold" href="/#sample-alerts" data-no-link-style>
           See Sample Alerts
-        </a>
+        </Link>
       </section>
 
       <script

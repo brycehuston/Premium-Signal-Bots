@@ -4,7 +4,11 @@ export async function api(
   init: RequestInit = {},
   options: { token?: string } = {}
 ) {
-  const base = process.env.NEXT_PUBLIC_API_URL!;
+  const base =
+    process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE;
+  if (!base) {
+    throw new Error("Missing NEXT_PUBLIC_API_URL/NEXT_PUBLIC_API_BASE");
+  }
   const controller = new AbortController();
   const timeoutMs = 12000;
   const t = setTimeout(() => controller.abort(), timeoutMs);

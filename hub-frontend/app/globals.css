@@ -79,6 +79,15 @@ html, body { @apply min-h-screen bg-bg text-text; }
 html { scroll-behavior: smooth; }
 body { background-color: rgb(var(--bg)); color: rgb(var(--text)); }
 
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .font-display {
   font-family: var(--font-display), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   letter-spacing: -0.01em;

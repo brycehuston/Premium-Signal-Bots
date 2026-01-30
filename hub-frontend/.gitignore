@@ -2,3 +2,7 @@ node_modules
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+

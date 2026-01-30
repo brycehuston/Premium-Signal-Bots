@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { PLANS, BUNDLE, PlanTone } from "@/lib/plans";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
+import { track } from "@/lib/analytics";
 
 function Check({ tone }: { tone: PlanTone }) {
   const colorClass =
@@ -256,6 +257,7 @@ export default function PricingPage() {
   };
 
   useEffect(() => {
+    track("pricing_view");
     return () => {
       if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
     };
@@ -390,6 +392,9 @@ export default function PricingPage() {
                   full
                   className={[tonePrimaryButtonClass(p.tone), "!h-11 sm:!h-10"].join(" ")}
                   href={`/pay/${p.slug}?period=${billing}`}
+                  onClick={() =>
+                    track("plan_select", { plan: p.slug, period: billing })
+                  }
                 >
                   {billing === "annual" ? "Choose Annual" : "Choose Monthly"}
                 </Button>
@@ -475,7 +480,10 @@ export default function PricingPage() {
                 full
                 className={`!h-12 text-[16px] ${tonePrimaryButtonClass("gold")}`}
                 href={`/pay/${BUNDLE.slug}?period=${billing}`}
-                onClick={triggerBundleConfetti}
+                onClick={() => {
+                  triggerBundleConfetti();
+                  track("plan_select", { plan: BUNDLE.slug, period: billing });
+                }}
               >
                 {billing === "annual" ? "Bundle Annual" : "Bundle Monthly"}
               </Button>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import HomePage from "@/components/HomePage";
+import HomeFaqStructuredData from "@/components/HomeFaqStructuredData";
 
 const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -35,5 +36,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <HomePage />;
+  return (
+    <>
+      <HomeFaqStructuredData />
+      <HomePage />
+    </>
+  );
 }

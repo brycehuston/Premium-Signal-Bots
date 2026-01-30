@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui";
+import { track } from "@/lib/analytics";
 
 export default function WaitlistPage() {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL;
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
@@ -18,6 +20,7 @@ export default function WaitlistPage() {
     setOk(null);
     setErr(null);
     try {
+      if (!API_BASE) throw new Error("Missing API base URL");
       const res = await fetch(`${API_BASE}/waitlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,6 +28,7 @@ export default function WaitlistPage() {
       });
       if (!res.ok) throw new Error(await res.text());
       setOk("Thanks! You're on the list.");
+      track("waitlist_submit", { has_comment: Boolean(comment?.trim()) });
       setEmail("");
       setName("");
       setComment("");

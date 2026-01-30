@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PLANS, BUNDLE } from "@/lib/plans";
 import SubmitTxForm from "@/components/SubmitTxForm";
 import { Button } from "@/components/ui";
+import AnalyticsEvent from "@/components/AnalyticsEvent";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -60,6 +61,10 @@ export default async function PayPage({
 
   return (
     <div className="mx-auto max-w-2xl py-12 px-5">
+      <AnalyticsEvent
+        name="checkout_start"
+        props={{ plan: plan.slug, period }}
+      />
       <h1 className="font-display text-h2 font-semibold tracking-tight text-silver">
         Subscribe - <span className="opacity-70">{title}</span>
       </h1>

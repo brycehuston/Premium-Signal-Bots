@@ -8,6 +8,7 @@ import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
 import Header from "@/components/Header";
 import StructuredData from "@/components/StructuredData";
+import AnalyticsProvider from "@/components/AnalyticsProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
@@ -125,6 +126,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           xUrl={process.env.NEXT_PUBLIC_X_URL || "https://x.com/alphaalerts"}
           refreshMs={8000}
         />
+
+        {/* Analytics (only loads if NEXT_PUBLIC_GA_ID is set) */}
+        <AnalyticsProvider />
 
         </body>
       </html>

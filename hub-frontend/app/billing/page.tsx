@@ -16,7 +16,9 @@ export default function Billing() {
     try {
       const token = await getToken();
       if (!token) { window.location.href = "/login"; return; }
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}${path}`, {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL;
+      if (!apiBase) throw new Error("Missing API base URL");
+      const res = await fetch(`${apiBase}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({}),

@@ -242,7 +242,7 @@ function WebhookIconSpin({ active }: { active: boolean }) {
     let cx = 0;
     let cy = 0;
     let angle = 0;
-    let startTime = performance.now() + 7000;
+    const startTime = performance.now() + 7000;
     let lastTime = startTime;
     let rafId = 0;
 
@@ -1299,11 +1299,12 @@ export default function Page() {
   const trustCycleRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (shouldReduceMotion) return;
     const id = window.setInterval(() => {
       setHeroView((prev) => (prev === "chart" ? "reel" : "chart"));
     }, 60000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [shouldReduceMotion]);
 
   const { ref: stealthRef, inView: stealthInView } = useInView({
     threshold: 0.25,

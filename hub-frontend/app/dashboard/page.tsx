@@ -16,6 +16,7 @@ import dynamic from "next/dynamic";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { Badge, Button, Card, CardBody, SectionHeading } from "@/components/ui";
 import { api } from "@/lib/api";
+import { track } from "@/lib/analytics";
 
 /* ---------- Types ---------- */
 type SignalKey = "alpha_early" | "alpha_trend" | "alpha_runner";
@@ -74,7 +75,11 @@ const ME_CACHE_KEY = "dashboard.me.v1";
 
 /* ---------- Utils ---------- */
 function logsWsUrl(channel: string) {
-  const base = new URL(process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000");
+  const base = new URL(
+    process.env.NEXT_PUBLIC_API_URL ||
+      process.env.NEXT_PUBLIC_API_BASE ||
+      "http://localhost:8000"
+  );
   base.protocol = base.protocol === "https:" ? "wss:" : "ws:";
   base.pathname = "/ws/logs";
   base.search = `?bot=${encodeURIComponent(channel)}`; // server can treat this as a channel key
@@ -134,6 +139,7 @@ export default function Dashboard() {
   const [logs, setLogs] = useState<string[]>([]);
   const [wsState, setWsState] = useState<"idle" | "connecting" | "open" | "closed" | "reconnecting">("idle");
   const [busy, setBusy] = useState<"start" | "stop" | null>(null);
+  const dashboardTrackedRef = useRef(false);
 
   const cachedRef = useRef(false);
   const wsSessionRef = useRef(0);
@@ -302,6 +308,12 @@ export default function Dashboard() {
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, isSignedIn]);
+
+  useEffect(() => {
+    if (!me || dashboardTrackedRef.current) return;
+    dashboardTrackedRef.current = true;
+    track("dashboard_view");
+  }, [me]);
 
   useEffect(() => {
     if (!me) {

@@ -1,4 +1,5 @@
 import { Button, Card, CardBody, SectionHeading } from "@/components/ui";
+import TrackedButton from "@/components/TrackedButton";
 
 const TELEGRAM_URL = process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/alphaalerts";
 const X_URL = process.env.NEXT_PUBLIC_X_URL || "https://x.com/alphaalerts";
@@ -6,6 +7,7 @@ const X_URL = process.env.NEXT_PUBLIC_X_URL || "https://x.com/alphaalerts";
 export default function ContactPage() {
   return (
     <div className="mx-auto max-w-3xl py-6">
+      <h1 className="sr-only">Contact</h1>
       <Card>
         <CardBody className="space-y-6">
           <SectionHeading
@@ -18,9 +20,16 @@ export default function ContactPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button href={TELEGRAM_URL} size="md" target="_blank" rel="noopener noreferrer">
+            <TrackedButton
+              href={TELEGRAM_URL}
+              size="md"
+              target="_blank"
+              rel="noopener noreferrer"
+              event="telegram_access_click"
+              eventProps={{ location: "contact" }}
+            >
               Message on Telegram
-            </Button>
+            </TrackedButton>
             <Button href={X_URL} size="md" variant="outline" target="_blank" rel="noopener noreferrer">
               Follow on X
             </Button>

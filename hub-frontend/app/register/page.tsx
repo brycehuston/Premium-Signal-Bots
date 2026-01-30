@@ -1,7 +1,15 @@
 // app/register/page.tsx
+"use client";
+
+import { useEffect } from "react";
 import { SignUp } from "@clerk/nextjs";
+import { track } from "@/lib/analytics";
 
 export default function RegisterPage() {
+  useEffect(() => {
+    track("signup_click");
+  }, []);
+
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <SignUp
