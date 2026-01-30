@@ -151,7 +151,7 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
     filter: blur(40px);
   }
 
-  .roadmap-card-glow {
+.roadmap-card-glow {
     background: radial-gradient(75% 75% at 0% 0%,
       rgb(var(--gold) / 0.18) 0%,
       rgb(var(--gold) / 0.08) 45%,
@@ -421,6 +421,31 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   30% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.95); }
   55% { opacity: 0.25; transform: translate(-50%, -50%) scale(1.25); }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+
+.stage4-emoji {
+  font-weight: 800;
+  color: rgb(var(--gold3));
+  -webkit-text-fill-color: rgb(var(--gold3));
+  text-shadow:
+    0 0 14px rgb(var(--gold3) / 0.55),
+    0 0 28px rgb(var(--gold) / 0.35);
+  animation: stage4Glow 4.6s ease-in-out infinite;
+}
+
+@keyframes stage4Glow {
+  0%, 100% {
+    opacity: 0.85;
+    text-shadow:
+      0 0 12px rgb(var(--gold3) / 0.45),
+      0 0 24px rgb(var(--gold) / 0.28);
+  }
+  50% {
+    opacity: 1;
+    text-shadow:
+      0 0 18px rgb(var(--gold3) / 0.7),
+      0 0 36px rgb(var(--gold) / 0.45);
+  }
 }
 @keyframes webhookRays {
   0% { opacity: 0; transform: scale(0.92); }
@@ -906,24 +931,33 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 }
 
 .how-it-works--active .how-step-badge {
-  background-color: rgb(var(--gold) / 0.18);
-  color: rgb(var(--gold2));
-  border-color: rgb(var(--gold) / 0.45);
-  box-shadow: 0 0 14px rgb(var(--gold) / 0.25);
+  background-color: rgb(var(--surface2) / 0.7);
+  color: rgb(var(--muted));
+  border-color: rgb(var(--stroke) / 0.7);
+  box-shadow: none;
 }
 .how-it-works--active .how-step-1 .how-step-title,
 .how-it-works--active .how-step-1 .how-step-desc {
   animation: step1Text var(--how-cycle) infinite;
+}
+.how-it-works--active .how-step-1 .how-step-badge {
+  animation: step1Badge var(--how-cycle) infinite;
 }
 
 .how-it-works--active .how-step-2 .how-step-title,
 .how-it-works--active .how-step-2 .how-step-desc {
   animation: step2Text var(--how-cycle) infinite;
 }
+.how-it-works--active .how-step-2 .how-step-badge {
+  animation: step2Badge var(--how-cycle) infinite;
+}
 
 .how-it-works--active .how-step-3 .how-step-title,
 .how-it-works--active .how-step-3 .how-step-desc {
   animation: step3Text var(--how-cycle) infinite;
+}
+.how-it-works--active .how-step-3 .how-step-badge {
+  animation: step3Badge var(--how-cycle) infinite;
 }
 
 
@@ -1060,8 +1094,8 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   border-radius: 999px;
   background: linear-gradient(
     180deg,
-    rgba(255, 214, 128, 0.22),
-    rgba(255, 214, 128, 0.04)
+    rgb(var(--gold3) / 0.5),
+    rgb(var(--gold) / 0.08)
   );
   transition: background 320ms ease, box-shadow 320ms ease, opacity 320ms ease;
   opacity: 0.45;
@@ -1070,7 +1104,7 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, rgba(255, 215, 128, 0.08), transparent 55%);
+  background: linear-gradient(120deg, rgb(var(--gold3) / 0.18), transparent 55%);
   opacity: 0;
   transition: opacity 320ms ease;
   pointer-events: none;
@@ -1079,18 +1113,18 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32), inset 0 -1px rgba(255, 255, 255, 0.06);
 }
 .faq-item[open] {
-  border-color: rgba(246, 212, 139, 0.32);
-  box-shadow: 0 0 0 1px rgba(246, 212, 139, 0.14), 0 16px 32px rgba(0, 0, 0, 0.38);
+  border-color: rgb(var(--gold3) / 0.55);
+  box-shadow: 0 0 0 1px rgb(var(--gold3) / 0.28), 0 16px 32px rgba(0, 0, 0, 0.38);
   padding-bottom: 22px;
 }
 .faq-item[open]::before {
   background: linear-gradient(
     180deg,
-    rgba(255, 214, 128, 0.85),
-    rgba(255, 214, 128, 0.25)
+    rgb(var(--gold3) / 0.9),
+    rgb(var(--gold) / 0.35)
   );
-  box-shadow: 0 0 12px rgba(244, 198, 90, 0.28);
-  opacity: 0.72;
+  box-shadow: 0 0 16px rgb(var(--gold3) / 0.45);
+  opacity: 0.85;
 }
 .faq-item[open]::after {
   opacity: 0.55;
@@ -1125,9 +1159,9 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 }
 .faq-item[open] .faq-chevron {
   transform: rotate(180deg);
-  color: rgba(246, 212, 139, 0.9);
-  border-color: rgba(246, 212, 139, 0.35);
-  background: rgba(246, 212, 139, 0.08);
+  color: rgb(var(--gold3) / 0.95);
+  border-color: rgb(var(--gold3) / 0.55);
+  background: rgb(var(--gold3) / 0.18);
 }
 .faq-content {
   display: grid;

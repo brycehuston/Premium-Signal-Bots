@@ -282,9 +282,6 @@ export default function PricingPage() {
         <p className="mx-auto mt-3 text-[11px] text-muted sm:text-[12px] md:text-[13px]">
           Pick your lane: Early = new tokens. Trend = momentum. Runner = continuation. Bundle = everything.
         </p>
-        <p className="mx-auto mt-2 text-[10px] text-muted/80 sm:text-[11px] md:text-[12px]">
-          Manual verification. Private Telegram delivery. No keys ever.
-        </p>
         <p className="mx-auto mt-3 text-[10px] text-muted sm:text-[11px] md:text-[12px]">
           Choose the alerts you want. Payments are manual for now via USDC on Solana.
         </p>
@@ -503,8 +500,8 @@ export default function PricingPage() {
               What happens after you pay
             </div>
             <ol className="space-y-5">
-              <li className="flex gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
-                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
+              <li className="flex items-start gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
+                <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold leading-none">
                   1
                 </div>
                 <div>
@@ -516,8 +513,8 @@ export default function PricingPage() {
                   </div>
                 </div>
               </li>
-              <li className="flex gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
-                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
+              <li className="flex items-start gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
+                <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold leading-none">
                   2
                 </div>
                 <div>
@@ -527,8 +524,8 @@ export default function PricingPage() {
                   </div>
                 </div>
               </li>
-              <li className="flex gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
-                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold">
+              <li className="flex items-start gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
+                <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold leading-none">
                   3
                 </div>
                 <div>

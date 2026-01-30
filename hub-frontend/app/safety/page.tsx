@@ -11,15 +11,15 @@ const DESCRIPTION =
 
 const SAFETY_FAQ = [
   {
-    question: "What is a honeypot-",
+    question: "What Is A Honeypot?",
     answer: "A honeypot lets you buy but blocks selling or makes selling impossible.",
   },
   {
-    question: "What are bundlers or bundled buys-",
+    question: "What Are Bundlers Or Bundled Buys?",
     answer: "Coordinated wallets buying together to manufacture hype.",
   },
   {
-    question: "What is fake volume or wash trading-",
+    question: "What Is Fake Volume Or Wash Trading?",
     answer: "Bots trading to fake activity and trick real buyers.",
   },
   {
@@ -69,9 +69,9 @@ export default function SafetyPage() {
     <div className="space-y-12">
       <section className="text-center space-y-4">
         <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">Safety Guide</div>
-        <h1 className="font-display text-[40px] font-semibold tracking-tight text-silver sm:text-[58px]">
-          Spot traps faster. Stay clean.
-        </h1>
+          <h1 className="font-display text-[40px] font-semibold tracking-tight text-silver sm:text-[58px]">
+            Spot Traps Faster. Stay Clean.
+          </h1>
         <p className="mx-auto max-w-2xl text-body text-muted">
           Short, practical checks to reduce obvious risk before you enter. Informational only.
         </p>
@@ -80,7 +80,7 @@ export default function SafetyPage() {
       <section className="space-y-6">
         <SectionHeading
           eyebrow="Scam Stuff Explained"
-          title="Know the common traps"
+          title="Know The Common Traps"
           subtitle="Learn the basics so you can scan faster."
           align="center"
         />
@@ -88,7 +88,7 @@ export default function SafetyPage() {
           <Card>
             <CardBody className="space-y-3">
               <h3 className="font-display text-title-lg font-semibold text-silver">
-                What is a honeypot-
+                What Is A Honeypot?
               </h3>
               <p className="text-small text-muted">
                 A honeypot lets you buy but blocks selling or makes selling impossible.
@@ -98,7 +98,7 @@ export default function SafetyPage() {
           <Card>
             <CardBody className="space-y-3">
               <h3 className="font-display text-title-lg font-semibold text-silver">
-                What are bundlers or bundled buys-
+                What Are Bundlers Or Bundled Buys?
               </h3>
               <p className="text-small text-muted">
                 Coordinated wallets buying together to manufacture hype.
@@ -108,7 +108,7 @@ export default function SafetyPage() {
           <Card>
             <CardBody className="space-y-3">
               <h3 className="font-display text-title-lg font-semibold text-silver">
-                What is fake volume or wash trading-
+                What Is Fake Volume Or Wash Trading?
               </h3>
               <p className="text-small text-muted">
                 Bots trading to fake activity and trick real buyers.

@@ -76,8 +76,8 @@ const ME_CACHE_KEY = "dashboard.me.v1";
 /* ---------- Utils ---------- */
 function logsWsUrl(channel: string) {
   const base = new URL(
-    process.env.NEXT_PUBLIC_API_URL ||
-      process.env.NEXT_PUBLIC_API_BASE ||
+    process.env.NEXT_PUBLIC_API_BASE ||
+      process.env.NEXT_PUBLIC_API_URL ||
       "http://localhost:8000"
   );
   base.protocol = base.protocol === "https:" ? "wss:" : "ws:";
@@ -161,6 +161,7 @@ export default function Dashboard() {
     try {
       const _me = await authedApi("/me");
       setMe(_me as Me);
+      authRetryRef.current = 0;
       try {
         sessionStorage.setItem(ME_CACHE_KEY, JSON.stringify(_me));
         cachedRef.current = true;

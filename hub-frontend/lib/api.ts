@@ -5,7 +5,7 @@ export async function api(
   options: { token?: string } = {}
 ) {
   const base =
-    process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE;
+    process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL;
   if (!base) {
     throw new Error("Missing NEXT_PUBLIC_API_URL/NEXT_PUBLIC_API_BASE");
   }

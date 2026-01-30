@@ -116,10 +116,15 @@ origin_list = [
     o.strip()
     for o in os.getenv(
         "ALLOWED_ORIGINS",
-        "http://localhost:3000,https://premium-signal-bots.vercel.app"
+        "http://localhost:3000,https://premium-signal-bots.vercel.app",
     ).split(",")
     if o.strip()
 ]
+
+# Always allow local dev origins, even if ALLOWED_ORIGINS is set.
+for dev_origin in ("http://localhost:3000", "http://127.0.0.1:3000"):
+    if dev_origin not in origin_list:
+        origin_list.append(dev_origin)
 
 # TEMP: open it up to any origin to confirm CORS is the issue.
 origin_regex = os.getenv("ALLOWED_ORIGIN_REGEX", r"https://.*\.vercel\.app$")

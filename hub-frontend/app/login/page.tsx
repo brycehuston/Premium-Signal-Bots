@@ -1,12 +1,31 @@
 // app/login/page.tsx
-import { SignIn } from "@clerk/nextjs";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { SignIn, useAuth } from "@clerk/nextjs";
+
+const AFTER_SIGN_IN_URL =
+  process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/dashboard";
 
 export default function LoginPage() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (isSignedIn) router.replace(AFTER_SIGN_IN_URL);
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || isSignedIn) return null;
+
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <SignIn
         routing="hash"
         signUpUrl="/register"
+        afterSignInUrl={AFTER_SIGN_IN_URL}
+        redirectUrl={AFTER_SIGN_IN_URL}
         appearance={{
           variables: {
             colorBackground: "rgb(235 235 235)",

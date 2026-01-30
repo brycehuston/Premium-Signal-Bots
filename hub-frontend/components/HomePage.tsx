@@ -247,6 +247,7 @@ function WebhookIconSpin({ active }: { active: boolean }) {
     let rafId = 0;
 
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    const easeInCubic = (t: number) => t * t * t;
 
     const rpmForCycle = (elapsedMs: number) => {
       if (cycleMs <= 0) return 0;
@@ -308,9 +309,9 @@ function WebhookIconSpin({ active }: { active: boolean }) {
       return {
         baseAngle: rand() * TAU,
         phase: rand(),
-        speed: 0.16 + rand() * 0.32,
+        speed: 0.08 + rand() * 0.24,
         drift: (rand() - 0.5) * 0.8,
-        length: 8 + rand() * 18,
+        length: 6 + rand() * 16,
         width: 0.8 + rand() * 1.4,
         tone,
         seed: rand() * 10,
@@ -328,7 +329,8 @@ function WebhookIconSpin({ active }: { active: boolean }) {
       rotor.style.transform = `translateZ(0) rotate(${angle}rad)`;
 
       const spinIntensity = effectiveRPM > 0 ? rpm / effectiveRPM : 0;
-      const strengthNow = effectiveStrength * spinIntensity;
+      const ramp = easeInCubic(Math.min(1, Math.max(0, spinIntensity)));
+      const strengthNow = effectiveStrength * ramp;
 
       ctx.clearRect(0, 0, W, H);
       if (strengthNow <= 0.001) {
@@ -669,7 +671,7 @@ function FeatureRow({ active }: { active: boolean }) {
             </div>
           </motion.div>
         </motion.div>
-        <div className="mx-auto text-[10px] leading-relaxed text-muted/70 text-center md:mx-0 md:text-left md:max-w-[420px]">
+        <div className="mx-auto mt-2 text-[10px] leading-relaxed text-muted/70 text-center md:mx-0 md:text-left md:max-w-[420px]">
           Informational alerts only. No profit guarantees.
         </div>
       </div>
@@ -954,7 +956,7 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     step: 4,
-    title: "Stage 4 🪙 ALPHA Access Token",
+    title: "Stage 4 ALPHA Access Token",
     tag: "PLANNED",
     bullets: [
       "Pay for subscriptions with $ALPHA (optional)",
@@ -1060,7 +1062,7 @@ const RoadmapSection = memo(function RoadmapSection() {
         className="pointer-events-none absolute -top-24 left-1/2 h-52 w-[520px] -translate-x-1/2 rounded-full bg-gold/12 blur-[110px]"
       />
       <div className="relative">
-        <div className="text-eyebrow uppercase tracking-[0.35em] text-gold/70">Roadmap</div>
+        <div className="text-eyebrow uppercase tracking-[0.35em] text-gold/70">Release Plan</div>
         <div className="mt-4 grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-end">
           <div className="space-y-3">
             <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
@@ -1105,6 +1107,8 @@ const RoadmapSection = memo(function RoadmapSection() {
             const hasMore = extraBullets.length > 0;
             const isExpanded = !!expanded[item.step];
             const extraId = `roadmap-extra-${item.step}`;
+            const isStageFour = item.step === 4;
+            const stageFourTitle = "ALPHA Access Token";
 
             return (
               <div
@@ -1182,7 +1186,14 @@ const RoadmapSection = memo(function RoadmapSection() {
                         </span>
                         <h3 className="font-display text-title-lg md:text-h3 font-semibold text-silver leading-snug break-words">
                           <span className="block max-w-full text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold drop-shadow-[0_12px_30px_rgb(var(--gold)/0.35)]">
-                            {titleRest}
+                            {isStageFour ? (
+                              <span className="inline-flex items-center gap-2">
+                                <span className="stage4-emoji">🜂</span>
+                                <span>{stageFourTitle}</span>
+                              </span>
+                            ) : (
+                              titleRest
+                            )}
                           </span>
                         </h3>
                       </div>
@@ -1656,11 +1667,13 @@ export default function Page() {
           }
             .trust-pill {
               position: relative;
-              transition: border-color 1600ms ease;
+              transition: border-color 1600ms ease, box-shadow 1600ms ease;
               border-color: rgba(255, 255, 255, 0.18);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.08), 0 0 18px rgba(244, 198, 90, 0.12);
             }
           .trust-pill--active {
-            border-color: rgba(255, 214, 128, 0.32);
+            border-color: rgba(255, 214, 128, 0.5);
+            box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.32), 0 0 26px rgba(244, 198, 90, 0.32);
           }
           .trust-card--static .trust-pill--1 {
             border-color: rgba(255, 214, 128, 0.32);
@@ -1677,19 +1690,23 @@ export default function Page() {
           @keyframes pillPulse {
             0%,
             100% {
-              border-color: rgba(255, 214, 128, 0.28);
+              border-color: rgba(255, 214, 128, 0.32);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.22), 0 0 22px rgba(244, 198, 90, 0.28);
             }
             50% {
-              border-color: rgba(255, 214, 128, 0.4);
+              border-color: rgba(255, 214, 128, 0.6);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.38), 0 0 32px rgba(244, 198, 90, 0.42);
             }
           }
           @keyframes groupPulse {
             0%,
             100% {
-              border-color: rgba(255, 214, 128, 0.3);
+              border-color: rgba(255, 214, 128, 0.34);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.2), 0 0 22px rgba(244, 198, 90, 0.26);
             }
             50% {
-              border-color: rgba(255, 214, 128, 0.45);
+              border-color: rgba(255, 214, 128, 0.62);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.4), 0 0 34px rgba(244, 198, 90, 0.4);
             }
           }
           @keyframes ctaPulse {

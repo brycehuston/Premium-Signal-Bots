@@ -224,11 +224,11 @@ export default function PrivacyPage() {
         <div
           ref={flowRef}
           className={[
-            "rounded-card border border-stroke/70 bg-surface/70 p-4",
+            "rounded-card border border-stroke/70 bg-surface/70 p-5 md:p-6",
             flowActive ? "flow-animate" : "",
           ].join(" ")}
         >
-          <div className="flex items-center justify-between text-small text-muted flow-steps">
+          <div className="flex flex-wrap items-center justify-between gap-6 text-small text-muted flow-steps">
             {FLOW_STEPS.map((step, index) => (
               <div key={step.label} className="relative flow-step">
                 <button
@@ -280,11 +280,15 @@ export default function PrivacyPage() {
         }
         .flow-steps {
           position: relative;
+          gap: 2rem;
+          padding: 6px 4px 10px;
         }
         .flow-step {
           display: flex;
           flex-direction: column;
           align-items: center;
+          min-width: 180px;
+          text-align: center;
         }
         .flow-step-btn {
           background: transparent;
@@ -371,22 +375,22 @@ export default function PrivacyPage() {
           filter: blur(1px);
         }
         .flow-animate .flow-pulse {
-          animation: flowPulse 6s ease-in-out infinite;
+          animation: flowPulse 8s ease-in-out infinite;
         }
         .flow-animate .flow-particles {
-          animation: flowParticles 6s ease-in-out infinite;
+          animation: flowParticles 8s ease-in-out infinite;
         }
         .flow-animate .flow-node[data-index="0"] {
-          animation: nodePing 6s ease-in-out infinite;
-          animation-delay: 0.2s;
+          animation: nodePing 8s ease-in-out infinite;
+          animation-delay: 0.6s;
         }
         .flow-animate .flow-node[data-index="1"] {
-          animation: nodePing 6s ease-in-out infinite;
-          animation-delay: 1.4s;
+          animation: nodePing 8s ease-in-out infinite;
+          animation-delay: 3.0s;
         }
         .flow-animate .flow-node[data-index="2"] {
-          animation: nodePing 6s ease-in-out infinite;
-          animation-delay: 2.6s;
+          animation: nodePing 8s ease-in-out infinite;
+          animation-delay: 5.4s;
         }
         @keyframes glanceSweep {
           0% { opacity: 0; transform: translateX(0); }
@@ -400,16 +404,16 @@ export default function PrivacyPage() {
         }
         @keyframes flowPulse {
           0% { left: 0; opacity: 0; }
-          10% { opacity: 1; }
-          45% { left: calc(100% - 56px); opacity: 1; }
-          58% { opacity: 0; }
+          12% { opacity: 1; }
+          48% { left: calc(100% - 56px); opacity: 1; }
+          64% { opacity: 0; }
           100% { left: calc(100% - 56px); opacity: 0; }
         }
         @keyframes flowParticles {
           0% { left: 0; opacity: 0; }
-          12% { opacity: 0.45; }
-          47% { left: calc(100% - 28px); opacity: 0.25; }
-          60% { opacity: 0; }
+          14% { opacity: 0.45; }
+          50% { left: calc(100% - 28px); opacity: 0.25; }
+          66% { opacity: 0; }
           100% { left: calc(100% - 28px); opacity: 0; }
         }
         @keyframes nodePing {
