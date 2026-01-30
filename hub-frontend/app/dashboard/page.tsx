@@ -26,6 +26,9 @@ type BtcInterval = "1m" | "5m" | "15m" | "1h" | "4h" | "1d";
 
 type Me = {
   email: string;
+  role?: string | null;
+  plan?: string | null;
+  is_active?: boolean | null;
   tier?: number | null;
   entitlements?: SignalKey[] | null;
 };
@@ -161,7 +164,6 @@ export default function Dashboard() {
     try {
       const _me = await authedApi("/me");
       setMe(_me as Me);
-      authRetryRef.current = 0;
       try {
         sessionStorage.setItem(ME_CACHE_KEY, JSON.stringify(_me));
         cachedRef.current = true;
@@ -335,6 +337,13 @@ export default function Dashboard() {
   // entitlement/tier logic
   const entSet = new Set<SignalKey>(me.entitlements ?? []);
   const computedTier = (me.tier ?? undefined) ?? entSet.size;
+  const planLabel = (me.plan || "Free").toUpperCase();
+  const roleLabel = (me.role || "User").toUpperCase();
+  const isActive = Boolean(me.is_active);
+  const accessLabel = isActive ? "ACTIVE" : "PENDING";
+  const accessClass = isActive
+    ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-200 shadow-[0_0_18px_rgba(52,211,153,0.18)]"
+    : "border-amber-400/40 bg-amber-500/10 text-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.18)]";
 
   return (
     <div className="relative -mt-6 space-y-6 md:-mt-8 md:space-y-8">
@@ -351,6 +360,39 @@ export default function Dashboard() {
           subtitle="Live access to your alerts, signals, and log feed."
           className="space-y-1 md:space-y-2"
         />
+        <Card className="relative overflow-hidden bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0))]">
+          <CardBody className="grid gap-4 py-4 md:grid-cols-3 md:gap-0">
+            <div className="flex items-center justify-between gap-3 md:pr-6 md:border-r md:border-stroke/60">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-muted/70">Plan</div>
+                <div className="mt-1 text-lg font-semibold text-silver">{planLabel}</div>
+              </div>
+              <span className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] ${accessClass}`}>
+                {accessLabel}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 md:px-6 md:border-r md:border-stroke/60">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-muted/70">Signal Tier</div>
+                <div className="mt-1 text-lg font-semibold text-silver">Tier {String(computedTier)}</div>
+              </div>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
+                {entSet.size} Active
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 md:pl-6">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-muted/70">Role</div>
+                <div className="mt-1 text-lg font-semibold text-silver">{roleLabel}</div>
+              </div>
+              <span className="rounded-full border border-stroke/70 bg-surface/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
+                {isActive ? "Verified" : "Unverified"}
+              </span>
+            </div>
+          </CardBody>
+        </Card>
       </div>
 
       {/* Top row: Account + Chart */}
@@ -361,8 +403,8 @@ export default function Dashboard() {
             aria-hidden
             className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
           />
-          <CardBody className="flex h-full flex-col gap-4 pt-4 pb-4">
-            <div className="space-y-2">
+          <CardBody className="flex h-full flex-col gap-4 pt-5 pb-5">
+            <div className="space-y-3">
               <div className="grid grid-cols-[1fr_auto] items-center gap-3">
                 <div className="text-[11px] uppercase tracking-[0.3em] text-muted/70">
                   Account
@@ -431,7 +473,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Live BTC chart */}
-        <Card className="relative overflow-hidden lg:col-span-2 xl:col-span-3">
+        <Card className="relative overflow-hidden lg:col-span-2 xl:col-span-3 bg-[linear-gradient(135deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
@@ -574,7 +616,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="h-72 overflow-auto rounded-xl border border-stroke/50 bg-surface2/80 p-3 font-mono text-sm text-silver">
+          <div className="h-72 overflow-auto rounded-xl border border-stroke/50 bg-[linear-gradient(180deg,rgba(20,22,28,0.9),rgba(10,10,12,0.9))] p-3 font-mono text-sm text-silver shadow-[inset_0_0_20px_rgba(0,0,0,0.35)]">
             {logs.length === 0 ? "Waiting for logs..." : logs.join("\n")}
           </div>
         </CardBody>
