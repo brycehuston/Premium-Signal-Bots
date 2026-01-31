@@ -289,18 +289,24 @@ export default function PricingPage() {
 
       <div className="mt-8 flex justify-center sm:mt-9">
         <div
-          className="flex items-center gap-2 rounded-pill border border-stroke/70 bg-surface/70 p-1"
+          className="relative flex w-[220px] items-center rounded-pill border border-stroke/70 bg-surface/70 p-1"
           role="group"
           aria-label="Billing cadence"
         >
+          <span
+            aria-hidden
+            className={[
+              "absolute inset-1 w-[calc(50%-0.25rem)] rounded-pill border border-gold/40 bg-gold/20 shadow-soft",
+              "transition-transform duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
+              billing === "annual" ? "translate-x-full" : "translate-x-0",
+            ].join(" ")}
+          />
           <button
             type="button"
             onClick={() => setBilling("monthly")}
             className={[
-              "rounded-pill px-4 py-1.5 text-small font-semibold transition",
-              billing === "monthly"
-                ? "bg-gold/20 text-gold border border-gold/40 shadow-soft"
-                : "text-muted hover:text-silver",
+              "relative z-10 flex-1 rounded-pill px-4 py-1.5 text-center text-small font-semibold transition-colors duration-200",
+              billing === "monthly" ? "text-gold" : "text-muted hover:text-silver",
             ].join(" ")}
             aria-pressed={billing === "monthly"}
           >
@@ -310,10 +316,8 @@ export default function PricingPage() {
             type="button"
             onClick={() => setBilling("annual")}
             className={[
-              "rounded-pill px-4 py-1.5 text-small font-semibold transition",
-              billing === "annual"
-                ? "bg-gold/20 text-gold border border-gold/40 shadow-soft"
-                : "text-muted hover:text-silver",
+              "relative z-10 flex-1 rounded-pill px-4 py-1.5 text-center text-small font-semibold transition-colors duration-200",
+              billing === "annual" ? "text-gold" : "text-muted hover:text-silver",
             ].join(" ")}
             aria-pressed={billing === "annual"}
           >
@@ -614,7 +618,7 @@ export default function PricingPage() {
               <span className="after:ml-4 after:text-muted/50 after:content-['/']">
                 Strict EMA / RSI / Volume / Trend
               </span>
-              <span>Breakeven & trailing stops</span>
+              <span>Breakeven & Trailing Stops</span>
               <span className="hidden sm:inline after:ml-4 after:text-muted/50 after:content-['/']"></span>
               <span className="sm:ml-0">24/7 Telegram alerts</span>
             </div>

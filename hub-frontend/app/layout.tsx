@@ -99,9 +99,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           <footer className="mt-14 border-t border-stroke/60">
             <Container>
-              <div className="flex flex-col gap-3 py-8 text-small text-muted sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 py-8 text-small text-muted text-center sm:text-left sm:flex-row sm:items-center sm:justify-between">
                 <div>© {new Date().getFullYear()} HUSTON SOLUTIONS</div>
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-center justify-center gap-4 sm:justify-end">
                   <a className="hover:text-text" href="/privacy" data-no-link-style>
                     Privacy
                   </a>

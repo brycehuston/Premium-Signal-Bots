@@ -49,13 +49,6 @@ export default function Header({ brand }: HeaderProps) {
               Dashboard
             </Link>
             <Link
-              className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text hidden md:inline-flex"
-              href="/billing"
-              data-no-link-style
-            >
-              Billing
-            </Link>
-            <Link
               className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text hidden sm:inline-flex"
               href="/login"
               data-no-link-style
@@ -89,14 +82,6 @@ export default function Header({ brand }: HeaderProps) {
               onClick={closeMenu}
             >
               Dashboard
-            </Link>
-            <Link
-              className="rounded-pill px-3 py-2 text-small text-muted hover:bg-surface2/60 hover:text-text"
-              href="/billing"
-              data-no-link-style
-              onClick={closeMenu}
-            >
-              Billing
             </Link>
             <Link
               className="rounded-pill px-3 py-2 text-small text-muted hover:bg-surface2/60 hover:text-text"

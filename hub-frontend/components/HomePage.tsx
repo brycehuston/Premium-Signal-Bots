@@ -1456,7 +1456,7 @@ export default function Page() {
               AlphaAlerts
             </div>
             <h1 className="font-display text-silver leading-[1.12]">
-              <span className="block text-[clamp(2rem,6.4vw,4rem)] font-black tracking-[-0.03em] text-metal-silver">
+              <span className="block text-[clamp(2.4rem,7.4vw,4.25rem)] font-black tracking-[-0.03em] text-metal-silver">
                 <span className="block whitespace-nowrap">SOLANA</span>
                 <span className="block whitespace-nowrap">SIGNALS THAT</span>
                 <span className="block whitespace-nowrap">CUT THE NOISE.</span>
@@ -1650,6 +1650,8 @@ export default function Page() {
           .trust-card {
             position: relative;
             overflow: hidden;
+            border-color: rgba(255, 214, 128, 0.22);
+            box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.12);
           }
           .trust-glow {
             position: absolute;
@@ -1672,11 +1674,11 @@ export default function Page() {
               box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.08), 0 0 18px rgba(244, 198, 90, 0.12);
             }
           .trust-pill--active {
-            border-color: rgba(255, 214, 128, 0.5);
-            box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.32), 0 0 26px rgba(244, 198, 90, 0.32);
+            border-color: rgba(255, 214, 128, 0.4);
+            box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.22), 0 0 20px rgba(244, 198, 90, 0.24);
           }
           .trust-card--static .trust-pill--1 {
-            border-color: rgba(255, 214, 128, 0.32);
+            border-color: rgba(255, 214, 128, 0.26);
           }
           .trust-pill--pulse {
             animation: pillPulse 3.8s ease-in-out;
@@ -1690,23 +1692,23 @@ export default function Page() {
           @keyframes pillPulse {
             0%,
             100% {
-              border-color: rgba(255, 214, 128, 0.32);
-              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.22), 0 0 22px rgba(244, 198, 90, 0.28);
+              border-color: rgba(255, 214, 128, 0.26);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.18), 0 0 18px rgba(244, 198, 90, 0.22);
             }
             50% {
-              border-color: rgba(255, 214, 128, 0.6);
-              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.38), 0 0 32px rgba(244, 198, 90, 0.42);
+              border-color: rgba(255, 214, 128, 0.46);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.28), 0 0 26px rgba(244, 198, 90, 0.3);
             }
           }
           @keyframes groupPulse {
             0%,
             100% {
-              border-color: rgba(255, 214, 128, 0.34);
-              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.2), 0 0 22px rgba(244, 198, 90, 0.26);
+              border-color: rgba(255, 214, 128, 0.3);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.18), 0 0 20px rgba(244, 198, 90, 0.22);
             }
             50% {
-              border-color: rgba(255, 214, 128, 0.62);
-              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.4), 0 0 34px rgba(244, 198, 90, 0.4);
+              border-color: rgba(255, 214, 128, 0.5);
+              box-shadow: 0 0 0 1px rgba(255, 214, 128, 0.3), 0 0 28px rgba(244, 198, 90, 0.32);
             }
           }
           @keyframes ctaPulse {
@@ -1897,6 +1899,8 @@ export default function Page() {
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.7);
             margin-top: 2px;
+            text-align: center;
+            align-self: center;
           }
           .phase-left {
             display: flex;

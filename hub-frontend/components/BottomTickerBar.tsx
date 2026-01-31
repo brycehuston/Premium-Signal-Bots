@@ -115,14 +115,7 @@ export default function BottomTickerBar({
       pathname.startsWith("/waitlist") ||
       pathname.startsWith("/pay"));
 
-  const url = useMemo(() => {
-    const ids = "bitcoin,ethereum,solana";
-    return `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
-  }, []);
-  const fearGreedUrl = useMemo(
-    () => "https://api.alternative.me/fng/?limit=1&format=json",
-    []
-  );
+  const url = useMemo(() => "/api/market", []);
 
   async function fetchPrices() {
     if (inFlightRef.current) return;
@@ -133,10 +126,11 @@ export default function BottomTickerBar({
       const j = await res.json();
 
       const next: PriceState = {
-        BTC: j?.bitcoin?.usd ?? null,
-        ETH: j?.ethereum?.usd ?? null,
-        SOL: j?.solana?.usd ?? null,
+        BTC: j?.prices?.BTC ?? null,
+        ETH: j?.prices?.ETH ?? null,
+        SOL: j?.prices?.SOL ?? null,
       };
+      const fg = j?.fearGreed ?? null;
 
       (["BTC", "ETH", "SOL"] as Sym[]).forEach((sym) => {
         const d = computeDir(prices[sym], next[sym]);
@@ -155,30 +149,14 @@ export default function BottomTickerBar({
       });
 
       setPrices(next);
+      if (fg != null) {
+        setFearGreedValue(fg);
+        setFearGreed(mapFearGreed(fg));
+      }
     } catch {
       // ignore errors, keep last prices
     } finally {
       inFlightRef.current = false;
-    }
-  }
-
-  async function fetchFearGreed() {
-    if (fearGreedInFlightRef.current) return;
-    fearGreedInFlightRef.current = true;
-
-    try {
-      const res = await fetch(fearGreedUrl, { cache: "no-store" });
-      const j = await res.json();
-      const raw = j?.data?.[0]?.value;
-      const parsed = raw != null ? Number(raw) : null;
-      if (parsed != null && !Number.isNaN(parsed)) {
-        setFearGreedValue(parsed);
-        setFearGreed(mapFearGreed(parsed));
-      }
-    } catch {
-      // ignore errors, keep last state
-    } finally {
-      fearGreedInFlightRef.current = false;
     }
   }
 
@@ -196,17 +174,8 @@ export default function BottomTickerBar({
   }, [refreshMs, shouldFetch]);
 
   useEffect(() => {
-    if (!shouldFetch) {
-      if (fearGreedTimerRef.current) window.clearInterval(fearGreedTimerRef.current);
-      return;
-    }
-    fetchFearGreed();
-    fearGreedTimerRef.current = window.setInterval(fetchFearGreed, 60_000);
-    return () => {
-      if (fearGreedTimerRef.current) window.clearInterval(fearGreedTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldFetch]);
+    if (fearGreedTimerRef.current) window.clearInterval(fearGreedTimerRef.current);
+  }, []);
 
   const fearGreedClass = [
     "fear-greed-box",

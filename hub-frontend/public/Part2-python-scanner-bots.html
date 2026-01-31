@@ -1167,8 +1167,8 @@
     const ORBIT_SPEED = IS_MOBILE ? 2.6 : 1.6;
     if (IS_MOBILE) {
       OFFSETS.EARLY = 0.30;
-      OFFSETS.TREND = 0.30;
-      OFFSETS.RUNNER = 0.46;
+      OFFSETS.TREND = OFFSETS.EARLY;
+      OFFSETS.RUNNER = OFFSETS.EARLY;
     }
     if (MOBILE_PORTAL) {
       // Shorter, lighter portal timing on mobile/coarse pointers reduces jank.
@@ -2567,7 +2567,7 @@
         const dt = this.lastMs ? Math.min(0.05, (nowMs - this.lastMs) / 1000) : 0.016;
         this.lastMs = nowMs;
 
-        const offset = IS_MOBILE && this.botName !== "EARLY" ? 0 : (OFFSETS[this.botName] || 0);
+        const offset = OFFSETS[this.botName] || 0;
         const targetTilt = clamp(MASTER.baseTilt + offset, -this.CFG.tiltClamp, this.CFG.tiltClamp);
         this.cam.trx = targetTilt;
         this.cam.rx += (this.cam.trx - this.cam.rx) * this.CFG.cameraEase;

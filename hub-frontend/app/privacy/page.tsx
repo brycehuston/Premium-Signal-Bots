@@ -230,7 +230,7 @@ export default function PrivacyPage() {
         >
           <div className="flex flex-wrap items-center justify-between gap-6 text-small text-muted flow-steps">
             {FLOW_STEPS.map((step, index) => (
-              <div key={step.label} className="relative flow-step">
+              <div key={step.label} className="relative flow-step" data-index={index}>
                 <button
                   type="button"
                   className="flow-step-btn"
@@ -245,7 +245,7 @@ export default function PrivacyPage() {
               </div>
             ))}
           </div>
-          <div className="relative mt-3 h-2">
+          <div className="relative mt-3 h-2 flow-line-wrap">
             <div className="flow-line" aria-hidden />
             <div className="flow-pulse" aria-hidden />
             <div className="flow-particles" aria-hidden />
@@ -382,15 +382,15 @@ export default function PrivacyPage() {
         }
         .flow-animate .flow-node[data-index="0"] {
           animation: nodePing 8s ease-in-out infinite;
-          animation-delay: 0.6s;
+          animation-delay: 0.4s;
         }
         .flow-animate .flow-node[data-index="1"] {
           animation: nodePing 8s ease-in-out infinite;
-          animation-delay: 3.0s;
+          animation-delay: 2s;
         }
         .flow-animate .flow-node[data-index="2"] {
           animation: nodePing 8s ease-in-out infinite;
-          animation-delay: 5.4s;
+          animation-delay: 3.4s;
         }
         @keyframes glanceSweep {
           0% { opacity: 0; transform: translateX(0); }
@@ -421,6 +421,39 @@ export default function PrivacyPage() {
           10% { background: rgba(246, 212, 139, 1); box-shadow: 0 0 14px rgba(246, 212, 139, 0.75); }
           18% { background: rgba(246, 212, 139, 0.45); box-shadow: 0 0 6px rgba(246, 212, 139, 0.2); }
           100% { background: rgba(246, 212, 139, 0.45); box-shadow: 0 0 6px rgba(246, 212, 139, 0.2); }
+        }
+        .flow-line-wrap {
+          margin-top: 12px !important;
+        }
+        @media (max-width: 640px) {
+          .flow-steps {
+            flex-wrap: nowrap;
+            gap: 1rem;
+            padding: 2px 0 16px;
+          }
+          .flow-step {
+            min-width: 0;
+            flex: 1 1 0;
+          }
+          .flow-step-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(9px, 2.4vw, 11px);
+            letter-spacing: 0.14em;
+            line-height: 1.2;
+            min-height: 28px;
+          }
+          .flow-node {
+            bottom: -18px;
+          }
+          .flow-line-wrap {
+            margin-top: 18px !important;
+          }
+          .flow-tooltip {
+            min-width: 160px;
+            font-size: 11px;
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .glance-animate .glance-card::before,

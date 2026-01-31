@@ -75,6 +75,7 @@ const BTC_INTERVAL_LABELS: Record<BtcInterval, string> = {
   "1d": "1D",
 };
 const ME_CACHE_KEY = "dashboard.me.v1";
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 
 /* ---------- Utils ---------- */
 function logsWsUrl(channel: string) {
@@ -313,6 +314,35 @@ export default function Dashboard() {
   }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
+    if (!me) return;
+
+    let timer: number | null = null;
+    const resetTimer = () => {
+      if (timer) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        signOut();
+      }, IDLE_TIMEOUT_MS);
+    };
+
+    const onActivity = () => resetTimer();
+    const onVisibility = () => {
+      if (!document.hidden) resetTimer();
+    };
+
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"];
+    events.forEach((event) => window.addEventListener(event, onActivity, { passive: true }));
+    document.addEventListener("visibilitychange", onVisibility);
+
+    resetTimer();
+
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      events.forEach((event) => window.removeEventListener(event, onActivity));
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [me]);
+
+  useEffect(() => {
     if (!me || dashboardTrackedRef.current) return;
     dashboardTrackedRef.current = true;
     track("dashboard_view");
@@ -413,7 +443,7 @@ export default function Dashboard() {
                   variant="ghost"
                   size="sm"
                   onClick={signOut}
-                  className="!h-7 !px-2 !rounded-md text-[10px] uppercase tracking-[0.2em] opacity-80 hover:opacity-100"
+                  className="!h-7 !px-2 !rounded-md border border-white/15 bg-white/5 text-[10px] uppercase tracking-[0.2em] opacity-90 hover:opacity-100 hover:border-white/30 hover:bg-white/10"
                 >
                   Sign Out
                 </Button>
@@ -426,10 +456,6 @@ export default function Dashboard() {
             <div className="space-y-3">
               <div className="grid grid-cols-[1fr_auto] items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-muted/70">
                 <span>Signal Stack</span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-muted">
-                  <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_8px_rgb(var(--gold)/0.45)]" />
-                  Tier {String(computedTier)}
-                </span>
               </div>
               <div className="space-y-2">
                 {SIGNAL_ORDER.map((key) => {
