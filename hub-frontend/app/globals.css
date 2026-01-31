@@ -424,7 +424,7 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 }
 
 .stage4-emoji {
-  font-size: 1.2em;
+  font-size: 1.1em;
   line-height: 1;
   display: inline-block;
   font-weight: 800;

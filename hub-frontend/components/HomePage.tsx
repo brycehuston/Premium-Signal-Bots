@@ -1899,8 +1899,6 @@ export default function Page() {
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.7);
             margin-top: 2px;
-            text-align: center;
-            align-self: center;
           }
           .phase-left {
             display: flex;
@@ -2132,6 +2130,8 @@ export default function Page() {
             .phase-support-line {
               font-size: 11px;
               letter-spacing: 0.16em;
+              text-align: center;
+              align-self: center;
             }
             .phase-body {
               text-align: center;
