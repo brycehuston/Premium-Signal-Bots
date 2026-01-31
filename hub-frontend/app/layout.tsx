@@ -65,10 +65,7 @@ function Container({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      frontendApi={process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}
-    >
+    <ClerkProvider>
       <html
         lang="en"
         className={`${sans.variable} ${display.variable} overflow-x-hidden`}
