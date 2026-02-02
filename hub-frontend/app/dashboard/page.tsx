@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { useAuth, useClerk } from "@clerk/nextjs";
+import { useSupabase } from "@/components/SupabaseProvider";
 import dynamic from "next/dynamic";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { Badge, Button, Card, CardBody, SectionHeading } from "@/components/ui";
@@ -131,8 +131,7 @@ function DashboardDivider() {
 
 /* ---------- Page ---------- */
 export default function Dashboard() {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
-  const { signOut: clerkSignOut } = useClerk();
+  const { session, loading: authLoading, signOut: supabaseSignOut } = useSupabase();
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<BotStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,7 +155,7 @@ export default function Dashboard() {
   });
 
   async function authedApi(path: string, init: RequestInit = {}) {
-    const token = await getToken();
+    const token = session?.access_token;
     if (!token) throw new Error("not_authenticated");
     return api(path, init, { token });
   }
@@ -289,7 +288,9 @@ export default function Dashboard() {
     }
   }
   function signOut() {
-    clerkSignOut({ redirectUrl: "/login" });
+    void supabaseSignOut().then(() => {
+      window.location.href = "/login";
+    });
   }
 
   useEffect(() => {
@@ -303,15 +304,15 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (!isSignedIn) {
+    if (authLoading) return;
+    if (!session) {
       setMe(null);
       setLoading(false);
       return;
     }
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn]);
+  }, [authLoading, session]);
 
   useEffect(() => {
     if (!me) return;

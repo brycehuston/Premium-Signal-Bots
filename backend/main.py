@@ -10,7 +10,7 @@ from sqlalchemy import text
 from .database import Base, engine, get_db
 from .models import User, Subscription
 from .auth import hash_password, verify_password, create_access_token, decode_token
-from .clerk_auth import verify_clerk_token, fetch_clerk_email
+from .supabase_auth import verify_supabase_token
 from .bot import start_bot, stop_bot, bot_status, stream_logs
 
 from google.oauth2 import id_token
@@ -96,6 +96,8 @@ def ensure_users_schema():
             add("role TEXT NOT NULL DEFAULT 'user'")
         if "clerk_id" not in cols:
             add("clerk_id TEXT")
+        if "supabase_id" not in cols:
+            add("supabase_id TEXT")
         if "plan" not in cols:
             add("plan TEXT")
         if "is_active" not in cols:
@@ -197,20 +199,20 @@ class ApprovePayload(BaseModel):
     months: int = 1
 
 
-def _email_from_clerk_payload(payload: dict, clerk_id: str) -> str | None:
-    email = payload.get("email") or payload.get("email_address") or payload.get("primary_email_address")
+def _email_from_supabase_payload(payload: dict) -> str | None:
+    email = payload.get("email")
     if email:
         return email
-    return fetch_clerk_email(clerk_id)
+    return (payload.get("user_metadata") or {}).get("email")
 
 
-def _get_or_create_user_from_clerk(payload: dict, db: Session) -> User:
-    clerk_id = payload.get("sub")
-    if not clerk_id:
-        raise HTTPException(status_code=401, detail="invalid clerk token")
+def _get_or_create_user_from_supabase(payload: dict, db: Session) -> User:
+    supabase_id = payload.get("sub")
+    if not supabase_id:
+        raise HTTPException(status_code=401, detail="invalid supabase token")
 
-    user = db.query(User).filter(User.clerk_id == clerk_id).first()
-    email = _email_from_clerk_payload(payload, clerk_id)
+    user = db.query(User).filter(User.supabase_id == supabase_id).first()
+    email = _email_from_supabase_payload(payload)
 
     if user:
         if email and user.email != email:
@@ -219,16 +221,16 @@ def _get_or_create_user_from_clerk(payload: dict, db: Session) -> User:
         return user
 
     if not email:
-        raise HTTPException(status_code=401, detail="clerk email not found")
+        raise HTTPException(status_code=401, detail="supabase email not found")
 
     user = db.query(User).filter(User.email == email).first()
     if user:
-        user.clerk_id = clerk_id
+        user.supabase_id = supabase_id
         db.commit()
         return user
 
     user = User(email=email, password_hash=hash_password(os.urandom(8).hex()))
-    user.clerk_id = clerk_id
+    user.supabase_id = supabase_id
     db.add(user)
     db.commit()
     return user
@@ -240,8 +242,8 @@ def require_user(request: Request, db: Session) -> User:
         raise HTTPException(status_code=401, detail="unauthorized")
     token = auth.split(" ", 1)[1]
     try:
-        payload = verify_clerk_token(token)
-        return _get_or_create_user_from_clerk(payload, db)
+        payload = verify_supabase_token(token)
+        return _get_or_create_user_from_supabase(payload, db)
     except Exception:
         if not ALLOW_LEGACY_TOKENS:
             raise HTTPException(status_code=401, detail="invalid token")
@@ -262,8 +264,8 @@ def maybe_user_id(request: Request, db: Session):
         return None
     token = auth.split(" ", 1)[1]
     try:
-        payload = verify_clerk_token(token)
-        user = _get_or_create_user_from_clerk(payload, db)
+        payload = verify_supabase_token(token)
+        user = _get_or_create_user_from_supabase(payload, db)
         return user.id
     except Exception:
         if not ALLOW_LEGACY_TOKENS:

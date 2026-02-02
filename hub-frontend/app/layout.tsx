@@ -1,6 +1,7 @@
 ﻿// app/layout.tsx
 // Updates: refined layout structure, spacing rhythm, performance hooks, and motion polish.
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 import { Manrope, Sora } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
@@ -9,7 +10,7 @@ import BottomTickerBar from "@/components/BottomTickerBar";
 import Header from "@/components/Header";
 import StructuredData from "@/components/StructuredData";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
-import { ClerkProvider } from "@clerk/nextjs";
+import SupabaseProvider from "@/components/SupabaseProvider";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const display = Sora({ subsets: ["latin"], variable: "--font-display" });
@@ -65,13 +66,13 @@ function Container({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <html
-        lang="en"
-        className={`${sans.variable} ${display.variable} overflow-x-hidden`}
-        suppressHydrationWarning
-      >
+    <html
+      lang="en"
+      className={`${sans.variable} ${display.variable} overflow-x-hidden`}
+      suppressHydrationWarning
+    >
       <body className="min-h-screen bg-bg text-text antialiased font-sans overflow-x-hidden">
+        <SupabaseProvider>
         {/* decorative bg layers */}
         <div className="pointer-events-none fixed inset-0 -z-10">
           <div className="absolute inset-0" style={{ backgroundImage: "var(--vignette)" }} />
@@ -130,8 +131,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Analytics (only loads if NEXT_PUBLIC_GA_ID is set) */}
         <AnalyticsProvider />
 
-        </body>
-      </html>
-    </ClerkProvider>
+        </SupabaseProvider>
+      </body>
+    </html>
   );
 }

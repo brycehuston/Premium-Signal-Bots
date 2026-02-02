@@ -1,7 +1,7 @@
 ﻿// app/billing/page.tsx (replace body inside your Card)
 "use client";
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useSupabase } from "@/components/SupabaseProvider";
 import { Button, Section } from "@/components/ui";
 import { motion } from "framer-motion";
 import { CreditCard, Settings } from "lucide-react";
@@ -9,12 +9,12 @@ import { toast } from "sonner";
 
 export default function Billing() {
   const [busy, setBusy] = useState(false);
-  const { getToken } = useAuth();
+  const { session } = useSupabase();
 
   async function go(path: string) {
     setBusy(true);
     try {
-      const token = await getToken();
+      const token = session?.access_token;
       if (!token) { window.location.href = "/login"; return; }
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL;
       if (!apiBase) throw new Error("Missing API base URL");

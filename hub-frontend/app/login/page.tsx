@@ -1,56 +1,59 @@
 // app/login/page.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { SignIn, useAuth } from "@clerk/nextjs";
-
-const AFTER_SIGN_IN_URL =
-  process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/dashboard";
+import { useSupabase } from "@/components/SupabaseProvider";
 
 export default function LoginPage() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { supabase, session, loading } = useSupabase();
   const router = useRouter();
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (isSignedIn) router.replace(AFTER_SIGN_IN_URL);
-  }, [isLoaded, isSignedIn, router]);
+    if (loading) return;
+    if (session) router.replace("/dashboard");
+  }, [loading, session, router]);
 
-  if (!isLoaded || isSignedIn) return null;
+  async function signInWithGoogle() {
+    setBusy(true);
+    try {
+      const origin = window.location.origin;
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${origin}/auth/callback?next=/dashboard`,
+        },
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading || session) return null;
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <SignIn
-        routing="hash"
-        signUpUrl="/register"
-        afterSignInUrl={AFTER_SIGN_IN_URL}
-        redirectUrl={AFTER_SIGN_IN_URL}
-        appearance={{
-          variables: {
-            colorBackground: "rgb(235 235 235)",
-            colorInputBackground: "rgb(248 248 248)",
-            colorText: "rgb(18 18 18)",
-            colorTextSecondary: "rgb(70 70 70)",
-            colorPrimary: "rgb(var(--gold))",
-            colorDanger: "rgb(235 88 88)",
-            borderRadius: "12px",
-          },
-          elements: {
-            card:
-              "bg-[linear-gradient(120deg,#d2d2d2_0%,#f5f5f5_28%,#c7c7c7_55%,#f0f0f0_82%,#d7d7d7_100%)] border border-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_20px_60px_-40px_rgba(0,0,0,0.45)] rounded-card",
-            headerTitle: "font-display text-black",
-            headerSubtitle: "text-black/70",
-            socialButtonsBlockButton:
-              "border border-black/15 bg-white/60 text-black hover:border-black/35",
-            formButtonPrimary:
-              "bg-black text-white hover:bg-black/90 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.65)]",
-            formFieldInput:
-              "bg-white/70 border border-black/15 text-black placeholder:text-black/50 focus:border-black/35 focus:ring-0",
-            footerActionLink: "text-black/80 hover:text-black",
-          },
-        }}
-      />
+      <div className="w-full max-w-md rounded-card border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-8 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.7)]">
+        <div className="text-center">
+          <div className="text-xs uppercase tracking-[0.45em] text-muted/70">Alpha Alerts</div>
+          <h1 className="mt-3 font-display text-3xl font-semibold text-silver">Sign in</h1>
+          <p className="mt-2 text-sm text-muted">Use Google to access your dashboard.</p>
+        </div>
+        <button
+          onClick={signInWithGoogle}
+          disabled={busy}
+          className="mt-6 w-full rounded-md border border-white/15 bg-white/90 px-4 py-3 text-sm font-semibold text-black transition hover:bg-white disabled:opacity-60"
+        >
+          Continue with Google
+        </button>
+        <p className="mt-4 text-center text-xs text-muted">
+          Don&apos;t have access yet?{" "}
+          <a href="/waitlist" className="text-silver hover:text-white">
+            Join the waitlist
+          </a>
+        </p>
+      </div>
     </div>
   );
 }
