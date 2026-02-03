@@ -26,6 +26,10 @@ def _fetch_jwks() -> dict:
         headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
 
     resp = requests.get(SUPABASE_JWKS_URL, headers=headers, timeout=6)
+    if resp.status_code == 404 and ".well-known/jwks.json" not in SUPABASE_JWKS_URL:
+        # Supabase JWKS endpoint is now under /.well-known/jwks.json
+        alt = SUPABASE_JWKS_URL.rstrip("/").replace("/auth/v1/keys", "/auth/v1/.well-known/jwks.json")
+        resp = requests.get(alt, headers=headers, timeout=6)
     if resp.status_code == 401:
         # Some projects require an API key header for JWKS
         raise ValueError("jwks_unauthorized")
