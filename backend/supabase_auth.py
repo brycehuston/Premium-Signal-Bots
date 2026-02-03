@@ -10,6 +10,8 @@ from jose import jwt, jwk
 SUPABASE_JWKS_URL = os.getenv("SUPABASE_JWKS_URL", "")
 SUPABASE_ISSUER = os.getenv("SUPABASE_ISSUER", "")
 SUPABASE_AUDIENCE = os.getenv("SUPABASE_AUDIENCE", "authenticated")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 JWKS_CACHE_TTL = int(os.getenv("SUPABASE_JWKS_CACHE_TTL", "3600"))
 
 _JWKS_CACHE: dict[str, Any] = {"keys": [], "fetched_at": 0}
@@ -18,7 +20,15 @@ _JWKS_CACHE: dict[str, Any] = {"keys": [], "fetched_at": 0}
 def _fetch_jwks() -> dict:
     if not SUPABASE_JWKS_URL:
         raise ValueError("SUPABASE_JWKS_URL is not set")
-    resp = requests.get(SUPABASE_JWKS_URL, timeout=6)
+    headers = {}
+    api_key = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY
+    if api_key:
+        headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
+
+    resp = requests.get(SUPABASE_JWKS_URL, headers=headers, timeout=6)
+    if resp.status_code == 401:
+        # Some projects require an API key header for JWKS
+        raise ValueError("jwks_unauthorized")
     resp.raise_for_status()
     data = resp.json()
     if "keys" not in data:
