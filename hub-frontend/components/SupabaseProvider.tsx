@@ -5,7 +5,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type SupabaseContextValue = {
-  supabase: ReturnType<typeof createBrowserClient>;
+  supabase: ReturnType<typeof createBrowserClient> | null;
   session: Session | null;
   user: User | null;
   loading: boolean;
@@ -22,11 +22,20 @@ function getEnv() {
 
 export default function SupabaseProvider({ children }: { children: React.ReactNode }) {
   const { url, anon } = getEnv();
-  const supabase = useMemo(() => createBrowserClient(url, anon), [url, anon]);
+  const [supabase, setSupabase] = useState<ReturnType<typeof createBrowserClient> | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!url || !anon) {
+      setLoading(false);
+      return;
+    }
+    setSupabase(createBrowserClient(url, anon));
+  }, [url, anon]);
+
+  useEffect(() => {
+    if (!supabase) return;
     let alive = true;
     supabase.auth.getSession().then(({ data }) => {
       if (!alive) return;
@@ -52,6 +61,7 @@ export default function SupabaseProvider({ children }: { children: React.ReactNo
       user: session?.user ?? null,
       loading,
       signOut: async () => {
+        if (!supabase) return;
         await supabase.auth.signOut();
       },
     }),

@@ -6,7 +6,7 @@ export type AnalyticsEventProps = Record<
 declare global {
   interface Window {
     dataLayer?: unknown[];
-    gtag?: (...args: any[]) => void;
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -22,4 +22,3 @@ export function track(event: string, props: AnalyticsEventProps = {}) {
     window.dataLayer.push({ event, ...props });
   }
 }
-

@@ -16,6 +16,7 @@ export default function LoginPage() {
   }, [loading, session, router]);
 
   async function signInWithGoogle() {
+    if (!supabase) return;
     setBusy(true);
     try {
       const origin = window.location.origin;
@@ -42,7 +43,7 @@ export default function LoginPage() {
         </div>
         <button
           onClick={signInWithGoogle}
-          disabled={busy}
+          disabled={busy || !supabase}
           className="mt-6 w-full rounded-md border border-white/15 bg-white/90 px-4 py-3 text-sm font-semibold text-black transition hover:bg-white disabled:opacity-60"
         >
           Continue with Google

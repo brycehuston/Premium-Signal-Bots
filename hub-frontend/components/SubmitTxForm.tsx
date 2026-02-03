@@ -21,6 +21,12 @@ export default function SubmitTxForm({
   const [ok, setOk] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  function getErrorMessage(error: unknown) {
+    if (error instanceof Error) return error.message;
+    if (typeof error === "string") return error;
+    return "Failed to submit.";
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -41,8 +47,8 @@ export default function SubmitTxForm({
       setOk("Submitted! We'll review and approve shortly.");
       setTxHash("");
       setTelegram("");
-    } catch (e: any) {
-      setErr(e.message || "Failed to submit.");
+    } catch (error: unknown) {
+      setErr(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

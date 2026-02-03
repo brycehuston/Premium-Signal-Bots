@@ -1,7 +1,7 @@
 ﻿// app/layout.tsx
 // Updates: refined layout structure, spacing rhythm, performance hooks, and motion polish.
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 import { Manrope, Sora } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
@@ -73,13 +73,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-screen bg-bg text-text antialiased font-sans overflow-x-hidden">
         <SupabaseProvider>
-        {/* decorative bg layers */}
-        <div className="pointer-events-none fixed inset-0 -z-10">
-          <div className="absolute inset-0" style={{ backgroundImage: "var(--vignette)" }} />
-          <div className="absolute inset-0 opacity-[0.05] bg-hero-grid bg-grid" />
-          <div className="absolute -top-56 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-gold/10 blur-[140px]" />
-          <div className="absolute bottom-0 right-10 h-[22rem] w-[22rem] rounded-full bg-silver/10 blur-[120px]" />
-        </div>
+          {/* decorative bg layers */}
+          <div className="pointer-events-none fixed inset-0 -z-10">
+            <div className="absolute inset-0" style={{ backgroundImage: "var(--vignette)" }} />
+            <div className="absolute inset-0 opacity-[0.05] bg-hero-grid bg-grid" />
+            <div className="absolute -top-56 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-gold/10 blur-[140px]" />
+            <div className="absolute bottom-0 right-10 h-[22rem] w-[22rem] rounded-full bg-silver/10 blur-[120px]" />
+          </div>
 
         {/* Global JSON-LD structured data */}
         <StructuredData />
@@ -127,6 +127,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           xUrl={process.env.NEXT_PUBLIC_X_URL || "https://x.com/alphaalerts"}
           refreshMs={8000}
         />
+
+        <Analytics />
 
         {/* Analytics (only loads if NEXT_PUBLIC_GA_ID is set) */}
         <AnalyticsProvider />

@@ -15,7 +15,7 @@ export async function api(
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(init.headers as any),
+    ...(init.headers as Record<string, string> | undefined),
   };
 
   if (options.token) headers.Authorization = `Bearer ${options.token}`;
@@ -39,7 +39,7 @@ export async function api(
 
   try {
     return await doFetch(controller.signal);
-  } catch (e) {
+  } catch {
     // one quick retry (often fixes first request after sleep)
     try {
       return await doFetch();
