@@ -31,7 +31,16 @@ export default function SupabaseProvider({ children }: { children: React.ReactNo
       setLoading(false);
       return;
     }
-    setSupabase(createBrowserClient(url, anon));
+    setSupabase(
+      createBrowserClient(url, anon, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          flowType: "pkce",
+        },
+      })
+    );
   }, [url, anon]);
 
   useEffect(() => {
