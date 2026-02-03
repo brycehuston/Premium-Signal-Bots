@@ -12,6 +12,7 @@ SUPABASE_ISSUER = os.getenv("SUPABASE_ISSUER", "")
 SUPABASE_AUDIENCE = os.getenv("SUPABASE_AUDIENCE", "authenticated")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "")
 JWKS_CACHE_TTL = int(os.getenv("SUPABASE_JWKS_CACHE_TTL", "3600"))
 
 _JWKS_CACHE: dict[str, Any] = {"keys": [], "fetched_at": 0}
@@ -55,8 +56,18 @@ def verify_supabase_token(token: str) -> dict:
         raise ValueError("missing token")
     header = jwt.get_unverified_header(token)
     kid = header.get("kid")
+    alg = header.get("alg")
     if not kid:
         raise ValueError("missing kid")
+
+    if alg and alg.startswith("HS") and SUPABASE_JWT_SECRET:
+        return jwt.decode(
+            token,
+            SUPABASE_JWT_SECRET,
+            algorithms=[alg],
+            audience=SUPABASE_AUDIENCE or None,
+            issuer=SUPABASE_ISSUER or None,
+        )
 
     jwks = _get_jwks()
     key_data = next((k for k in jwks.get("keys", []) if k.get("kid") == kid), None)
@@ -76,7 +87,7 @@ def verify_supabase_token(token: str) -> dict:
     return jwt.decode(
         token,
         public_key.to_pem().decode("utf-8"),
-        algorithms=["RS256"],
+        algorithms=[alg] if alg else ["RS256"],
         audience=SUPABASE_AUDIENCE or None,
         issuer=SUPABASE_ISSUER or None,
         options=options,
