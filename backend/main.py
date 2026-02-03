@@ -15,9 +15,24 @@ from .bot import start_bot, stop_bot, bot_status, stream_logs
 
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from jose import jwt as jose_jwt
+import logging
 
 
 Base.metadata.create_all(bind=engine)
+
+logger = logging.getLogger("auth")
+
+def _token_debug(token: str) -> dict:
+    try:
+        claims = jose_jwt.get_unverified_claims(token)
+        return {
+            "iss": claims.get("iss"),
+            "aud": claims.get("aud"),
+            "sub": claims.get("sub"),
+        }
+    except Exception:
+        return {}
 
 
 def create_runtime_tables():
@@ -244,7 +259,14 @@ def require_user(request: Request, db: Session) -> User:
     try:
         payload = verify_supabase_token(token)
         return _get_or_create_user_from_supabase(payload, db)
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "supabase token verify failed: %s; claims=%s; iss_env=%s; aud_env=%s",
+            str(exc),
+            _token_debug(token),
+            os.getenv("SUPABASE_ISSUER"),
+            os.getenv("SUPABASE_AUDIENCE"),
+        )
         if not ALLOW_LEGACY_TOKENS:
             raise HTTPException(status_code=401, detail="invalid token")
     try:
@@ -267,7 +289,14 @@ def maybe_user_id(request: Request, db: Session):
         payload = verify_supabase_token(token)
         user = _get_or_create_user_from_supabase(payload, db)
         return user.id
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "supabase token verify failed (maybe_user_id): %s; claims=%s; iss_env=%s; aud_env=%s",
+            str(exc),
+            _token_debug(token),
+            os.getenv("SUPABASE_ISSUER"),
+            os.getenv("SUPABASE_AUDIENCE"),
+        )
         if not ALLOW_LEGACY_TOKENS:
             return None
     try:
