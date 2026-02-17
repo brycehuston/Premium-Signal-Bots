@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Static Glowy Border (No Directional Motion)</title>
+  <style>
+    :root {
+      --bg0: #050814;
+      --bg1: #070b18;
+      --card: rgba(6, 10, 22, 0.88);
+
+      --radius: 22px;
+      --border: 4px;
+
+      /* gold + white + bronze */
+      --borderColor: rgba(246, 204, 110, 0.92);
+      --borderColor2: rgba(255, 255, 255, 0.9);
+      --borderColor3: rgba(183, 126, 54, 0.86);
+
+      --glowBlurA: 14px;
+      --glowBlurB: 22px;
+      --glowOpacityA: 0.68;
+      --glowOpacityB: 0.95;
+
+      --pulseSeconds: 2.8s;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #eaf1ff;
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(246, 204, 110, 0.18), transparent 60%),
+        radial-gradient(900px 500px at 80% 0%, rgba(255, 255, 255, 0.12), transparent 65%),
+        linear-gradient(180deg, var(--bg1), var(--bg0));
+    }
+
+    .card {
+      position: relative;
+      width: min(420px, 92vw);
+      border-radius: var(--radius);
+      background: var(--card);
+      padding: 42px 36px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    /* Static crisp border ring */
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: var(--border);
+      pointer-events: none;
+      z-index: 2;
+      background: linear-gradient(135deg,
+          var(--borderColor) 0%,
+          var(--borderColor2) 35%,
+          var(--borderColor3) 70%,
+          var(--borderColor) 100%);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0.9;
+    }
+
+    /* Static glow ring, pulsing intensity only */
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      padding: var(--border);
+      pointer-events: none;
+      z-index: 1;
+      background: linear-gradient(135deg,
+          rgba(246, 204, 110, 1) 0%,
+          rgba(255, 255, 255, 1) 35%,
+          rgba(183, 126, 54, 0.98) 70%,
+          rgba(246, 204, 110, 1) 100%);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: var(--glowOpacityA);
+      filter:
+        blur(var(--glowBlurA)) drop-shadow(0 0 12px rgba(246, 204, 110, 0.4)) drop-shadow(0 0 30px rgba(183, 126, 54, 0.22));
+      animation: glowPulse var(--pulseSeconds) ease-in-out infinite;
+    }
+
+    .content {
+      position: relative;
+      z-index: 3;
+    }
+
+    .icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 14px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(10, 18, 40, 0.6);
+      box-shadow: inset 0 0 0 1px rgba(246, 204, 110, 0.2);
+    }
+
+    .title {
+      margin: 8px 0 10px;
+      font-size: 22px;
+      letter-spacing: 0.2px;
+    }
+
+    .desc {
+      margin: 0 auto;
+      max-width: 30ch;
+      line-height: 1.55;
+      color: rgba(234, 241, 255, 0.82);
+      font-size: 16px;
+    }
+
+    /* Hover: stronger glow intensity only */
+    .card:hover::after {
+      opacity: 0.9;
+      filter:
+        blur(24px) drop-shadow(0 0 16px rgba(255, 244, 215, 0.52)) drop-shadow(0 0 38px rgba(183, 126, 54, 0.28));
+    }
+
+    @keyframes glowPulse {
+
+      0%,
+      100% {
+        opacity: var(--glowOpacityA);
+        filter:
+          blur(var(--glowBlurA)) drop-shadow(0 0 12px rgba(246, 204, 110, 0.4)) drop-shadow(0 0 30px rgba(183, 126, 54, 0.22));
+      }
+
+      50% {
+        opacity: var(--glowOpacityB);
+        filter:
+          blur(var(--glowBlurB)) drop-shadow(0 0 18px rgba(255, 245, 218, 0.62)) drop-shadow(0 0 46px rgba(183, 126, 54, 0.34));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card::after {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card" role="article" aria-label="Static glowy border card with pulse">
+    <div class="content">
+      <div class="icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M4 7.5C4 6.67 4.67 6 5.5 6h13C19.33 6 20 6.67 20 7.5v9c0 .83-.67 1.5-1.5 1.5h-13C4.67 18 4 17.33 4 16.5v-9Z"
+            stroke="rgba(246,204,110,0.92)" stroke-width="1.5" />
+          <path d="M8 10h8M8 14h8" stroke="rgba(246,204,110,0.92)" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </div>
+
+      <h2 class="title">Alpha Runner Alerts</h2>
+      <p class="desc">
+        Static premium neon border with soft pulse only. No directional motion.
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>

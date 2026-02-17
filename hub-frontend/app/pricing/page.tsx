@@ -256,6 +256,18 @@ export default function PricingPage() {
     "alpha-runner-alerts": 3,
   };
 
+  const orderedPlans = useMemo(() => {
+    const planOrder: Record<string, number> = {
+      "alpha-trend-alerts": 0,
+      "alpha-runner-alerts": 1,
+      "alpha-early-alerts": 2,
+    };
+
+    return [...PLANS].sort(
+      (a, b) => (planOrder[a.slug] ?? 99) - (planOrder[b.slug] ?? 99)
+    );
+  }, []);
+
   useEffect(() => {
     track("pricing_view");
     return () => {
@@ -331,13 +343,20 @@ export default function PricingPage() {
         id="plans"
         className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3 scroll-mt-24 md:scroll-mt-32"
       >
-        {PLANS.map((p) => (
-          <Card
-            key={p.slug}
-            className={`group relative transition-all duration-200 will-change-transform ${cardGlowClass(
-              p.tone
-            )}`}
-          >
+        {orderedPlans.map((p) => {
+          const isEarlyComingSoon = p.slug === "alpha-early-alerts";
+          const isRunnerPlan = p.slug === "alpha-runner-alerts";
+          return (
+            <Card
+              key={p.slug}
+              className={`group relative transition-all duration-200 will-change-transform ${cardGlowClass(
+                p.tone
+              )} ${
+                isEarlyComingSoon
+                  ? "overflow-hidden coming-soon-plan-card hover:!translate-y-0 hover:!shadow-soft"
+                  : ""
+              } ${isRunnerPlan ? "runner-featured-card" : ""}`}
+            >
             {/* tone-matched aura */}
             <div
               aria-hidden
@@ -345,43 +364,89 @@ export default function PricingPage() {
                 p.tone
               )}`}
             />
+            {isEarlyComingSoon ? (
+              <div className="coming-soon-ribbon" aria-hidden>
+                <span className="coming-soon-ribbon-back coming-soon-ribbon-back-left" />
+                <span className="coming-soon-ribbon-back coming-soon-ribbon-back-right" />
+                <span className="coming-soon-ribbon-tail coming-soon-ribbon-tail-left" />
+                <span className="coming-soon-ribbon-tail coming-soon-ribbon-tail-right" />
+                <span className="coming-soon-ribbon-pattern">
+                  <img
+                    className="coming-soon-ribbon-icon coming-soon-ribbon-icon-top-left"
+                    src="/favicon.ico"
+                    alt=""
+                    aria-hidden
+                  />
+                  <img
+                    className="coming-soon-ribbon-icon coming-soon-ribbon-icon-bottom-right"
+                    src="/favicon.ico"
+                    alt=""
+                    aria-hidden
+                  />
+                </span>
+                <span className="coming-soon-ribbon-text">COMING SOON</span>
+              </div>
+            ) : null}
 
-            <CardBody className="space-y-6 sm:space-y-5">
+            <CardBody
+              className={`space-y-6 sm:space-y-5 ${isEarlyComingSoon ? "coming-soon-plan-body" : ""}`}
+            >
               <div className="flex items-center gap-2">
-                <div className="grid h-8 w-8 place-items-center rounded-full border border-stroke/60 bg-surface/70">
+                <div
+                  className={[
+                    "grid h-8 w-8 place-items-center rounded-full border border-stroke/60 bg-surface/70",
+                    isEarlyComingSoon ? "coming-soon-plan-accent" : "",
+                  ].join(" ")}
+                >
                   <span className="text-[18px]">{p.emoji}</span>
                 </div>
 
-                <PlanTitle
-                  left={p.titleLeft}
-                  emphasis={p.titleEmphasis}
-                  right={p.titleRight}
-                  tone={p.tone}
-                  cadenceIndex={cadenceMap[p.slug] ?? 1}
-                />
+                <div className={isEarlyComingSoon ? "coming-soon-plan-title" : ""}>
+                  <PlanTitle
+                    left={p.titleLeft}
+                    emphasis={p.titleEmphasis}
+                    right={p.titleRight}
+                    tone={p.tone}
+                    cadenceIndex={cadenceMap[p.slug] ?? 1}
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1">
+              <div className={`space-y-1 ${isEarlyComingSoon ? "coming-soon-plan-copy" : ""}`}>
                 <div className="flex items-baseline gap-3">
-                  <div className="font-display text-[32px] font-semibold leading-none">
+                  <div
+                    className={`font-display text-[32px] font-semibold leading-none ${
+                      isEarlyComingSoon ? "coming-soon-plan-price" : ""
+                    }`}
+                  >
                     ${billing === "annual" ? p.priceAnnual : p.priceMonthly}
                   </div>
-                  <div className="text-muted text-sm">
+                  <div
+                    className={`text-muted text-sm ${isEarlyComingSoon ? "coming-soon-plan-copy" : ""}`}
+                  >
                     / {billing === "annual" ? "year" : "month"}
                   </div>
                 </div>
-                <div className="text-muted/80 text-sm">
+                <div
+                  className={`text-muted/80 text-sm ${isEarlyComingSoon ? "coming-soon-plan-copy" : ""}`}
+                >
                   {billing === "annual"
                     ? `Billed annually • ${p.priceAnnual} / year`
                     : `Or ${p.priceAnnual} / year`}
                 </div>
               </div>
 
-              <ul className="space-y-3 text-small text-muted sm:space-y-2.5">
+              <ul
+                className={`space-y-3 text-small text-muted sm:space-y-2.5 ${
+                  isEarlyComingSoon ? "coming-soon-plan-list" : ""
+                }`}
+              >
                 {p.bullets.map((b: string, i: number) => (
                   <li key={i} className="flex gap-2.5">
                     <Check tone={p.tone} />
-                    <span>{renderBullet(b)}</span>
+                    <span className={isEarlyComingSoon ? "coming-soon-plan-copy" : ""}>
+                      {renderBullet(b)}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -391,10 +456,18 @@ export default function PricingPage() {
                   variant="primary"
                   size="sm"
                   full
-                  className={[tonePrimaryButtonClass(p.tone), "!h-11 sm:!h-10"].join(" ")}
-                  href={`/pay/${p.slug}?period=${billing}`}
-                  onClick={() =>
-                    track("plan_select", { plan: p.slug, period: billing })
+                  className={[
+                    tonePrimaryButtonClass(p.tone),
+                    "!h-11 sm:!h-10",
+                    isEarlyComingSoon
+                      ? "pointer-events-none coming-soon-plan-accent coming-soon-plan-button-dim"
+                      : "brightness-100 saturate-100",
+                  ].join(" ")}
+                  href={isEarlyComingSoon ? undefined : `/pay/${p.slug}?period=${billing}`}
+                  onClick={
+                    isEarlyComingSoon
+                      ? undefined
+                      : () => track("plan_select", { plan: p.slug, period: billing })
                   }
                 >
                   {billing === "annual" ? "Choose Annual" : "Choose Monthly"}
@@ -402,7 +475,8 @@ export default function PricingPage() {
               </div>
             </CardBody>
           </Card>
-        ))}
+          );
+        })}
 
         <div className="md:col-span-2 lg:col-span-3">
           <PricingDivider />

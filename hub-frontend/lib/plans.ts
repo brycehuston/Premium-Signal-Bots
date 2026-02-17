@@ -25,8 +25,8 @@ export const PLANS: Plan[] = [
     titleEmphasis: "EARLY",
     titleRight: "ALERTS",
     tone: "bronze",
-    priceMonthly: 49,
-    priceAnnual: 399,
+    priceMonthly: 69,
+    priceAnnual: 599,
     bullets: [
       "Ultra-early Solana pool + token detection",
       "Ultra-early Solana pool & token alerts (on-chain + WS)",
@@ -63,8 +63,8 @@ export const PLANS: Plan[] = [
     titleEmphasis: "RUNNER",
     titleRight: "ALERTS",
     tone: "gold",
-    priceMonthly: 69,
-    priceAnnual: 599,
+    priceMonthly: 49,
+    priceAnnual: 399,
     bullets: [
       "Second-leg & continuation move detection",
       "Runner detection (second leg / continuation moves)",

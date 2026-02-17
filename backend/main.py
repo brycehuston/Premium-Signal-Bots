@@ -194,6 +194,21 @@ class MeResponse(BaseModel):
     is_active: bool
 
 
+class AdminUserOut(BaseModel):
+    id: int
+    email: EmailStr
+    role: str
+    plan: str | None
+    is_active: bool
+
+
+class AdminUserUpdate(BaseModel):
+    user_id: int
+    role: str | None = None
+    plan: str | None = None
+    is_active: bool | None = None
+
+
 class WaitlistPayload(BaseModel):
     email: EmailStr
     name: str | None = None
@@ -391,6 +406,40 @@ def admin_waitlist(status: str | None = None, request: Request = None, db: Sessi
             FROM waitlist ORDER BY id DESC LIMIT 200
         """)).fetchall()
     return {"entries": [dict(r._mapping) for r in rows]}
+
+
+@app.get("/admin/users")
+def admin_users(request: Request, db: Session = Depends(get_db)):
+    require_admin(request, db)
+    users = db.query(User).order_by(User.id.desc()).limit(200).all()
+    return {
+        "users": [
+            {
+                "id": u.id,
+                "email": u.email,
+                "role": u.role,
+                "plan": u.plan,
+                "is_active": u.is_active,
+            }
+            for u in users
+        ]
+    }
+
+
+@app.post("/admin/users/update")
+def admin_users_update(payload: AdminUserUpdate, request: Request, db: Session = Depends(get_db)):
+    require_admin(request, db)
+    user = db.query(User).filter(User.id == payload.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="user not found")
+    if payload.role is not None:
+        user.role = payload.role
+    if payload.plan is not None:
+        user.plan = payload.plan
+    if payload.is_active is not None:
+        user.is_active = payload.is_active
+    db.commit()
+    return {"ok": True}
 
 
 @app.post("/admin/waitlist/set_status")
