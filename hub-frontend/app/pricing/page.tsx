@@ -236,7 +236,7 @@ export default function PricingPage() {
   const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
   const bundleBullets = [
     ...BUNDLE.bullets,
-    "Includes Early, Trend and Runner.",
+    "All 3 channels in one.",
     "Best value if you want the full pipeline.",
   ];
   const bundleTitleNode =
@@ -479,6 +479,8 @@ export default function PricingPage() {
           );
         })}
 
+        <AdditionalPricingOptions />
+
         <div className="md:col-span-2 lg:col-span-3">
           <PricingDivider />
         </div>
@@ -566,8 +568,6 @@ export default function PricingPage() {
             </div>
           </CardBody>
         </Card>
-
-        <AdditionalPricingOptions />
 
         <div className="md:col-span-2 lg:col-span-3">
           <PricingDivider />
