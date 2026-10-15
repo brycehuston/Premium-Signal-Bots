@@ -483,8 +483,6 @@ export default function PricingPage() {
           <PricingDivider />
         </div>
 
-        <AdditionalPricingOptions />
-
         {/* Bundle as a clean full-width panel */}
         <Card
           className={[
@@ -568,6 +566,8 @@ export default function PricingPage() {
             </div>
           </CardBody>
         </Card>
+
+        <AdditionalPricingOptions />
 
         <div className="md:col-span-2 lg:col-span-3">
           <PricingDivider />
