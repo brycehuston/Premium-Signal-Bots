@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { PLANS, BUNDLE, PlanTone } from "@/lib/plans";
+import AdditionalPricingOptions from "@/components/AdditionalPricingOptions";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
 import { track } from "@/lib/analytics";
 
@@ -235,7 +236,7 @@ export default function PricingPage() {
   const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
   const bundleBullets = [
     ...BUNDLE.bullets,
-    "All 3 channels in one.",
+    "Includes Early, Trend and Runner.",
     "Best value if you want the full pipeline.",
   ];
   const bundleTitleNode =
@@ -481,6 +482,8 @@ export default function PricingPage() {
         <div className="md:col-span-2 lg:col-span-3">
           <PricingDivider />
         </div>
+
+        <AdditionalPricingOptions />
 
         {/* Bundle as a clean full-width panel */}
         <Card
