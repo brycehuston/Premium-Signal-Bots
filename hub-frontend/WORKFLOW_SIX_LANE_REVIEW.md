@@ -8,26 +8,27 @@ Scope: **preview branch only**, source based on GitHub `main`. No changes to the
 - Stage 3 forwarding: add upper Genesis / Strict / Reclaim destinations, keep original lower Early / Trend / Runner and original voxel core, cubic flight paths, pacing, and audio.
 - Homepage alert panel: replace *fabricated* sample entries with Top Three Today by native score, using delayed approved Telegram-delivered signals only.
 
-## Public top-three feed contract
-Server-only config: `ALPHA_PUBLIC_DAILY_FEED_URL` (HTTPS only, outbound public feed that the owner has explicitly approved for publication).
-The server reads a maximum 128 KiB from that URL and checks:
-- `version:1`, `source:"confirmed-telegram-delivery"`, `updated_at_utc` no older than 20 minutes.
-- `daily_alerts` array with `approved_for_public:true`, `delivery_status:"DELIVERED"`, positive integer `telegram_message_id`, `event_id`, `symbol`, `lane`, `score` on a native 0–10 scale, `timestamp_utc` with Z UTC.
-- Optional `alert_mc`, `liquidity_usd`, `m5_tx`. Route drops every other field. No chat ID, message body, token mint, invite link, usernames or wallet keys are published.
-- Server excludes events younger than **30 minutes**, outside the current UTC day, and outside six recognized lanes; dedupes by event ID, sorts by score then recency, returns at most three.
-- When no approved feed is configured, return `state:"unavailable"` with no fabricated signals. `state:"empty"` if feed is valid but has no eligible alerts. Scores do **not** equal profits or success probabilities.
+## Public Top Three Today — signed feed contract
 
-### Example *schema only* (not production data; do NOT publish as live feed)
-```json
-{
-  "version": 1,
-  "source": "confirmed-telegram-delivery",
-  "updated_at_utc": "2026-11-04T00:00:00Z",
-  "daily_alerts": []
-}
+The website endpoint `/api/public/daily-top` is read-only and **fail-closed** until both server-only variables are set:
+- `ALPHA_PUBLIC_DAILY_FEED_URL`: HTTPS URL of a redacted static JSON feed managed by the operator. Not a private Telegram API URL.
+- `ALPHA_PUBLIC_DAILY_FEED_SECRET`: a high-entropy shared secret (at least 32 characters), stored ONLY as a server-side environment secret and on the offline publisher. NEVER `NEXT_PUBLIC_`.
+
+An offline, independent publisher is provided at `scripts/build_public_daily_feed.py`, with tests at `scripts/test_public_daily_feed.py`. It consumes **curated, owner-approved, confirmed Telegram-delivery receipts**, not pre-send scanner candidates. Its raw input records must include:
+`event_id`, `symbol`, `lane`, `timestamp_utc`, `score` on 0–10, `approved_for_public:true`, `delivery_status:"DELIVERED"`, positive `telegram_message_id`, and optionally `alert_mc`, `liquidity_usd`, `m5_tx`.
+
+The builder excludes all stale, suppressed, unsuccessful, unapproved, invalid or younger-than-30-minute alerts; deduplicates event IDs; sorts by native score; **drops the Telegram message ID, chat ID, mint, raw text and all non-allowlisted fields**. It signs the exact JSON text in `signed_body` with HMAC-SHA256 and emits `{"signed_body":"...","signature":"64 hex characters"}`. The public URL may return this redacted signed envelope; the browser never receives that envelope.
+
+The Next.js route verifies the HMAC before trusting the body, applies an additional UTC-day/30-minute/20-minute-freshness check, sorts top three and returns only the minimal public data. Empty/stale/unconnected feeds do **not** produce fictional example alerts. Score is not a profit probability.
+
+### Local validation (no capital, no network)
+```bash
+cd hub-frontend/scripts
+python3 -m unittest -v test_public_daily_feed.py
 ```
 
-**Important:** This branch adds the protected read-only display interface, not the producer/publisher. Telegram confirmation and approved-data curation must remain separate from paid channels, and the site must never scrape raw Telegram channels from the browser. Source candidate delivery/outcome processor exists in the prior verified-reel package, but it has not been connected to production.
+### Production publication remains gated
+The bot-side hook creating a post-confirmation curated outbox is **not installed** here. The output must be hosted/published and the corresponding server-side variables configured only after verifying the actual Telegram channel boundary and explicit authorization to reveal delayed public excerpts. Never place private tokens, raw messages, or secrets inside a public static file. No real feed, transaction, or publisher was activated by this PR.
 
 ## Verification / release gates
 - [x] Stage 1/2/3 inline JavaScript syntax parses.
