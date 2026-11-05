@@ -1255,13 +1255,7 @@ export default function Page() {
   const trustTimersRef = useRef<number[]>([]);
   const trustCycleRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (shouldReduceMotion) return;
-    const id = window.setInterval(() => {
-      setHeroView((prev) => (prev === "chart" ? "reel" : "chart"));
-    }, 60000);
-    return () => window.clearInterval(id);
-  }, [shouldReduceMotion]);
+  // Preserve the visitor's chosen view; avoid surprising swaps while reading or interacting.
 
   const { ref: stealthRef, inView: stealthInView } = useInView({
     threshold: 0.25,
