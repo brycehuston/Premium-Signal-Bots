@@ -2966,7 +2966,7 @@
         ctx.globalAlpha = 1;
         ctx.filter = "none";
 
-        for (const bot of ["EARLY", "TREND", "RUNNER"]) {
+        for (const bot of LANES.map(lane => lane.id)) {
           const target = clamp(MASTER.baseTilt + (OFFSETS[bot] || 0), -MASTER.tiltClamp, MASTER.tiltClamp);
           this.botCam[bot].rx += (target - this.botCam[bot].rx) * 0.12;
           this.botCam[bot].ry += (0 - this.botCam[bot].ry) * 0.08;
