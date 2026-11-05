@@ -36,10 +36,10 @@
 .heroMeta{display:flex;align-items:center;gap:9px;color:#8c8d96;font-size:9px;font-weight:650;letter-spacing:.12em;white-space:nowrap}
 .heroMeta i{width:3px;height:3px;border-radius:50%;background:#8d7b58}
 .heroVisual{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:5px}
-.stackArt{width:100%;max-width:440px;aspect-ratio:10/7;background-color:transparent;
-  background-image:url("/apps/alpha-grid.webp");background-size:200% 200%;
-  background-position:0% 0%;background-repeat:no-repeat;
-  filter:saturate(.78) brightness(.83)}
+.stackArt{width:100%;max-width:365px;aspect-ratio:1/1;background-color:transparent;
+  background-image:url("/apps/alpha-stack.webp");background-size:contain;
+  background-position:center;background-repeat:no-repeat;
+  filter:saturate(.80) brightness(.92)}
 .visualCaption{color:#747780;font-size:9px;letter-spacing:.14em;text-align:center}
 .visualCaption span{color:#977941;padding:0 5px}
 .valueRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
@@ -103,7 +103,7 @@
   .hero{min-height:0;padding:44px 0 36px;gap:18px}
   .heroTitle{font-size:clamp(33px,5.4vw,46px)}
   .heroDescription{font-size:13px}
-  .stackArt{max-width:370px}
+  .stackArt{max-width:340px}
   .cards{gap:11px}
   .cardInfo{padding:15px}
   .cardHeading h3{font-size:17px}
@@ -114,7 +114,7 @@
   .subnavLinks{width:100%;gap:20px}
   .hero{grid-template-columns:1fr;padding:35px 0 27px;gap:10px}
   .heroTitle{font-size:clamp(31px,8.5vw,46px);margin:19px 0 13px}
-  .heroVisual{margin:0 auto;width:min(100%,390px)}
+  .heroVisual{margin:0 auto;width:min(100%,340px)}
   .visualCaption{margin-top:-7px}
   .heroActions{margin-top:24px}
   .valueRow{grid-template-columns:1fr;gap:13px;padding:19px 0}
