@@ -5,7 +5,7 @@ Scope: **preview branch only**, source based on GitHub `main`. No changes to the
 ## Video-matched target
 - Stage 1 source core: preserve appearance/physics, remove resize-induced particle jumps, reduce mobile rendering work.
 - Stage 2 Python scanner: six visible lane reactors, 3×2 desktop and 2×3 scrollable mobile/tablet layout, color distinctions: EARLY bronze, GENESIS teal, TREND ice, STRICT soft violet, RECLAIM emerald, RUNNER champagne gold.
-- Stage 3 forwarding: add upper Genesis / Strict / Reclaim destinations, keep original lower Early / Trend / Runner and original voxel core, cubic flight paths, pacing, and audio.
+- Stage 3 forwarding: use final approved visual order: upper EARLY / GENESIS / TREND and lower STRICT / RECLAIM / RUNNER; retain the original voxel core, cubic flight paths, pacing, audio and canonical lane IDs.
 - Homepage alert panel: replace *fabricated* sample entries with Top Three Today by native score, using delayed approved Telegram-delivered signals only.
 
 ## Public Top Three Today — signed feed contract
@@ -42,3 +42,9 @@ The bot-side hook creating a post-confirmation curated outbox is **not installed
 - [ ] Production release authorization.
 
 **This is a visual workflow illustration**, not a claim that all six live production lanes are enabled.
+
+## Final Stage 3 placement correction (Nov 5 2026)
+
+The preview geometry was updated to the latest explicitly approved 3x2 order. **Critical index invariant:** the internal `lanes` array remains ordered by canonical `laneId` (0=EARLY, 1=TREND, 2=RUNNER, 3=GENESIS, 4=STRICT, 5=RECLAIM), because the renderer indexes `curves[op.laneId]`. Reordering the array itself would deliver drawn packets to the wrong destinations, even if the pill text looked right. Only each lane's x/y/row location changed.
+
+**Directly checked against the draft source:** all six mappings retain unique canonical IDs, top row sorts as EARLY→GENESIS→TREND, bottom row STRICT→RECLAIM→RUNNER, and both inline Stage 3 scripts parse successfully via JavaScript Function constructor. This is static source/syntax validation, **not** a production browser/runtime/performance pass. No deployed site, trader bot or real signals changed.
