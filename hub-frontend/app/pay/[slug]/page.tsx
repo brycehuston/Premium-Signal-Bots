@@ -1,6 +1,7 @@
 ﻿// filename: app/pay/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import { PLANS, BUNDLE } from "@/lib/plans";
+import { getManualCheckoutGate } from "@/lib/checkoutSafety";
 import SubmitTxForm from "@/components/SubmitTxForm";
 import { Button } from "@/components/ui";
 import AnalyticsEvent from "@/components/AnalyticsEvent";
@@ -51,13 +52,24 @@ export default async function PayPage({
   if (!plan) return notFound();
 
   const title = getPlanTitle(plan);
+  const gate = getManualCheckoutGate(slug);
+  // Fail closed: direct URLs cannot bypass availability or missing configuration.
+  // Never show a hard-coded fallback receiving address to a potential payer.
+  if (!gate.enabled) {
+    return (
+      <div className="mx-auto max-w-2xl px-5 py-12">
+        <h1 className="font-display text-h2 font-semibold text-silver">Checkout unavailable</h1>
+        <p className="mt-4 text-body text-muted">{gate.reason}</p>
+        <p className="mt-2 text-small text-muted">Do not send any funds until an active checkout is displayed on this site.</p>
+        <div className="mt-7"><Button href="/pricing" variant="outline">Back to pricing</Button></div>
+      </div>
+    );
+  }
 
   const price = period === "annual" ? plan.priceAnnual : plan.priceMonthly;
   const chain = "Solana";
   const token = "USDC";
-  const address =
-    process.env.NEXT_PUBLIC_SOLANA_ADDRESS ||
-    "4tDVS6pJKirFnXtM3btbP2VfCQbombUotCqtPjoEXkHm";
+  const address = gate.receiver;
 
   return (
     <div className="mx-auto max-w-2xl py-12 px-5">
