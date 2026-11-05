@@ -2371,7 +2371,7 @@
             const laneX1 = rx;
             const laneX2 = rx + laneOffsetPx;
 
-            // Three premium tier lanes above the hub, three classic lanes below it.
+            // Latest approved visual reading order: EARLY / GENESIS / TREND above; STRICT / RECLAIM / RUNNER below.
             const pillY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
             const topPillY = Math.max(
               CFG.pillH / 2 + 70,
@@ -2382,12 +2382,12 @@
             return {
               sx, sy, rx, ry, outY, pillY, topPillY,
               lanes: [
-                { laneId: 0, x: laneX0, y: pillY, row:"bottom", label: "EARLY" },
-                { laneId: 1, x: laneX1, y: pillY, row:"bottom", label: "TREND" },
-                { laneId: 2, x: laneX2, y: pillY, row:"bottom", label: "RUNNER" },
-                { laneId: 3, x: laneX0, y: topPillY, row:"top", label: "GENESIS" },
-                { laneId: 4, x: laneX1, y: topPillY, row:"top", label: "STRICT" },
-                { laneId: 5, x: laneX2, y: topPillY, row:"top", label: "RECLAIM" }
+                { laneId: 0, x: laneX0, y: topPillY, row:"top", label: "EARLY" },
+                { laneId: 3, x: laneX1, y: topPillY, row:"top", label: "GENESIS" },
+                { laneId: 1, x: laneX2, y: topPillY, row:"top", label: "TREND" },
+                { laneId: 4, x: laneX0, y: pillY, row:"bottom", label: "STRICT" },
+                { laneId: 5, x: laneX1, y: pillY, row:"bottom", label: "RECLAIM" },
+                { laneId: 2, x: laneX2, y: pillY, row:"bottom", label: "RUNNER" }
               ]
             };
           }
