@@ -1680,7 +1680,7 @@
         </div>
         <div class="workflowNote">
           <div class="workflowTitle">SYSTEM WORKFLOW</div>
-          <p class="workflowText">STAGE 3 ROUTES TO EARLY, TREND, RUNNER.</p>
+          <p class="workflowText">STAGE 3 ROUTES SIX ALPHA LANES. · ILLUSTRATIVE FLOW.</p>
         </div>
       </div>
       <div class="mobileHeroTitle" aria-hidden="true">
@@ -2150,8 +2150,11 @@
             // Orb colors
             inOrb: [245, 250, 255],
             early: [199, 142, 84],
-            trend: [215, 224, 238],
+            trend: [202, 224, 248],
             runner: [255, 205, 110],
+            genesis: [109, 203, 201],
+            strict: [181, 151, 236],
+            reclaim: [107, 205, 150],
 
             // Layout tuning (matches your screenshot)
             forwarderNudgeX: 0,
@@ -2350,24 +2353,33 @@
             const sx = W * CFG.sourceX;
             const rx = W * CFG.forwarderX;
 
-            const laneOffsetPx = clamp(W * CFG.laneOffsetX, CFG.laneOffsetMin, 350);
-
+            // Keep every pill fully inside narrow mobile frames.
+            const edgeGap = W < 500 ? 10 : 20;
+            const laneOffsetPx = Math.min(
+              Math.max(0, W / 2 - CFG.pillW / 2 - edgeGap),
+              Math.max(W * 0.23, W < 500 ? 95 : 150)
+            );
             const laneX0 = rx - laneOffsetPx;
             const laneX1 = rx;
             const laneX2 = rx + laneOffsetPx;
 
-            // pill positions live just above the bottom edge
-            const pillY = outY + CFG.pillYOffset;
+            // Three premium tier lanes above the hub, three classic lanes below it.
+            const pillY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
+            const topPillY = Math.max(
+              CFG.pillH / 2 + 70,
+              Math.min(ry - cubeHalf - (H < 540 ? 55 : 90), H * 0.18)
+            );
+            sy = Math.min(sy, topPillY - CFG.pillH * 0.5 - 24);
 
             return {
-              sx, sy,
-              rx, ry,
-              outY,
-              pillY,
+              sx, sy, rx, ry, outY, pillY, topPillY,
               lanes: [
-                { laneId: 0, x: laneX0, label: "EARLY" },
-                { laneId: 1, x: laneX1, label: "TREND" },
-                { laneId: 2, x: laneX2, label: "RUNNER" },
+                { laneId: 0, x: laneX0, y: pillY, row:"bottom", label: "EARLY" },
+                { laneId: 1, x: laneX1, y: pillY, row:"bottom", label: "TREND" },
+                { laneId: 2, x: laneX2, y: pillY, row:"bottom", label: "RUNNER" },
+                { laneId: 3, x: laneX0, y: topPillY, row:"top", label: "GENESIS" },
+                { laneId: 4, x: laneX1, y: topPillY, row:"top", label: "STRICT" },
+                { laneId: 5, x: laneX2, y: topPillY, row:"top", label: "RECLAIM" }
               ]
             };
           }
@@ -2387,31 +2399,21 @@
           }
 
           function buildCurves(L, cubeHalf) {
-            // ✅ Smooth "drawn like a cable" lanes (no hooks / no looping into pills)
-            // Goal: start under the cube, sweep outward, arrive cleanly into the pill edge.
-            const p0 = { x: L.rx, y: (L.ry + cubeHalf * 0.98) };
-
-            return L.lanes.map((lane) => {
-              // End *into* the pill top edge so the lane visually CONNECTS (like your sketch).
-              // Pill center is L.pillY, so the top edge is L.pillY - (pillH/2).
-              const p3 = { x: lane.x, y: (L.pillY - (CFG.pillH * 0.5) - 2) };
-
+            return L.lanes.map(lane => {
+              const isTop = lane.row === "top";
+              const p0 = { x:L.rx, y: L.ry + (isTop ? -cubeHalf * 0.98 : cubeHalf * 0.98) };
+              const p3 = { x:lane.x, y:lane.y + (isTop ? CFG.pillH * 0.5 + 2 : -CFG.pillH * 0.5 - 2) };
               const dx = lane.x - L.rx;
               const dy = p3.y - p0.y;
-
-              // Control points stay INSIDE the p0->p3 box to prevent any "loop-back" curves.
-              // This matches the red sketch: wide arc, smooth approach, no bounce.
-              const p1 = { x: L.rx + dx * 0.10, y: p0.y + dy * 0.42 };
-              const p2 = { x: L.rx + dx * 0.90, y: p0.y + dy * 0.92 };
-
-              return { laneId: lane.laneId, p0, p1, p2, p3 };
+              // Preserve the original smooth cubic routing, mirrored for upper exits.
+              const p1 = { x:L.rx + dx * 0.10, y:p0.y + dy * 0.40 };
+              const p2 = { x:L.rx + dx * 0.90, y:p0.y + dy * 0.91 };
+              return {laneId:lane.laneId,p0,p1,p2,p3};
             });
           }
 
           function laneColor(laneId) {
-            if (laneId === 0) return CFG.early;
-            if (laneId === 1) return CFG.trend;
-            return CFG.runner;
+            return [CFG.early,CFG.trend,CFG.runner,CFG.genesis,CFG.strict,CFG.reclaim][laneId] || CFG.inOrb;
           }
 
           const rgb = (arr) => `rgb(${arr[0]},${arr[1]},${arr[2]})`;
@@ -2423,9 +2425,8 @@
 
           const IDLE_ANGLE = -45;
           const LANE_ANGLE = {
-            0: -62, // early (left)
-            1: -45, // trend (center)
-            2: -28  // runner (right)
+            0: -62, 1: -45, 2: -28,
+            3: -118, 4: -90, 5: -72
           };
 
           function setCoreAngleDeg(deg) {
@@ -2457,8 +2458,8 @@
           };
 
           // lane pulse + pill flash times
-          const lanePulseAt = [0, 0, 0];
-          const pillFlashAt = [0, 0, 0];
+          const lanePulseAt = Array(6).fill(0);
+          const pillFlashAt = Array(6).fill(0);
           let splitFlashUntil = 0;
 
           function setSortActive(on) {
@@ -2484,11 +2485,8 @@
           }
 
           function pickLane() {
-            // Weighted randomness: trend most, early some, runner least
-            const r = Math.random();
-            if (r < 0.62) return 1; // TREND
-            if (r < 0.85) return 0; // EARLY
-            return 2; // RUNNER
+            // Illustrative routing only; not a claim of measured lane frequency.
+            return Math.floor(Math.random() * 6);
           }
 
           function startBatch(now) {
@@ -2944,8 +2942,8 @@
             const curves = buildCurves(L, cubeHalf);
 
             // lane pulse
-            const laneBoost = [0, 0, 0];
-            for (let i = 0; i < 3; i++) {
+            const laneBoost = Array(6).fill(0);
+            for (let i = 0; i < 6; i++) {
               const age = now - lanePulseAt[i];
               const t = clamp(1 - age / CFG.lanePulseMs, 0, 1);
               laneBoost[i] = easeOutCubic(t);
@@ -2971,23 +2969,22 @@
 
               // ✅ Natural glow pulse on arrival (circular, not boxy)
               if (flashT > 0.001) {
-                drawArrivalPulse(lane.x, L.pillY, laneColor(lane.laneId), flashT);
+                drawArrivalPulse(lane.x, lane.y, laneColor(lane.laneId), flashT);
               }
 
-              drawPill(lane.x, L.pillY, lane.label, laneColor(lane.laneId), lane.laneId === 1, flashT);
+              drawPill(lane.x, lane.y, lane.label, laneColor(lane.laneId), lane.laneId === 1 || lane.laneId === 4, flashT);
             }
           }
 
           function loop(now) {
-            if (paused) {
-              rafId = 0;
-              return;
-            }
-            try {
-              draw(now);
-            } catch (err) {
-              console.error("stage-3 loop error", err);
-              scheduleResize();
+            if (paused) { rafId = 0; return; }
+            // Frame budget prevents continuous canvas redraw from overwhelming mobile GPUs.
+            if (!loop.lastDraw || now - loop.lastDraw >= (mobileMQ.matches ? 1000/24 : 1000/40)) {
+              loop.lastDraw = now;
+              try { draw(now); } catch(err) {
+                console.error("stage-3 loop error",err);
+                scheduleResize();
+              }
             }
             rafId = requestAnimationFrame(loop);
           }
