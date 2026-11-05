@@ -115,6 +115,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <a className="hover:text-text" href="/contact" data-no-link-style>
                     Contact
                   </a>
+                  <a className="hover:text-text" href="/support" data-no-link-style>
+                    Support
+                  </a>
                 </div>
               </div>
             </Container>
