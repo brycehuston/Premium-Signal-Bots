@@ -235,8 +235,7 @@ export default function PricingPage() {
   const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
   const bundleBullets = [
     ...BUNDLE.bullets,
-    "All 3 channels in one.",
-    "Best value if you want the full pipeline.",
+    "Early is marked Coming Soon; bundled access is not available for purchase.",
   ];
   const bundleTitleNode =
     bundleKeyIndex === -1 ? (
@@ -464,6 +463,7 @@ export default function PricingPage() {
                       : "brightness-100 saturate-100",
                   ].join(" ")}
                   href={isEarlyComingSoon ? undefined : `/pay/${p.slug}?period=${billing}`}
+                  disabled={isEarlyComingSoon}
                   onClick={
                     isEarlyComingSoon
                       ? undefined
@@ -517,7 +517,7 @@ export default function PricingPage() {
                   tone="accent"
                   className="ml-0 best-value-pulse text-[11px] font-semibold uppercase tracking-[0.25em] sm:ml-2"
                 >
-                  Best Value
+                  Bundle on hold
                 </Pill>
               </div>
 
@@ -548,24 +548,43 @@ export default function PricingPage() {
             </div>
 
             <div className="relative md:min-w-[340px]">
-              {bundleConfetti ? <ConfettiBurst seed={bundleConfetti} /> : null}
               <Button
-                variant="primary"
+                variant="outline"
                 size="md"
                 full
-                className={`!h-12 text-[16px] ${tonePrimaryButtonClass("gold")}`}
-                href={`/pay/${BUNDLE.slug}?period=${billing}`}
-                onClick={() => {
-                  triggerBundleConfetti();
-                  track("plan_select", { plan: BUNDLE.slug, period: billing });
-                }}
+                disabled
+                className="!h-12 text-[16px] !text-muted !bg-surface2 !border-stroke !shadow-none"
               >
-                {billing === "annual" ? "Bundle Annual" : "Bundle Monthly"}
+                Bundle currently unavailable
               </Button>
             </div>
           </CardBody>
         </Card>
 
+        <section aria-labelledby="new-lanes-heading" className="md:col-span-2 lg:col-span-3 border-t border-stroke/70 pt-7">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-gold/75">Workflow expansion</p>
+              <h2 id="new-lanes-heading" className="mt-2 font-display text-[23px] font-semibold text-silver">Additional Alpha lanes</h2>
+            </div>
+            <p className="max-w-md text-small text-muted">
+              Shown in the six-lane workflow illustration. Availability, access and prices are not yet verified.
+            </p>
+          </div>
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {[
+              { name: "GENESIS", tone: "text-teal-200", detail: "Early launch context" },
+              { name: "STRICT", tone: "text-violet-200", detail: "Quality-focused filtering" },
+              { name: "RECLAIM", tone: "text-emerald-200", detail: "Renewed market interest" },
+            ].map((lane) => (
+              <div key={lane.name} className="rounded-control border border-stroke/70 bg-surface/70 p-4">
+                <h3 className={`text-[15px] font-semibold tracking-[0.09em] ${lane.tone}`}>ALPHA {lane.name}</h3>
+                <p className="mt-1 text-small text-muted">{lane.detail}</p>
+                <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-muted/70">No paid access offered</p>
+              </div>
+            ))}
+          </div>
+        </section>
         <div className="md:col-span-2 lg:col-span-3">
           <PricingDivider />
         </div>
