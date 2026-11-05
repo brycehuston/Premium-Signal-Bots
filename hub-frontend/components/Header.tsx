@@ -23,6 +23,7 @@ export default function Header({ brand }: HeaderProps) {
           </Link>
 
           <nav className="flex items-center gap-2">
+            <Link href="/apps" data-no-link-style className="rounded-pill px-3 py-1.5 text-small text-gold hover:bg-surface2/60" >Alpha Apps</Link>
             <Link
               className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text"
               href="/pricing"
