@@ -23,6 +23,7 @@ export default function Header({ brand }: HeaderProps) {
           </Link>
 
           <nav className="flex items-center gap-2">
+            <Link href="/apps" data-no-link-style className="hidden md:inline-flex rounded-pill px-3 py-1.5 text-small text-gold hover:bg-surface2/60">Alpha Apps</Link>
             <Link
               className="rounded-pill px-3 py-1.5 text-small text-muted hover:bg-surface2/60 hover:text-text"
               href="/pricing"
@@ -75,6 +76,8 @@ export default function Header({ brand }: HeaderProps) {
       >
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col gap-2">
+            <Link className="rounded-pill px-3 py-2 text-small text-gold hover:bg-surface2/60"
+              href="/apps" data-no-link-style onClick={closeMenu}>Alpha Apps</Link>
             <Link
               className="rounded-pill px-3 py-2 text-small text-muted hover:bg-surface2/60 hover:text-text"
               href="/dashboard"

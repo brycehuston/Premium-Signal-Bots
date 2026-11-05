@@ -1,0 +1,136 @@
+/* Alpha Apps shares the Alpha Alerts site shell, font, rhythm and page width. */
+.page{
+  --app-accent:#e7bc67;
+  --app-border:#2a2c32;
+  --app-muted:#a3a4ac;
+  width:100%;min-width:0;color:#ebebed;
+  font-family:var(--font-sans),ui-sans-serif,system-ui,sans-serif;
+}
+.page *{box-sizing:border-box}
+.page a{text-decoration:none}
+.page a:focus-visible,.page summary:focus-visible{outline:2px solid var(--app-accent);outline-offset:3px}
+.subnav{display:flex;align-items:center;justify-content:space-between;gap:22px;
+  border-bottom:1px solid rgb(var(--stroke) / .68);padding:4px 0 19px}
+.subnavBrand{font-size:10px;font-weight:750;letter-spacing:.18em;color:#e6e6e9!important;white-space:nowrap}
+.subnavBrand span{color:#b89a5f;padding:0 7px}
+.subnavLinks{display:flex;align-items:center;flex-wrap:wrap;gap:24px}
+.subnavLinks a{font-size:12px;color:#a4a5ad!important;transition:color .17s}
+.subnavLinks a:hover,.subnavLinks a[aria-current=page]{color:#e7bc67!important}
+.eyebrow{margin:0;color:#d2ae64;font-size:10px;font-weight:750;letter-spacing:.23em;text-transform:uppercase}
+.eyebrow span{display:inline-block;width:19px;height:1px;background:#b99a58;vertical-align:middle;margin-right:8px}
+.hero{min-width:0;display:grid;grid-template-columns:minmax(0,1.13fr) minmax(0,.87fr);
+  gap:clamp(20px,3vw,46px);align-items:center;min-height:415px;padding:47px 0 32px}
+.heroCopy{min-width:0}
+.heroTitle{font-family:var(--font-display),ui-sans-serif,system-ui,sans-serif;
+  font-size:clamp(34px,4.2vw,54px);line-height:1.15;letter-spacing:-.03em;
+  font-weight:750;color:#f0f0f2;margin:24px 0 16px}
+.heroTitle span{color:#e7bc67}
+.heroDescription{max-width:520px;color:#b2b3bb;font-size:14px;line-height:1.76;margin:0}
+.heroActions{display:flex;align-items:center;flex-wrap:wrap;gap:22px;margin-top:29px}
+.primaryAction{display:inline-flex;align-items:center;justify-content:center;gap:16px;
+  min-height:44px;border:1px solid #e3bd76;border-radius:8px;
+  background:linear-gradient(155deg,#edd094,#d5a850);color:#11100d!important;
+  padding:10px 18px;font-size:12px;font-weight:780;letter-spacing:.02em;
+  transition:background .17s,border-color .17s,transform .17s}
+.primaryAction:hover{background:linear-gradient(155deg,#f5ddab,#e7bc67);transform:translateY(-1px)}
+.heroMeta{display:flex;align-items:center;gap:9px;color:#8c8d96;font-size:9px;font-weight:650;letter-spacing:.12em;white-space:nowrap}
+.heroMeta i{width:3px;height:3px;border-radius:50%;background:#8d7b58}
+.heroVisual{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.stackArt{width:100%;max-width:365px;aspect-ratio:1/1;background-color:transparent;
+  background-image:url("/apps/alpha-stack.webp");background-size:contain;
+  background-position:center;background-repeat:no-repeat;
+  filter:saturate(.80) brightness(.92)}
+.visualCaption{color:#747780;font-size:9px;letter-spacing:.14em;text-align:center}
+.visualCaption span{color:#977941;padding:0 5px}
+.valueRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+  padding:23px 0;border-top:1px solid rgb(var(--stroke)/.67);
+  border-bottom:1px solid rgb(var(--stroke)/.67)}
+.valueRow span{position:relative;display:flex;align-items:center;justify-content:center;gap:11px;
+  font-size:10px;letter-spacing:.13em;font-weight:700;color:#bfc0c5;text-align:center}
+.valueRow span:before{content:"";display:block;flex:none;width:4px;height:4px;
+  border-radius:50%;background:#b59760}
+.catalog{padding:15px 0 15px}
+.catalogIntro{display:flex;align-items:end;justify-content:space-between;gap:30px;
+  padding:18px 0 33px;border-bottom:1px solid rgb(var(--stroke)/.66)}
+.catalogTitle{font-family:var(--font-display),ui-sans-serif,system-ui,sans-serif;
+  font-weight:740;font-size:clamp(33px,3.4vw,46px);letter-spacing:-.035em;
+  color:#f0f0f2;line-height:1.16;margin:16px 0 12px}
+.catalogTitle span{color:#d6b36b}
+.catalogDescription{margin:0;max-width:570px;color:#aaaab3;font-size:14px;line-height:1.7}
+.catalogMeta{font-size:10px;letter-spacing:.16em;white-space:nowrap;color:#777981;margin-bottom:8px}
+.catalogMeta span{color:#c4a66b;padding:0 7px}
+.collection{margin-top:36px}
+.collectionHead{display:flex;justify-content:space-between;align-items:center;gap:22px;margin-bottom:18px}
+.collectionHead h2{margin:0;color:#e5e5e9;font-size:18px;font-weight:700;letter-spacing:-.01em}
+.collectionHead>span{color:#8a8c93;font-size:9px;letter-spacing:.17em;font-weight:650}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{min-width:0;border:1px solid var(--app-border);border-radius:12px;
+  overflow:hidden;background:linear-gradient(145deg,#141519,#101115);
+  box-shadow:inset 0 1px 0 #ffffff07;transition:border-color .17s}
+.card:hover{border-color:#6e6248}
+.appPreview{height:auto;aspect-ratio:10/7;background-image:url("/apps/alpha-grid.webp");background-size:200% 200%;
+  background-color:#08090b;background-repeat:no-repeat;border-bottom:1px solid #27282f}
+.focusPreview{background-position:100% 0%}
+.vibePreview{background-position:0% 100%}
+.notesPreview{background-position:100% 100%}
+.cardInfo{padding:18px 18px 17px}
+.cardHeading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cardHeading h3{font-size:19px;line-height:1.2;font-weight:730;margin:0;color:#ededf0}
+.tag{border:1px solid #3d3e43;border-radius:5px;padding:5px 7px;
+  color:#aba9ac;font-size:9px;letter-spacing:.09em}
+.cardInfo p{min-height:66px;font-size:12px;line-height:1.7;margin:12px 0 17px;color:#a4a5ae}
+.cardBottom{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  border-top:1px solid #292a30;padding-top:14px;color:#888990;
+  font-size:9px;font-weight:650;letter-spacing:.06em}
+.releaseNote{font-size:11px;line-height:1.75;color:#858790;
+  padding:15px 0 0;margin:18px 0 0;border-top:1px solid #272a2e}
+.releaseNote strong{color:#c3ae85;font-weight:700}
+.upcoming{margin:65px 0 0;border-top:1px solid rgb(var(--stroke)/.7);padding-top:35px}
+.sectionTop{display:flex;align-items:end;justify-content:space-between;gap:25px}
+.sectionTop h2{font-size:27px;font-weight:730;letter-spacing:-.024em;line-height:1.2;margin:11px 0 0}
+.sectionTop>p{font-size:12px;line-height:1.6;color:#a5a5ae;margin:0;max-width:290px}
+.upcomingList{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:25px}
+.upcomingList div{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  border-top:1px solid #3a3b41;padding:15px 0}
+.upcomingList span{font-size:13px;font-weight:700;color:#d9d9df}
+.upcomingList small{font-size:9px;letter-spacing:.07em;color:#8e909a}
+.closing{margin:40px 0 0;padding:20px 0;border-top:1px solid #2a2b30;
+  display:flex;align-items:center;justify-content:space-between;gap:15px}
+.closing>span{font-size:10px;color:#a2a2aa;font-weight:670;letter-spacing:.12em}
+.closing a{color:#d8b56e!important;font-size:12px;font-weight:680}
+.closing a:hover{color:#f2d28e!important}
+@media (max-width:880px){
+  .hero{min-height:0;padding:44px 0 36px;gap:18px}
+  .heroTitle{font-size:clamp(33px,5.4vw,46px)}
+  .heroDescription{font-size:13px}
+  .stackArt{max-width:340px}
+  .cards{gap:11px}
+  .cardInfo{padding:15px}
+  .cardHeading h3{font-size:17px}
+  .cardBottom{font-size:8px}
+}
+@media (max-width:650px){
+  .subnav{align-items:start;gap:12px;flex-wrap:wrap}
+  .subnavLinks{width:100%;gap:20px}
+  .hero{grid-template-columns:1fr;padding:35px 0 27px;gap:10px}
+  .heroTitle{font-size:clamp(31px,8.5vw,46px);margin:19px 0 13px}
+  .heroVisual{margin:0 auto;width:min(100%,340px)}
+  .visualCaption{margin-top:-7px}
+  .heroActions{margin-top:24px}
+  .valueRow{grid-template-columns:1fr;gap:13px;padding:19px 0}
+  .valueRow span{justify-content:start}
+  .catalogIntro{align-items:start;flex-direction:column;gap:14px;padding:9px 0 25px}
+  .catalogTitle{font-size:36px}
+  .catalogMeta{margin:0}
+  .collection{margin-top:28px}
+  .collectionHead{align-items:start;flex-direction:column;gap:6px}
+  .cards{grid-template-columns:1fr;gap:15px}
+  .cardInfo p{min-height:0}
+  .sectionTop{align-items:start;flex-direction:column;gap:13px}
+  .upcomingList{grid-template-columns:1fr;gap:4px}
+  .upcomingList div{padding:13px 0}
+  .closing{align-items:start;flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+  .page *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}

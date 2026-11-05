@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
 import Header from "@/components/Header";
+import HideOnApps from "@/components/HideOnApps";
 import StructuredData from "@/components/StructuredData";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import SupabaseProvider from "@/components/SupabaseProvider";
@@ -122,11 +123,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Bottom live ticker bar (BTC / ETH / SOL + social links) */}
+        <HideOnApps>
         <BottomTickerBar
           telegramUrl={process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/alphaalerts"}
           xUrl={process.env.NEXT_PUBLIC_X_URL || "https://x.com/alphaalerts"}
           refreshMs={8000}
         />
+        </HideOnApps>
 
         <Analytics />
 
