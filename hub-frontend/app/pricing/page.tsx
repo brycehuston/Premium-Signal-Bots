@@ -98,56 +98,6 @@ function auraClass(tone: PlanTone) {
   return "plan-aura plan-aura-gold";
 }
 
-function mulberry32(seed: number) {
-  let t = seed;
-  return () => {
-    t += 0x6d2b79f5;
-    let r = Math.imul(t ^ (t >>> 15), t | 1);
-    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function ConfettiBurst({ seed }: { seed: number }) {
-  const pieces = useMemo(() => {
-    const rand = mulberry32(seed);
-    return Array.from({ length: 18 }, () => {
-      const angle = rand() * Math.PI * 2;
-      const distance = 36 + rand() * 38;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance - 12;
-      const rot = Math.round(rand() * 180 - 90);
-      const delay = Math.round(rand() * 140);
-      const hue = Math.round(40 + rand() * 20);
-      const width = Math.round(4 + rand() * 3);
-      const height = Math.round(6 + rand() * 4);
-      return { x, y, rot, delay, hue, width, height };
-    });
-  }, [seed]);
-
-  return (
-    <div className="confetti-burst" aria-hidden>
-      {pieces.map((piece, index) => (
-        <span
-          key={`${seed}-${index}`}
-          className="confetti-piece"
-          style={
-            {
-              ["--x" as any]: `${piece.x}px`,
-              ["--y" as any]: `${piece.y}px`,
-              ["--rot" as any]: `${piece.rot}deg`,
-              ["--delay" as any]: `${piece.delay}ms`,
-              ["--hue" as any]: piece.hue,
-              width: `${piece.width}px`,
-              height: `${piece.height}px`,
-            } as React.CSSProperties
-          }
-        />
-      ))}
-    </div>
-  );
-}
-
 function PlanTitle({
   left,
   emphasis,
@@ -228,8 +178,6 @@ function PricingDivider() {
 
 export default function PricingPage() {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
-  const [bundleConfetti, setBundleConfetti] = useState(0);
-  const confettiTimerRef = useRef<number | null>(null);
   const bundleTitle = BUNDLE.title;
   const bundleKey = "ALERTS";
   const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
@@ -269,20 +217,7 @@ export default function PricingPage() {
 
   useEffect(() => {
     track("pricing_view");
-    return () => {
-      if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
-    };
   }, []);
-
-  const triggerBundleConfetti = () => {
-    if (billing !== "annual") return;
-    const now = Date.now();
-    setBundleConfetti(now);
-    if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
-    confettiTimerRef.current = window.setTimeout(() => {
-      setBundleConfetti((current) => (current === now ? 0 : current));
-    }, 1200);
-  };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-5 sm:py-12">
