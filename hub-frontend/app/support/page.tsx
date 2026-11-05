@@ -32,7 +32,7 @@ function validStripeLink(raw: string): string | null {
 }
 
 function validSolanaAddress(raw: string): boolean {
-  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(raw)) return false;
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(raw) || /^1+$/.test(raw)) return false;
   const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
   let number = BigInt(0);
   for (const letter of raw) {
