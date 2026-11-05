@@ -98,56 +98,6 @@ function auraClass(tone: PlanTone) {
   return "plan-aura plan-aura-gold";
 }
 
-function mulberry32(seed: number) {
-  let t = seed;
-  return () => {
-    t += 0x6d2b79f5;
-    let r = Math.imul(t ^ (t >>> 15), t | 1);
-    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function ConfettiBurst({ seed }: { seed: number }) {
-  const pieces = useMemo(() => {
-    const rand = mulberry32(seed);
-    return Array.from({ length: 18 }, () => {
-      const angle = rand() * Math.PI * 2;
-      const distance = 36 + rand() * 38;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance - 12;
-      const rot = Math.round(rand() * 180 - 90);
-      const delay = Math.round(rand() * 140);
-      const hue = Math.round(40 + rand() * 20);
-      const width = Math.round(4 + rand() * 3);
-      const height = Math.round(6 + rand() * 4);
-      return { x, y, rot, delay, hue, width, height };
-    });
-  }, [seed]);
-
-  return (
-    <div className="confetti-burst" aria-hidden>
-      {pieces.map((piece, index) => (
-        <span
-          key={`${seed}-${index}`}
-          className="confetti-piece"
-          style={
-            {
-              ["--x" as any]: `${piece.x}px`,
-              ["--y" as any]: `${piece.y}px`,
-              ["--rot" as any]: `${piece.rot}deg`,
-              ["--delay" as any]: `${piece.delay}ms`,
-              ["--hue" as any]: piece.hue,
-              width: `${piece.width}px`,
-              height: `${piece.height}px`,
-            } as React.CSSProperties
-          }
-        />
-      ))}
-    </div>
-  );
-}
-
 function PlanTitle({
   left,
   emphasis,
@@ -228,15 +178,12 @@ function PricingDivider() {
 
 export default function PricingPage() {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
-  const [bundleConfetti, setBundleConfetti] = useState(0);
-  const confettiTimerRef = useRef<number | null>(null);
   const bundleTitle = BUNDLE.title;
   const bundleKey = "ALERTS";
   const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
   const bundleBullets = [
     ...BUNDLE.bullets,
-    "All 3 channels in one.",
-    "Best value if you want the full pipeline.",
+    "Early is marked Coming Soon; bundled access is not available for purchase.",
   ];
   const bundleTitleNode =
     bundleKeyIndex === -1 ? (
@@ -270,20 +217,7 @@ export default function PricingPage() {
 
   useEffect(() => {
     track("pricing_view");
-    return () => {
-      if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
-    };
   }, []);
-
-  const triggerBundleConfetti = () => {
-    if (billing !== "annual") return;
-    const now = Date.now();
-    setBundleConfetti(now);
-    if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
-    confettiTimerRef.current = window.setTimeout(() => {
-      setBundleConfetti((current) => (current === now ? 0 : current));
-    }, 1200);
-  };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-5 sm:py-12">
@@ -292,10 +226,10 @@ export default function PricingPage() {
           PRICING
         </h1>
         <p className="mx-auto mt-3 text-[11px] text-muted sm:text-[12px] md:text-[13px]">
-          Pick your lane: Early = new tokens. Trend = momentum. Runner = continuation. Bundle = everything.
+          Pick your lane: Trend for momentum, Runner for continuation. Early and the original Bundle are pending availability.
         </p>
         <p className="mx-auto mt-3 text-[10px] text-muted sm:text-[11px] md:text-[12px]">
-          Choose the alerts you want. Payments are manual for now via USDC on Solana.
+          Pricing is shown for reference. Only use manual USDC checkout after confirming the offered channel and receiving address.
         </p>
       </div>
 
@@ -464,13 +398,14 @@ export default function PricingPage() {
                       : "brightness-100 saturate-100",
                   ].join(" ")}
                   href={isEarlyComingSoon ? undefined : `/pay/${p.slug}?period=${billing}`}
+                  disabled={isEarlyComingSoon}
                   onClick={
                     isEarlyComingSoon
                       ? undefined
                       : () => track("plan_select", { plan: p.slug, period: billing })
                   }
                 >
-                  {billing === "annual" ? "Choose Annual" : "Choose Monthly"}
+                  {isEarlyComingSoon ? "Coming Soon" : billing === "annual" ? "Choose Annual" : "Choose Monthly"}
                 </Button>
               </div>
             </CardBody>
@@ -515,9 +450,9 @@ export default function PricingPage() {
                 </h3>
                 <Pill
                   tone="accent"
-                  className="ml-0 best-value-pulse text-[11px] font-semibold uppercase tracking-[0.25em] sm:ml-2"
+                  className="ml-0 text-[11px] font-semibold uppercase tracking-[0.16em] sm:ml-2"
                 >
-                  Best Value
+                  Bundle on hold
                 </Pill>
               </div>
 
@@ -548,24 +483,43 @@ export default function PricingPage() {
             </div>
 
             <div className="relative md:min-w-[340px]">
-              {bundleConfetti ? <ConfettiBurst seed={bundleConfetti} /> : null}
               <Button
-                variant="primary"
+                variant="outline"
                 size="md"
                 full
-                className={`!h-12 text-[16px] ${tonePrimaryButtonClass("gold")}`}
-                href={`/pay/${BUNDLE.slug}?period=${billing}`}
-                onClick={() => {
-                  triggerBundleConfetti();
-                  track("plan_select", { plan: BUNDLE.slug, period: billing });
-                }}
+                disabled
+                className="!h-12 text-[16px] !text-muted !bg-surface2 !border-stroke !shadow-none"
               >
-                {billing === "annual" ? "Bundle Annual" : "Bundle Monthly"}
+                Bundle currently unavailable
               </Button>
             </div>
           </CardBody>
         </Card>
 
+        <section aria-labelledby="new-lanes-heading" className="md:col-span-2 lg:col-span-3 border-t border-stroke/70 pt-7">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-gold/75">Workflow expansion</p>
+              <h2 id="new-lanes-heading" className="mt-2 font-display text-[23px] font-semibold text-silver">Additional Alpha lanes</h2>
+            </div>
+            <p className="max-w-md text-small text-muted">
+              Shown in the six-lane workflow illustration. Availability, access and prices are not yet verified.
+            </p>
+          </div>
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {[
+              { name: "GENESIS", tone: "text-teal-200", detail: "Early launch context" },
+              { name: "STRICT", tone: "text-violet-200", detail: "Quality-focused filtering" },
+              { name: "RECLAIM", tone: "text-emerald-200", detail: "Renewed market interest" },
+            ].map((lane) => (
+              <div key={lane.name} className="rounded-control border border-stroke/70 bg-surface/70 p-4">
+                <h3 className={`text-[15px] font-semibold tracking-[0.09em] ${lane.tone}`}>ALPHA {lane.name}</h3>
+                <p className="mt-1 text-small text-muted">{lane.detail}</p>
+                <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-muted/70">No paid access offered</p>
+              </div>
+            ))}
+          </div>
+        </section>
         <div className="md:col-span-2 lg:col-span-3">
           <PricingDivider />
         </div>
