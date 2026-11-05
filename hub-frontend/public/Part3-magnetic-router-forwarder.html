@@ -2286,12 +2286,13 @@
           }
 
           function resize() {
+            const prevDpr = DPR;
             DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
             const rect = frame.getBoundingClientRect();
             const nextW = Math.max(1, Math.floor(rect.width));
             const nextH = Math.max(1, Math.floor(rect.height));
             if (nextW < 50 || nextH < 50) return;
-            if (Math.abs(nextW-W) < 2 && Math.abs(nextH-H) < 2 && DPR === Math.max(1,Math.min(CFG.dprMax,window.devicePixelRatio||1))) return;
+            if (Math.abs(nextW-W) < 2 && Math.abs(nextH-H) < 2 && DPR === prevDpr) return;
             const previousW = W, previousH = H;
             W = nextW; H = nextH;
 
