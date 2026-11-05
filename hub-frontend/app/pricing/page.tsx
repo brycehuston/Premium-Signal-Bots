@@ -405,7 +405,7 @@ export default function PricingPage() {
                       : () => track("plan_select", { plan: p.slug, period: billing })
                   }
                 >
-                  {billing === "annual" ? "Choose Annual" : "Choose Monthly"}
+                  {isEarlyComingSoon ? "Coming Soon" : billing === "annual" ? "Choose Annual" : "Choose Monthly"}
                 </Button>
               </div>
             </CardBody>
