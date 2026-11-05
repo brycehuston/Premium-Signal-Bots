@@ -2290,11 +2290,10 @@
             const rect = frame.getBoundingClientRect();
             const nextW = Math.max(1, Math.floor(rect.width));
             const nextH = Math.max(1, Math.floor(rect.height));
-
             if (nextW < 50 || nextH < 50) return;
-
-            W = nextW;
-            H = nextH;
+            if (Math.abs(nextW-W) < 2 && Math.abs(nextH-H) < 2 && DPR === Math.max(1,Math.min(CFG.dprMax,window.devicePixelRatio||1))) return;
+            const previousW = W, previousH = H;
+            W = nextW; H = nextH;
 
             canvas.width = Math.floor(W * DPR);
             canvas.height = Math.floor(H * DPR);
@@ -2302,11 +2301,19 @@
             canvas.style.height = H + "px";
             ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-            initStars();
+            if (stars.length && previousW > 1 && previousH > 1) {
+              // Prevent random background resets when mobile browser chrome resizes.
+              for (const star of stars) { star.x *= W/previousW; star.y *= H/previousH; }
+            } else initStars();
             updateForwarderSize();
           }
 
-          const scheduleResize = () => requestAnimationFrame(resize);
+          let resizePending = false;
+          const scheduleResize = () => {
+            if (resizePending) return;
+            resizePending = true;
+            requestAnimationFrame(() => { resizePending = false; resize(); });
+          };
           window.addEventListener("resize", scheduleResize);
           window.addEventListener("orientationchange", scheduleResize);
           window.addEventListener("pageshow", scheduleResize, { passive: true });
