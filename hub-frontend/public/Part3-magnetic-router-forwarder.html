@@ -2382,12 +2382,13 @@
             return {
               sx, sy, rx, ry, outY, pillY, topPillY,
               lanes: [
+                // Keep laneId === array index: packet routing indexes curves[op.laneId].
                 { laneId: 0, x: laneX0, y: topPillY, row:"top", label: "EARLY" },
-                { laneId: 3, x: laneX1, y: topPillY, row:"top", label: "GENESIS" },
                 { laneId: 1, x: laneX2, y: topPillY, row:"top", label: "TREND" },
+                { laneId: 2, x: laneX2, y: pillY, row:"bottom", label: "RUNNER" },
+                { laneId: 3, x: laneX1, y: topPillY, row:"top", label: "GENESIS" },
                 { laneId: 4, x: laneX0, y: pillY, row:"bottom", label: "STRICT" },
-                { laneId: 5, x: laneX1, y: pillY, row:"bottom", label: "RECLAIM" },
-                { laneId: 2, x: laneX2, y: pillY, row:"bottom", label: "RUNNER" }
+                { laneId: 5, x: laneX1, y: pillY, row:"bottom", label: "RECLAIM" }
               ]
             };
           }
