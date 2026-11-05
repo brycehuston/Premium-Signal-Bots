@@ -158,13 +158,17 @@ export async function generateMetadata({
   const plan = allPlans.find((pl) => pl.slug === slug);
   const planTitle = getPlanTitle(plan ?? { title: slug });
 
-  const title = `Subscribe - ${planTitle} (${period}) | ${BRAND}`;
-  const description = `Complete your ${planTitle} subscription with ${period} billing on ${BRAND}.`;
+  const checkoutAvailable = getManualCheckoutGate(slug).enabled;
+  const title = checkoutAvailable ? `Subscribe - ${planTitle} (${period}) | ${BRAND}` : `Checkout unavailable | ${BRAND}`;
+  const description = checkoutAvailable
+    ? `Complete your ${planTitle} subscription with ${period} billing on ${BRAND}.`
+    : "This subscription is not currently available for payment.";
   const canonical = `${SITE_URL}/pay/${slug}?period=${period}`;
 
   return {
     title,
     description,
+    robots: { index: false, follow: false },
     alternates: {
       canonical,
     },
