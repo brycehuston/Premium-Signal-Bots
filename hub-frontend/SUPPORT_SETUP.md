@@ -14,6 +14,11 @@ This review branch adds `hub-frontend/app/support` and a footer link to `/suppor
 - `NEXT_PUBLIC_SUPPORT_STRIPE_5_URL` — verified one-time USD $5 Stripe Payment Link
 - `NEXT_PUBLIC_SUPPORT_STRIPE_10_URL` — verified one-time USD $10 Stripe Payment Link
 - `NEXT_PUBLIC_SUPPORT_STRIPE_CUSTOM_URL` — optional "customer chooses amount" Stripe Payment Link
+
+### Set up larger custom tips
+
+In your own Stripe Dashboard, create a **Payment Link** with **Customers choose what to pay** (one-time, USD). Stripe, not our website, shows the field where the supporter types the amount. Set a sensible minimum (e.g. USD 1) and optional maximum; keep subscription/recurring billing disabled. Name it a voluntary **FruxLabs software tip** rather than a charitable contribution. Verify merchant identity, destination account, and Stripe compliance before copying the link to `NEXT_PUBLIC_SUPPORT_STRIPE_CUSTOM_URL`. Once configured, the fourth **ANY / CUSTOM** tile opens this Stripe-hosted amount-entry checkout. Without it, the custom tile remains safely unavailable.
+
 - `NEXT_PUBLIC_SUPPORT_SOLANA_ADDRESS` — verified, dedicated, self-custodied SOL/USDC receiving wallet on Solana
 
 Use HTTPS links on `buy.stripe.com`. Wrong or missing links are not clickable. Address validation checks Base58 syntax and 32 decoded bytes, but **cannot verify wallet ownership**. Never paste private keys, secrets, or seed phrases into any environment variable. Never reuse the paid-alert checkout address without checking ownership and separation first.
