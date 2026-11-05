@@ -77,7 +77,7 @@ function AppWindow({ kind, name }: { kind: "focus" | "vibe" | "notes"; name: str
 export default function SoftwareCatalog() {
   return (
     <AppsShell active="software">
-      <main className={styles.catalog}>
+      <div className={styles.catalog}>
         <header className={styles.catalogIntro}>
           <div>
             <p className={styles.kicker}>ALPHA SOFTWARE</p>
@@ -144,7 +144,7 @@ export default function SoftwareCatalog() {
           </div>
           <Link className={styles.goldButton} href="/apps">Back to Alpha Apps <span aria-hidden="true">→</span></Link>
         </aside>
-      </main>
+      </div>
     </AppsShell>
   );
 }
