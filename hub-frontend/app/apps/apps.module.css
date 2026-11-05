@@ -38,7 +38,7 @@
 .goldButton:hover{filter:brightness(1.07);transform:translateY(-1px)}
 .benefits .goldButton{margin-top:18px;white-space:nowrap}
 .waves{position:absolute;z-index:0;bottom:30px;left:-5vw;width:110vw;height:200px;pointer-events:none;opacity:.88}
-.heroSub{width:min(1200px,calc(100% - 64px));margin:-105px auto 88px;text-align:center;position:relative;z-index:1}
+.heroSub{width:min(1200px,calc(100% - 64px));margin:0 auto 75px;text-align:center;position:relative;z-index:1}
 .heroSub p{color:#a6a7ac;font-size:12px;letter-spacing:.20em;text-transform:uppercase}
 .heroSub strong{color:#e8bd62}
 .footer{min-height:96px;max-width:1340px;margin:45px auto 0;padding:25px 34px;
@@ -117,7 +117,7 @@
   .benefit{font-size:13px}.check{width:27px;height:27px;font-size:17px}
   .benefits .goldButton{margin-top:0}.stackArt{max-width:430px;min-width:0}
   .heroText{padding-left:30px}.headline{font-size:clamp(43px,5.8vw,66px)}
-  .heroSub{margin-top:-90px}
+  .heroSub{margin-top:0}
 }
 @media(max-width:750px){
   .topbar{height:auto;min-height:75px;flex-wrap:wrap;padding:13px;justify-content:space-between;margin-top:12px;border-radius:15px}
@@ -132,7 +132,7 @@
   .benefits{padding:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .benefit{font-size:11px;gap:9px;white-space:normal}.check{width:24px;height:24px;font-size:14px}
   .benefits .goldButton{grid-column:1/-1;margin-top:9px;font-size:14px}
-  .waves{height:140px;bottom:12px}.heroSub{margin:-75px auto 65px}
+  .waves{height:140px;bottom:12px}.heroSub{margin:0 auto 65px}
   .catalog{width:calc(100% - 32px);padding-top:55px}
   .catalogIntro{grid-template-columns:1fr;gap:19px;padding-bottom:25px}
   .catalogTitle{font-size:clamp(37px,8vw,55px)}
