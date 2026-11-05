@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privacy",
     "/terms",
     "/contact",
+    "/support",
   ];
   const payRoutes = [...PLANS, BUNDLE].map((plan) => `/pay/${plan.slug}`);
 
