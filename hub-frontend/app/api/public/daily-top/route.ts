@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,7 +31,6 @@ function validRow(value: unknown, now: Date): PublicRow | null {
   const row = value as Record<string, unknown>;
   // A public record must be explicitly approved AND tied to a successful Telegram send.
   if (row.approved_for_public !== true || row.delivery_status !== "DELIVERED") return null;
-  if (typeof row.telegram_message_id !== "number" || !Number.isSafeInteger(row.telegram_message_id) || row.telegram_message_id <= 0) return null;
   const sourceLane = String(row.lane ?? "").toUpperCase();
   const lane = ALIASES[sourceLane] || sourceLane;
   const id = String(row.event_id ?? "").slice(0, 96);
@@ -79,7 +79,8 @@ export async function GET() {
     {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}}
   );
   const upstream = process.env.ALPHA_PUBLIC_DAILY_FEED_URL;
-  if (!upstream) return unavailable("unavailable");
+  const secret = process.env.ALPHA_PUBLIC_DAILY_FEED_SECRET ?? "";
+  if (!upstream || secret.length < 32) return unavailable("unavailable");
   try {
     const url = new URL(upstream);
     // Server-only, operator configured and HTTPS. Never accept a user-supplied URL.
@@ -88,7 +89,14 @@ export async function GET() {
         url.hostname.endsWith(".local") || url.hostname.endsWith(".internal")) return unavailable("unavailable");
     const response = await fetch(url, {signal:AbortSignal.timeout(3500),next:{revalidate:60},redirect:"error"});
     if (!response.ok) return unavailable("unavailable");
-    const input = JSON.parse(await limitedBody(response)) as Record<string,unknown>;
+    const envelope = JSON.parse(await limitedBody(response)) as Record<string,unknown>;
+    const signedBody = envelope.signed_body;
+    const signature = envelope.signature;
+    if (typeof signedBody !== "string" || signedBody.length > MAX_FEED_BYTES ||
+        typeof signature !== "string" || !/^[a-f0-9]{64}$/.test(signature)) return unavailable("unavailable");
+    const expected = createHmac("sha256",secret).update(signedBody,"utf8").digest("hex");
+    if (!timingSafeEqual(Buffer.from(signature,"hex"),Buffer.from(expected,"hex"))) return unavailable("unavailable");
+    const input = JSON.parse(signedBody) as Record<string,unknown>;
     const updatedAt = new Date(String(input.updated_at_utc ?? ""));
     if (input.version !== 1 || input.source !== "confirmed-telegram-delivery" ||
         !Number.isFinite(updatedAt.getTime()) ||
