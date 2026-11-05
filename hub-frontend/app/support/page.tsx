@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { Beer, Check, Copy, CreditCard, ExternalLink, Heart, LockKeyhole, Wallet } from "lucide-react";
 import styles from "./support.module.css";
@@ -48,8 +49,10 @@ function validSolanaAddress(raw: string): boolean {
   return count + (raw.match(/^1*/)?.[0]?.length ?? 0) === 32;
 }
 
+const DEFAULT_AMOUNT: Amount = validStripeLink(STRIPE_URLS[5]) ? 5 : validStripeLink(STRIPE_URLS[3]) ? 3 : validStripeLink(STRIPE_URLS[10]) ? 10 : 5;
+
 export default function FruxLabsSupportPage() {
-  const [amount, setAmount] = useState<Amount>(5);
+  const [amount, setAmount] = useState<Amount>(DEFAULT_AMOUNT);
   const [currency, setCurrency] = useState<Currency>("USDC");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [cryptoOpen, setCryptoOpen] = useState(false);
@@ -70,6 +73,10 @@ export default function FruxLabsSupportPage() {
 
   return (
     <div className={styles.page}>
+      <nav className={styles.supportNav} aria-label="Support page navigation">
+        <span className={styles.siteLabel}>FRUXLABS <span>/ SUPPORT</span></span>
+        <Link href="/" className={styles.backLink}>BACK TO ALPHA ALERTS <span aria-hidden="true">↗</span></Link>
+      </nav>
       <section className={styles.panel} aria-labelledby="support-title">
         <div className={styles.brand}>
           <svg className={styles.mark} viewBox="0 0 70 64" aria-hidden="true">
@@ -93,7 +100,7 @@ export default function FruxLabsSupportPage() {
           <span className={styles.sectionLabel}>ONE-TIME SUPPORT</span>
           <span className={styles.sectionHint}>USD · No subscription</span>
         </div>
-        <div className={styles.amounts} aria-label="Choose a suggested support amount">
+        <div className={styles.amounts} role="group" aria-label="Choose a suggested support amount">
           {AMOUNTS.map((option) => (
             <button key={option.value} type="button"
               className={[styles.amount, amount === option.value ? styles.amountActive : ""].join(" ")}
@@ -108,13 +115,17 @@ export default function FruxLabsSupportPage() {
           <a className={styles.primary} href={paymentLink} target="_blank" rel="noopener noreferrer">
             <CreditCard size={17} aria-hidden="true" /> SUPPORT ${amount} BY CARD <ExternalLink size={14} aria-hidden="true" />
           </a>
+        ) : customLink ? (
+          <a className={styles.primary} href={customLink} target="_blank" rel="noopener noreferrer">
+            <CreditCard size={17} aria-hidden="true" /> CHOOSE YOUR AMOUNT <ExternalLink size={14} aria-hidden="true" />
+          </a>
         ) : (
           <div className={styles.unavailable} role="status">
             <LockKeyhole size={16} aria-hidden="true" />
             {hasAnyCardLink ? "This amount isn't available for card support yet." : "Card support is being set up. No payments are being collected here yet."}
           </div>
         )}
-        {customLink && (
+        {customLink && paymentLink && (
           <a className={styles.secondaryLink} href={customLink} target="_blank" rel="noopener noreferrer">
             Choose your own amount <ExternalLink size={13} aria-hidden="true" />
           </a>
@@ -149,7 +160,7 @@ export default function FruxLabsSupportPage() {
                   {copyStatus === "copied" ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
                   {copyStatus === "copied" ? "ADDRESS COPIED" : "COPY WALLET ADDRESS"}
                 </button>
-                <p className={styles.copyFeedback} role="status">{copyStatus === "failed" ? "Automatic copy failed. Select and copy the address above." : ""}</p>
+                <p className={styles.copyFeedback} role="status" aria-live="polite">{copyStatus === "copied" ? "Address copied. Confirm the network and recipient before sending." : copyStatus === "failed" ? "Automatic copy failed. Select and copy the address above." : ""}</p>
                 <p className={styles.warning}>QR contains the receiving address only; it does not choose the asset or amount for you. Verify the address and network in your wallet. Crypto transfers are irreversible.</p>
               </>
             ) : (
