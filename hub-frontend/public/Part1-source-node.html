@@ -953,9 +953,13 @@
 
       function resize() {
         updateFrameRect();
-        DPR = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
-        W = Math.max(1, Math.floor(frameRect.width));
-        H = Math.max(1, Math.floor(frameRect.height));
+        const nextDpr = Math.max(1, Math.min(CFG.dprMax, window.devicePixelRatio || 1));
+        const nextW = Math.max(1, Math.floor(frameRect.width));
+        const nextH = Math.max(1, Math.floor(frameRect.height));
+        // Browser chrome/visualViewport can spam resize events with unchanged dimensions.
+        if (Math.abs(nextW - W) < 2 && Math.abs(nextH - H) < 2 && nextDpr === DPR) return;
+        const previousCoreRadius = Math.min(W, H) * CFG.coreRadiusMul;
+        DPR = nextDpr; W = nextW; H = nextH;
 
         const isNarrow = W < 520;
         const isTiny = W < 380;
@@ -983,10 +987,24 @@
         buildStarsLayer();
         buildVignetteLayer();
         buildSprites();
-        buildCoreParticles();
+        // Preserve each particle direction and seed during orientation/viewport resizes.
+        // Recreating random particles caused the apparent core snap/glitch.
+        if (!N || !bx || previousCoreRadius <= 0) {
+          buildCoreParticles();
+        } else {
+          const scale = (Math.min(W,H) * CFG.coreRadiusMul) / previousCoreRadius;
+          for (let i = 0; i < N; i++) {
+            bx[i] *= scale; by[i] *= scale; bz[i] *= scale;
+          }
+        }
         buildGrainLayer();
       }
-      const scheduleResize = () => requestAnimationFrame(resize);
+      let resizePending = false;
+      const scheduleResize = () => {
+        if (resizePending) return;
+        resizePending = true;
+        requestAnimationFrame(() => { resizePending = false; resize(); });
+      };
       window.addEventListener("resize", scheduleResize, { passive: true });
       window.addEventListener("orientationchange", scheduleResize, { passive: true });
       if (window.visualViewport) {
@@ -1041,11 +1059,13 @@
       }
 
       function buildGrainLayer() {
-        grainLayer.width = Math.floor(W * DPR);
-        grainLayer.height = Math.floor(H * DPR);
-        grainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        // Tiny fixed noise tile instead of a full-screen per-pixel random allocation.
+        const grainSide = 192;
+        grainLayer.width = grainSide;
+        grainLayer.height = grainSide;
+        grainCtx.setTransform(1, 0, 0, 1, 0, 0);
 
-        const img = grainCtx.createImageData(W, H);
+        const img = grainCtx.createImageData(grainSide, grainSide);
         const data = img.data;
 
         for (let i = 0; i < data.length; i += 4) {
@@ -1855,11 +1875,14 @@
       window.addEventListener("focus", () => setPaused(false), { passive: true });
 
       function loop(now) {
-        if (paused) {
-          rafId = 0;
+        if (paused) { rafId = 0; return; }
+        // 30 fps on touch/mobile: preserves visual motion while cutting canvas work.
+        if (MOBILE_DIVE && !DIVE.active && loop.lastDraw && now - loop.lastDraw < 1000/30) {
+          rafId = requestAnimationFrame(loop);
           return;
         }
-        const dt = Math.min(0.033, (now - last) / 1000);
+        loop.lastDraw = now;
+        const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
         last = now;
         tSec += dt;
         const nowMs = tSec * 1000;
