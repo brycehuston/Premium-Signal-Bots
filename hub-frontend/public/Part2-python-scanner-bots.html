@@ -3200,9 +3200,6 @@
       }
     }
 
-    const overlayCanvas = document.getElementById("overlay");
-    const overlay = new PacketOverlay(overlayCanvas, frameEl, routerBtn);
-
     const LANES = [
       {id:"EARLY",coreId:"coreEarly",color:[208,146,76],highlight:[255,225,177]},
       {id:"GENESIS",coreId:"coreGenesis",color:[109,203,201],highlight:[198,245,239]},
@@ -3211,6 +3208,10 @@
       {id:"RECLAIM",coreId:"coreReclaim",color:[107,205,150],highlight:[211,252,226]},
       {id:"RUNNER",coreId:"coreRunner",color:[242,201,102],highlight:[255,241,196]}
     ];
+
+    const overlayCanvas = document.getElementById("overlay");
+    const overlay = new PacketOverlay(overlayCanvas, frameEl, routerBtn);
+
     const cores = LANES.map(lane => new ReactorCore(
       document.getElementById(lane.coreId), lane.id, lane.color, lane.highlight,
       (bot, payload) => overlay.spawnPacketFromZap(bot, payload)
