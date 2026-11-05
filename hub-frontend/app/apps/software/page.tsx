@@ -1,78 +1,43 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlphaMark, AppsShell } from "../AppsShell";
+import { AppsShell } from "../AppsShell";
 import styles from "../apps.module.css";
 
 export const metadata: Metadata = {
-  title: "Alpha Software — Focus, Vibe & Notes",
-  description: "Explore the Alpha Grind software suite: Alpha Focus, Alpha Vibe and Alpha Notes. Windows previews and release updates from FruxLabs.",
+  title: "Alpha Grind — Focus, Vibe & Notes",
+  description: "Explore Alpha Focus, Alpha Vibe and Alpha Notes, three local-first Windows apps built by FruxLabs.",
   alternates: { canonical: "/apps/software" },
   openGraph: {
-    title: "Alpha Software | The Alpha Grind Suite",
-    description: "Focus, sound and notes in one deliberate workflow.",
-    url: "/apps/software", type: "website",
+    title: "Alpha Grind | Alpha Software",
+    description: "Focus, Vibe and Notes. Three tools made for focused work.",
+    url: "/apps/software",
+    type: "website",
   },
 };
 
-const products = [
+const apps = [
   {
     id: "focus",
     name: "Alpha Focus",
-    description: "A visual focus timer that makes deep-work sessions simple and deliberate.",
-    detail: "A quiet 25/5 timer experience with clear session state and minimal controls.",
-    theme: "goldCard",
-    kind: "focus",
-    meta: "TIME & ATTENTION",
+    type: "TIME & ATTENTION",
+    description: "A clear visual timer for focused sessions, breaks and staying on track.",
+    preview: "focusPreview",
   },
   {
     id: "vibe",
     name: "Alpha Vibe",
-    description: "Local music and visual atmosphere designed to help you find your rhythm.",
-    detail: "A music player with sound-reactive visuals and controls designed for concentration.",
-    theme: "violetCard",
-    kind: "vibe",
-    meta: "SOUND & IMMERSION",
+    type: "MUSIC & ATMOSPHERE",
+    description: "A local music player with immersive, sound-reactive visuals.",
+    preview: "vibePreview",
   },
   {
     id: "notes",
     name: "Alpha Notes",
-    description: "A calm, organized place to capture ideas and keep important details close.",
-    detail: "Local-first notes, folders and quick capture without unnecessary friction.",
-    theme: "blueCard",
-    kind: "notes",
-    meta: "IDEAS & ORGANIZATION",
+    type: "IDEAS & ORGANIZATION",
+    description: "A quiet space to capture ideas, keep notes organized and pick up where you left off.",
+    preview: "notesPreview",
   },
 ] as const;
-
-function AppWindow({ kind, name }: { kind: "focus" | "vibe" | "notes"; name: string }) {
-  return (
-    <div className={styles.window} role="img" aria-label={`Illustrative interface preview for ${name}`}>
-      <div className={styles.windowBar}>
-        <span>ALPHA {kind.toUpperCase()}</span>
-        <span className={styles.windowControls} aria-hidden="true">● ● ●</span>
-      </div>
-      {kind === "focus" ? (
-        <div className={styles.clockFace}>
-          <small>DEEP WORK</small><strong>25:00</strong>
-        </div>
-      ) : kind === "vibe" ? (
-        <>
-          <div className={styles.waveform} aria-hidden="true">
-            {[14,30,51,65,36,79,100,58,33,83,46,68,92,40,25,73,56,28,46,16,31,11].map((height,i) => (
-              <i key={i} style={{height: `${height}%`}} />
-            ))}
-          </div>
-          <div className={styles.waveControls} aria-hidden="true">‹　◉　›</div>
-        </>
-      ) : (
-        <div className={styles.notesUi}>
-          <div className={styles.notesSidebar} aria-hidden="true"><i/><i/><i/><i/></div>
-          <div className={styles.notesMain}><strong>Welcome to Alpha Notes</strong><i/><i/><i/></div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function SoftwareCatalog() {
   return (
@@ -80,70 +45,65 @@ export default function SoftwareCatalog() {
       <div className={styles.catalog}>
         <header className={styles.catalogIntro}>
           <div>
-            <p className={styles.kicker}>ALPHA SOFTWARE</p>
-            <h1 className={styles.catalogTitle}>THREE TOOLS.<br/>ONE <span>FLOW.</span></h1>
+            <p className={styles.eyebrow}><span aria-hidden="true" /> ALPHA SOFTWARE</p>
+            <h1 className={styles.catalogTitle}>Meet <span>Alpha Grind.</span></h1>
+            <p className={styles.catalogDescription}>
+              Focus, sound and notes. Three deliberately simple tools for getting real work done.
+            </p>
           </div>
-          <p className={styles.catalogCopy}>
-            Built for focused work, immersive sound and ideas worth keeping.
-            Meet the first three applications in the growing Alpha ecosystem.
-          </p>
+          <div className={styles.catalogMeta}>FRUXLABS SOFTWARE <span> / </span> WINDOWS</div>
         </header>
 
-        <div className={styles.catalogMicro}>THE GRIND COLLECTION</div>
-        <div className={styles.grindBar}>
-          <div className={styles.grindBadge}><AlphaMark size={39}/> ALPHA GRIND</div>
-          <div className={styles.grindMeta}>FOCUS <span aria-hidden="true"> · </span> VIBE <span aria-hidden="true"> · </span> NOTES<br/>LOCAL-FIRST WINDOWS SOFTWARE</div>
-        </div>
-
-        <section className={styles.cards} aria-label="Alpha Grind applications">
-          {products.map((app) => (
-            <article id={app.id} key={app.id} className={`${styles.card} ${styles[app.theme]}`}>
-              <AppWindow kind={app.kind} name={app.name} />
-              <div className={styles.cardInfo}>
-                <div className={styles.cardTop}>
-                  <h2 className={styles.appName}>{app.name}</h2>
-                  <span className={styles.tag}>PREVIEW</span>
+        <section aria-labelledby="grind-heading" className={styles.collection}>
+          <div className={styles.collectionHead}>
+            <h2 id="grind-heading">Focus · Vibe · Notes</h2>
+            <span>THE GRIND COLLECTION</span>
+          </div>
+          <div className={styles.cards}>
+            {apps.map(app => (
+              <article className={styles.card} id={app.id} key={app.id}>
+                <div className={`${styles.appPreview} ${styles[app.preview]}`}
+                  role="img" aria-label={`Preview screenshot of ${app.name} on Windows`}/>
+                <div className={styles.cardInfo}>
+                  <div className={styles.cardHeading}>
+                    <h3>{app.name}</h3>
+                    <span className={styles.tag}>PREVIEW</span>
+                  </div>
+                  <p>{app.description}</p>
+                  <div className={styles.cardBottom}>
+                    <span>{app.type}</span>
+                    <span>WINDOWS</span>
+                  </div>
                 </div>
-                <p>{app.description}</p>
-                <div className={styles.cardBottom}>
-                  <span>{app.meta}</span>
-                  <span>WINDOWS</span>
-                </div>
-                <details className={styles.details}>
-                  <summary>View details</summary>
-                  <p>{app.detail} Download links will appear after installer verification.</p>
-                </details>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))}
+          </div>
+          <p className={styles.releaseNote}>
+            <strong>Release status:</strong> Downloads will appear once Windows installers
+            pass installation, upgrade, safety and usability testing.
+            The screenshots above show the applications; they are not download links.
+          </p>
         </section>
 
-        <div className={styles.releaseNote} role="note">
-          <strong>Download status:</strong> These are interface previews, not released installers.
-          Downloads will be enabled only after Windows installation, upgrade and security checks pass.
-          No account is required to browse the software.
-        </div>
-
         <section className={styles.upcoming} id="upcoming" aria-labelledby="upcoming-heading">
-          <div className={styles.sectionEyebrow}>WHAT'S NEXT</div>
-          <h2 id="upcoming-heading" className={styles.sectionTitle}>The ecosystem keeps growing.</h2>
-          <p>More tools are in development. Availability and features will be published when verified.</p>
-          <div className={styles.upcomingGrid}>
-            {["Alpha Flow","Alpha Studio","Alpha Defender"].map((name) => (
-              <div className={styles.upcomingItem} key={name}>
-                <strong>{name}</strong><span>IN DEVELOPMENT</span>
-              </div>
+          <div className={styles.sectionTop}>
+            <div>
+              <p className={styles.eyebrow}>IN DEVELOPMENT</p>
+              <h2 id="upcoming-heading">More from FruxLabs.</h2>
+            </div>
+            <p>Additional tools will be listed here as they become ready.</p>
+          </div>
+          <div className={styles.upcomingList}>
+            {["Alpha Flow", "Alpha Studio", "Alpha Defender"].map(name => (
+              <div key={name}><span>{name}</span><small>IN DEVELOPMENT</small></div>
             ))}
           </div>
         </section>
 
-        <aside className={styles.bottomCta}>
-          <div>
-            <strong>Designed for actual work.</strong>
-            <p>No unnecessary noise. Just the tools you need, as they become ready.</p>
-          </div>
-          <Link className={styles.goldButton} href="/apps">Back to Alpha Apps <span aria-hidden="true">→</span></Link>
-        </aside>
+        <div className={styles.closing}>
+          <span>NO ADS. NO SIGN-UPS. NO BS.</span>
+          <Link href="/apps">Back to Alpha Apps <span aria-hidden="true">→</span></Link>
+        </div>
       </div>
     </AppsShell>
   );
