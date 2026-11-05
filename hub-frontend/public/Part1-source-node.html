@@ -1017,6 +1017,7 @@
       const starsLayer = document.createElement("canvas");
       const vignetteLayer = document.createElement("canvas");
       const grainLayer = document.createElement("canvas");
+      let grainPattern = null;
       const starsCtx = starsLayer.getContext("2d");
       const vigCtx = vignetteLayer.getContext("2d");
       const grainCtx = grainLayer.getContext("2d");
@@ -1076,6 +1077,7 @@
           data[i + 3] = Math.floor(255 * 0.10);
         }
         grainCtx.putImageData(img, 0, 0);
+        grainPattern = ctx.createPattern(grainLayer, "repeat");
       }
 
       /* ============================================================
@@ -2091,7 +2093,10 @@
         ctx.save();
         ctx.globalAlpha = CFG.grainAlpha;
         ctx.globalCompositeOperation = "overlay";
-        ctx.drawImage(grainLayer, 0, 0, W, H);
+        if (grainPattern) {
+          ctx.fillStyle = grainPattern;
+          ctx.fillRect(0, 0, W, H);
+        }
         ctx.restore();
 
         rafId = requestAnimationFrame(loop);
