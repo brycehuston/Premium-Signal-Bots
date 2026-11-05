@@ -7,6 +7,7 @@ import { Beer, Check, Copy, CreditCard, ExternalLink, Heart, LockKeyhole, Wallet
 import styles from "./support.module.css";
 
 type Amount = 3 | 5 | 10;
+type SupportSelection = Amount | "custom";
 type Currency = "SOL" | "USDC";
 
 const STRIPE_URLS: Record<Amount, string> = {
@@ -49,15 +50,15 @@ function validSolanaAddress(raw: string): boolean {
   return count + (raw.match(/^1*/)?.[0]?.length ?? 0) === 32;
 }
 
-const DEFAULT_AMOUNT: Amount = validStripeLink(STRIPE_URLS[5]) ? 5 : validStripeLink(STRIPE_URLS[3]) ? 3 : validStripeLink(STRIPE_URLS[10]) ? 10 : 5;
+const DEFAULT_AMOUNT: SupportSelection = validStripeLink(STRIPE_URLS[5]) ? 5 : validStripeLink(STRIPE_URLS[3]) ? 3 : validStripeLink(STRIPE_URLS[10]) ? 10 : validStripeLink(STRIPE_CUSTOM_URL) ? "custom" : 5;
 
 export default function FruxLabsSupportPage() {
-  const [amount, setAmount] = useState<Amount>(DEFAULT_AMOUNT);
+  const [amount, setAmount] = useState<SupportSelection>(DEFAULT_AMOUNT);
   const [currency, setCurrency] = useState<Currency>("USDC");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [cryptoOpen, setCryptoOpen] = useState(false);
-  const paymentLink = validStripeLink(STRIPE_URLS[amount]);
   const customLink = validStripeLink(STRIPE_CUSTOM_URL);
+  const paymentLink = amount === "custom" ? customLink : validStripeLink(STRIPE_URLS[amount]);
   const hasAnyCardLink = Object.values(STRIPE_URLS).some((url) => !!validStripeLink(url)) || !!customLink;
   const cryptoAvailable = validSolanaAddress(SOLANA_ADDRESS);
 
@@ -100,7 +101,7 @@ export default function FruxLabsSupportPage() {
           <span className={styles.sectionLabel}>ONE-TIME SUPPORT</span>
           <span className={styles.sectionHint}>USD · No subscription</span>
         </div>
-        <div className={styles.amounts} role="group" aria-label="Choose a suggested support amount">
+        <div className={styles.amounts} role="group" aria-label="Choose a support amount">
           {AMOUNTS.map((option) => (
             <button key={option.value} type="button"
               className={[styles.amount, amount === option.value ? styles.amountActive : ""].join(" ")}
@@ -109,26 +110,30 @@ export default function FruxLabsSupportPage() {
               <span className={styles.amountLabel}>{option.name}</span>
             </button>
           ))}
+          <button type="button"
+            className={[styles.amount, amount === "custom" ? styles.amountActive : ""].join(" ")}
+            aria-pressed={amount === "custom"} onClick={() => setAmount("custom")}>
+            <span className={styles.price}>ANY</span>
+            <span className={styles.amountLabel}>CUSTOM</span>
+          </button>
         </div>
+        {amount === "custom" && (
+          <p className={styles.customHint}>Enter any amount you prefer on the secure Stripe checkout page.</p>
+        )}
 
         {paymentLink ? (
           <a className={styles.primary} href={paymentLink} target="_blank" rel="noopener noreferrer">
-            <CreditCard size={17} aria-hidden="true" /> SUPPORT ${amount} BY CARD <ExternalLink size={14} aria-hidden="true" />
+            <CreditCard size={17} aria-hidden="true" /> {amount === "custom" ? "ENTER YOUR AMOUNT" : `SUPPORT ${amount} BY CARD`} <ExternalLink size={14} aria-hidden="true" />
           </a>
-        ) : customLink ? (
+        ) : amount !== "custom" && customLink ? (
           <a className={styles.primary} href={customLink} target="_blank" rel="noopener noreferrer">
             <CreditCard size={17} aria-hidden="true" /> CHOOSE YOUR AMOUNT <ExternalLink size={14} aria-hidden="true" />
           </a>
         ) : (
           <div className={styles.unavailable} role="status">
             <LockKeyhole size={16} aria-hidden="true" />
-            {hasAnyCardLink ? "This amount isn't available for card support yet." : "Card support is being set up. No payments are being collected here yet."}
+            {hasAnyCardLink ? "This support option isn't available yet. Try another amount." : "Card support is being set up. No payments are being collected here yet."}
           </div>
-        )}
-        {customLink && paymentLink && (
-          <a className={styles.secondaryLink} href={customLink} target="_blank" rel="noopener noreferrer">
-            Choose your own amount <ExternalLink size={13} aria-hidden="true" />
-          </a>
         )}
 
         <div className={styles.or}><span>OR</span></div>
