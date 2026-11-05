@@ -226,10 +226,10 @@ export default function PricingPage() {
           PRICING
         </h1>
         <p className="mx-auto mt-3 text-[11px] text-muted sm:text-[12px] md:text-[13px]">
-          Pick your lane: Early = new tokens. Trend = momentum. Runner = continuation. Bundle = everything.
+          Pick your lane: Trend for momentum, Runner for continuation. Early and the original Bundle are pending availability.
         </p>
         <p className="mx-auto mt-3 text-[10px] text-muted sm:text-[11px] md:text-[12px]">
-          Choose the alerts you want. Payments are manual for now via USDC on Solana.
+          Pricing is shown for reference. Only use manual USDC checkout after confirming the offered channel and receiving address.
         </p>
       </div>
 
@@ -450,7 +450,7 @@ export default function PricingPage() {
                 </h3>
                 <Pill
                   tone="accent"
-                  className="ml-0 best-value-pulse text-[11px] font-semibold uppercase tracking-[0.25em] sm:ml-2"
+                  className="ml-0 text-[11px] font-semibold uppercase tracking-[0.16em] sm:ml-2"
                 >
                   Bundle on hold
                 </Pill>
