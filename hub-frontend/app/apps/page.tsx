@@ -19,7 +19,7 @@ const benefits = ["Premium apps", "Local & private", "No ads or sign-ups", "Buil
 export default function AppsWelcome() {
   return (
     <AppsShell active="intro">
-      <main>
+      <div>
         <section className={styles.hero} aria-labelledby="apps-hero-heading">
           <div className={styles.heroText}>
             <p className={styles.kicker}>THE ALPHA ECOSYSTEM</p>
@@ -46,7 +46,7 @@ export default function AppsWelcome() {
         <div className={styles.heroSub}>
           <p>INTRODUCING <strong>ALPHA GRIND</strong> — FOCUS <span aria-hidden="true"> · </span> VIBE <span aria-hidden="true"> · </span> NOTES</p>
         </div>
-      </main>
+      </div>
     </AppsShell>
   );
 }
