@@ -3,9 +3,10 @@
 This review branch adds `hub-frontend/app/support` and a footer link to `/support`, plus sitemap/SEO.
 
 ## What works without payment configuration
-- Branded responsive support page using the Alpha dark/gold identity.
+- Branded responsive support page using the actual Alpha Alerts site header, Manrope/Sora typography, charcoal/gold tokens and restrained spacing.
 - Three one-time suggested support amounts: USD 3 / 5 / 10.
-- Crypto accordion and deliberate unavailable states.
+- Crypto accordion when independently enabled and deliberate unavailable states without a configured payment option.
+- Real `/contact`, `/privacy`, `/terms` links for practical user support; no fictional documentation destinations.
 - No account or signup is required to open the page.
 - No money is collected unless a real provider is deliberately configured.
 
@@ -19,7 +20,8 @@ This review branch adds `hub-frontend/app/support` and a footer link to `/suppor
 
 In your own Stripe Dashboard, create a **Payment Link** with **Customers choose what to pay** (one-time, USD). Stripe, not our website, shows the field where the supporter types the amount. Set a sensible minimum (e.g. USD 1) and optional maximum; keep subscription/recurring billing disabled. Name it a voluntary **FruxLabs software tip** rather than a charitable contribution. Verify merchant identity, destination account, and Stripe compliance before copying the link to `NEXT_PUBLIC_SUPPORT_STRIPE_CUSTOM_URL`. Once configured, the fourth **ANY / CUSTOM** tile opens this Stripe-hosted amount-entry checkout. Without it, the custom tile remains safely unavailable.
 
-- `NEXT_PUBLIC_SUPPORT_SOLANA_ADDRESS` — verified, dedicated, self-custodied SOL/USDC receiving wallet on Solana
+- `NEXT_PUBLIC_SUPPORT_SOLANA_ADDRESS` — operator-verified, dedicated, self-custodied SOL/USDC receiving wallet on Solana
+- `NEXT_PUBLIC_SUPPORT_CRYPTO_ENABLED` — set to `true` only after independent ownership and transfer-path verification; remains disabled by default even with a syntactically valid address
 
 Use HTTPS links on `buy.stripe.com`. Wrong or missing links are not clickable. Address validation checks Base58 syntax and 32 decoded bytes, but **cannot verify wallet ownership**. Never paste private keys, secrets, or seed phrases into any environment variable. Never reuse the paid-alert checkout address without checking ownership and separation first.
 
@@ -34,3 +36,13 @@ Point their existing optional SUPPORT buttons to `https://alphaalerts.dev/suppor
 3. Verify self-controlled Solana receiving address and test only with explicitly approved funds.
 4. Review laws, accounting, and tax handling for voluntary tips; they are not charitable donations.
 5. Obtain approval before promoting to production.
+
+## Visual lock candidate — November 6, 2026
+
+- Uses existing Alpha Alerts global header; hides only the trading-specific global footer/ticker on the support route to avoid duplicate chrome.
+- Removes the unapproved faux-Frux brand mark instead of inventing an alternate company logo.
+- Retains the established Buy Me a Beer support flow: three USD one-time suggestions ($3, $5, $10), optional Stripe custom amount, optional SOL/USDC via QR/copy, and clear default unavailable states.
+- Adds direct Contact, Privacy and Terms navigation; no made-up Help Center pages, billing promises, or fictitious Stripe links.
+- Uses existing Manrope/Sora site fonts and shared dark/gold styling; source-built QA is not a substitute for deployed mobile/desktop visual review.
+- Austin’s gamer tag is **Frux**. No memorial text has been published or added to this route; publication requires explicit approval of the exact wording.
+- Stage 2 and Stage 3 are **out of scope** for this support-page pass and remain untouched.
