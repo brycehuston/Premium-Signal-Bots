@@ -1,4 +1,11 @@
 ﻿// lib/api.ts
+export class ApiHttpError extends Error {
+  constructor(public readonly status: number) {
+    super(`HTTP ${status}`);
+    this.name = "ApiHttpError";
+  }
+}
+
 export async function api(
   path: string,
   init: RequestInit = {},
@@ -30,8 +37,9 @@ export async function api(
       signal,
     });
     if (!res.ok) {
-      const txt = await res.text().catch(() => res.statusText);
-      throw new Error(txt || `HTTP ${res.status}`);
+      // Callers need the status to distinguish authentication from outages.
+      // Do not surface raw server responses to the user.
+      throw new ApiHttpError(res.status);
     }
     const ct = res.headers.get("content-type") || "";
     return ct.includes("application/json") ? res.json() : res.text();
@@ -39,13 +47,14 @@ export async function api(
 
   try {
     return await doFetch(controller.signal);
-  } catch {
-    // one quick retry (often fixes first request after sleep)
-    try {
-      return await doFetch();
-    } finally {
-      clearTimeout(t);
+  } catch (error) {
+    // Invalid sessions, missing permissions, and other 4xx errors are not
+    // transient; retrying them wastes time and obscures the real failure.
+    if (error instanceof ApiHttpError && error.status >= 400 && error.status < 500) {
+      throw error;
     }
+    // One retry for transient network/server failures (e.g. waking a service).
+    return await doFetch(controller.signal);
   } finally {
     clearTimeout(t);
   }
