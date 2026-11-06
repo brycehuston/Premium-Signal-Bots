@@ -80,21 +80,15 @@ export default function FruxLabsSupportPage() {
       </nav>
       <section className={styles.panel} aria-labelledby="support-title">
         <div className={styles.brand}>
-          <svg className={styles.mark} viewBox="0 0 70 64" aria-hidden="true">
-            <defs><linearGradient id="frux-support-gold" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0" stopColor="#f2daab" /><stop offset="0.53" stopColor="#e7bc67" /><stop offset="1" stopColor="#786236" />
-            </linearGradient></defs>
-            <path d="M9 12H22L35 39L48 12H61L35 59Z" fill="url(#frux-support-gold)" />
-          </svg>
-          <p className={styles.eyebrow}>FRUXLABS SOFTWARE</p>
+          <p className={styles.eyebrow}>FRUXLABS / INDEPENDENT SOFTWARE</p>
           <h1 id="support-title" className={styles.title}>BUY ME A <span>BEER.</span></h1>
-          <p className={styles.intro}>The simplest tools should be the ones you love using.</p>
+          <p className={styles.intro}>A small way to support the tools you enjoy using.</p>
         </div>
 
         <div className={styles.divider} />
         <div className={styles.message}>
           <p className={styles.promise}>NO ADS. NO SIGN-UPS. NO BS.</p>
-          <p className={styles.detail}>Alpha Apps are free to use. If they make your day a little better, you can support future development. Totally optional. Always appreciated.</p>
+          <p className={styles.detail}>If a free Alpha App makes your day a little better, you can support independent development. Totally optional. Always appreciated.</p>
         </div>
 
         <div className={styles.sectionHead}>
@@ -137,14 +131,14 @@ export default function FruxLabsSupportPage() {
         )}
 
         <div className={styles.or}><span>OR</span></div>
-        <button type="button" className={styles.cryptoToggle}
-          aria-expanded={cryptoOpen} aria-controls="crypto-support-details"
-          onClick={() => { setCryptoOpen((v) => !v); setCopyStatus("idle"); }}>
-          <Wallet size={18} aria-hidden="true" /> SEND SOL OR USDC <span className={styles.toggleGlyph}>{cryptoOpen ? "−" : "+"}</span>
-        </button>
-        {cryptoOpen && (
-          <div id="crypto-support-details" className={styles.cryptoPanel}>
-            {cryptoAvailable ? (
+        {cryptoAvailable ? (
+          <>
+            <button type="button" className={styles.cryptoToggle}
+              aria-expanded={cryptoOpen} aria-controls="crypto-support-details"
+              onClick={() => { setCryptoOpen((v) => !v); setCopyStatus("idle"); }}>
+              <Wallet size={18} aria-hidden="true" /> SUPPORT WITH SOL OR USDC <span className={styles.toggleGlyph}>{cryptoOpen ? "−" : "+"}</span>
+            </button>
+            <div id="crypto-support-details" className={styles.cryptoPanel} hidden={!cryptoOpen}>
               <>
                 <div className={styles.assetTabs} role="group" aria-label="Select cryptocurrency">
                   {(["USDC", "SOL"] as const).map((asset) => (
@@ -159,7 +153,7 @@ export default function FruxLabsSupportPage() {
                   <QRCodeSVG value={SOLANA_ADDRESS} size={136} bgColor="#ffffff" fgColor="#111113"
                     marginSize={1} title="FruxLabs Solana receiving wallet address" />
                 </div>
-                <p className={styles.cryptoInstruction}>On the <strong>Solana network</strong>, select <strong>{currency}</strong> in your wallet and enter any amount. Scan the address or copy it below.</p>
+                <p className={styles.cryptoInstruction}>On the <strong>Solana network</strong>, select <strong>{currency}</strong> in your wallet. Scan or copy the verified receiving address below, then check all details before sending.</p>
                 <div className={styles.walletAddress}><code>{SOLANA_ADDRESS}</code></div>
                 <button type="button" className={styles.copyButton} onClick={copyAddress}>
                   {copyStatus === "copied" ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
@@ -168,9 +162,11 @@ export default function FruxLabsSupportPage() {
                 <p className={styles.copyFeedback} role="status" aria-live="polite">{copyStatus === "copied" ? "Address copied. Confirm the network and recipient before sending." : copyStatus === "failed" ? "Automatic copy failed. Select and copy the address above." : ""}</p>
                 <p className={styles.warning}>QR contains the receiving address only; it does not choose the asset or amount for you. Verify the address and network in your wallet. Crypto transfers are irreversible.</p>
               </>
-            ) : (
-              <p className={styles.cryptoPending} role="status">Crypto support is being set up. A receiving wallet has not been configured.</p>
-            )}
+            </div>
+          </>
+        ) : (
+          <div className={styles.cryptoPending} role="status">
+            <Wallet size={16} aria-hidden="true" /> SOL / USDC SUPPORT — NOT CONFIGURED
           </div>
         )}
 
