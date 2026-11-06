@@ -91,6 +91,11 @@ export default function FruxLabsSupportPage() {
           <p className={styles.detail}>If a free Alpha App makes your day a little better, you can support independent development. Totally optional. Always appreciated.</p>
         </div>
 
+        <div className={styles.helpRow}>
+          <span>Need help with an app or subscription?</span>
+          <Link href="/contact" data-no-link-style>Contact support <span aria-hidden="true">→</span></Link>
+        </div>
+
         <div className={styles.sectionHead}>
           <span className={styles.sectionLabel}>ONE-TIME SUPPORT</span>
           <span className={styles.sectionHint}>USD · No subscription</span>
@@ -174,7 +179,12 @@ export default function FruxLabsSupportPage() {
         </div>
         <div className={styles.footer}>
           <span>© FRUXLABS</span>
-          <span><Beer size={14} aria-hidden="true" /> IF YOU FEEL LIKE IT. CHEERS.</span>
+          <div className={styles.footerLinks}>
+            <Link href="/privacy" data-no-link-style>Privacy</Link>
+            <Link href="/terms" data-no-link-style>Terms</Link>
+            <Link href="/contact" data-no-link-style>Contact</Link>
+          </div>
+          <span><Beer size={14} aria-hidden="true" /> TOTALLY OPTIONAL. ALWAYS APPRECIATED.</span>
         </div>
       </section>
     </div>
