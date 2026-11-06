@@ -46,11 +46,18 @@ export default function SupabaseProvider({ children }: { children: React.ReactNo
   useEffect(() => {
     if (!supabase) return;
     let alive = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!alive) return;
-      setSession(data.session ?? null);
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data, error }) => {
+        if (!alive) return;
+        // A failed session lookup should never strand the login page on a spinner.
+        setSession(error ? null : data.session ?? null);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setSession(null);
+        setLoading(false);
+      });
 
     const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);

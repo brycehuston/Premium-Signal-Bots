@@ -15,7 +15,7 @@ import { useSupabase } from "@/components/SupabaseProvider";
 import dynamic from "next/dynamic";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { Badge, Button, Card, CardBody, SectionHeading } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, ApiHttpError } from "@/lib/api";
 import { track } from "@/lib/analytics";
 
 /* ---------- Types ---------- */
@@ -74,7 +74,7 @@ const BTC_INTERVAL_LABELS: Record<BtcInterval, string> = {
   "4h": "4 HR",
   "1d": "1D",
 };
-const ME_CACHE_KEY = "dashboard.me.v1";
+type ProfileFailure = "signed_out" | "invalid_token" | "forbidden" | "service_unavailable";
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 
 /* ---------- Utils ---------- */
@@ -135,6 +135,7 @@ export default function Dashboard() {
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<BotStatus[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileFailure, setProfileFailure] = useState<ProfileFailure>("service_unavailable");
 
   // Signals only for the log viewer
   const [activeSignal, setActiveSignal] = useState<LogChannel>("alpha_early");
@@ -144,7 +145,9 @@ export default function Dashboard() {
   const [busy, setBusy] = useState<"start" | "stop" | null>(null);
   const dashboardTrackedRef = useRef(false);
 
-  const cachedRef = useRef(false);
+  // A cached /me response can expose the previous account's access status
+  // after a Google account switch; only trusted, current API responses are used.
+  const authTokenRef = useRef<string | null>(null);
   const wsSessionRef = useRef(0);
   const wsOpenCountRef = useRef(0);
   const wsExpectedRef = useRef(0);
@@ -161,29 +164,45 @@ export default function Dashboard() {
   }
 
   async function refresh() {
-    try {
-      const _me = await authedApi("/me");
-      setMe(_me as Me);
-      try {
-        sessionStorage.setItem(ME_CACHE_KEY, JSON.stringify(_me));
-        cachedRef.current = true;
-      } catch {}
+    const requestToken = session?.access_token ?? null;
+    if (!requestToken) {
+      setMe(null);
+      setProfileFailure("signed_out");
       setLoading(false);
-    } catch {
-      if (!cachedRef.current) {
-        // 401 / CORS / network - show Not Authorized instead of hanging
-        setMe(null);
+      return;
+    }
+    try {
+      const profile = await authedApi("/me");
+      // Never resurrect a stale profile after a session change or sign-out.
+      if (authTokenRef.current !== requestToken) return;
+      if (!profile || typeof profile.email !== "string") {
+        throw new Error("invalid profile payload");
+      }
+      setMe(profile as Me);
+      setProfileFailure("service_unavailable");
+      setLoading(false);
+    } catch (error) {
+      if (authTokenRef.current !== requestToken) return;
+      setMe(null);
+      setStatus([]);
+      if (error instanceof ApiHttpError && error.status === 401) {
+        setProfileFailure("invalid_token");
+      } else if (error instanceof ApiHttpError && error.status === 403) {
+        setProfileFailure("forbidden");
+      } else {
+        setProfileFailure("service_unavailable");
       }
       setLoading(false);
       return;
     }
 
-    // /bot/status may 403 for inactive accounts - that's fine
+    // /bot/status may 403 for inactive accounts — never fabricate availability.
     try {
       const s = await authedApi("/bot/status");
+      if (authTokenRef.current !== requestToken) return;
       setStatus((s?.bots || []) as BotStatus[]);
     } catch {
-      setStatus([]);
+      if (authTokenRef.current === requestToken) setStatus([]);
     }
   }
 
@@ -294,23 +313,17 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    try {
-      const cached = sessionStorage.getItem(ME_CACHE_KEY);
-      if (!cached) return;
-      setMe(JSON.parse(cached) as Me);
-      cachedRef.current = true;
-      setLoading(false);
-    } catch {}
-  }, []);
-
-  useEffect(() => {
     if (authLoading) return;
+    authTokenRef.current = session?.access_token ?? null;
     if (!session) {
       setMe(null);
+      setStatus([]);
+      setProfileFailure("signed_out");
       setLoading(false);
       return;
     }
-    refresh();
+    setLoading(true);
+    void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, session]);
 
@@ -362,8 +375,43 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSignal, me]);
 
-  if (loading) return <div className="text-muted">Loading...</div>;
-  if (!me) return <div className="text-red-400">Not Authorized</div>;
+  if (loading) return <div className="py-14 text-center text-muted" role="status">Checking dashboard access…</div>;
+  if (!me) {
+    const signedOut = profileFailure === "signed_out";
+    const denied = profileFailure === "forbidden";
+    const authRejected = profileFailure === "invalid_token";
+    return (
+      <section className="mx-auto max-w-xl rounded-card border border-stroke/70 bg-surface/70 px-6 py-8 md:px-9" aria-labelledby="dashboard-status">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gold/80">Alpha Alerts / Account</p>
+        <h1 id="dashboard-status" className="mt-3 font-display text-2xl font-semibold text-silver">
+          {signedOut ? "Sign in required" : denied ? "Dashboard access restricted" : authRejected ? "Session verification failed" : "Dashboard service unavailable"}
+        </h1>
+        <p className="mt-3 text-small leading-7 text-muted">
+          {signedOut
+            ? "Sign in with Google or email to open your dashboard."
+            : denied
+              ? "Your account is signed in, but the server has not authorized dashboard access. Contact support if you believe this is incorrect."
+              : authRejected
+                ? "Your Google sign-in reached the dashboard, but the account API rejected its access token. The authentication configuration needs attention."
+                : "Your sign-in may be active, but the dashboard account service could not be reached or returned an unexpected response. No plan or trading access has been inferred."}
+        </p>
+        {!signedOut && session?.user.email && (
+          <p className="mt-4 text-xs text-muted">Signed in as <span className="text-silver">{session.user.email}</span></p>
+        )}
+        <div className="mt-6 flex flex-wrap gap-3">
+          {signedOut ? (
+            <a href="/login" className="inline-flex min-h-10 items-center rounded-control border border-gold/45 bg-gold/15 px-4 text-small font-semibold text-gold">Go to login</a>
+          ) : (
+            <button type="button" className="min-h-10 rounded-control border border-gold/45 bg-gold/15 px-4 text-small font-semibold text-gold hover:bg-gold/20" onClick={() => { setLoading(true); void refresh(); }}>
+              Retry connection
+            </button>
+          )}
+          {!signedOut && <button type="button" className="min-h-10 rounded-control border border-stroke px-4 text-small text-muted hover:text-silver" onClick={signOut}>Sign out</button>}
+          {denied && <a href="/contact" className="inline-flex min-h-10 items-center rounded-control border border-stroke px-4 text-small text-silver">Contact support</a>}
+        </div>
+      </section>
+    );
+  }
 
   // entitlement/tier logic
   const entSet = new Set<SignalKey>(me.entitlements ?? []);
