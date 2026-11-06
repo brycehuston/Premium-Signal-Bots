@@ -37,6 +37,13 @@
 .message{text-align:left}
 .promise{margin:0 0 9px;font-size:11px;letter-spacing:.12em;font-weight:750;color:#e0bd74}
 .detail{max-width:550px;margin:0;font-size:13px;line-height:1.75;color:#aaaab3}
+.helpRow{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  margin-top:23px;padding:15px 0 0;border-top:1px solid #2b2c32;
+  color:#a7a7b0;font-size:12px;line-height:1.5;
+}
+.helpRow a{color:#d8b36e!important;font-size:12px;font-weight:680;white-space:nowrap}
+.helpRow a:hover{color:#f0ce8d!important}
 .sectionHead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:29px 0 12px}
 .sectionLabel{font-size:10px;font-weight:750;color:#d6b877;letter-spacing:.14em}
 .sectionHint{color:#999aa2;font-size:11px}
@@ -108,6 +115,9 @@
 .disclaimer svg{flex-shrink:0;margin-top:2px;color:#ad915d}
 .disclaimer p{margin:0;font-size:11px;line-height:1.65}
 .footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:11px;margin-top:24px;padding-top:16px;border-top:1px solid #2b2c32;color:#8f9098;font-size:10px;letter-spacing:.11em;font-weight:650}
+.footerLinks{display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.footerLinks a{font-size:10px;letter-spacing:.02em;color:#a2a3ac!important}
+.footerLinks a:hover{color:#e4bf77!important}
 .footer span:last-child{display:flex;align-items:center;gap:7px}
 .page :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 @media(max-width:600px){
