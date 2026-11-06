@@ -1,701 +1,161 @@
-﻿// app/dashboard/page.tsx
 "use client";
 
-/**
- * Expects /me to return at least:
- * {
- *   email: string,
- *   tier?: number,                         // optional; we fall back to entitlements length
- *   entitlements?: SignalKey[],            // ["alpha_early", "alpha_trend", ...]
- * }
- */
-
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSupabase } from "@/components/SupabaseProvider";
-import dynamic from "next/dynamic";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { Badge, Button, Card, CardBody, SectionHeading } from "@/components/ui";
-import { api, ApiHttpError } from "@/lib/api";
-import { track } from "@/lib/analytics";
+import "./intelligence.css";
 
-/* ---------- Types ---------- */
-type SignalKey = "alpha_early" | "alpha_trend" | "alpha_runner";
-type BotKey = "trend_rider";
-type LogChannel = SignalKey | "all";
-type BtcInterval = "1m" | "5m" | "15m" | "1h" | "4h" | "1d";
-
-type Me = {
-  email: string;
-  role?: string | null;
-  plan?: string | null;
-  is_active?: boolean | null;
-  tier?: number | null;
-  entitlements?: SignalKey[] | null;
+const LANES = ["EARLY", "GENESIS", "RECLAIM", "TREND", "STRICT", "RUNNER"] as const;
+type Lane = (typeof LANES)[number];
+const COLORS: Record<Lane,string> = {
+  EARLY:"#e2b56e", GENESIS:"#a78dde", RECLAIM:"#55c8b7",
+  TREND:"#59adf0", STRICT:"#f2ca7b", RUNNER:"#6ccf9d"
 };
-
-type BotStatus = { bot: string; status: string };
-
-const BtcMiniChart = dynamic(() => import("@/components/BtcMiniChart"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[300px] rounded-xl border border-stroke/60 bg-surface/60" />
-  ),
-});
-
-/* ---------- Labels ---------- */
-const BOT_LABELS: Record<BotKey, string> = {
-  trend_rider: "ALPHA-X",
-};
-
-const SIGNAL_LABELS: Record<SignalKey, string> = {
-  alpha_early: "Alpha Early",
-  alpha_trend: "Alpha Trend",
-  alpha_runner: "Alpha Runner",
-};
-const SIGNAL_ORDER: SignalKey[] = ["alpha_early", "alpha_trend", "alpha_runner"];
-const LOG_LABELS: Record<LogChannel, string> = {
-  ...SIGNAL_LABELS,
-  all: "All Signals",
-};
-const LOG_TABS: LogChannel[] = ["all", ...SIGNAL_ORDER];
-const BTC_INTERVALS: { key: BtcInterval; label: string }[] = [
-  { key: "1m", label: "1 MIN" },
-  { key: "5m", label: "5 MIN" },
-  { key: "15m", label: "15 MIN" },
-  { key: "1h", label: "1 HR" },
-  { key: "4h", label: "4 HR" },
-  { key: "1d", label: "1D" },
-];
-const BTC_INTERVAL_LABELS: Record<BtcInterval, string> = {
-  "1m": "1 MIN",
-  "5m": "5 MIN",
-  "15m": "15 MIN",
-  "1h": "1 HR",
-  "4h": "4 HR",
-  "1d": "1D",
-};
-type ProfileFailure = "signed_out" | "invalid_token" | "forbidden" | "service_unavailable";
-const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
-
-/* ---------- Utils ---------- */
-function logsWsUrl(channel: string) {
-  const base = new URL(
-    process.env.NEXT_PUBLIC_API_BASE ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:8000"
-  );
-  base.protocol = base.protocol === "https:" ? "wss:" : "ws:";
-  base.pathname = "/ws/logs";
-  base.search = `?bot=${encodeURIComponent(channel)}`; // server can treat this as a channel key
-  return base.toString();
+type Daily = { date_pt:string; all_alerts:number; first_mints:number; [key:string]:string|number };
+type Hour = { date_pt:string; dow:string; clock_hour_pt:number; pulse_mode:string; all_alerts:number; first_mints:number; [key:string]:string|number };
+type First = { mint:string;symbol:string;lane:string;date:string;mc:string|number;alerts:number;url:string };
+type Transition = { from_lane:string;to_lane:string;event_n:string|number;unique_mints:string|number;within_20m_events:string|number };
+type Regime = {mode:string;hours:number;all_alerts:number;first_mints:number;early_per_hour:number;reclaim_per_hour:number;runner_per_hour:number};
+type Archive = {daily:Daily[];hourly:Hour[];first:First[];regimes:Regime[];transitions:Transition[];summary:{start:string;end:string;messages:number;mint:number;lane:number;heartbeat:number;pulse:number}};
+const n=(v:unknown)=>Number(v)||0;
+const fmt=(v:number)=>v.toLocaleString("en-US");
+const formatMoney=(v:unknown)=>Number.isFinite(Number(v))&&Number(v)>0?"$"+Math.round(Number(v)).toLocaleString("en-US"):"—";
+function trustedTelegram(value:string){try{const u=new URL(value);return u.protocol==="https:"&&u.hostname==="t.me"?u.toString():null}catch{return null}}
+function validArchive(data:unknown):data is Archive {
+ if(!data||typeof data!=="object")return false;
+ const v=data as Partial<Archive>;
+ return Array.isArray(v.daily)&&Array.isArray(v.hourly)&&Array.isArray(v.first)&&Array.isArray(v.regimes)&&Array.isArray(v.transitions)&&
+ !!v.summary&&typeof v.summary.start==="string"&&typeof v.summary.end==="string"&&
+ v.daily.every(x=>typeof x.date_pt==="string"&&Number.isFinite(Number(x.all_alerts)))&&
+ v.first.every(x=>typeof x.mint==="string"&&typeof x.symbol==="string"&&typeof x.date==="string"&&typeof x.lane==="string");
 }
-
-function DashboardDivider() {
-  const prefersReduced = useReducedMotion();
-  const dividerRef = useRef<HTMLDivElement | null>(null);
-  const { scrollYProgress } = useScroll({
-    target: dividerRef,
-    offset: ["start end", "end start"],
-  });
-  const travel = useTransform(scrollYProgress, [0, 1], ["12%", "88%"]);
-  const glow = useTransform(scrollYProgress, [0, 0.5, 1], [0.6, 1, 0.6]);
-  const sweep = useTransform(scrollYProgress, [0, 1], ["10%", "90%"]);
-  const sweepGlow = useTransform(scrollYProgress, [0, 0.5, 1], [0.35, 0.95, 0.35]);
-
-  return (
-    <div ref={dividerRef} aria-hidden className="relative flex items-center justify-center py-5 md:py-6">
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-stroke/70 to-transparent" />
-      <motion.div
-        className="pointer-events-none absolute top-1/2 h-px w-36 -translate-y-1/2 bg-gradient-to-r from-transparent via-gold/80 to-transparent shadow-[0_0_16px_rgb(var(--gold)/0.4)] md:w-52"
-        style={{
-          left: prefersReduced ? "50%" : sweep,
-          opacity: prefersReduced ? 0.6 : sweepGlow,
-          translateX: "-50%",
-        }}
-      />
-      <motion.div
-        className="pointer-events-none absolute top-1/2 flex items-center gap-2 -translate-y-1/2"
-        style={{
-          left: prefersReduced ? "50%" : travel,
-          opacity: prefersReduced ? 1 : glow,
-          translateX: "-50%",
-        }}
-      >
-        <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_10px_rgb(var(--gold)/0.45)]" />
-        <span className="h-1 w-1 rounded-full bg-gold/40" />
-        <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_10px_rgb(var(--gold)/0.45)]" />
-      </motion.div>
-    </div>
-  );
+function Panel({title,detail,children,className=""}:{title:string;detail?:string;children:React.ReactNode;className?:string}){
+ return <section className={"ai-panel "+className}><div className="ai-panel-head"><h2>{title}</h2>{detail&&<span>{detail}</span>}</div>{children}</section>;
 }
-
-/* ---------- Page ---------- */
-export default function Dashboard() {
-  const { session, loading: authLoading, signOut: supabaseSignOut } = useSupabase();
-  const [me, setMe] = useState<Me | null>(null);
-  const [status, setStatus] = useState<BotStatus[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [profileFailure, setProfileFailure] = useState<ProfileFailure>("service_unavailable");
-
-  // Signals only for the log viewer
-  const [activeSignal, setActiveSignal] = useState<LogChannel>("alpha_early");
-  const [btcInterval, setBtcInterval] = useState<BtcInterval>("1m");
-  const [logs, setLogs] = useState<string[]>([]);
-  const [wsState, setWsState] = useState<"idle" | "connecting" | "open" | "closed" | "reconnecting">("idle");
-  const [busy, setBusy] = useState<"start" | "stop" | null>(null);
-  const dashboardTrackedRef = useRef(false);
-
-  // A cached /me response can expose the previous account's access status
-  // after a Google account switch; only trusted, current API responses are used.
-  const authTokenRef = useRef<string | null>(null);
-  const wsSessionRef = useRef(0);
-  const wsOpenCountRef = useRef(0);
-  const wsExpectedRef = useRef(0);
-  const wsMetaRef = useRef({
-    sockets: new Map<SignalKey, WebSocket>(),
-    timers: new Map<SignalKey, number>(),
-    tries: new Map<SignalKey, number>(),
-  });
-
-  async function authedApi(path: string, init: RequestInit = {}) {
-    const token = session?.access_token;
-    if (!token) throw new Error("not_authenticated");
-    return api(path, init, { token });
+function Bars({rows,max}:{rows:{label:string;value:number;color?:string}[];max:number}){
+ return <div className="ai-bars">{rows.map(r=><div className="ai-bar" key={r.label}><span>{r.label}</span><div className="ai-track"><div style={{width:`${Math.max(0,Math.min(100,max?100*r.value/max:0))}%`,background:r.color||"#69aee2"}}/></div><strong>{fmt(r.value)}</strong></div>)}</div>;
+}
+export default function LaneIntelligenceDashboard(){
+ const {session,loading:authLoading,signOut}=useSupabase();
+ const [data,setData]=useState<Archive|null>(null);
+ const [error,setError]=useState("");
+ const [importName,setImportName]=useState("");
+ const [range,setRange]=useState<"7D"|"30D"|"ALL">("30D");
+ const [start,setStart]=useState("");const [end,setEnd]=useState("");
+ const [search,setSearch]=useState("");const [lookupLane,setLookupLane]=useState("ALL");
+ const [hourLane,setHourLane]=useState("ALL");const [hourMode,setHourMode]=useState("ALL MESSAGES");
+ const [expanded,setExpanded]=useState(false);
+ async function loadFile(event:ChangeEvent<HTMLInputElement>){
+  const file=event.target.files?.[0];event.target.value="";if(!file)return;
+  setError("");
+  if(file.size>12*1024*1024){setError("Archive exceeds the 12 MB local import limit.");return}
+  try{
+   const raw=await file.text();let parsed:unknown;
+   if(file.name.toLowerCase().endsWith(".html")||raw.trimStart().startsWith("<")){
+    const doc=new DOMParser().parseFromString(raw,"text/html");
+    const node=doc.getElementById("dataset");
+    if(!node||node.tagName!=="SCRIPT"||node.getAttribute("type")!=="application/json")throw new Error("Missing JSON archive script");
+    parsed=JSON.parse(node.textContent||"");
+   }else parsed=JSON.parse(raw);
+   if(!validArchive(parsed))throw new Error("Archive does not match the Lane Flow V4 dataset schema");
+   setData(parsed);setImportName(file.name);setStart(parsed.summary.start);setEnd(parsed.summary.end);setRange("ALL");
+   setSearch("");setExpanded(false);
+  }catch{setError("Could not read the V4 archive. Select the original Lane Flow V4 HTML file or its exported dataset JSON.")}
+ }
+ const days=useMemo(()=>data?.daily.filter(d=>d.date_pt>=start&&d.date_pt<=end)||[],[data,start,end]);
+ const hours=useMemo(()=>data?.hourly.filter(h=>h.date_pt>=start&&h.date_pt<=end)||[],[data,start,end]);
+ const totals=useMemo(()=>Object.fromEntries(LANES.map(l=>[l,days.reduce((s,d)=>s+n(d[l]),0)])) as Record<Lane,number>,[days]);
+ const eventTotal=days.reduce((s,d)=>s+n(d.all_alerts),0);
+ const firstTotal=days.reduce((s,d)=>s+n(d.first_mints),0);
+ const pulseKnown=hours.filter(h=>h.pulse_mode&&h.pulse_mode!=="UNKNOWN").length;
+ const maxDaily=Math.max(1,...days.map(d=>n(d.all_alerts)));
+ const maxLane=Math.max(1,...LANES.map(l=>totals[l]));
+ const firstRows=useMemo(()=>{
+  if(!data)return[];
+  const term=search.trim().toLowerCase();
+  return data.first.filter(r=>r.date.slice(0,10)>=start&&r.date.slice(0,10)<=end&&
+   (lookupLane==="ALL"||r.lane===lookupLane)&&
+   (!term||r.symbol.toLowerCase().includes(term)||r.mint.toLowerCase().includes(term)))
+   .sort((a,b)=>b.date.localeCompare(a.date));
+ },[data,start,end,search,lookupLane]);
+ const selectedRows=expanded?firstRows:firstRows.slice(0,100);
+ const daysSorted=[...days].sort((a,b)=>a.date_pt.localeCompare(b.date_pt));
+ const regimeCounts=useMemo(()=>{const counts:Record<string,number>={};
+  for(const h of hours)counts[h.pulse_mode||"UNKNOWN"]=(counts[h.pulse_mode||"UNKNOWN"]||0)+1;
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+ },[hours]);
+ const heat=useMemo(()=>{
+  const grid=Array.from({length:7},()=>Array.from({length:24},()=>({sum:0,count:0})));
+  for(const h of hours){const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(h.dow);
+   const hr=Number(h.clock_hour_pt);if(day<0||!Number.isInteger(hr)||hr<0||hr>23)continue;
+   const cell=grid[day][hr];cell.sum+=hourMode==="FIRST APPEARANCES"?n(h.first_mints):hourLane==="ALL"?n(h.all_alerts):n(h[hourLane]);cell.count++;
   }
-
-  async function refresh() {
-    const requestToken = session?.access_token ?? null;
-    if (!requestToken) {
-      setMe(null);
-      setProfileFailure("signed_out");
-      setLoading(false);
-      return;
-    }
-    try {
-      const profile = await authedApi("/me");
-      // Never resurrect a stale profile after a session change or sign-out.
-      if (authTokenRef.current !== requestToken) return;
-      if (!profile || typeof profile.email !== "string") {
-        throw new Error("invalid profile payload");
-      }
-      setMe(profile as Me);
-      setProfileFailure("service_unavailable");
-      setLoading(false);
-    } catch (error) {
-      if (authTokenRef.current !== requestToken) return;
-      setMe(null);
-      setStatus([]);
-      if (error instanceof ApiHttpError && error.status === 401) {
-        setProfileFailure("invalid_token");
-      } else if (error instanceof ApiHttpError && error.status === 403) {
-        setProfileFailure("forbidden");
-      } else {
-        setProfileFailure("service_unavailable");
-      }
-      setLoading(false);
-      return;
-    }
-
-    // /bot/status may 403 for inactive accounts — never fabricate availability.
-    try {
-      const s = await authedApi("/bot/status");
-      if (authTokenRef.current !== requestToken) return;
-      setStatus((s?.bots || []) as BotStatus[]);
-    } catch {
-      if (authTokenRef.current === requestToken) setStatus([]);
-    }
-  }
-
-  function resetConnections() {
-    wsMetaRef.current.sockets.forEach((sock) => {
-      try {
-        sock.close();
-      } catch {}
-    });
-    wsMetaRef.current.sockets.clear();
-    wsMetaRef.current.timers.forEach((timer) => window.clearTimeout(timer));
-    wsMetaRef.current.timers.clear();
-    wsMetaRef.current.tries.clear();
-    wsOpenCountRef.current = 0;
-    wsExpectedRef.current = 0;
-  }
-
-  function scheduleReconnect(channel: SignalKey, session: number, prefix: string | null) {
-    setWsState("reconnecting");
-    const tries = (wsMetaRef.current.tries.get(channel) ?? 0) + 1;
-    wsMetaRef.current.tries.set(channel, tries);
-    const delay = Math.min(30_000, 1000 * 2 ** (tries - 1)); // 1s, 2s, 4s ... cap 30s
-
-    const existing = wsMetaRef.current.timers.get(channel);
-    if (existing) window.clearTimeout(existing);
-
-    const timer = window.setTimeout(() => {
-      wsMetaRef.current.timers.delete(channel);
-      if (wsSessionRef.current !== session) return;
-      connectChannel(channel, session, prefix);
-    }, delay);
-
-    wsMetaRef.current.timers.set(channel, timer);
-  }
-
-  function connectChannel(channel: SignalKey, session: number, prefix: string | null) {
-    const sock = new WebSocket(logsWsUrl(channel));
-    wsMetaRef.current.sockets.set(channel, sock);
-
-    sock.onopen = () => {
-      if (wsSessionRef.current !== session) return;
-      wsOpenCountRef.current += 1;
-      wsMetaRef.current.tries.set(channel, 0);
-      setWsState(wsOpenCountRef.current >= wsExpectedRef.current ? "open" : "connecting");
-    };
-
-    sock.onmessage = (ev) => {
-      if (wsSessionRef.current !== session) return;
-      const line = prefix ? `${prefix}: ${ev.data}` : ev.data;
-      setLogs((prev) => {
-        const next = [...prev, line];
-        if (next.length > 500) next.shift();
-        return next;
-      });
-    };
-
-    sock.onclose = () => {
-      if (wsSessionRef.current !== session) return;
-      wsOpenCountRef.current = Math.max(0, wsOpenCountRef.current - 1);
-      scheduleReconnect(channel, session, prefix);
-    };
-    sock.onerror = () => {
-      try {
-        sock.close();
-      } catch {}
-    };
-  }
-
-  function connectLogs(channel: LogChannel) {
-    wsSessionRef.current += 1;
-    const session = wsSessionRef.current;
-    resetConnections();
-    setLogs([]);
-    setWsState("connecting");
-
-    const channels = channel === "all" ? SIGNAL_ORDER : [channel];
-    wsExpectedRef.current = channels.length;
-    wsOpenCountRef.current = 0;
-
-    channels.forEach((entry) => {
-      const prefix = channel === "all" ? SIGNAL_LABELS[entry] : null;
-      connectChannel(entry, session, prefix);
-    });
-  }
-
-  async function start(bot: BotKey) {
-    try {
-      setBusy("start");
-      await authedApi("/bot/start", { method: "POST", body: JSON.stringify({ bot_name: bot }) });
-      await refresh();
-    } finally {
-      setBusy(null);
-    }
-  }
-  async function stop(bot: BotKey) {
-    try {
-      setBusy("stop");
-      await authedApi("/bot/stop", { method: "POST", body: JSON.stringify({ bot_name: bot }) });
-      await refresh();
-    } finally {
-      setBusy(null);
-    }
-  }
-  function signOut() {
-    void supabaseSignOut().then(() => {
-      window.location.href = "/login";
-    });
-  }
-
-  useEffect(() => {
-    if (authLoading) return;
-    authTokenRef.current = session?.access_token ?? null;
-    if (!session) {
-      setMe(null);
-      setStatus([]);
-      setProfileFailure("signed_out");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    void refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, session]);
-
-  useEffect(() => {
-    if (!me) return;
-
-    let timer: number | null = null;
-    const resetTimer = () => {
-      if (timer) window.clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        signOut();
-      }, IDLE_TIMEOUT_MS);
-    };
-
-    const onActivity = () => resetTimer();
-    const onVisibility = () => {
-      if (!document.hidden) resetTimer();
-    };
-
-    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"];
-    events.forEach((event) => window.addEventListener(event, onActivity, { passive: true }));
-    document.addEventListener("visibilitychange", onVisibility);
-
-    resetTimer();
-
-    return () => {
-      if (timer) window.clearTimeout(timer);
-      events.forEach((event) => window.removeEventListener(event, onActivity));
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, [me]);
-
-  useEffect(() => {
-    if (!me || dashboardTrackedRef.current) return;
-    dashboardTrackedRef.current = true;
-    track("dashboard_view");
-  }, [me]);
-
-  useEffect(() => {
-    if (!me) {
-      resetConnections();
-      setWsState("idle");
-      return;
-    }
-    connectLogs(activeSignal);
-    return () => {
-      resetConnections();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSignal, me]);
-
-  if (loading) return <div className="py-14 text-center text-muted" role="status">Checking dashboard access…</div>;
-  if (!me) {
-    const signedOut = profileFailure === "signed_out";
-    const denied = profileFailure === "forbidden";
-    const authRejected = profileFailure === "invalid_token";
-    return (
-      <section className="mx-auto max-w-xl rounded-card border border-stroke/70 bg-surface/70 px-6 py-8 md:px-9" aria-labelledby="dashboard-status">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gold/80">Alpha Alerts / Account</p>
-        <h1 id="dashboard-status" className="mt-3 font-display text-2xl font-semibold text-silver">
-          {signedOut ? "Sign in required" : denied ? "Dashboard access restricted" : authRejected ? "Session verification failed" : "Dashboard service unavailable"}
-        </h1>
-        <p className="mt-3 text-small leading-7 text-muted">
-          {signedOut
-            ? "Sign in with Google or email to open your dashboard."
-            : denied
-              ? "Your account is signed in, but the server has not authorized dashboard access. Contact support if you believe this is incorrect."
-              : authRejected
-                ? "Your Google sign-in reached the dashboard, but the account API rejected its access token. The authentication configuration needs attention."
-                : "Your sign-in may be active, but the dashboard account service could not be reached or returned an unexpected response. No plan or trading access has been inferred."}
-        </p>
-        {!signedOut && session?.user.email && (
-          <p className="mt-4 text-xs text-muted">Signed in as <span className="text-silver">{session.user.email}</span></p>
-        )}
-        <div className="mt-6 flex flex-wrap gap-3">
-          {signedOut ? (
-            <a href="/login" className="inline-flex min-h-10 items-center rounded-control border border-gold/45 bg-gold/15 px-4 text-small font-semibold text-gold">Go to login</a>
-          ) : (
-            <button type="button" className="min-h-10 rounded-control border border-gold/45 bg-gold/15 px-4 text-small font-semibold text-gold hover:bg-gold/20" onClick={() => { setLoading(true); void refresh(); }}>
-              Retry connection
-            </button>
-          )}
-          {!signedOut && <button type="button" className="min-h-10 rounded-control border border-stroke px-4 text-small text-muted hover:text-silver" onClick={signOut}>Sign out</button>}
-          {denied && <a href="/contact" className="inline-flex min-h-10 items-center rounded-control border border-stroke px-4 text-small text-silver">Contact support</a>}
-        </div>
-      </section>
-    );
-  }
-
-  // entitlement/tier logic
-  const entSet = new Set<SignalKey>(me.entitlements ?? []);
-  const computedTier = (me.tier ?? undefined) ?? entSet.size;
-  const planLabel = (me.plan || "Free").toUpperCase();
-  const roleLabel = (me.role || "User").toUpperCase();
-  const isActive = Boolean(me.is_active);
-  const accessLabel = isActive ? "ACTIVE" : "PENDING";
-  const accessClass = isActive
-    ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-200 shadow-[0_0_18px_rgba(52,211,153,0.18)]"
-    : "border-amber-400/40 bg-amber-500/10 text-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.18)]";
-
-  return (
-    <div className="relative -mt-6 space-y-6 md:-mt-8 md:space-y-8">
-      <h1 className="sr-only">Dashboard</h1>
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-24 right-6 h-64 w-64 rounded-full bg-gold/12 blur-[140px]" />
-        <div className="absolute top-[35%] -left-10 h-64 w-64 rounded-full bg-silver/10 blur-[150px]" />
-      </div>
-
-      <div className="flex flex-col gap-2 md:gap-3">
-        <SectionHeading
-          eyebrow="Alpha Command"
-          title="DASHBOARD"
-          subtitle="Live access to your alerts, signals, and log feed."
-          className="space-y-1 md:space-y-2"
-        />
-        <Card className="relative overflow-hidden bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0))]">
-          <CardBody className="grid gap-4 py-4 md:grid-cols-3 md:gap-0">
-            <div className="flex items-center justify-between gap-3 md:pr-6 md:border-r md:border-stroke/60">
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.28em] text-muted/70">Plan</div>
-                <div className="mt-1 text-lg font-semibold text-silver">{planLabel}</div>
-              </div>
-              <span className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] ${accessClass}`}>
-                {accessLabel}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-3 md:px-6 md:border-r md:border-stroke/60">
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.28em] text-muted/70">Signal Tier</div>
-                <div className="mt-1 text-lg font-semibold text-silver">Tier {String(computedTier)}</div>
-              </div>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
-                {entSet.size} Active
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-3 md:pl-6">
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.28em] text-muted/70">Role</div>
-                <div className="mt-1 text-lg font-semibold text-silver">{roleLabel}</div>
-              </div>
-              <span className="rounded-full border border-stroke/70 bg-surface/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
-                {isActive ? "Verified" : "Unverified"}
-              </span>
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-
-      {/* Top row: Account + Chart */}
-      <div className="grid gap-6 lg:grid-cols-4 xl:grid-cols-5">
-        {/* Account */}
-        <Card className="relative overflow-hidden lg:col-span-2 xl:col-span-2 bg-[linear-gradient(140deg,rgba(255,255,255,0.04),rgba(255,255,255,0))]">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
-          />
-          <CardBody className="flex h-full flex-col gap-4 pt-5 pb-5">
-            <div className="space-y-3">
-              <div className="grid grid-cols-[1fr_auto] items-center gap-3">
-                <div className="text-[11px] uppercase tracking-[0.3em] text-muted/70">
-                  Account
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={signOut}
-                  className="!h-7 !px-2 !rounded-md border border-white/15 bg-white/5 text-[10px] uppercase tracking-[0.2em] opacity-90 hover:opacity-100 hover:border-white/30 hover:bg-white/10"
-                >
-                  Sign Out
-                </Button>
-              </div>
-              <div className="w-full break-all rounded-md border border-stroke/70 bg-surface/70 px-3 py-2 text-base font-semibold text-silver">
-                {me.email}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="grid grid-cols-[1fr_auto] items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-muted/70">
-                <span>Signal Stack</span>
-              </div>
-              <div className="space-y-2">
-                {SIGNAL_ORDER.map((key) => {
-                  const active = entSet.has(key);
-                  return (
-                    <div
-                      key={key}
-                      className={[
-                        "group flex items-center justify-between gap-3 rounded-lg border px-3 py-3 transition-all",
-                        "bg-[linear-gradient(135deg,rgba(255,255,255,0.03),rgba(255,255,255,0))]",
-                        active
-                          ? "border-emerald-400/30 bg-surface/70 hover:border-emerald-300/60 hover:shadow-[0_0_0_1px_rgba(52,211,153,0.18)]"
-                          : "border-stroke/70 bg-surface/50 opacity-80 hover:opacity-90 hover:border-white/15 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",
-                      ].join(" ")}
-                    >
-                      <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-silver">
-                        {SIGNAL_LABELS[key]}
-                      </div>
-                      <span
-                        className={[
-                          "inline-flex min-w-[92px] items-center justify-center rounded-md border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.22em]",
-                          active
-                            ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
-                            : "border-red-400/40 bg-red-500/10 text-red-200",
-                        ].join(" ")}
-                      >
-                        {active ? "ACTIVE" : "LOCKED"}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-auto pt-1">
-              <div className="rounded-control border border-stroke/70 bg-surface/70 px-3 py-2 text-center text-xs text-muted">
-                Unlock Tier 5 to access the full Alpha stack.
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-
-        {/* Live BTC chart */}
-        <Card className="relative overflow-hidden lg:col-span-2 xl:col-span-3 bg-[linear-gradient(135deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent"
-          />
-          <CardBody className="relative">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="text-sm font-semibold uppercase tracking-[0.25em] text-silver">
-                  BTC - BINANCE FEED
-                </div>
-                <div className="flex flex-wrap items-center gap-1">
-                  {BTC_INTERVALS.map((item) => {
-                    const active = btcInterval === item.key;
-                    return (
-                      <button
-                        key={item.key}
-                        onClick={() => setBtcInterval(item.key)}
-                        className={[
-                          "h-7 rounded-md border px-2 text-[10px] uppercase tracking-[0.2em]",
-                          active
-                            ? "border-white/50 bg-white/15 text-silver"
-                            : "border-stroke/70 bg-surface/70 text-muted hover:bg-surface2/80",
-                        ].join(" ")}
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-            <Badge tone="live" className="!h-8 !rounded-md text-[11px] absolute right-6 top-6 translate-y-[2px]">
-              Live
-            </Badge>
-            <div className="mt-4">
-              <BtcMiniChart height={300} interval={btcInterval} />
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-
-      <DashboardDivider />
-
-      {/* Bot tile */}
-      <div className="grid gap-6">
-        {/* ALPHA-X */}
-        <Card className="relative overflow-hidden">
-          <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-44 w-44 -translate-x-1/2 alpha-x-glow" />
-          <CardBody className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">
-                Alpha Bot
-              </div>
-              <Badge tone="planned" className="text-silver">In Build</Badge>
-            </div>
-            <div className="font-display text-3xl font-semibold tracking-[0.06em] text-silver">
-              {BOT_LABELS.trend_rider}
-            </div>
-            <p className="text-sm text-muted">
-              ALPHA-X is in build. Controls and logs will unlock once the bot is live.
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button disabled size="sm" onClick={() => start("trend_rider")}>
-                Start
-              </Button>
-              <Button disabled size="sm" variant="ghost" onClick={() => stop("trend_rider")}>
-                Stop
-              </Button>
-              <Button disabled size="sm" variant="outline">
-                Logs
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-
-      <DashboardDivider />
-
-      {/* Live logs - signals only */}
-      <Card className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"
-        />
-        <CardBody>
-          <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="space-y-1">
-              <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">Console</div>
-              <div className="text-lg font-semibold text-silver">
-                <span className="uppercase">Live Logs:</span>{" "}
-                <span className="text-metal-gold uppercase">{LOG_LABELS[activeSignal]}</span>
-              </div>
-            </div>
-
-            {/* non-wrapping, scrollable row so Clear stays on the same line */}
-            <div className="overflow-x-auto">
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                {LOG_TABS.map((key) => {
-                  const isActive = activeSignal === key;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setActiveSignal(key)}
-                      className={[
-                        "rounded-pill border px-3 py-1.5 text-[11px] uppercase tracking-[0.3em]",
-                        key === "all" ? "font-bold" : "font-semibold",
-                        isActive
-                          ? "border-gold/50 bg-gold/15 text-gold"
-                          : "border-stroke/70 bg-surface/70 text-muted hover:bg-surface2/80",
-                      ].join(" ")}
-                    >
-                      {LOG_LABELS[key]}
-                    </button>
-                  );
-                })}
-
-                <span
-                  className={[
-                    "ml-2 inline-flex items-center gap-2 rounded-pill border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em]",
-                    wsState === "open"
-                      ? "border-green-400/30 bg-green-500/10 text-green-300"
-                      : wsState === "reconnecting" || wsState === "connecting"
-                      ? "border-green-700 bg-green-500/10 text-green-300"
-                      : "border-red-400/30 bg-red-500/10 text-red-300",
-                  ].join(" ")}
-                >
-                  <span className="h-2 w-2 rounded-full bg-current" />
-                  {wsState}
-                </span>
-
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setLogs([])}
-                  className="!h-9 !px-3 text-[11px] uppercase tracking-[0.3em]"
-                >
-                  Clear
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-72 overflow-auto rounded-xl border border-stroke/50 bg-[linear-gradient(180deg,rgba(20,22,28,0.9),rgba(10,10,12,0.9))] p-3 font-mono text-sm text-silver shadow-[inset_0_0_20px_rgba(0,0,0,0.35)]">
-            {logs.length === 0 ? "Waiting for logs..." : logs.join("\n")}
-          </div>
-        </CardBody>
-      </Card>
+  return grid.map(row=>row.map(c=>c.count?c.sum/c.count:0));
+ },[hours,hourLane,hourMode]);
+ const heatMax=Math.max(1,...heat.flat());
+ function selectRange(next:"7D"|"30D"|"ALL"){
+  if(!data)return;setRange(next);setEnd(data.summary.end);
+  const ds=next==="ALL"?data.summary.start:data.daily.at(-1)?.date_pt||data.summary.end;
+  if(next==="ALL"){setStart(data.summary.start);return}
+  const from=new Date(ds+"T12:00:00Z");from.setUTCDate(from.getUTCDate()-(next==="7D"?6:29));
+  setStart(from.toISOString().slice(0,10));
+ }
+ if(authLoading)return <div className="ai-status">Checking your session…</div>;
+ if(!session)return <div className="ai-status"><h1>SIGN IN REQUIRED</h1><p>Lane Flow Intelligence is a signed-in workspace.</p><Link href="/login" className="ai-button">SIGN IN</Link></div>;
+ return <div className="ai-shell">
+  <aside className="ai-rail" aria-label="Lane intelligence navigation">
+   <Link href="/" className="ai-rail-mark" title="Alpha Alerts home">Α</Link>
+   <a href="#overview" title="Overview">◫</a><a href="#composition" title="Lane composition">▥</a>
+   <a href="#transitions" title="Transitions">⇄</a><a href="#heatmap" title="Heatmap">▦</a>
+   <a href="#lookup" title="First-alert lookup">⌕</a>
+   <Link href="/dashboard/account" className="ai-rail-account" title="Account & bot controls">⚙</Link>
+  </aside>
+  <div className="ai-workspace">
+   <div className="ai-top">
+    <div><div className="ai-wordmark">ALPHA <span>ALERTS</span></div><div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div></div>
+    <div className="ai-top-actions"><span className="ai-historical">HISTORICAL · OFFLINE</span><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></div>
+   </div>
+   <main className="ai-main" id="overview">
+    <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Telegram alert distribution, first appearances, transitions and market context. Historical observations only.</p></div><div className="ai-badge">{data?"ARCHIVE LOADED":"NO ARCHIVE LOADED"}</div></div>
+    <div className="ai-import">
+     <div><strong>PRIVATE ARCHIVE</strong><p>{data?`Loaded locally: ${importName} · ${data.summary.start} to ${data.summary.end}`:"Import the supplied V4 HTML to begin. The file is read in your browser only; it is not uploaded."}</p></div>
+     <label className="ai-button">IMPORT V4 ARCHIVE<input type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} className="ai-file"/></label>
     </div>
-  );
+    {error&&<p className="ai-error" role="alert">{error}</p>}
+    {!data?<div className="ai-empty"><span>◈</span><h2>YOUR HISTORICAL INTELLIGENCE WORKSPACE</h2><p>No sample signals, invented prices or private archive data are embedded in this website. Import your V4 file to activate all charts and research tools.</p><Link href="/dashboard/account" className="ai-link">Account & current bot controls</Link></div>:<>
+     <div className="ai-filter"><span>HISTORICAL PERIOD · PACIFIC TIME</span><div className="ai-date"><label>FROM <input aria-label="Start date" type="date" value={start} min={data.summary.start} max={data.summary.end} onChange={e=>{setStart(e.target.value);setRange("ALL")}}/></label><label>TO <input aria-label="End date" type="date" value={end} min={data.summary.start} max={data.summary.end} onChange={e=>{setEnd(e.target.value);setRange("ALL")}}/></label></div><div className="ai-range">{(["7D","30D","ALL"] as const).map(r=><button className={range===r?"active":""} onClick={()=>selectRange(r)} key={r}>{r}</button>)}</div></div>
+     <div className="ai-kpis">
+      {[[ "ALERT EVENTS",eventTotal,"Repeats included"],["FIRST MINTS",firstTotal,"First appearances"],["OBSERVED HOURS",hours.length,"Hourly observations"],["PULSE KNOWN",pulseKnown,"Hours with matched state"]].map(([label,value,desc])=><div className="ai-metric" key={label}><span>{label}</span><strong>{fmt(Number(value))}</strong><small>{desc}</small></div>)}
+     </div>
+     <div className="ai-hero-grid">
+      <Panel title="LANE VOLUME / TREND" detail={`${days.length} SELECTED DAYS`} className="ai-chart-panel"><p className="ai-panel-desc">Published alert events (gold) versus first mint appearances (blue). No price or P&amp;L inference.</p>
+       <div className="ai-volume" role="img" aria-label="Daily alert volume and first appearances">
+        {daysSorted.map((d,i)=><div className="ai-day-col" title={`${d.date_pt}: ${d.all_alerts} alerts; ${d.first_mints} first mints`} key={d.date_pt}><div className="ai-day-bars"><i style={{height:`${100*n(d.all_alerts)/maxDaily}%`,background:"#eabe76"}}/><i style={{height:`${100*n(d.first_mints)/maxDaily}%`,background:"#69aee2"}}/></div>{(i===0||i===daysSorted.length-1||i%Math.max(1,Math.ceil(daysSorted.length/7))===0)&&<span>{d.date_pt.slice(5)}</span>}</div>)}
+       </div><div className="ai-legend"><span><i style={{background:"#eabe76"}}/>All alerts</span><span><i style={{background:"#69aee2"}}/>First appearances</span></div>
+      </Panel>
+      <div className="ai-side">
+       <Panel title="LANE ALLOCATION" detail="PUBLISHED EVENTS"><Bars rows={LANES.map(l=>({label:l,value:totals[l],color:COLORS[l]}))} max={maxLane}/></Panel>
+       <Panel title="PULSE CONTEXT" detail="MATCHED HOURLY STATES"><div className="ai-regimes">{regimeCounts.map(([mode,count])=><div key={mode}><span>{mode.replaceAll("_"," ")}</span><strong>{fmt(count)} h</strong></div>)}</div><p className="ai-note">Unknown states are shown separately. Observations are not validated trading predictions.</p></Panel>
+      </div>
+     </div>
+     <div className="ai-middle">
+      <Panel title="RECENT FIRST ALERTS" detail="SELECTED PERIOD"><div className="ai-table-wrap"><table><thead><tr><th>FIRST SEEN (PT)</th><th>TOKEN</th><th>LANE</th><th>FIRST MC</th><th>MSGS</th><th>SOURCE</th></tr></thead><tbody>{firstRows.slice(0,8).map(r=><tr key={r.mint}><td>{r.date}</td><td className="ai-token">{r.symbol}</td><td><span className="ai-lane-chip" style={{color:COLORS[r.lane as Lane]||"#bbc3c6"}}>{r.lane}</span></td><td>{formatMoney(r.mc)}</td><td>{r.alerts}</td><td>{trustedTelegram(r.url)?<a target="_blank" rel="noopener noreferrer" href={trustedTelegram(r.url)!}>TELEGRAM</a>:"—"}</td></tr>)}</tbody></table>{!firstRows.length&&<div className="ai-nodata">No first alerts for this range.</div>}</div></Panel>
+      <Panel title="LANE SHARE" detail="OF SELECTED ALERT EVENTS"><div className="ai-share"><div className="ai-donut" style={{background:eventTotal?`conic-gradient(${LANES.map((l,i)=>{const before=LANES.slice(0,i).reduce((s,k)=>s+totals[k],0)/eventTotal*100;return `${COLORS[l]} ${before}% ${(before+totals[l]/eventTotal*100)}%`}).join(",")})`:"#313941"}}><div><strong>{fmt(eventTotal)}</strong><small>ALERTS</small></div></div><div className="ai-share-legend">{LANES.map(l=><div key={l}><i style={{background:COLORS[l]}}/><span>{l}</span><strong>{eventTotal?(totals[l]/eventTotal*100).toFixed(1):"0.0"}%</strong></div>)}</div></div></Panel>
+     </div>
+     <div className="ai-research-title" id="composition"><h2>DEEP RESEARCH / LANE INTELLIGENCE</h2><p>SAME ARCHIVE · READ-ONLY OBSERVATIONS</p></div>
+     <div className="ai-middle">
+      <Panel title="DAILY LANE COMPOSITION" detail="REPEATED EVENTS INCLUDED"><div className="ai-composition">{daysSorted.map(d=><div className="ai-composition-row" key={d.date_pt}><span>{d.date_pt.slice(5)}</span><div className="ai-stack">{LANES.map(l=><i key={l} title={`${l}: ${n(d[l])}`} style={{width:`${n(d.all_alerts)?100*n(d[l])/n(d.all_alerts):0}%`,background:COLORS[l]}}/>)}</div><strong>{fmt(n(d.all_alerts))}</strong></div>)}</div></Panel>
+      <Panel title="LANE TRANSITIONS" detail="FULL ARCHIVE" className="ai-transition-panel"><Bars max={Math.max(1,...data.transitions.map(t=>n(t.event_n)))} rows={[...data.transitions].sort((a,b)=>n(b.event_n)-n(a.event_n)).slice(0,12).map(t=>({label:`${t.from_lane} → ${t.to_lane}`,value:n(t.event_n),color:"#c7a56c"}))}/><p className="ai-note">Sequences are observed alert transitions, not independent executable returns.</p></Panel>
+     </div>
+     <Panel title="SESSION ACTIVITY / HEATMAP" detail="PACIFIC TIME" className="ai-heat" ><div className="ai-heat-controls"><label>LANE <select value={hourLane} onChange={e=>setHourLane(e.target.value)}><option value="ALL">ALL LANES</option>{LANES.map(l=><option key={l}>{l}</option>)}</select></label><label>MEASURE <select value={hourMode} onChange={e=>setHourMode(e.target.value)}><option>ALL MESSAGES</option><option>FIRST APPEARANCES</option></select></label></div><div className="ai-heat-scroll"><div className="ai-heat-grid"><div className="ai-heat-label">DAY</div>{Array.from({length:24},(_,h)=><span className="ai-heat-label" key={h}>{String(h).padStart(2,"0")}</span>)}{heat.map((row,i)=><div className="ai-heat-row" key={i}><span className="ai-heat-label">{["SUN","MON","TUE","WED","THU","FRI","SAT"][i]}</span>{row.map((v,h)=><div className="ai-heat-cell" key={h} style={{background:v?`rgba(105,174,226,${Math.max(.11,v/heatMax*.87)})`:"#15191d"}} title={`${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][i]} ${h}:00 PT: ${v.toFixed(2)} per observed hour`}>{v?v.toFixed(v<10?1:0):""}</div>)}</div>)}</div></div><p className="ai-note">Session gates and deployment changes can distort quiet-hour patterns. Empty cells are not zero-market-activity evidence.</p></Panel>
+     <div className="ai-middle">
+      <Panel title="PULSE / CONDITIONS" detail="FULL ARCHIVE REGIME GROUPS"><div className="ai-table-wrap"><table><thead><tr><th>REGIME</th><th>HOURS</th><th>EARLY/H</th><th>RECLAIM/H</th><th>RUNNER/H</th></tr></thead><tbody>{data.regimes.map(r=><tr key={r.mode}><td>{r.mode}</td><td>{fmt(r.hours)}</td><td>{r.early_per_hour.toFixed(2)}</td><td>{r.reclaim_per_hour.toFixed(2)}</td><td>{r.runner_per_hour.toFixed(2)}</td></tr>)}</tbody></table></div></Panel>
+      <Panel title="RESEARCH INTEGRITY" detail="CRITICAL QUALIFICATIONS"><p className="ai-integrity">The October 18 v1.08 release notes document qualified-alert suppression during THIN / NEUTRAL sessions. Apparent quiet periods may reflect the session gate, not underlying market activity.</p><p className="ai-note">First-in-export may not mean first-in-public. Elite Telegram links are private. No live quotes, P&amp;L, or predictive backtest claims are implied.</p></Panel>
+     </div>
+     <Panel title="FIRST-ALERT LOOKUP" detail={`${fmt(firstRows.length)} MATCHES`} className="ai-lookup" ><div className="ai-lookup-controls"><input aria-label="Search token or mint" placeholder="Search ticker or mint address…" value={search} onChange={e=>{setSearch(e.target.value);setExpanded(false)}}/><select value={lookupLane} aria-label="Filter lane" onChange={e=>{setLookupLane(e.target.value);setExpanded(false)}}><option value="ALL">ALL LANES</option>{LANES.map(l=><option key={l}>{l}</option>)}</select></div><div className="ai-table-wrap"><table><thead><tr><th>FIRST SEEN (PT)</th><th>TOKEN</th><th>LANE</th><th>FIRST MC</th><th>MESSAGES</th><th>SOURCE</th></tr></thead><tbody>{selectedRows.map(r=><tr key={r.mint}><td>{r.date}</td><td><div className="ai-token">{r.symbol}</div><small className="ai-mint">{r.mint.slice(0,7)}…{r.mint.slice(-5)}</small></td><td><span className="ai-lane-chip" style={{color:COLORS[r.lane as Lane]||"#bbc3c6"}}>{r.lane}</span></td><td>{formatMoney(r.mc)}</td><td>{r.alerts}</td><td>{trustedTelegram(r.url)?<a target="_blank" rel="noopener noreferrer" href={trustedTelegram(r.url)!}>VIEW ↗</a>:"—"}</td></tr>)}</tbody></table>{!selectedRows.length&&<div className="ai-nodata">No results match your filters.</div>}</div>{firstRows.length>100&&!expanded&&<button className="ai-more" onClick={()=>setExpanded(true)}>SHOW ALL {fmt(firstRows.length)} RESULTS</button>}</Panel>
+    </>}
+    <footer className="ai-footer"><span>© FRUXLABS / ALPHA ALERTS · HISTORICAL RESEARCH</span><span>PRIVATE LOCAL IMPORT · NO FINANCIAL ADVICE · NO LIVE DATA</span></footer>
+   </main>
+  </div>
+ </div>;
 }
