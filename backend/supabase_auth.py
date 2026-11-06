@@ -57,17 +57,24 @@ def verify_supabase_token(token: str) -> dict:
     header = jwt.get_unverified_header(token)
     kid = header.get("kid")
     alg = header.get("alg")
-    if not kid:
-        raise ValueError("missing kid")
-
-    if alg and alg.startswith("HS") and SUPABASE_JWT_SECRET:
+    # Older Supabase projects issue HS256 tokens without a `kid` header.
+    # Verify those against the explicitly configured secret, never against JWKS.
+    if alg == "HS256":
+        if not SUPABASE_JWT_SECRET:
+            raise ValueError("HS256 token verification is not configured")
         return jwt.decode(
             token,
             SUPABASE_JWT_SECRET,
-            algorithms=[alg],
+            algorithms=["HS256"],
             audience=SUPABASE_AUDIENCE or None,
             issuer=SUPABASE_ISSUER or None,
         )
+
+    # Asymmetric tokens must select a known key from the project's JWKS.
+    if not kid:
+        raise ValueError("missing kid")
+    if alg not in ("RS256", "ES256"):
+        raise ValueError("unsupported token signing algorithm")
 
     jwks = _get_jwks()
     key_data = next((k for k in jwks.get("keys", []) if k.get("kid") == kid), None)
