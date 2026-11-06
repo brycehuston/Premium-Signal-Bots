@@ -13,6 +13,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get("error");
+    if (reason === "configuration") {
+      setError("Authentication is not configured for this website environment.");
+    } else if (reason === "oauth") {
+      setError("Sign-in could not be completed. Please try Google again or use email.");
+    }
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -20,17 +30,23 @@ export default function LoginPage() {
   }, [loading, session, router]);
 
   async function signInWithGoogle() {
-    if (!supabase) return;
+    if (!supabase) {
+      setError("Google sign-in is unavailable until Supabase is configured.");
+      return;
+    }
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
-      const origin = window.location.origin;
-      await supabase.auth.signInWithOAuth({
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${origin}/auth/callback?next=/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
+      if (oauthError) throw oauthError;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Google sign-in could not start.");
     } finally {
       setBusy(false);
     }
@@ -41,17 +57,21 @@ export default function LoginPage() {
     if (!supabase) return;
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       if (mode === "signup") {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
         });
         if (signUpError) throw signUpError;
+        if (!data.session) {
+          setNotice("Check your inbox for account confirmation, if required by your email provider.");
+        }
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
         if (signInError) throw signInError;
@@ -63,7 +83,11 @@ export default function LoginPage() {
     }
   }
 
-  if (loading || session) return null;
+  if (loading || session) {
+    return <div className="flex min-h-[60vh] items-center justify-center text-small text-muted" role="status">
+      {session ? "Opening dashboard…" : "Checking your session…"}
+    </div>;
+  }
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
@@ -123,7 +147,9 @@ export default function LoginPage() {
               Join waitlist
             </a>
           </div>
-          {error && <div className="text-sm text-red-400">{error}</div>}
+          {!supabase && <div role="alert" className="text-sm text-amber-300">Authentication is not configured. An administrator must connect Supabase first.</div>}
+          {error && <div role="alert" className="text-sm text-red-400">{error}</div>}
+          {notice && <div role="status" className="text-sm text-emerald-300">{notice}</div>}
           <button
             type="submit"
             disabled={busy || !supabase}
@@ -134,7 +160,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-4 text-center text-xs text-muted">
-          Password sign-in requires Email provider enabled in Supabase Auth.
+          Email sign-in requires the Email provider. Google sign-in requires Google OAuth enabled in Supabase.
         </p>
       </div>
     </div>
