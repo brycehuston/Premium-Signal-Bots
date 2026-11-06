@@ -25,7 +25,7 @@ function trustedTelegram(value:string){try{const u=new URL(value);return u.proto
 function validArchive(data:unknown):data is Archive {
  if(!data||typeof data!=="object")return false;
  const v=data as Partial<Archive>;
- const validDate=(date:unknown)=>typeof date==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(date);
+ const validDate=(date:unknown)=>typeof date==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(date);
  const count=(value:unknown)=>Number.isFinite(Number(value))&&Number(value)>=0;
  return Array.isArray(v.daily)&&Array.isArray(v.hourly)&&Array.isArray(v.first)&&Array.isArray(v.regimes)&&Array.isArray(v.transitions)&&
  v.daily.length<=4000&&v.hourly.length<=100000&&v.first.length<=100000&&
@@ -34,7 +34,7 @@ function validArchive(data:unknown):data is Archive {
  v.hourly.every(x=>validDate(x.date_pt)&&typeof x.dow==="string"&&count(x.all_alerts)&&count(x.first_mints)&&
  Number.isInteger(x.clock_hour_pt)&&x.clock_hour_pt>=0&&x.clock_hour_pt<=23&&typeof x.pulse_mode==="string")&&
  v.first.every(x=>typeof x.mint==="string"&&x.mint.length>0&&typeof x.symbol==="string"&&
- typeof x.date==="string"&&/^\\d{4}-\\d{2}-\\d{2}/.test(x.date)&&
+ typeof x.date==="string"&&/^\d{4}-\d{2}-\d{2}/.test(x.date)&&
  LANES.includes(x.lane as Lane)&&count(x.alerts)&&count(x.mc)&&typeof x.url==="string")&&
  v.regimes.every(x=>typeof x.mode==="string"&&count(x.hours)&&count(x.early_per_hour)&&count(x.reclaim_per_hour)&&count(x.runner_per_hour))&&
  v.transitions.every(x=>typeof x.from_lane==="string"&&typeof x.to_lane==="string"&&count(x.event_n));
