@@ -107,7 +107,7 @@ export default function BottomTickerBar({
   const fearGreedTimerRef = useRef<number | null>(null);
   const fearGreedInFlightRef = useRef<boolean>(false);
   const pathname = usePathname();
-  const hideBar = pathname.startsWith("/stage-");
+  const hideBar = pathname.startsWith("/stage-") || pathname === "/dashboard";
   const shouldFetch =
     !hideBar &&
     (pathname === "/" ||

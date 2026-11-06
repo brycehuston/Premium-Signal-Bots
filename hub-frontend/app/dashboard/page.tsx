@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSupabase } from "@/components/SupabaseProvider";
 import "./intelligence.css";
 
@@ -104,7 +105,7 @@ export default function LaneIntelligenceDashboard(){
  if(!session)return <div className="ai-status"><h1>SIGN IN REQUIRED</h1><p>Lane Flow Intelligence is a signed-in workspace.</p><Link href="/login" className="ai-button">SIGN IN</Link></div>;
  return <div className="ai-shell">
   <aside className="ai-rail" aria-label="Lane intelligence navigation">
-   <Link href="/" className="ai-rail-mark" title="Alpha Alerts home">Α</Link>
+   <Link href="/" className="ai-rail-mark" title="Alpha Alerts home"><Image src="/alpha-lane-v4-logo.png" alt="Alpha Alerts" width={52} height={44} unoptimized /></Link>
    <a href="#overview" title="Overview">◫</a><a href="#composition" title="Lane composition">▥</a>
    <a href="#transitions" title="Transitions">⇄</a><a href="#heatmap" title="Heatmap">▦</a>
    <a href="#lookup" title="First-alert lookup">⌕</a>

@@ -1,5 +1,5 @@
 /* Alpha Lane Flow Intelligence V4: scoped, neutral surfaces and semantic chart accents. */
-.ai-shell{display:grid;grid-template-columns:62px minmax(0,1fr);margin:-40px calc(50% - 50vw) -60px;min-height:100vh;background:#060709;color:#f3f5f6;font-family:var(--font-sans),Arial,sans-serif;font-size:12px}
+.ai-shell{display:grid;grid-template-columns:62px minmax(0,1fr);margin:0;min-height:100vh;background:#060709;color:#f3f5f6;font-family:var(--font-sans),Arial,sans-serif;font-size:12px}
 .ai-shell *, .ai-shell *::before,.ai-shell *::after{box-sizing:border-box}
 .ai-shell a{text-decoration:none}.ai-shell button{cursor:pointer}.ai-shell button,.ai-shell input,.ai-shell select{font:inherit}.ai-shell :is(a,button,input,select):focus-visible{outline:2px solid #8baec5;outline-offset:3px}
 .ai-rail{background:#080a0d;border-right:1px solid #2b3339;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;align-items:center;gap:12px;padding:14px 0;z-index:5}
@@ -58,3 +58,13 @@
 @media(max-width:900px){.ai-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ai-side{grid-template-columns:1fr}.ai-import,.ai-filter{flex-wrap:wrap}.ai-share{justify-content:center}}
 @media(max-width:640px){.ai-shell{grid-template-columns:48px minmax(0,1fr)}.ai-rail a{width:37px;height:39px;font-size:19px}.ai-main{padding:18px 11px 35px}.ai-top{padding:13px;align-items:flex-start;flex-wrap:wrap}.ai-wordmark{font-size:17px}.ai-top-actions{gap:9px}.ai-historical{display:none}.ai-title-row{flex-wrap:wrap}.ai-title-row h1{font-size:18px}.ai-panel{padding:14px}.ai-metric{padding:13px;min-height:96px}.ai-metric strong{font-size:22px}.ai-import .ai-button{width:100%}.ai-day-col>span{font-size:8px}.ai-volume{height:218px}.ai-share{flex-wrap:wrap}.ai-donut{width:145px;flex-basis:145px}.ai-research-title{display:block}.ai-research-title h2{font-size:13px}.ai-transition-panel .ai-bar{grid-template-columns:125px minmax(0,1fr) 39px}.ai-filter>span{white-space:normal}}
 @media(prefers-reduced-motion:reduce){.ai-shell *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Independent terminal shell; all other routes remain unchanged. */
+body:has(.ai-shell) > header.sticky{display:none!important}
+body:has(.ai-shell) > .pb-16{padding-bottom:0!important}
+body:has(.ai-shell) > .pb-16 > main.py-10{padding-block:0!important}
+body:has(.ai-shell) > .pb-16 > main.py-10 > .mx-auto{max-width:none!important;width:100%!important;padding-inline:0!important;margin:0!important}
+body:has(.ai-shell) > .pb-16 > footer{display:none!important}
+body:has(.ai-shell) > .fixed.bottom-0{display:none!important}
+.ai-rail .ai-rail-mark img{width:52px;height:44px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(224,174,96,.12))}
+@media(max-width:640px){.ai-rail .ai-rail-mark img{width:39px;height:37px}}
