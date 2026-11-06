@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSupabase } from "@/components/SupabaseProvider";
@@ -25,10 +25,19 @@ function trustedTelegram(value:string){try{const u=new URL(value);return u.proto
 function validArchive(data:unknown):data is Archive {
  if(!data||typeof data!=="object")return false;
  const v=data as Partial<Archive>;
+ const validDate=(date:unknown)=>typeof date==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(date);
+ const count=(value:unknown)=>Number.isFinite(Number(value))&&Number(value)>=0;
  return Array.isArray(v.daily)&&Array.isArray(v.hourly)&&Array.isArray(v.first)&&Array.isArray(v.regimes)&&Array.isArray(v.transitions)&&
- !!v.summary&&typeof v.summary.start==="string"&&typeof v.summary.end==="string"&&
- v.daily.every(x=>typeof x.date_pt==="string"&&Number.isFinite(Number(x.all_alerts)))&&
- v.first.every(x=>typeof x.mint==="string"&&typeof x.symbol==="string"&&typeof x.date==="string"&&typeof x.lane==="string");
+ v.daily.length<=4000&&v.hourly.length<=100000&&v.first.length<=100000&&
+ !!v.summary&&validDate(v.summary.start)&&validDate(v.summary.end)&&v.summary.start<=v.summary.end&&
+ v.daily.every(x=>validDate(x.date_pt)&&count(x.all_alerts)&&count(x.first_mints)&&LANES.every(l=>count(x[l])))&&
+ v.hourly.every(x=>validDate(x.date_pt)&&typeof x.dow==="string"&&count(x.all_alerts)&&count(x.first_mints)&&
+ Number.isInteger(x.clock_hour_pt)&&x.clock_hour_pt>=0&&x.clock_hour_pt<=23&&typeof x.pulse_mode==="string")&&
+ v.first.every(x=>typeof x.mint==="string"&&x.mint.length>0&&typeof x.symbol==="string"&&
+ typeof x.date==="string"&&/^\\d{4}-\\d{2}-\\d{2}/.test(x.date)&&
+ LANES.includes(x.lane as Lane)&&count(x.alerts)&&count(x.mc)&&typeof x.url==="string")&&
+ v.regimes.every(x=>typeof x.mode==="string"&&count(x.hours)&&count(x.early_per_hour)&&count(x.reclaim_per_hour)&&count(x.runner_per_hour))&&
+ v.transitions.every(x=>typeof x.from_lane==="string"&&typeof x.to_lane==="string"&&count(x.event_n));
 }
 function Panel({title,detail,children,className="",id}:{title:string;detail?:string;children:React.ReactNode;className?:string;id?:string}){
  return <section id={id} className={"ai-panel "+className}><div className="ai-panel-head"><h2>{title}</h2>{detail&&<span>{detail}</span>}</div>{children}</section>;
@@ -39,6 +48,7 @@ function Bars({rows,max}:{rows:{label:string;value:number;color?:string}[];max:n
 export default function LaneIntelligenceDashboard(){
  const {session,loading:authLoading,signOut}=useSupabase();
  const [data,setData]=useState<Archive|null>(null);
+ const archiveFileRef=useRef<HTMLInputElement>(null);
  const [error,setError]=useState("");
  const [importName,setImportName]=useState("");
  const [range,setRange]=useState<"7D"|"30D"|"ALL">("30D");
@@ -53,10 +63,13 @@ export default function LaneIntelligenceDashboard(){
   try{
    const raw=await file.text();let parsed:unknown;
    if(file.name.toLowerCase().endsWith(".html")||raw.trimStart().startsWith("<")){
-    const doc=new DOMParser().parseFromString(raw,"text/html");
-    const node=doc.getElementById("dataset");
-    if(!node||node.tagName!=="SCRIPT"||node.getAttribute("type")!=="application/json")throw new Error("Missing JSON archive script");
-    parsed=JSON.parse(node.textContent||"");
+    const opener='<script id="dataset" type="application/json">';
+    const at=raw.indexOf(opener);
+    if(at<0)throw new Error("Missing signed-off V4 dataset block");
+    const begin=at+opener.length;
+    const stop=raw.indexOf("</script>",begin);
+    if(stop<0||stop-begin>12*1024*1024)throw new Error("Invalid archive block");
+    parsed=JSON.parse(raw.slice(begin,stop));
    }else parsed=JSON.parse(raw);
    if(!validArchive(parsed))throw new Error("Archive does not match the Lane Flow V4 dataset schema");
    setData(parsed);setImportName(file.name);setStart(parsed.summary.start);setEnd(parsed.summary.end);setRange("ALL");
@@ -120,7 +133,7 @@ export default function LaneIntelligenceDashboard(){
     <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Telegram alert distribution, first appearances, transitions and market context. Historical observations only.</p></div><div className="ai-badge">{data?"ARCHIVE LOADED":"NO ARCHIVE LOADED"}</div></div>
     <div className="ai-import">
      <div><strong>PRIVATE ARCHIVE</strong><p>{data?`Loaded locally: ${importName} · ${data.summary.start} to ${data.summary.end}`:"Import the supplied V4 HTML to begin. The file is read in your browser only; it is not uploaded."}</p></div>
-     <label className="ai-button">IMPORT V4 ARCHIVE<input type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} className="ai-file"/></label>
+     <div className="ai-import-actions"><button type="button" className="ai-button" onClick={()=>archiveFileRef.current?.click()}>IMPORT V4 ARCHIVE</button><input ref={archiveFileRef} type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} hidden tabIndex={-1}/></div>
     </div>
     {error&&<p className="ai-error" role="alert">{error}</p>}
     {!data?<div className="ai-empty"><span>◈</span><h2>YOUR HISTORICAL INTELLIGENCE WORKSPACE</h2><p>No sample signals, invented prices or private archive data are embedded in this website. Import your V4 file to activate all charts and research tools.</p><Link href="/dashboard/account" className="ai-link">Account & current bot controls</Link></div>:<>
