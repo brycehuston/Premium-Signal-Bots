@@ -678,171 +678,117 @@ function FeatureRow({ active }: { active: boolean }) {
   );
 }
 
-type AlertReelTone = "bronze" | "platinum" | "gold";
-
-type AlertReelItem = {
+type VerifiedDailyAlert = {
   id: string;
-  tone: AlertReelTone;
-  label: string;
-  pair: string;
-  signal: string;
-  score: string;
-  meta: string[];
+  symbol: string;
+  lane: string;
+  score: number;
+  timestamp_utc: string;
+  alert_mc: number | null;
+  liquidity_usd: number | null;
+  m5_tx: number | null;
+};
+type VerifiedDailyFeed = {
+  state: "loading" | "verified" | "empty" | "unavailable";
+  as_of_utc?: string;
+  public_delay_minutes?: number;
+  alerts: VerifiedDailyAlert[];
 };
 
-const ALERT_REEL_ITEMS: AlertReelItem[] = [
-  {
-    id: "early",
-    tone: "bronze",
-    label: "EARLY",
-    pair: "SOL/USDC",
-    signal: "New pool detected + safety clear",
-    score: "Score 86",
-    meta: ["Liq 17k", "Holders 114", "Age 2m"],
-  },
-  {
-    id: "trend",
-    tone: "platinum",
-    label: "TREND",
-    pair: "SOL/USDC",
-    signal: "Momentum + continuation setup",
-    score: "Score 91",
-    meta: ["Tx 1.4k", "Vol +38%", "State BREAKING"],
-  },
-  {
-    id: "runner",
-    tone: "gold",
-    label: "RUNNER",
-    pair: "SOL/USDC",
-    signal: "Second-leg breakout confirmed",
-    score: "Score 88",
-    meta: ["Vol +52%", "Liq 410k", "Trend strong"],
-  },
-];
-
-const ALERT_REEL_TONES: Record<
-  AlertReelTone,
-  { text: string; dot: string; chip: string; scan: string }
-> = {
-  bronze: {
-    text: "text-bronze",
-    dot: "bg-bronze/80 shadow-[0_0_12px_rgb(var(--tone-bronze)/0.6)]",
-    chip: "border-bronze/40 text-bronze bg-bronze/10",
-    scan: "rgb(var(--tone-bronze) / 0.35)",
-  },
-  platinum: {
-    text: "text-platinum",
-    dot: "bg-platinum/80 shadow-[0_0_12px_rgb(var(--tone-platinum)/0.55)]",
-    chip: "border-platinum/40 text-platinum bg-platinum/10",
-    scan: "rgb(var(--tone-platinum) / 0.35)",
-  },
-  gold: {
-    text: "text-gold",
-    dot: "bg-gold/80 shadow-[0_0_12px_rgb(var(--gold)/0.55)]",
-    chip: "border-gold/40 text-gold bg-gold/10",
-    scan: "rgb(var(--gold) / 0.35)",
-  },
+const LANE_PALETTE: Record<string, { text: string; dot: string; chip: string }> = {
+  EARLY: {text:"text-[#d0924c]",dot:"bg-[#d0924c]",chip:"border-[#d0924c]/40 text-[#d0924c]"},
+  GENESIS: {text:"text-[#7fcbc7]",dot:"bg-[#7fcbc7]",chip:"border-[#7fcbc7]/40 text-[#7fcbc7]"},
+  TREND: {text:"text-[#dce4f2]",dot:"bg-[#dce4f2]",chip:"border-[#dce4f2]/40 text-[#dce4f2]"},
+  STRICT: {text:"text-[#bfa6f4]",dot:"bg-[#bfa6f4]",chip:"border-[#bfa6f4]/40 text-[#bfa6f4]"},
+  RECLAIM: {text:"text-[#7ed3a7]",dot:"bg-[#7ed3a7]",chip:"border-[#7ed3a7]/40 text-[#7ed3a7]"},
+  RUNNER: {text:"text-[#f8d870]",dot:"bg-[#f8d870]",chip:"border-[#f8d870]/40 text-[#f8d870]"},
 };
+
+function formatAlertMoney(n: number | null): string {
+  if (n === null || !Number.isFinite(n)) return "N/A";
+  return "$" + (n >= 1_000_000 ? (n/1_000_000).toFixed(2) + "M" : n >= 1_000 ? (n/1_000).toFixed(1) + "K" : Math.round(n).toLocaleString("en-US"));
+}
 
 function HeroAlertReel() {
-  const prefersReduced = useReducedMotion();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(true);
-
+  const [feed, setFeed] = useState<VerifiedDailyFeed>({state:"loading", alerts:[]});
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setAutoPlay((prev) => !prev);
-    }, 60000);
-    return () => window.clearInterval(id);
+    let mounted = true;
+    const controller = new AbortController();
+    async function refresh() {
+      if (document.hidden) return;
+      try {
+        const response = await fetch("/api/public/daily-top", { cache:"no-store",signal:controller.signal });
+        if (!response.ok) throw new Error("feed unavailable");
+        const data = await response.json();
+        if (mounted) setFeed({
+          state:data.state === "verified" || data.state === "empty" ? data.state : "unavailable",
+          as_of_utc:data.as_of_utc,
+          public_delay_minutes:30,
+          alerts:Array.isArray(data.alerts) ? data.alerts.slice(0,3) : []
+        });
+      } catch {
+        if (mounted && !controller.signal.aborted) setFeed({state:"unavailable",alerts:[]});
+      }
+    }
+    refresh();
+    const timer = window.setInterval(refresh,60000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {mounted=false;controller.abort();window.clearInterval(timer);document.removeEventListener("visibilitychange",refresh);};
   }, []);
 
-  useEffect(() => {
-    if (prefersReduced || !autoPlay) return;
-    const id = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % ALERT_REEL_ITEMS.length);
-    }, 5200);
-    return () => window.clearInterval(id);
-  }, [prefersReduced, autoPlay]);
-
+  const available = feed.state === "verified" && feed.alerts.length > 0;
   return (
-    <div className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-muted/80">
-          <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_10px_rgb(var(--gold)/0.55)]" />
-          Alert Reel
+    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Top three published Alpha Alerts today">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.23em] text-muted">
+          <span className="h-1.5 w-1.5 rounded-full bg-gold/70" aria-hidden="true"/>
+          TODAY'S TOP 3 ALERTS
         </div>
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted/70">
-          <span
-            className={[
-              "relative h-4 w-9 rounded-full border border-stroke/70 bg-surface/70 transition-colors",
-              autoPlay ? "border-emerald-400/40 bg-emerald-400/10" : "",
-            ].join(" ")}
-          >
-            <span
-              className={[
-                "absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full transition-transform",
-                autoPlay
-                  ? "translate-x-[18px] bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
-                  : "translate-x-[3px] bg-muted/70",
-              ].join(" ")}
-            />
-          </span>
-          <span
-            className={[
-              "h-2 w-2 rounded-full",
-              prefersReduced || !autoPlay ? "bg-muted/60" : "bg-success/80 animate-pulse",
-              "shadow-[0_0_10px_rgb(var(--success)/0.55)]",
-            ].join(" ")}
-          />
-          {autoPlay ? "Live" : "Idle"}
-        </div>
+        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available?"border-emerald-400/30 text-emerald-300":"border-stroke/60 text-muted"}`}>
+          {available?"VERIFIED DELIVERY":feed.state==="loading"?"CHECKING DATA":"FEED UNAVAILABLE"}
+        </span>
       </div>
-
-      <div className="mt-3 space-y-3">
-        {ALERT_REEL_ITEMS.map((item, index) => {
-          const tone = ALERT_REEL_TONES[item.tone];
-          const isActive = index === activeIndex;
-          return (
-            <div
-              key={item.id}
-              className={[
-                "alert-reel-item",
-                isActive ? "alert-reel-item--active" : "opacity-70",
-              ].join(" ")}
-              style={{ ["--reel-color" as any]: tone.scan }}
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${tone.dot}`} />
-                  <span className={`text-[11px] font-semibold tracking-[0.35em] ${tone.text}`}>
-                    {item.label}
-                  </span>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
+        Highest native alert scores today (UTC). Published signals only; at least 30 minutes delayed.
+      </p>
+      {available ? (
+        <div className="mt-4 space-y-2.5">
+          {feed.alerts.map((item, index) => {
+            const tone = LANE_PALETTE[item.lane] ?? LANE_PALETTE.TREND;
+            const clock = new Date(item.timestamp_utc).toLocaleTimeString("en-US",{timeZone:"UTC",hour:"2-digit",minute:"2-digit",hour12:false});
+            return (
+              <article key={item.id} className="rounded-xl border border-stroke/70 bg-bg/45 px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold tabular-nums text-muted">#{index+1}</span>
+                    <span className={`h-2 w-2 rounded-full ${tone.dot}`} aria-hidden="true"/>
+                    <span className={`text-[11px] font-bold tracking-[0.2em] ${tone.text}`}>{item.lane}</span>
+                    <strong className="text-sm text-silver">${item.symbol}</strong>
+                  </div>
+                  <span className="text-[12px] font-semibold tabular-nums text-silver">{item.score.toFixed(2)}<span className="text-muted">/10</span></span>
                 </div>
-                <span className="text-[11px] uppercase tracking-[0.2em] text-muted/70">
-                  {item.pair}
-                </span>
-              </div>
-
-              <div className="mt-2 flex items-center justify-between gap-4 text-small">
-                <span className="text-silver">{item.signal}</span>
-                <span className="text-muted">{item.score}</span>
-              </div>
-
-              <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
-                {item.meta.map((meta) => (
-                  <span
-                    key={meta}
-                    className={`rounded-pill border px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${tone.chip}`}
-                  >
-                    {meta}
-                  </span>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className={`rounded-full border px-2 py-1 text-[10px] ${tone.chip}`}>MC {formatAlertMoney(item.alert_mc)}</span>
+                  <span className="rounded-full border border-stroke/60 px-2 py-1 text-[10px] text-muted">LIQ {formatAlertMoney(item.liquidity_usd)}</span>
+                  {item.m5_tx != null && <span className="rounded-full border border-stroke/60 px-2 py-1 text-[10px] text-muted">5M TX {item.m5_tx.toLocaleString("en-US")}</span>}
+                  <span className="ml-auto text-[10px] tabular-nums text-muted">{clock} UTC</span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="mt-4 rounded-xl border border-stroke/60 bg-bg/40 px-4 py-8 text-center">
+          <div className="text-sm font-semibold text-silver">{feed.state==="loading"?"Checking verified alerts…":feed.state==="empty"?"No eligible published alerts today":"Verified alerts are not connected yet"}</div>
+          <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
+            This display never substitutes sample wins or scanner candidates for real Telegram deliveries.
+          </p>
+        </div>
+      )}
+      <p className="mt-3 text-[10px] leading-relaxed text-muted/70">
+        Scores are informational, not profit probabilities. Ranking by score is not a trading-performance result.
+      </p>
+    </section>
   );
 }
 
@@ -1309,13 +1255,7 @@ export default function Page() {
   const trustTimersRef = useRef<number[]>([]);
   const trustCycleRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (shouldReduceMotion) return;
-    const id = window.setInterval(() => {
-      setHeroView((prev) => (prev === "chart" ? "reel" : "chart"));
-    }, 60000);
-    return () => window.clearInterval(id);
-  }, [shouldReduceMotion]);
+  // Preserve the visitor's chosen view; avoid surprising swaps while reading or interacting.
 
   const { ref: stealthRef, inView: stealthInView } = useInView({
     threshold: 0.25,
