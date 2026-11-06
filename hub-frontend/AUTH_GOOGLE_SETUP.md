@@ -48,3 +48,22 @@ Scope: restore existing Supabase login and establish a reliable dashboard handof
 - The site currently pins Next.js `15.4.10` and has a separate security-update release gate.
 - A Vercel build is necessary but does not prove successful real OAuth or the backend's access permissions.
 - The user-provided gold/silver/blue-accented Alpha mark remains a design reference; it has not been substituted into the current production header.
+
+
+## Dashboard `/me` service diagnosis — November 6, 2026
+
+Observed in owner screenshot: Google login lands on the Alpha Alerts dashboard, but the old page renders `Not Authorized`. This is not proof of a permission denial: the dashboard catches **any** `/me` API error (401/403/CORS/network/timeout/invalid response) and substitutes that message.
+
+Verified via configuration: both `NEXT_PUBLIC_API_BASE` and `NEXT_PUBLIC_API_URL` on Vercel point to `https://premium-signal-bots.onrender.com`. The connected Render workspace currently lists only Alpha-Media, not a `premium-signal-bots` backend. Attempts to inspect the public health endpoints from current research tooling were inconclusive due network restrictions. Actual service availability, account ownership, and live response remain **unknown**, not confirmed down.
+
+Applied in this PR:
+- Distinguish 401, 403 and server-unavailable/error states on the dashboard without granting access. Display the verified session email and give an explicit retry and sign-out path.
+- Remove `dashboard.me.v1` sessionStorage persistence to prevent stale previous-user profile/entitlement display.
+- Expose HTTP response status through a typed `ApiHttpError`. Do not retry 401/403; time-box each transient request attempt (12 s maximum each, one retry). Do not display raw backend responses.
+- Keep the existing dashboard, subscription entitlements, bot start/stop controls and backend policy unchanged. Do not fabricate a user profile when `/me` cannot be reached.
+
+Acceptance yet to complete:
+1. In a browser, verify `https://premium-signal-bots.onrender.com/health` and `/ready` return successful JSON. If not, locate the correct deployed backend and fix/update Vercel configuration **only with production-change approval**.
+2. On the exact OAuth preview, log in and inspect the dashboard's new error state. If invalid token, verify backend signing/JWKS, issuer and audience match the production Supabase project; if forbidden, verify actual account access; if service unavailable, inspect browser network/CORS and hosting logs. Never bypass token verification or grant plans just to make it render.
+3. Verify `/me` returns only the actual verified user and entitlements; test sign-out, account switch and loss of connectivity.
+4. Release remains blocked by end-to-end OAuth/backend testing and the separate Next.js security upgrade. No production deployment or database changes were performed.
