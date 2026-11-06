@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
 import Header from "@/components/Header";
+import HideOnSupport from "@/components/HideOnSupport";
 import StructuredData from "@/components/StructuredData";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import SupabaseProvider from "@/components/SupabaseProvider";
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Container>{children}</Container>
           </main>
 
+          <HideOnSupport>
           <footer className="mt-14 border-t border-stroke/60">
             <Container>
               <div className="flex flex-col gap-3 py-8 text-small text-muted text-center sm:text-left sm:flex-row sm:items-center sm:justify-between">
@@ -115,18 +117,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <a className="hover:text-text" href="/contact" data-no-link-style>
                     Contact
                   </a>
+                  <a className="hover:text-text" href="/support" data-no-link-style>
+                    Support
+                  </a>
                 </div>
               </div>
             </Container>
           </footer>
+          </HideOnSupport>
         </div>
 
         {/* Bottom live ticker bar (BTC / ETH / SOL + social links) */}
+        <HideOnSupport>
         <BottomTickerBar
           telegramUrl={process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/alphaalerts"}
           xUrl={process.env.NEXT_PUBLIC_X_URL || "https://x.com/alphaalerts"}
           refreshMs={8000}
         />
+        </HideOnSupport>
 
         <Analytics />
 
