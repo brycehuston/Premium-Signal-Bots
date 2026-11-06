@@ -60,7 +60,7 @@ export default function FruxLabsSupportPage() {
   const customLink = validStripeLink(STRIPE_CUSTOM_URL);
   const paymentLink = amount === "custom" ? customLink : validStripeLink(STRIPE_URLS[amount]);
   const hasAnyCardLink = Object.values(STRIPE_URLS).some((url) => !!validStripeLink(url)) || !!customLink;
-  const cryptoAvailable = validSolanaAddress(SOLANA_ADDRESS);
+  const cryptoAvailable = process.env.NEXT_PUBLIC_SUPPORT_CRYPTO_ENABLED === "true" && validSolanaAddress(SOLANA_ADDRESS);
 
   async function copyAddress() {
     if (!cryptoAvailable) return;
@@ -76,7 +76,7 @@ export default function FruxLabsSupportPage() {
     <div className={styles.page}>
       <nav className={styles.supportNav} aria-label="Support page navigation">
         <span className={styles.siteLabel}>FRUXLABS <span>/ SUPPORT</span></span>
-        <Link href="/" className={styles.backLink}>BACK TO ALPHA ALERTS <span aria-hidden="true">↗</span></Link>
+        <Link href="/" className={styles.backLink} data-no-link-style>BACK TO ALPHA ALERTS <span aria-hidden="true">↗</span></Link>
       </nav>
       <section className={styles.panel} aria-labelledby="support-title">
         <div className={styles.brand}>
@@ -116,11 +116,11 @@ export default function FruxLabsSupportPage() {
         )}
 
         {paymentLink ? (
-          <a className={styles.primary} href={paymentLink} target="_blank" rel="noopener noreferrer">
+          <a className={styles.primary} href={paymentLink} target="_blank" rel="noopener noreferrer" data-no-link-style>
             <CreditCard size={17} aria-hidden="true" /> {amount === "custom" ? "ENTER YOUR AMOUNT" : `SUPPORT ${amount} BY CARD`} <ExternalLink size={14} aria-hidden="true" />
           </a>
         ) : amount !== "custom" && customLink ? (
-          <a className={styles.primary} href={customLink} target="_blank" rel="noopener noreferrer">
+          <a className={styles.primary} href={customLink} target="_blank" rel="noopener noreferrer" data-no-link-style>
             <CreditCard size={17} aria-hidden="true" /> CHOOSE YOUR AMOUNT <ExternalLink size={14} aria-hidden="true" />
           </a>
         ) : (
@@ -139,7 +139,6 @@ export default function FruxLabsSupportPage() {
               <Wallet size={18} aria-hidden="true" /> SUPPORT WITH SOL OR USDC <span className={styles.toggleGlyph}>{cryptoOpen ? "−" : "+"}</span>
             </button>
             <div id="crypto-support-details" className={styles.cryptoPanel} hidden={!cryptoOpen}>
-              <>
                 <div className={styles.assetTabs} role="group" aria-label="Select cryptocurrency">
                   {(["USDC", "SOL"] as const).map((asset) => (
                     <button key={asset} type="button" aria-pressed={currency === asset}
@@ -153,7 +152,7 @@ export default function FruxLabsSupportPage() {
                   <QRCodeSVG value={SOLANA_ADDRESS} size={136} bgColor="#ffffff" fgColor="#111113"
                     marginSize={1} title="FruxLabs Solana receiving wallet address" />
                 </div>
-                <p className={styles.cryptoInstruction}>On the <strong>Solana network</strong>, select <strong>{currency}</strong> in your wallet. Scan or copy the verified receiving address below, then check all details before sending.</p>
+                <p className={styles.cryptoInstruction}>On the <strong>Solana network</strong>, select <strong>{currency}</strong> in your wallet. Scan or copy the configured receiving address below, then verify the recipient independently before sending.</p>
                 <div className={styles.walletAddress}><code>{SOLANA_ADDRESS}</code></div>
                 <button type="button" className={styles.copyButton} onClick={copyAddress}>
                   {copyStatus === "copied" ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
@@ -161,7 +160,6 @@ export default function FruxLabsSupportPage() {
                 </button>
                 <p className={styles.copyFeedback} role="status" aria-live="polite">{copyStatus === "copied" ? "Address copied. Confirm the network and recipient before sending." : copyStatus === "failed" ? "Automatic copy failed. Select and copy the address above." : ""}</p>
                 <p className={styles.warning}>QR contains the receiving address only; it does not choose the asset or amount for you. Verify the address and network in your wallet. Crypto transfers are irreversible.</p>
-              </>
             </div>
           </>
         ) : (
