@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Buy Me a Beer — Support FruxLabs",
-  description: "Alpha Apps are free. Support independent FruxLabs software development with an optional one-time tip.",
+  description: "Get help with Alpha software or optionally support independent FruxLabs development with a one-time tip.",
   alternates: { canonical: "/support" },
   openGraph: {
     title: "Buy Me a Beer — Support FruxLabs",
