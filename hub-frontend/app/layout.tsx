@@ -88,7 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster richColors position="top-center" />
 
         {/* navbar */}
-        <HideOnSupport><Header brand={BRAND} /></HideOnSupport>
+        <Header brand={BRAND} />
 
         {/*
           IMPORTANT:
