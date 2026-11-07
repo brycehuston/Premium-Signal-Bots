@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { PLANS, BUNDLE, PlanTone } from "@/lib/plans";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
@@ -490,15 +491,21 @@ export default function PricingPage() {
                 <span className="coming-soon-ribbon-tail coming-soon-ribbon-tail-left" />
                 <span className="coming-soon-ribbon-tail coming-soon-ribbon-tail-right" />
                 <span className="coming-soon-ribbon-pattern">
-                  <img
+                  <Image
+                    width={24}
+                    height={24}
+                    unoptimized
                     className="coming-soon-ribbon-icon coming-soon-ribbon-icon-top-left"
-                    src="/favicon.ico"
+                    src="/alpha-lane-v4-logo.png"
                     alt=""
                     aria-hidden
                   />
-                  <img
+                  <Image
+                    width={24}
+                    height={24}
+                    unoptimized
                     className="coming-soon-ribbon-icon coming-soon-ribbon-icon-bottom-right"
-                    src="/favicon.ico"
+                    src="/alpha-lane-v4-logo.png"
                     alt=""
                     aria-hidden
                   />
