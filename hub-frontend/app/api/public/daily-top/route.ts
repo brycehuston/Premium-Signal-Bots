@@ -21,6 +21,7 @@ type PublicRow = {
   alert_mc: number | null;
   liquidity_usd: number | null;
   m5_tx: number | null;
+  observed_peak_pct: number | null;
 };
 
 function money(v: unknown): number | null {
@@ -46,11 +47,15 @@ function validRow(value: unknown, now: Date): PublicRow | null {
   if (timestamp.getTime() < now.getTime() - MAX_PUBLIC_HISTORY_MS) return null;
   const rawTx = row.m5_tx;
   const tx = rawTx == null || rawTx === "" ? null : Number(rawTx);
+  const rawPeak = row.observed_peak_pct;
+  const peak = typeof rawPeak === "number" && Number.isFinite(rawPeak) &&
+    rawPeak >= -100 && rawPeak <= 100000 ? Math.round(rawPeak * 10) / 10 : null;
   return {
     id, symbol, lane, score:Math.round(score * 100) / 100,
     timestamp_utc:timestamp.toISOString(), alert_mc:money(row.alert_mc),
     liquidity_usd:money(row.liquidity_usd),
     m5_tx:tx !== null && Number.isSafeInteger(tx) && tx >= 0 && tx <= 1e9 ? tx : null,
+    observed_peak_pct:peak,
   };
 }
 
