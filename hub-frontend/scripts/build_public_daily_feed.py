@@ -62,7 +62,7 @@ def eligible(row, now):
     if tx is not None and not 0 <= tx <= 1_000_000_000:
         tx = None
     return {
-        "event_id": eid, "symbol": symbol, "lane": lane,
+        "event_id": hashlib.sha256(eid.encode("utf-8")).hexdigest()[:32], "symbol": symbol, "lane": lane,
         "timestamp_utc": date.astimezone(UTC).isoformat().replace("+00:00", "Z"),
         "score": round(score, 2), "alert_mc": optional_positive(row.get("alert_mc")),
         "liquidity_usd": optional_positive(row.get("liquidity_usd")),
