@@ -759,8 +759,9 @@ function HeroAlertReel() {
           {feed.alerts.map((item, index) => {
             const tone = LANE_PALETTE[item.lane] ?? LANE_PALETTE.TREND;
             const clock = new Date(item.timestamp_utc).toLocaleTimeString("en-US",{timeZone:"UTC",hour:"2-digit",minute:"2-digit",hour12:false});
-            const verifiedPeak = item.observed_peak_pct;
-            const hasPeak = typeof verifiedPeak === "number" && Number.isFinite(verifiedPeak) && verifiedPeak >= -100 && verifiedPeak <= 100000;
+            const candidatePeak = item.observed_peak_pct;
+            const verifiedPeak = typeof candidatePeak === "number" && Number.isFinite(candidatePeak) && candidatePeak >= -100 && candidatePeak <= 100000 ? candidatePeak : null;
+            const hasPeak = verifiedPeak !== null;
             const peakMultiple = hasPeak ? 1 + verifiedPeak / 100 : 0;
             return (
               <article key={item.id} className="rounded-xl border border-stroke/70 bg-bg/45 px-3 py-3">
