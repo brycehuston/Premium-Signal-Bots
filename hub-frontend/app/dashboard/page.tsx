@@ -2,7 +2,6 @@
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useSupabase } from "@/components/SupabaseProvider";
 import "./intelligence.css";
 import { forgetLaneArchive, readSavedLaneArchive, saveLaneArchive } from "./localArchive";
@@ -125,11 +124,15 @@ export default function LaneIntelligenceDashboard(){
    setLocalCheck(false);
    setData(parsed);setImportName(file.name);setStart(parsed.summary.start);setEnd(parsed.summary.end);setRange("ALL");
    setSearch("");setExpanded(false);
-   if(storedOnDevice&&accountId){
-    try{await saveLaneArchive(accountId,file.name,parsed)}
-    catch{
+   // Owner-requested automatic reuse: save only to this account's browser storage.
+   // Nothing is uploaded to the server or shared with other accounts.
+   if(accountId){
+    try{
+     await saveLaneArchive(accountId,file.name,parsed);
+     setStoredOnDevice(true);
+    }catch{
      setStoredOnDevice(false);
-     setError("Archive loaded, but this browser could not update its saved copy. Save again to retain this version.");
+     setError("Archive loaded, but automatic browser storage is unavailable. This import will last only for the current visit.");
     }
    }
   }catch{setError("Could not read the V4 archive. Select the original Lane Flow V4 HTML file or its exported dataset JSON.")}
@@ -175,24 +178,17 @@ export default function LaneIntelligenceDashboard(){
  if(authLoading)return <div className="ai-status">Checking your session…</div>;
  if(!session)return <div className="ai-status"><h1>SIGN IN REQUIRED</h1><p>Lane Flow Intelligence is a signed-in workspace.</p><Link href="/login" className="ai-button">SIGN IN</Link></div>;
  return <div className="ai-shell">
-  <aside className="ai-rail" aria-label="Lane intelligence navigation">
-   <Link href="/" className="ai-rail-mark" title="Alpha Alerts home"><Image src="/alpha-lane-v4-logo.png" alt="Alpha Alerts" width={52} height={44} unoptimized /></Link>
-   <a href="#overview" title="Overview">◫</a><a href="#composition" title="Lane composition">▥</a>
-   <a href="#transitions" title="Transitions">⇄</a><a href="#heatmap" title="Heatmap">▦</a>
-   <a href="#lookup" title="First-alert lookup">⌕</a>
-   <Link href="/dashboard/account" className="ai-rail-account" title="Account & bot controls">⚙</Link>
-  </aside>
   <div className="ai-workspace">
    <div className="ai-top">
     <div className="ai-top-inner">
      <div><div className="ai-wordmark">ALPHA <span>ALERTS</span></div><div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div></div>
-     <div className="ai-top-actions"><span className="ai-historical">HISTORICAL · OFFLINE</span><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></div>
+     <nav className="ai-top-actions" aria-label="Dashboard sections"><Link href="/" className="ai-link">ALPHA ALERTS HOME</Link><a href="#overview" className="ai-link">OVERVIEW</a><a href="#composition" className="ai-link">LANES</a><a href="#heatmap" className="ai-link">HEATMAP</a><a href="#lookup" className="ai-link">HISTORY</a><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></nav>
     </div>
    </div>
    <main className="ai-main" id="overview">
     <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Telegram alert distribution, first appearances, transitions and market context. Historical observations only.</p></div><div className="ai-badge">{localCheck?"CHECKING LOCAL ARCHIVE":data?"ARCHIVE LOADED":"NO ARCHIVE LOADED"}</div></div>
     <div className="ai-import">
-     <div><strong>PRIVATE ARCHIVE</strong><p>{data?`Loaded locally: ${importName} · ${data.summary.start} to ${data.summary.end}`:"Import the supplied V4 HTML to begin. The file is read in your browser only; it is not uploaded."}</p></div>
+     <div><strong>PRIVATE ARCHIVE</strong><p>{data?`Loaded locally: ${importName} · ${data.summary.start} to ${data.summary.end}`:"Import the V4 archive once; it is saved only in this browser for future visits, not uploaded."}</p></div>
      <div className="ai-import-actions">
       {data&&<button type="button" className="ai-save-button" onClick={()=>void(storedOnDevice?forgetCurrentArchive():saveCurrentArchive())} disabled={storageBusy||localCheck} title="The archive stays on this browser only; it is never uploaded.">
        {storageBusy?"UPDATING…":storedOnDevice?"REMOVE SAVED COPY":"SAVE ON THIS DEVICE"}
@@ -203,9 +199,9 @@ export default function LaneIntelligenceDashboard(){
     </div>
     {error&&<p className="ai-error" role="alert">{error}</p>}
     {data&&<p className="ai-local-note" role="status">
-     {storedOnDevice?"Saved privately to this browser. This archive will reload automatically for this signed-in account on this device.":"Archive is in memory only. Select SAVE ON THIS DEVICE to reload it automatically on future visits."} No data is uploaded.
+     {storedOnDevice?"Saved privately to this browser. This archive will reload automatically for this signed-in account on this device.":"Archive is loaded for this visit. Browser storage is unavailable or was removed."} No data is uploaded.
     </p>}
-    {localCheck?<div className="ai-empty ai-empty-loading" role="status"><span>◈</span><h2>CHECKING THIS DEVICE</h2><p>Looking for your previously saved private V4 archive…</p></div>:!data?<div className="ai-empty"><span>◈</span><h2>YOUR HISTORICAL INTELLIGENCE WORKSPACE</h2><p>Your earlier V4 test-site import does not transfer to alphaalerts.dev. Import the V4 archive here once, then choose SAVE ON THIS DEVICE to reload your private charts automatically on future visits.</p><Link href="/dashboard/account" className="ai-link">Account & current bot controls</Link></div>:<>
+    {localCheck?<div className="ai-empty ai-empty-loading" role="status"><span>◈</span><h2>CHECKING THIS DEVICE</h2><p>Looking for your previously saved private V4 archive…</p></div>:!data?<div className="ai-empty"><span>◈</span><h2>YOUR HISTORICAL INTELLIGENCE WORKSPACE</h2><p>Your earlier V4 test-site import does not transfer to alphaalerts.dev. Import the archive once on this device. Your browser will automatically save it for this signed-in account and restore it on later visits.</p><Link href="/dashboard/account" className="ai-link">Account & current bot controls</Link></div>:<>
      <div className="ai-filter"><span>HISTORICAL PERIOD · PACIFIC TIME</span><div className="ai-date"><label>FROM <input aria-label="Start date" type="date" value={start} min={data.summary.start} max={data.summary.end} onChange={e=>{setStart(e.target.value);setRange("ALL")}}/></label><label>TO <input aria-label="End date" type="date" value={end} min={data.summary.start} max={data.summary.end} onChange={e=>{setEnd(e.target.value);setRange("ALL")}}/></label></div><div className="ai-range">{(["7D","30D","ALL"] as const).map(r=><button className={range===r?"active":""} onClick={()=>selectRange(r)} key={r}>{r}</button>)}</div></div>
      <div className="ai-kpis">
       {[[ "ALERT EVENTS",eventTotal,"Repeats included"],["FIRST MINTS",firstTotal,"First appearances"],["OBSERVED HOURS",hours.length,"Hourly observations"],["PULSE KNOWN",pulseKnown,"Hours with matched state"]].map(([label,value,desc])=><div className="ai-metric" key={label}><span>{label}</span><strong>{fmt(Number(value))}</strong><small>{desc}</small></div>)}
@@ -237,7 +233,7 @@ export default function LaneIntelligenceDashboard(){
      </div>
      <Panel id="lookup" title="FIRST-ALERT LOOKUP" detail={`${fmt(firstRows.length)} MATCHES`} className="ai-lookup" ><div className="ai-lookup-controls"><input aria-label="Search token or mint" placeholder="Search ticker or mint address…" value={search} onChange={e=>{setSearch(e.target.value);setExpanded(false)}}/><select value={lookupLane} aria-label="Filter lane" onChange={e=>{setLookupLane(e.target.value);setExpanded(false)}}><option value="ALL">ALL LANES</option>{LANES.map(l=><option key={l}>{l}</option>)}</select></div><div className="ai-table-wrap"><table><thead><tr><th>FIRST SEEN (PT)</th><th>TOKEN</th><th>LANE</th><th>FIRST MC</th><th>MESSAGES</th><th>SOURCE</th></tr></thead><tbody>{selectedRows.map(r=><tr key={r.mint}><td>{r.date}</td><td><div className="ai-token">{r.symbol}</div><small className="ai-mint">{r.mint.slice(0,7)}…{r.mint.slice(-5)}</small></td><td><span className="ai-lane-chip" style={{color:COLORS[r.lane as Lane]||"#bbc3c6"}}>{r.lane}</span></td><td>{formatMoney(r.mc)}</td><td>{r.alerts}</td><td>{trustedTelegram(r.url)?<a target="_blank" rel="noopener noreferrer" href={trustedTelegram(r.url)!}>VIEW ↗</a>:"—"}</td></tr>)}</tbody></table>{!selectedRows.length&&<div className="ai-nodata">No results match your filters.</div>}</div>{firstRows.length>100&&!expanded&&<button className="ai-more" onClick={()=>setExpanded(true)}>SHOW ALL {fmt(firstRows.length)} RESULTS</button>}</Panel>
     </>}
-    <footer className="ai-footer"><span>© FRUXLABS / ALPHA ALERTS · HISTORICAL RESEARCH</span><span>PRIVATE LOCAL IMPORT · NO FINANCIAL ADVICE · NO LIVE DATA</span></footer>
+    <footer className="ai-footer"><span>© FRUXLABS / ALPHA ALERTS · HISTORICAL RESEARCH</span><span>PRIVATE DEVICE ARCHIVE · NO FINANCIAL ADVICE · NO LIVE DATA</span></footer>
    </main>
   </div>
  </div>;
