@@ -10,8 +10,9 @@ export function AppsShell({ active, children }: { active: "intro" | "software"; 
   return (
     <div className={styles.page}>
       <nav className={styles.subnav} aria-label="Alpha Apps sections">
-        <Link className={styles.subnavBrand} href="/apps">FRUXLABS <span>/</span> ALPHA APPS</Link>
+        <Link className={styles.subnavBrand} href="/">ALPHA ALERTS <span>/</span> ALPHA APPS</Link>
         <div className={styles.subnavLinks}>
+          <Link href="/">← Back to Alpha Alerts</Link>
           <Link href="/apps" aria-current={active === "intro" ? "page" : undefined}>Overview</Link>
           <Link href="/apps/software" aria-current={active === "software" ? "page" : undefined}>Software</Link>
           <Link href="/apps/software#upcoming">Upcoming</Link>
