@@ -745,7 +745,7 @@ function HeroAlertReel() {
           TODAY'S TOP 3 ALERTS
         </div>
         <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available?"border-emerald-400/30 text-emerald-300":"border-stroke/60 text-muted"}`}>
-          {available?"VERIFIED DELIVERY":feed.state==="loading"?"CHECKING DATA":"FEED UNAVAILABLE"}
+          {available?"VERIFIED DELIVERY":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
         </span>
       </div>
       <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
