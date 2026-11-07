@@ -11,7 +11,7 @@
 
 ## Presentation / availability
 - Hero order: alert reel first, BTC chart second; retain manual selection.
-- Six lane accents, in exact Stage 2 reading order: Early #65C27C; Genesis #A78BFA; Trend #CDD7E2; Strict #D97777; Reclaim #4FAD80; Runner #D8B879.
+- Six lane accents, in exact Stage 2 reading order: Early #A3CE64; Genesis #A78BFA; Trend #CDD7E2; Strict #D97777; Reclaim #4BB8D1; Runner #D8B879.
 - Stage 2 uses 3×2 desktop layout, two-column mobile with internal scroll; Stage 3 shows corresponding six routing labels and colors.
 - Pricing retains pre-existing Trend ($59/$499), Runner ($49/$399), Early ($69/$599, coming soon) and Bundle ($149/$1299) *displayed* figures. Genesis/Strict/Reclaim are unpriced lane descriptions, **not** new checkouts.
 - Alpha Apex: research/paper description only. Alpha Nexus: Coming Soon with no checkout or promised features.
