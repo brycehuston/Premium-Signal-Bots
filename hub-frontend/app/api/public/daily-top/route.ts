@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createPublicKey, verify as verifyEd25519 } from "node:crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -80,8 +80,8 @@ export async function GET() {
     {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}}
   );
   const upstream = process.env.ALPHA_PUBLIC_DAILY_FEED_URL;
-  const secret = process.env.ALPHA_PUBLIC_DAILY_FEED_SECRET ?? "";
-  if (!upstream || secret.length < 32) return unavailable("unavailable");
+  const publicKey = process.env.ALPHA_PUBLIC_DAILY_FEED_PUBLIC_KEY ?? "";
+  if (!upstream || !/^[a-f0-9]{64}$/.test(publicKey)) return unavailable("unavailable");
   try {
     const url = new URL(upstream);
     // Server-only, operator configured and HTTPS. Never accept a user-supplied URL.
@@ -94,9 +94,12 @@ export async function GET() {
     const signedBody = envelope.signed_body;
     const signature = envelope.signature;
     if (typeof signedBody !== "string" || signedBody.length > MAX_FEED_BYTES ||
-        typeof signature !== "string" || !/^[a-f0-9]{64}$/.test(signature)) return unavailable("unavailable");
-    const expected = createHmac("sha256",secret).update(signedBody,"utf8").digest("hex");
-    if (!timingSafeEqual(Buffer.from(signature,"hex"),Buffer.from(expected,"hex"))) return unavailable("unavailable");
+        typeof signature !== "string" || !/^[a-f0-9]{128}$/.test(signature)) return unavailable("unavailable");
+    const publicKeyObject = createPublicKey({
+      key:Buffer.concat([Buffer.from("302a300506032b6570032100","hex"),Buffer.from(publicKey,"hex")]),
+      format:"der",type:"spki"
+    });
+    if (!verifyEd25519(null,Buffer.from(signedBody,"utf8"),publicKeyObject,Buffer.from(signature,"hex"))) return unavailable("unavailable");
     const input = JSON.parse(signedBody) as Record<string,unknown>;
     const updatedAt = new Date(String(input.updated_at_utc ?? ""));
     if (input.version !== 1 || input.source !== "confirmed-telegram-delivery" ||
