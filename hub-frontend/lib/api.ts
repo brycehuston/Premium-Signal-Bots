@@ -1,4 +1,11 @@
 ﻿// lib/api.ts
+export class ApiHttpError extends Error {
+  constructor(public readonly status: number) {
+    super(`HTTP ${status}`);
+    this.name = "ApiHttpError";
+  }
+}
+
 export async function api(
   path: string,
   init: RequestInit = {},
@@ -9,9 +16,7 @@ export async function api(
   if (!base) {
     throw new Error("Missing NEXT_PUBLIC_API_URL/NEXT_PUBLIC_API_BASE");
   }
-  const controller = new AbortController();
   const timeoutMs = 12000;
-  const t = setTimeout(() => controller.abort(), timeoutMs);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -22,32 +27,39 @@ export async function api(
 
   const url = `${base}${path}`;
 
-  async function doFetch(signal?: AbortSignal) {
-    const res = await fetch(url, {
-      credentials: "include",
-      ...init,
-      headers,
-      signal,
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => res.statusText);
-      throw new Error(txt || `HTTP ${res.status}`);
+  async function doFetch() {
+    // Each attempt has its own deadline; a timed-out first attempt must not
+    // poison the retry with an already-aborted signal.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, {
+        credentials: "include",
+        ...init,
+        headers,
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        // Callers need the status to distinguish authentication from outages.
+        // Do not surface raw server responses to the user.
+        throw new ApiHttpError(res.status);
+      }
+      const ct = res.headers.get("content-type") || "";
+      return ct.includes("application/json") ? res.json() : res.text();
+    } finally {
+      clearTimeout(timer);
     }
-    const ct = res.headers.get("content-type") || "";
-    return ct.includes("application/json") ? res.json() : res.text();
   }
 
   try {
-    return await doFetch(controller.signal);
-  } catch {
-    // one quick retry (often fixes first request after sleep)
-    try {
-      return await doFetch();
-    } finally {
-      clearTimeout(t);
+    return await doFetch();
+  } catch (error) {
+    // Authentication and permission denials are not transient.
+    if (error instanceof ApiHttpError && error.status >= 400 && error.status < 500) {
+      throw error;
     }
-  } finally {
-    clearTimeout(t);
+    // Retry one transient network/server failure with a fresh 12s deadline.
+    return await doFetch();
   }
 }
 

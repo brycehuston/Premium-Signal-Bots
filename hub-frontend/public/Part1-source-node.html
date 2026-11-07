@@ -581,6 +581,11 @@
         goldDeep: [216, 168, 80],
       };
 
+      // Core-only champagne gold, from the approved Alpha design system.
+      // Source inputs, tags, stage backgrounds and pulse timing remain untouched.
+      const CORE_ORB_GOLD = [231, 188, 103];
+      const CORE_ORB_GOLD_SHADE = [143, 106, 52];
+
       /* ============================================================
          CALM RHYTHM (packet spawns)
          ============================================================ */
@@ -1466,9 +1471,9 @@
       }
 
       function mixedCoreMetal() {
-        const r = COLORS.bronze[0] * coreMix.bronze + COLORS.silver[0] * coreMix.silver + COLORS.gold[0] * coreMix.gold;
-        const g = COLORS.bronze[1] * coreMix.bronze + COLORS.silver[1] * coreMix.silver + COLORS.gold[1] * coreMix.gold;
-        const b = COLORS.bronze[2] * coreMix.bronze + COLORS.silver[2] * coreMix.silver + COLORS.gold[2] * coreMix.gold;
+        const r = COLORS.bronze[0] * coreMix.bronze + COLORS.silver[0] * coreMix.silver + CORE_ORB_GOLD[0] * coreMix.gold;
+        const g = COLORS.bronze[1] * coreMix.bronze + COLORS.silver[1] * coreMix.silver + CORE_ORB_GOLD[1] * coreMix.gold;
+        const b = COLORS.bronze[2] * coreMix.bronze + COLORS.silver[2] * coreMix.silver + CORE_ORB_GOLD[2] * coreMix.gold;
         return [Math.round(r), Math.round(g), Math.round(b)];
       }
 
@@ -1593,7 +1598,7 @@
         const grd = g.createRadialGradient(cx, cy, 0, cx, cy, r1);
 
         if (mode === "metal") {
-          const rgb2 = (rgb[0] === COLORS.gold[0] && rgb[1] === COLORS.gold[1] && rgb[2] === COLORS.gold[2] && COLORS.goldDeep) ? COLORS.goldDeep : rgb;
+          const rgb2 = CORE_ORB_GOLD_SHADE;
           grd.addColorStop(0.00, `rgba(255,255,255,0.92)`);
           grd.addColorStop(0.08, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.95)`);
           grd.addColorStop(0.24, `rgba(${rgb2[0]},${rgb2[1]},${rgb2[2]},0.52)`);
@@ -1615,7 +1620,7 @@
       }
 
       function buildSprites() {
-        spriteGold = makeSprite(COLORS.gold, CFG.coreGlowSpriteSizePx, "metal");
+        spriteGold = makeSprite(CORE_ORB_GOLD, CFG.coreGlowSpriteSizePx, "metal");
         spriteWhite = makeSprite(COLORS.white, CFG.coreGlowSpriteSizePx, "white");
       }
 

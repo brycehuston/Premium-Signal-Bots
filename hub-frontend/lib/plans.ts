@@ -1,6 +1,6 @@
 // filename: lib/plans.ts
 
-export type PlanTone = "bronze" | "platinum" | "gold";
+export type PlanTone = "bronze" | "platinum" | "gold" | "green";
 
 export type Plan = {
   slug: string;
@@ -24,7 +24,7 @@ export const PLANS: Plan[] = [
     titleLeft: "ALPHA",
     titleEmphasis: "EARLY",
     titleRight: "ALERTS",
-    tone: "bronze",
+    tone: "green",
     priceMonthly: 69,
     priceAnnual: 599,
     bullets: [

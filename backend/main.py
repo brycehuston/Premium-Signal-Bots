@@ -5,12 +5,14 @@ from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSock
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-from sqlalchemy import text
+from sqlalchemy import text, func
 
 from .database import Base, engine, get_db
 from .models import User, Subscription
 from .auth import hash_password, verify_password, create_access_token, decode_token
 from .supabase_auth import verify_supabase_token
+from .identity import verified_supabase_identity
+from .public_daily_feed import router as public_daily_feed_router
 from .bot import start_bot, stop_bot, bot_status, stream_logs
 
 from google.oauth2 import id_token
@@ -126,6 +128,7 @@ ensure_waitlist_schema()
 ensure_users_schema()
 
 app = FastAPI(title="SaaS Hub — Crypto Only")
+app.include_router(public_daily_feed_router)
 
 # CORS
 
@@ -229,35 +232,26 @@ class ApprovePayload(BaseModel):
     months: int = 1
 
 
-def _email_from_supabase_payload(payload: dict) -> str | None:
-    email = payload.get("email")
-    if email:
-        return email
-    return (payload.get("user_metadata") or {}).get("email")
-
-
 def _get_or_create_user_from_supabase(payload: dict, db: Session) -> User:
-    supabase_id = payload.get("sub")
-    if not supabase_id:
-        raise HTTPException(status_code=401, detail="invalid supabase token")
+    # JWT verification happens in require_user. Identity is the signed subject,
+    # never the user-editable metadata or a matching legacy email address.
+    try:
+        supabase_id, email = verified_supabase_identity(payload)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="invalid supabase identity")
 
     user = db.query(User).filter(User.supabase_id == supabase_id).first()
-    email = _email_from_supabase_payload(payload)
-
     if user:
-        if email and user.email != email:
-            user.email = email
-            db.commit()
+        # A changed email does not change account ownership. Avoid silently
+        # overwriting it, which could collide with another legacy account.
         return user
 
-    if not email:
-        raise HTTPException(status_code=401, detail="supabase email not found")
-
-    user = db.query(User).filter(User.email == email).first()
-    if user:
-        user.supabase_id = supabase_id
-        db.commit()
-        return user
+    # Do not give an existing paid/admin local account to a newly signed-in
+    # identity merely because the email claim matches. Migration requires
+    # an explicit verified account-linking flow, not implicit entitlement.
+    existing = db.query(User).filter(func.lower(User.email) == email).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="account linking requires support")
 
     user = User(email=email, password_hash=hash_password(os.urandom(8).hex()))
     user.supabase_id = supabase_id
@@ -273,17 +267,14 @@ def require_user(request: Request, db: Session) -> User:
     token = auth.split(" ", 1)[1]
     try:
         payload = verify_supabase_token(token)
-        return _get_or_create_user_from_supabase(payload, db)
     except Exception as exc:
-        logger.warning(
-            "supabase token verify failed: %s; claims=%s; iss_env=%s; aud_env=%s",
-            str(exc),
-            _token_debug(token),
-            os.getenv("SUPABASE_ISSUER"),
-            os.getenv("SUPABASE_AUDIENCE"),
-        )
+        logger.warning("supabase token verify failed: %s; claims=%s", str(exc), _token_debug(token))
         if not ALLOW_LEGACY_TOKENS:
             raise HTTPException(status_code=401, detail="invalid token")
+    else:
+        # A verified token with an identity conflict must not fall back to a
+        # legacy token or inherit an account by matching its email.
+        return _get_or_create_user_from_supabase(payload, db)
     try:
         payload = decode_token(token)
     except Exception:
@@ -302,17 +293,15 @@ def maybe_user_id(request: Request, db: Session):
     token = auth.split(" ", 1)[1]
     try:
         payload = verify_supabase_token(token)
-        user = _get_or_create_user_from_supabase(payload, db)
-        return user.id
     except Exception as exc:
-        logger.warning(
-            "supabase token verify failed (maybe_user_id): %s; claims=%s; iss_env=%s; aud_env=%s",
-            str(exc),
-            _token_debug(token),
-            os.getenv("SUPABASE_ISSUER"),
-            os.getenv("SUPABASE_AUDIENCE"),
-        )
+        logger.warning("supabase token verify failed (optional): %s", str(exc))
         if not ALLOW_LEGACY_TOKENS:
+            return None
+    else:
+        try:
+            return _get_or_create_user_from_supabase(payload, db).id
+        except HTTPException:
+            # Optional identity never grants or attaches an unrelated account.
             return None
     try:
         payload = decode_token(token)

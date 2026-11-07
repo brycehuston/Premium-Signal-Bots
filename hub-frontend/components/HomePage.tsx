@@ -678,171 +678,130 @@ function FeatureRow({ active }: { active: boolean }) {
   );
 }
 
-type AlertReelTone = "bronze" | "platinum" | "gold";
-
-type AlertReelItem = {
+type VerifiedDailyAlert = {
   id: string;
-  tone: AlertReelTone;
-  label: string;
-  pair: string;
-  signal: string;
-  score: string;
-  meta: string[];
+  symbol: string;
+  lane: string;
+  score: number;
+  timestamp_utc: string;
+  alert_mc: number | null;
+  liquidity_usd: number | null;
+  m5_tx: number | null;
+  observed_peak_pct?: number | null;
+};
+type VerifiedDailyFeed = {
+  state: "loading" | "verified" | "archived" | "empty" | "unavailable";
+  as_of_utc?: string;
+  period?: "24h" | "7d" | null;
+  public_delay_minutes?: number;
+  alerts: VerifiedDailyAlert[];
 };
 
-const ALERT_REEL_ITEMS: AlertReelItem[] = [
-  {
-    id: "early",
-    tone: "bronze",
-    label: "EARLY",
-    pair: "SOL/USDC",
-    signal: "New pool detected + safety clear",
-    score: "Score 86",
-    meta: ["Liq 17k", "Holders 114", "Age 2m"],
-  },
-  {
-    id: "trend",
-    tone: "platinum",
-    label: "TREND",
-    pair: "SOL/USDC",
-    signal: "Momentum + continuation setup",
-    score: "Score 91",
-    meta: ["Tx 1.4k", "Vol +38%", "State BREAKING"],
-  },
-  {
-    id: "runner",
-    tone: "gold",
-    label: "RUNNER",
-    pair: "SOL/USDC",
-    signal: "Second-leg breakout confirmed",
-    score: "Score 88",
-    meta: ["Vol +52%", "Liq 410k", "Trend strong"],
-  },
-];
-
-const ALERT_REEL_TONES: Record<
-  AlertReelTone,
-  { text: string; dot: string; chip: string; scan: string }
-> = {
-  bronze: {
-    text: "text-bronze",
-    dot: "bg-bronze/80 shadow-[0_0_12px_rgb(var(--tone-bronze)/0.6)]",
-    chip: "border-bronze/40 text-bronze bg-bronze/10",
-    scan: "rgb(var(--tone-bronze) / 0.35)",
-  },
-  platinum: {
-    text: "text-platinum",
-    dot: "bg-platinum/80 shadow-[0_0_12px_rgb(var(--tone-platinum)/0.55)]",
-    chip: "border-platinum/40 text-platinum bg-platinum/10",
-    scan: "rgb(var(--tone-platinum) / 0.35)",
-  },
-  gold: {
-    text: "text-gold",
-    dot: "bg-gold/80 shadow-[0_0_12px_rgb(var(--gold)/0.55)]",
-    chip: "border-gold/40 text-gold bg-gold/10",
-    scan: "rgb(var(--gold) / 0.35)",
-  },
+const LANE_PALETTE: Record<string, { text: string; dot: string; chip: string; accent: string }> = {
+  EARLY: {text:"text-[#a3ce64]",dot:"bg-[#a3ce64]",chip:"border-[#a3ce64]/40 text-[#a3ce64]",accent:"#a3ce64"},
+  GENESIS: {text:"text-[#a78bfa]",dot:"bg-[#a78bfa]",chip:"border-[#a78bfa]/40 text-[#a78bfa]",accent:"#a78bfa"},
+  TREND: {text:"text-[#cdd7e2]",dot:"bg-[#cdd7e2]",chip:"border-[#cdd7e2]/40 text-[#cdd7e2]",accent:"#cdd7e2"},
+  STRICT: {text:"text-[#d97777]",dot:"bg-[#d97777]",chip:"border-[#d97777]/40 text-[#d97777]",accent:"#d97777"},
+  RECLAIM: {text:"text-[#4bb8d1]",dot:"bg-[#4bb8d1]",chip:"border-[#4bb8d1]/40 text-[#4bb8d1]",accent:"#4bb8d1"},
+  RUNNER: {text:"text-[#d8b879]",dot:"bg-[#d8b879]",chip:"border-[#d8b879]/40 text-[#d8b879]",accent:"#d8b879"},
 };
+
+function formatAlertMoney(n: number | null): string {
+  if (n === null || !Number.isFinite(n)) return "N/A";
+  return "$" + (n >= 1_000_000 ? (n/1_000_000).toFixed(2) + "M" : n >= 1_000 ? (n/1_000).toFixed(1) + "K" : Math.round(n).toLocaleString("en-US"));
+}
 
 function HeroAlertReel() {
-  const prefersReduced = useReducedMotion();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(true);
-
+  const [feed, setFeed] = useState<VerifiedDailyFeed>({state:"loading", alerts:[]});
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setAutoPlay((prev) => !prev);
-    }, 60000);
-    return () => window.clearInterval(id);
+    let mounted = true;
+    const controller = new AbortController();
+    async function refresh() {
+      if (document.hidden) return;
+      try {
+        const response = await fetch("/api/public/daily-top", { cache:"no-store",signal:controller.signal });
+        if (!response.ok) throw new Error("feed unavailable");
+        const data = await response.json();
+        if (mounted) setFeed({
+          state:data.state === "verified" || data.state === "archived" || data.state === "empty" ? data.state : "unavailable",
+          as_of_utc:data.as_of_utc,
+          period:data.period === "24h" || data.period === "7d" ? data.period : null,
+          public_delay_minutes:30,
+          alerts:Array.isArray(data.alerts) ? data.alerts.slice(0,3) : []
+        });
+      } catch {
+        if (mounted && !controller.signal.aborted) setFeed({state:"unavailable",alerts:[]});
+      }
+    }
+    refresh();
+    const timer = window.setInterval(refresh,60000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {mounted=false;controller.abort();window.clearInterval(timer);document.removeEventListener("visibilitychange",refresh);};
   }, []);
 
-  useEffect(() => {
-    if (prefersReduced || !autoPlay) return;
-    const id = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % ALERT_REEL_ITEMS.length);
-    }, 5200);
-    return () => window.clearInterval(id);
-  }, [prefersReduced, autoPlay]);
-
+  const archived = feed.state === "archived";
+  const available = (feed.state === "verified" || archived) && feed.alerts.length > 0;
+  const archiveAsOf = archived && feed.as_of_utc && Number.isFinite(Date.parse(feed.as_of_utc))
+    ? new Date(feed.as_of_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"}) : null;
   return (
-    <div className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-muted/80">
-          <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_10px_rgb(var(--gold)/0.55)]" />
-          Alert Reel
+    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Public Alpha Alerts verified and archived alert records">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.23em] text-muted">
+          <span className="h-1.5 w-1.5 rounded-full bg-gold/70" aria-hidden="true"/>
+          {archived ? "TOP 3 ARCHIVED PUBLIC RECORDS" : "TOP 3 VERIFIED ALERTS"}
         </div>
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted/70">
-          <span
-            className={[
-              "relative h-4 w-9 rounded-full border border-stroke/70 bg-surface/70 transition-colors",
-              autoPlay ? "border-emerald-400/40 bg-emerald-400/10" : "",
-            ].join(" ")}
-          >
-            <span
-              className={[
-                "absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full transition-transform",
-                autoPlay
-                  ? "translate-x-[18px] bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
-                  : "translate-x-[3px] bg-muted/70",
-              ].join(" ")}
-            />
-          </span>
-          <span
-            className={[
-              "h-2 w-2 rounded-full",
-              prefersReduced || !autoPlay ? "bg-muted/60" : "bg-success/80 animate-pulse",
-              "shadow-[0_0_10px_rgb(var(--success)/0.55)]",
-            ].join(" ")}
-          />
-          {autoPlay ? "Live" : "Idle"}
-        </div>
+        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available && !archived?"border-emerald-400/30 text-emerald-300":archived?"border-amber-300/40 text-amber-200":"border-stroke/60 text-muted"}`}>
+          {archived?"SIGNED ARCHIVE":available?feed.period==="7d"?"VERIFIED · 7 DAYS":"VERIFIED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
+        </span>
       </div>
-
-      <div className="mt-3 space-y-3">
-        {ALERT_REEL_ITEMS.map((item, index) => {
-          const tone = ALERT_REEL_TONES[item.tone];
-          const isActive = index === activeIndex;
-          return (
-            <div
-              key={item.id}
-              className={[
-                "alert-reel-item",
-                isActive ? "alert-reel-item--active" : "opacity-70",
-              ].join(" ")}
-              style={{ ["--reel-color" as any]: tone.scan }}
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${tone.dot}`} />
-                  <span className={`text-[11px] font-semibold tracking-[0.35em] ${tone.text}`}>
-                    {item.label}
-                  </span>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
+        {archived ? `Actual public-approved entries from the last signed snapshot${archiveAsOf ? " · " + archiveAsOf : ""}. Delivery confirmation for individual events is under review; do not treat these as independently verified fills or wins.` : `${feed.period === "7d" ? "Historical top scores from the last 7 days." : "Top native scores from the last 24 hours."} Eligible confirmed deliveries only; at least 30 minutes delayed. Original alert dates are shown below.`}
+      </p>
+      {available ? (
+        <div className="mt-4 space-y-2.5">
+          {feed.alerts.map((item, index) => {
+            const tone = LANE_PALETTE[item.lane] ?? LANE_PALETTE.TREND;
+            const clock = new Date(item.timestamp_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
+            const candidatePeak = item.observed_peak_pct;
+            const verifiedPeak = typeof candidatePeak === "number" && Number.isFinite(candidatePeak) && candidatePeak >= -100 && candidatePeak <= 100000 ? candidatePeak : null;
+            const hasPeak = verifiedPeak !== null;
+            const peakMultiple = hasPeak ? 1 + verifiedPeak / 100 : 0;
+            return (
+              <article key={item.id} className="rounded-xl border border-stroke/70 bg-bg/45 px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold tabular-nums text-muted">#{index+1}</span>
+                    <span className={`h-2 w-2 rounded-full ${tone.dot}`} style={{boxShadow:`0 0 0 3px ${tone.accent}1c`}} aria-hidden="true"/>
+                    <span className={`text-[11px] font-bold tracking-[0.2em] ${tone.text}`}>{item.lane}</span>
+                    <strong className="text-sm text-silver">${item.symbol}</strong>
+                  </div>
+                  <span className="text-[12px] font-semibold tabular-nums text-[#e7bc67]">{item.score.toFixed(2)}<span className="text-muted">/10</span></span>
                 </div>
-                <span className="text-[11px] uppercase tracking-[0.2em] text-muted/70">
-                  {item.pair}
-                </span>
-              </div>
-
-              <div className="mt-2 flex items-center justify-between gap-4 text-small">
-                <span className="text-silver">{item.signal}</span>
-                <span className="text-muted">{item.score}</span>
-              </div>
-
-              <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
-                {item.meta.map((meta) => (
-                  <span
-                    key={meta}
-                    className={`rounded-pill border px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${tone.chip}`}
-                  >
-                    {meta}
-                  </span>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="rounded-full border border-[#72a5cf]/35 bg-[#72a5cf]/[0.07] px-2 py-1 text-[10px] text-[#a8cce7]">MC {formatAlertMoney(item.alert_mc)}</span>
+                  <span className="rounded-full border border-[#b28ad0]/35 bg-[#b28ad0]/[0.07] px-2 py-1 text-[10px] text-[#d1b0e5]">LIQ {formatAlertMoney(item.liquidity_usd)}</span>
+                  {item.m5_tx != null && <span className="rounded-full border border-[#69bd91]/35 bg-[#69bd91]/[0.07] px-2 py-1 text-[10px] text-[#a0dabb]">5M TX {item.m5_tx.toLocaleString("en-US")}</span>}
+                  {hasPeak && <span title="Highest price observed after this alert, based on monitored market data. Not a realized return or guaranteed profit." className={`rounded-full border px-2 py-1 text-[10px] font-medium tabular-nums ${verifiedPeak >= 0 ? "border-[#69bd91]/35 bg-[#69bd91]/[0.07] text-[#a0dabb]" : "border-[#d97777]/35 bg-[#d97777]/[0.07] text-[#e3a0a0]"}`}>
+                    {verifiedPeak >= 0 ? "↗" : "↘"} {peakMultiple.toFixed(2)}× · {verifiedPeak >= 0 ? "+" : ""}{verifiedPeak.toFixed(1)}% <span className="opacity-70">peak</span>
+                  </span>}
+                  <span className="ml-auto text-[10px] tabular-nums text-muted">{clock}</span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="mt-4 rounded-xl border border-stroke/60 bg-bg/40 px-4 py-8 text-center">
+          <div className="text-sm font-semibold text-silver">{feed.state==="loading"?"Checking verified alerts…":feed.state==="empty"?"No verified published alerts in the last 7 days":"Verified feed temporarily unavailable"}</div>
+          <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
+            Only signed records with proven Telegram delivery may appear here. Scanner candidates and modeled wins are never substituted.
+          </p>
+        </div>
+      )}
+      <p className="mt-3 text-[10px] leading-relaxed text-muted/70">
+        Scores are informational, not profit probabilities. Ranking by score is not trading performance.{archived ? " Archived records are shown for historical reference only while the delivery-proof pipeline is being repaired." : ""}
+      </p>
+    </section>
   );
 }
 
@@ -918,41 +877,37 @@ const EASE_OUT: Easing = "easeOut";
 const ROADMAP_ITEMS: RoadmapItem[] = [
   {
     step: 1,
-    title: "Stage 1 ⚡ Solana AlphaAlerts",
+    title: "Stage 1 ⚡ Alpha Alerts VPS",
     tag: "LIVE",
     bullets: [
-      "Alpha Early Alerts (ultra-early Solana pools + tokens)",
-      "Alpha Trend Alerts (momentum + continuation setups)",
-      "Alpha Runner Alerts (second-leg + follow-through moves)",
-      "Telegram alerts with one-tap links (Dex, chart, explorer)",
-      "Safety checks + scoring + \"why skipped\" reasons",
+      "Production Alpha Alerts bot infrastructure on the VPS",
+      "On-chain monitoring, alert classification and Telegram delivery",
+      "Scanner telemetry and verified delivery records are separate data sources",
     ],
-    footer: "Weekly tuning based on real results (less spam, higher quality)",
+    footer: "Production infrastructure. Status and performance claims require measured evidence.",
+    cta: { label: "VIEW STAGE 1", href: "/stage-1" },
   },
   {
     step: 2,
-    title: "Stage 2 🤖 ALPHA-X Auto Trader",
-    tag: "NEXT",
+    title: "Stage 2 ◉ Python Scanner Bots",
+    tag: "IN BUILD",
     bullets: [
-      "Auto entries on high-probability setups",
-      "Risk sizing so trades stay controlled",
-      "Layered take-profits (TP1 / TP2 / TP3)",
-      "Stop loss + trailing stop options",
-      "Break-even + runner management",
-      "Moon bag option (optional runner position with trailing stop)",
-      "Full trade logs + performance stats",
+      "Six specialized scanner lanes: Early, Genesis, Trend, Strict, Reclaim and Runner",
+      "Distinct lane identities, scoring context and risk signals",
+      "A visual explanation of the six-lane workflow; not a live scanner monitor",
     ],
+    cta: { label: "VIEW STAGE 2", href: "/stage-2" },
   },
   {
     step: 3,
-    title: "Stage 3 🌐 Multi-Chain Alerts",
+    title: "Stage 3 ◇ Forwarder Bot",
     tag: "IN BUILD",
     bullets: [
-      "BSC alerts (extra scam and trap filters)",
-      "ETH alerts (liquidity + momentum focused)",
-      "Same tiers, same scoring, same clean Telegram delivery",
-      "Unified dashboard for all chains",
+      "Visualizes routing from the central forwarder to six Alpha lanes",
+      "Genesis and Reclaim flank the animated forwarding core",
+      "Animated packets are illustrative, not a live Telegram delivery counter",
     ],
+    cta: { label: "VIEW STAGE 3", href: "/stage-3" },
   },
   {
     step: 4,
@@ -1078,10 +1033,9 @@ const RoadmapSection = memo(function RoadmapSection() {
               className="absolute left-0 top-2 hidden h-10 w-px bg-gradient-to-b from-gold/70 via-gold/30 to-transparent md:block"
             />
             <p className="text-body text-muted leading-relaxed">
-              We ship in stages. Each stage makes alerts{" "}
-              <span className="text-silver">cleaner</span>,{" "}
-              <span className="text-silver">faster</span>, and{" "}
-              <span className="text-silver">easier to use</span>.
+              Explore the production VPS and the visual scanner-to-forwarder workflow.{" "}
+              <span className="text-silver">Animated stage previews are illustrative</span>,{" "}
+              not live delivery telemetry.
             </p>
           </div>
         </div>
@@ -1302,20 +1256,14 @@ export default function Page() {
   });
   const shouldReduceMotion = useReducedMotion();
 
-  const [heroView, setHeroView] = useState<"chart" | "reel">("chart");
+  const [heroView, setHeroView] = useState<"chart" | "reel">("reel");
   const [showStealthCta, setShowStealthCta] = useState(false);
   const stealthTimerRef = useRef<number | null>(null);
   const [trustStep, setTrustStep] = useState(0);
   const trustTimersRef = useRef<number[]>([]);
   const trustCycleRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (shouldReduceMotion) return;
-    const id = window.setInterval(() => {
-      setHeroView((prev) => (prev === "chart" ? "reel" : "chart"));
-    }, 60000);
-    return () => window.clearInterval(id);
-  }, [shouldReduceMotion]);
+  // Preserve the visitor's chosen view; avoid surprising swaps while reading or interacting.
 
   const { ref: stealthRef, inView: stealthInView } = useInView({
     threshold: 0.25,
@@ -1431,7 +1379,7 @@ export default function Page() {
   };
 
   return (
-    <div className="relative flex flex-col gap-8 md:gap-10">
+    <div className="alpha-home-headings relative flex flex-col gap-8 md:gap-10">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute -top-36 left-10 h-[26rem] w-[26rem] rounded-full bg-gold/10 blur-[140px]"
@@ -1506,22 +1454,6 @@ export default function Page() {
               >
                 <button
                   type="button"
-                  onClick={() => setHeroView("chart")}
-                  aria-pressed={heroView === "chart"}
-                  aria-label="Show chart"
-                  className="relative -m-2 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
-                >
-                  <span
-                    className={[
-                      "block h-2.5 w-2.5 rounded-full transition",
-                      heroView === "chart"
-                        ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
-                        : "bg-stroke/70 hover:bg-silver/40",
-                    ].join(" ")}
-                  />
-                </button>
-                <button
-                  type="button"
                   onClick={() => setHeroView("reel")}
                   aria-pressed={heroView === "reel"}
                   aria-label="Show alert reel"
@@ -1531,6 +1463,22 @@ export default function Page() {
                     className={[
                       "block h-2.5 w-2.5 rounded-full transition",
                       heroView === "reel"
+                        ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
+                        : "bg-stroke/70 hover:bg-silver/40",
+                    ].join(" ")}
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeroView("chart")}
+                  aria-pressed={heroView === "chart"}
+                  aria-label="Show chart"
+                  className="relative -m-2 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                >
+                  <span
+                    className={[
+                      "block h-2.5 w-2.5 rounded-full transition",
+                      heroView === "chart"
                         ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
                         : "bg-stroke/70 hover:bg-silver/40",
                     ].join(" ")}
@@ -1743,7 +1691,7 @@ export default function Page() {
             step={1}
             order={1}
             title="Pick Your Plan"
-            description="Early, Trend, Runner, or Bundle."
+            description="Choose an available plan and explore all six alert lanes."
           />
           <StepItem
             step={2}
