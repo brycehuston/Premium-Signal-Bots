@@ -394,3 +394,8 @@
   .grindFinal{margin:25px 0 8px}
 }
 @media(max-width:360px){.grindEcosystemSteps{grid-template-columns:1fr}}
+
+/* Align marketing and research surfaces on one neutral charcoal system. */
+.page{--app-border:#26272c;background:#09090b}
+.lockIn{background:linear-gradient(145deg,#131416,#09090b 76%)}
+.landingPreviewCard,.grindEcosystemSteps>div{background:#101115;border-color:#292a31}
