@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 ROOT = Path("/home/ubuntu/worktrees/alpha-alerts-live-v196-20261101")
 SOURCE = ROOT / "alpha_trend_alerts.py"
 CSV = ROOT / "logs/TREND_token_alerts.csv"
+OUTCOMES = ROOT / "logs/TREND_outcomes.csv"
 KEY = Path("/home/ubuntu/.alphaalerts/website_feed/ed25519.private")
 ENDPOINT = "https://ennbnofvmnkcuhftzlhr.supabase.co/functions/v1/alpha-public-daily-feed"
 EXPECTED_SOURCE_SHA256 = "0c2bf122e3acea2471f02dde6faf420875b6f0301f84ce785fe94ff013db704a"
@@ -65,6 +66,52 @@ def normalize(row: dict[str,str], now: dt.datetime) -> dict | None:
         liquidity_usd=finite_positive(row.get("liq")),m5_tx=tx,
         approved_for_public=True,delivery_status="DELIVERED")
 
+def attach_observed_peaks(rows:list[dict], now:dt.datetime) -> None:
+    """Attach a provisional post-alert price peak only after exact delivery join.
+
+    Outcome maxima are *observations*, never executed or realized returns.
+    Unknown, future, stale, unconfirmed, or untrusted outcomes remain null.
+    """
+    for row in rows:
+        row["observed_peak_pct"]=None
+    if not rows or not OUTCOMES.is_file() or OUTCOMES.is_symlink():
+        return
+    if OUTCOMES.stat().st_size > 50_000_000:
+        return
+    indexed={row["event_id"]:row for row in rows}
+    with OUTCOMES.open(newline="",encoding="utf-8-sig") as f:
+        reader=csv.DictReader(f)
+        required={"alert_id","ts_alert_utc","best_return_ts","best_return_pct",
+                  "outcome_method_version","status","delivery_status"}
+        if not reader.fieldnames or not required.issubset(reader.fieldnames):
+            return
+        for outcome in reader:
+            raw_id=(outcome.get("alert_id") or "").strip()
+            if not raw_id or len(raw_id)>180:
+                continue
+            published=indexed.get(hashlib.sha256(raw_id.encode()).hexdigest()[:32])
+            if published is None:
+                continue
+            if outcome.get("delivery_status")!="DELIVERED":
+                continue
+            if outcome.get("status") not in {"DONE","PENDING"}:
+                continue
+            if outcome.get("outcome_method_version")!="pair_pinned_price_snapshot_horizon_extrema_v3":
+                continue
+            if outcome.get("ts_alert_utc")!=published["timestamp_utc"]:
+                continue
+            try:
+                observed=dt.datetime.fromisoformat(outcome["best_return_ts"].replace("Z","+00:00"))
+                alerted=dt.datetime.fromisoformat(published["timestamp_utc"].replace("Z","+00:00"))
+                pct=float(outcome["best_return_pct"])
+            except (KeyError,ValueError,TypeError):
+                continue
+            if (observed.tzinfo is None or observed<alerted or observed>now or
+                    observed-alerted>dt.timedelta(days=7) or
+                    not math.isfinite(pct) or not -100<=pct<=100000):
+                continue
+            published["observed_peak_pct"]=round(pct,1)
+
 def prepare(now:dt.datetime) -> tuple[dict,dict]:
     source_verified()
     if not CSV.is_file() or CSV.is_symlink():raise ValueError("alert log missing or symlink")
@@ -85,6 +132,7 @@ def prepare(now:dt.datetime) -> tuple[dict,dict]:
     scored=sorted(dedup.values(),key=lambda row:(row["score"],row["timestamp_utc"]),reverse=True)
     day=[r for r in scored if dt.datetime.fromisoformat(r["timestamp_utc"].replace("Z","+00:00"))>=cutoff][:3]
     week=[r for r in scored if dt.datetime.fromisoformat(r["timestamp_utc"].replace("Z","+00:00"))<cutoff][:3]
+    attach_observed_peaks(day+week,now)
     # Only six sanitized rows cross the network, never private receipts, mints,
     # raw Telegram messages, message IDs, chat IDs, invite URLs or account data.
     body={"version":1,"source":"confirmed-telegram-delivery",
