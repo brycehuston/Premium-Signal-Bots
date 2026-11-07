@@ -15,8 +15,8 @@ import SupabaseProvider from "@/components/SupabaseProvider";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const display = Sora({ subsets: ["latin"], variable: "--font-display" });
-const BRAND = process.env.NEXT_PUBLIC_BRAND || "AlphaAlerts";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const BRAND = "Alpha Alerts";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://alphaalerts.dev";
 
 // Optional but nice: tell mobile browsers your theme color
 export const viewport: Viewport = {
@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${BRAND} Pro`,
+    default: `${BRAND} | Premium Crypto Signals`,
     template: `%s | ${BRAND}`,
   },
   description: "Premium crypto alerts with clean signals, smart filters, and fast delivery.",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/favicon.ico",
+        url: "/alpha-lane-v4-logo.png",
       },
     ],
   },
@@ -46,13 +46,13 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${BRAND} Pro`,
     description: "Premium crypto alerts with clean signals, smart filters, and fast delivery.",
-    images: ["/favicon.ico"],
+    images: ["/alpha-lane-v4-logo.png"],
   },
 
   // Force favicon paths (App Router)
   icons: {
-    icon: [{ url: "/favicon.ico" }],
-    shortcut: [{ url: "/favicon.ico" }],
+    icon: [{ url: "/alpha-lane-v4-logo.png", type: "image/png" }],
+    shortcut: [{ url: "/alpha-lane-v4-logo.png", type: "image/png" }],
     apple: [],
   },
 };
