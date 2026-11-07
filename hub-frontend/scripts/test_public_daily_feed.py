@@ -28,6 +28,8 @@ class PublicDailyTest(unittest.TestCase):
         self.assertEqual(data["signature"], expected)
         self.assertNotIn("private", json.dumps(data))
         self.assertNotIn("secret_mint", json.dumps(data))
+        self.assertNotIn("event_0000001", data["signed_body"])
+        self.assertRegex(json.loads(data["signed_body"])["daily_alerts"][0]["event_id"], r"^[0-9a-f]{32}$")
         self.assertNotIn("telegram_message_id", json.dumps(data))
         self.assertEqual(json.loads(data["signed_body"])["daily_alerts"][0]["score"], 8.4)
 
