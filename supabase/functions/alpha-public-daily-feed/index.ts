@@ -5,6 +5,7 @@ const ROOT = (Deno.env.get("SUPABASE_URL") || "") + "/rest/v1";
 const ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const LANES = new Set(["EARLY","GENESIS","TREND","STRICT","RECLAIM","RUNNER"]);
 const FIELDS = ["alert_mc","approved_for_public","delivery_status","event_id","lane","liquidity_usd","m5_tx","score","symbol","timestamp_utc"].sort().join("|");
+const FIELDS_WITH_OBSERVED_PEAK = ["alert_mc","approved_for_public","delivery_status","event_id","lane","liquidity_usd","m5_tx","observed_peak_pct","score","symbol","timestamp_utc"].sort().join("|");
 const reply = (body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json","cache-control":"no-store","x-content-type-options":"nosniff"}});
 const bytes = (hex:string)=>new Uint8Array((hex.match(/.{2}/g)||[]).map(s=>Number.parseInt(s,16)));
 async function getRow(table:string) {
@@ -32,7 +33,12 @@ function inspect(envelope:unknown,now=Date.now()) {
  for(const item of data.daily_alerts) {
   if(!item||typeof item!=="object"||Array.isArray(item))return null;
   const row=item as Record<string,unknown>;
-  if(Object.keys(row).sort().join("|")!==FIELDS)return null;
+  const fieldNames=Object.keys(row).sort().join("|");
+  if(fieldNames!==FIELDS&&fieldNames!==FIELDS_WITH_OBSERVED_PEAK)return null;
+  if(fieldNames===FIELDS_WITH_OBSERVED_PEAK) {
+   const peak=row.observed_peak_pct;
+   if(peak!==null&&(typeof peak!=="number"||!Number.isFinite(peak)||peak<-100||peak>100000))return null;
+  }
   if(!/^[a-f0-9]{32}$/.test(String(row.event_id))||!/^[A-Za-z0-9._-]{1,28}$/.test(String(row.symbol))||!LANES.has(String(row.lane))||row.approved_for_public!==true||row.delivery_status!=="DELIVERED")return null;
   if(typeof row.score!=="number"||!Number.isFinite(row.score)||row.score<0||row.score>10)return null;
   const alertTime=Date.parse(String(row.timestamp_utc));
