@@ -204,17 +204,17 @@
       left: 0;
       top: 0;
       transform: translate(-50%, calc(-50% - (var(--u, 38px) * 3.98)));
-      padding: 7px 11px;
+      padding: 8px 14px;
       border-radius: 4px;
-      background: rgba(9, 11, 15, 0.70);
+      background: rgba(9, 11, 15, 0.74);
       border: 0;
       box-shadow: none;
-      color: rgba(231, 188, 103, 0.95);
-      font-weight: 700;
-      font-size: 12px;
-      letter-spacing: 0.18em;
+      color: #f4d99e;
+      font-weight: 850;
+      font-size: clamp(13px, 1.13vw, 17px);
+      letter-spacing: 0.21em;
       text-transform: uppercase;
-      text-shadow: 0 0 18px rgba(255, 255, 255, 0.10);
+      text-shadow: 0 0 16px rgba(246, 212, 139, 0.16);
       pointer-events: none;
       user-select: none;
       white-space: nowrap;
@@ -2387,6 +2387,15 @@
             );
             sy = Math.min(sy, pillTopY - CFG.pillH * 0.5 - 24);
 
+            // Give the FORWARDER BOT title a clear centered lane: flank it
+            // with GENESIS (left) and RECLAIM (right), while preserving the
+            // existing middle row when shorter/narrower viewports cannot fit.
+            // The title itself sits 3.98 cube units above the core center.
+            const titleLineY = ry - clamp(Math.min(W, H) * 0.038, 26, 64) * 3.98;
+            const middlePillY = (W >= 700 && titleLineY >= pillTopY + CFG.pillH + 16)
+              ? titleLineY
+              : ry;
+
             return {
               sx, sy, rx, ry, outY, pillY:pillBottomY, topPillY:pillTopY,
               lanes: [
@@ -2395,9 +2404,9 @@
                 { laneId: 0, x: laneLeftX, y: pillTopY, row:"top", side:"left", label: "EARLY" },
                 { laneId: 1, x: laneRightX, y: pillTopY, row:"top", side:"right", label: "TREND" },
                 { laneId: 2, x: laneRightX, y: pillBottomY, row:"bottom", side:"right", label: "RUNNER" },
-                { laneId: 3, x: laneLeftX, y: ry, row:"middle", side:"left", label: "GENESIS" },
+                { laneId: 3, x: laneLeftX, y: middlePillY, row:"middle", side:"left", label: "GENESIS" },
                 { laneId: 4, x: laneLeftX, y: pillBottomY, row:"bottom", side:"left", label: "STRICT" },
-                { laneId: 5, x: laneRightX, y: ry, row:"middle", side:"right", label: "RECLAIM" }
+                { laneId: 5, x: laneRightX, y: middlePillY, row:"middle", side:"right", label: "RECLAIM" }
               ]
             };
           }
