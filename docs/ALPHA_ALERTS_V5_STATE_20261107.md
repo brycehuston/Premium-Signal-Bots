@@ -71,3 +71,32 @@
 - **Validated local test artifact:** \`audit_delivery_lineage.py\` with eight synthetic unit tests, designed to output aggregate join counts only, never identifiers or private Telegram data. It does not sign, send, rewrite or approve any events. Stage to the repository only after reviewing the source and test artifacts; no publisher replacement is authorized.
 
 **Decision:** Preserve scanner pre-flush, repair the signed public publisher's delivery-proof source contract, then independently implement authenticated history ETL. Keep public six-row snapshots separate from the private/full historical dataset.
+
+
+## LIVE READ-ONLY RECONCILIATION — USER EXECUTED 2026-11-07
+
+The owner ran a PowerShell-to-SSH read-only CSV identity audit on \`alpha-prod\` and supplied JSON output (USER-SUPPLIED VPS OUTPUT, not independently reproduced under the restricted agent).
+
+| Key | Value |
+|---|---:|
+| canonical rows / unique IDs | 2088 / 2088 |
+| feature rows / unique IDs | 2024 / 2023 |
+| canonical-feature event ID overlap | 2020 |
+| canonical only / features only | 68 / 3 |
+| candidate event IDs with matching mint + normalized lane + valid canonical time | 2020 |
+| rolling 24h identity-matched candidates / distinct mints | 524 / 280 |
+| duplicate feature event IDs | 1 |
+| mint mismatches / lane mismatches / canonical invalid timestamps | 0 / 0 / 0 |
+| outcomes DONE / PENDING / EXPIRED_PARTIAL_DATA | 79 / 1488 / 17 |
+
+**These are candidates, not delivery-confirmed records.** The audit deliberately returned \`telegram_delivery_independently_verified=false\`; exact cross-file identity does not prove the writer's post-send invariant.
+
+## STAGED PUBLISHER CANDIDATE — NOT PRODUCTION APPROVED
+
+Development source \`hub-frontend/scripts/public_feed_delivery.py\` implements strict one-to-one \`event_id\` + mint + normalized lane + exact UTC timestamp cross-checking against the feature log, disqualifies duplicated feature IDs, and fails closed on missing/unsafe schema. \`hub-frontend/scripts/publish_confirmed_csv_ed25519.py\` now requires this match before considering canonical events for the six-row public snapshot.
+
+**The old approved sender hash remains deliberately pinned.** This code does not, and must not, make the live service publish until the source contract is independently approved, a new fingerprint reviewed, and owner authorization obtained.
+
+Eleven isolated synthetic regression tests passed locally in the analysis environment. The real post-delivery writer ordering and feature timestamp equality have NOT yet been independently checked against the production sender; the candidate code is therefore not release-ready.
+
+Next read-only proof: verify \`TREND_alert_features.csv\` genuinely writes only after a successful Telegram send, inspect its exact runtime timestamp field semantics, and explicitly validate \`event_id\` first-public and duplicate handling before any release.
