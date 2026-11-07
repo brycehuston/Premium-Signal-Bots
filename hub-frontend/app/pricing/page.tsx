@@ -344,8 +344,8 @@ export default function PricingPage() {
   const bundleKeyIndex = bundleTitle.indexOf(bundleKey);
   const bundleBullets = [
     ...BUNDLE.bullets,
-    "All 3 channels in one.",
-    "Best value if you want the full pipeline.",
+    "Early access is not yet available.",
+    "Bundle checkout remains on hold until every included lane is available.",
   ];
   const bundleTitleNode =
     bundleKeyIndex === -1 ? (
@@ -404,7 +404,7 @@ export default function PricingPage() {
           Six specialized signal lanes. Existing subscriptions remain unchanged; additional lane offerings are not yet separately priced.
         </p>
         <p className="mx-auto mt-3 text-[10px] text-muted sm:text-[11px] md:text-[12px]">
-          Choose the alerts you want. Payments are manual for now via USDC on Solana.
+          Prices are displayed for reference. Checkout is enabled only after verified payment and channel-access configuration.
         </p>
       </div>
 
@@ -583,13 +583,14 @@ export default function PricingPage() {
                       : "brightness-100 saturate-100",
                   ].join(" ")}
                   href={isEarlyComingSoon ? undefined : `/pay/${p.slug}?period=${billing}`}
+                  disabled={isEarlyComingSoon}
                   onClick={
                     isEarlyComingSoon
                       ? undefined
                       : () => track("plan_select", { plan: p.slug, period: billing })
                   }
                 >
-                  {billing === "annual" ? "Choose Annual" : "Choose Monthly"}
+                  {isEarlyComingSoon ? "COMING SOON" : billing === "annual" ? "Choose Annual" : "Choose Monthly"}
                 </Button>
               </div>
             </CardBody>
@@ -636,7 +637,7 @@ export default function PricingPage() {
                   tone="accent"
                   className="ml-0 best-value-pulse text-[11px] font-semibold uppercase tracking-[0.25em] sm:ml-2"
                 >
-                  Best Value
+                  Bundle On Hold
                 </Pill>
               </div>
 
@@ -673,13 +674,10 @@ export default function PricingPage() {
                 size="md"
                 full
                 className={`!h-12 text-[16px] ${tonePrimaryButtonClass("gold")}`}
-                href={`/pay/${BUNDLE.slug}?period=${billing}`}
-                onClick={() => {
-                  triggerBundleConfetti();
-                  track("plan_select", { plan: BUNDLE.slug, period: billing });
-                }}
+                disabled
+                onClick={undefined}
               >
-                {billing === "annual" ? "Bundle Annual" : "Bundle Monthly"}
+                BUNDLE ACCESS PENDING
               </Button>
             </div>
           </CardBody>
