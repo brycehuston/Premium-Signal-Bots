@@ -697,11 +697,11 @@ type VerifiedDailyFeed = {
 };
 
 const LANE_PALETTE: Record<string, { text: string; dot: string; chip: string }> = {
-  EARLY: {text:"text-[#65c27c]",dot:"bg-[#65c27c]",chip:"border-[#65c27c]/40 text-[#65c27c]"},
+  EARLY: {text:"text-[#a3ce64]",dot:"bg-[#a3ce64]",chip:"border-[#a3ce64]/40 text-[#a3ce64]"},
   GENESIS: {text:"text-[#a78bfa]",dot:"bg-[#a78bfa]",chip:"border-[#a78bfa]/40 text-[#a78bfa]"},
   TREND: {text:"text-[#cdd7e2]",dot:"bg-[#cdd7e2]",chip:"border-[#cdd7e2]/40 text-[#cdd7e2]"},
   STRICT: {text:"text-[#d97777]",dot:"bg-[#d97777]",chip:"border-[#d97777]/40 text-[#d97777]"},
-  RECLAIM: {text:"text-[#4fad80]",dot:"bg-[#4fad80]",chip:"border-[#4fad80]/40 text-[#4fad80]"},
+  RECLAIM: {text:"text-[#4bb8d1]",dot:"bg-[#4bb8d1]",chip:"border-[#4bb8d1]/40 text-[#4bb8d1]"},
   RUNNER: {text:"text-[#d8b879]",dot:"bg-[#d8b879]",chip:"border-[#d8b879]/40 text-[#d8b879]"},
 };
 
