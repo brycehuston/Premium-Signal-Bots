@@ -690,7 +690,7 @@ type VerifiedDailyAlert = {
   observed_peak_pct?: number | null;
 };
 type VerifiedDailyFeed = {
-  state: "loading" | "verified" | "empty" | "unavailable";
+  state: "loading" | "verified" | "archived" | "empty" | "unavailable";
   as_of_utc?: string;
   period?: "24h" | "7d" | null;
   public_delay_minutes?: number;
@@ -723,7 +723,7 @@ function HeroAlertReel() {
         if (!response.ok) throw new Error("feed unavailable");
         const data = await response.json();
         if (mounted) setFeed({
-          state:data.state === "verified" || data.state === "empty" ? data.state : "unavailable",
+          state:data.state === "verified" || data.state === "archived" || data.state === "empty" ? data.state : "unavailable",
           as_of_utc:data.as_of_utc,
           period:data.period === "24h" || data.period === "7d" ? data.period : null,
           public_delay_minutes:30,
@@ -739,20 +739,23 @@ function HeroAlertReel() {
     return () => {mounted=false;controller.abort();window.clearInterval(timer);document.removeEventListener("visibilitychange",refresh);};
   }, []);
 
-  const available = feed.state === "verified" && feed.alerts.length > 0;
+  const archived = feed.state === "archived";
+  const available = (feed.state === "verified" || archived) && feed.alerts.length > 0;
+  const archiveAsOf = archived && feed.as_of_utc && Number.isFinite(Date.parse(feed.as_of_utc))
+    ? new Date(feed.as_of_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"}) : null;
   return (
-    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Top three verified published Alpha Alerts">
+    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Public Alpha Alerts verified and archived alert records">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.23em] text-muted">
           <span className="h-1.5 w-1.5 rounded-full bg-gold/70" aria-hidden="true"/>
-          TOP 3 VERIFIED ALERTS
+          {archived ? "TOP 3 ARCHIVED PUBLIC RECORDS" : "TOP 3 VERIFIED ALERTS"}
         </div>
-        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available?"border-emerald-400/30 text-emerald-300":"border-stroke/60 text-muted"}`}>
-          {available?feed.period==="7d"?"VERIFIED · 7 DAYS":"VERIFIED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
+        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available && !archived?"border-emerald-400/30 text-emerald-300":archived?"border-amber-300/40 text-amber-200":"border-stroke/60 text-muted"}`}>
+          {archived?"SIGNED ARCHIVE":available?feed.period==="7d"?"VERIFIED · 7 DAYS":"VERIFIED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
         </span>
       </div>
       <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
-        {feed.period === "7d" ? "Historical top scores from the last 7 days." : "Top native scores from the last 24 hours."} Eligible confirmed deliveries only; at least 30 minutes delayed. Original alert dates are shown below.
+        {archived ? `Actual public-approved entries from the last signed snapshot${archiveAsOf ? " · " + archiveAsOf : ""}. Delivery confirmation for individual events is under review; do not treat these as independently verified fills or wins.` : `${feed.period === "7d" ? "Historical top scores from the last 7 days." : "Top native scores from the last 24 hours."} Eligible confirmed deliveries only; at least 30 minutes delayed. Original alert dates are shown below.`}
       </p>
       {available ? (
         <div className="mt-4 space-y-2.5">
@@ -796,7 +799,7 @@ function HeroAlertReel() {
         </div>
       )}
       <p className="mt-3 text-[10px] leading-relaxed text-muted/70">
-        Scores are informational, not profit probabilities. Ranking by score is not a trading-performance result.
+        Scores are informational, not profit probabilities. Ranking by score is not trading performance.{archived ? " Archived records are shown for historical reference only while the delivery-proof pipeline is being repaired." : ""}
       </p>
     </section>
   );

@@ -2166,7 +2166,7 @@
             // Layout tuning (matches your screenshot)
             forwarderNudgeX: 0,
             forwarderNudgeY: 0,
-            centerY: 0.46,
+            centerY: 0.65,  // balanced stage geometry: core sits below the centered title
             forwarderX: 0.50,
             sourceX: 0.50,
             forwarderOffsetY: -0.03,  // ✅ moved up a touch for cleaner spacing
@@ -2367,7 +2367,7 @@
             const bottomSafe = 70;
 
             outY = clamp(outY, ry + cubeHalf + 150, H - bottomSafe);
-            ry = clamp(ry, topSafe, outY - cubeHalf - 160);
+            ry = clamp(ry, topSafe, outY - cubeHalf - (H < 680 && !mobileMQ.matches ? 105 : 160));
             sy = clamp(sy, 45, ry - cubeHalf - 140);
 
             const sx = W * CFG.sourceX;
@@ -2380,7 +2380,7 @@
             const sideOffset = Math.min(maxOffset, W < 500 ? maxOffset : Math.max(W * 0.27, 165));
             const laneLeftX = rx - sideOffset;
             const laneRightX = rx + sideOffset;
-            const pillBottomY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
+            const legacyPillBottomY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
             const pillTopY = Math.max(
               CFG.pillH / 2 + 70,
               Math.min(ry - cubeHalf - (H < 540 ? 55 : 90), H * 0.18)
@@ -2392,9 +2392,14 @@
             // existing middle row when shorter/narrower viewports cannot fit.
             // The title itself sits 3.98 cube units above the core center.
             const titleLineY = ry - clamp(Math.min(W, H) * 0.038, 26, 64) * 3.98;
-            const middlePillY = (W >= 700 && titleLineY >= pillTopY + CFG.pillH + 16)
-              ? titleLineY
-              : ry;
+            const titleFlankFits = W >= 700 && titleLineY >= pillTopY + CFG.pillH + 16;
+            const middlePillY = titleFlankFits ? titleLineY : ry;
+            // Enforce equal spacing EARLY -> GENESIS -> STRICT and
+            // TREND -> RECLAIM -> RUNNER. The old bottom row used outY,
+            // which left an enormous gap beneath the middle pills.
+            const pillBottomY = titleFlankFits
+              ? Math.min(H - CFG.pillH / 2 - 30, middlePillY * 2 - pillTopY)
+              : legacyPillBottomY;
 
             return {
               sx, sy, rx, ry, outY, pillY:pillBottomY, topPillY:pillTopY,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPublicKey, verify as verifyEd25519 } from "node:crypto";
+import signedArchive from "./archive-20261107.json";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,12 +80,51 @@ async function limitedBody(response: Response): Promise<string> {
   }
 }
 
+// Preview-only bridge: last intentionally public-approved signed snapshot.
+ // This is historical publication evidence, not proof each token was delivered.
+ // Never use archived rows as "verified" or weaken the live feed's 20m freshness.
+function historicalPreview(now: Date) {
+  if (process.env.VERCEL_ENV !== "preview") return null;
+  try {
+    const publicKeyHex = signedArchive.public_key_hex;
+    if (!/^[a-f0-9]{64}$/.test(publicKeyHex) ||
+        !/^[a-f0-9]{128}$/.test(signedArchive.signature)) return null;
+    const key = createPublicKey({
+      key:Buffer.concat([Buffer.from("302a300506032b6570032100","hex"),Buffer.from(publicKeyHex,"hex")]),
+      format:"der",type:"spki"
+    });
+    if (!verifyEd25519(null,Buffer.from(signedArchive.signed_body,"utf8"),
+          key,Buffer.from(signedArchive.signature,"hex"))) return null;
+    const parsed = JSON.parse(signedArchive.signed_body) as Record<string,unknown>;
+    const captured = new Date(String(parsed.updated_at_utc ?? ""));
+    if (parsed.version !== 1 || parsed.source !== "confirmed-telegram-delivery" ||
+        !Number.isFinite(captured.getTime()) ||
+        captured.getTime() > now.getTime() ||
+        now.getTime() - captured.getTime() > MAX_PUBLIC_HISTORY_MS ||
+        !Array.isArray(parsed.daily_alerts) || parsed.daily_alerts.length !== 6) return null;
+    const values = parsed.daily_alerts.map(x=>validRow(x,now));
+    if (values.some(x=>x===null)) return null;
+    const alerts = (values as PublicRow[])
+      .sort((a,b)=>b.score-a.score || b.timestamp_utc.localeCompare(a.timestamp_utc))
+      .slice(0,3);
+    return {state:"archived" as const,period:"7d" as const,
+      as_of_utc:captured.toISOString(),public_delay_minutes:30,
+      alerts,delivery_independently_verified:false};
+  } catch { return null; }
+}
+
 export async function GET() {
   const now = new Date();
-  const unavailable = (state: "unavailable"|"empty") => NextResponse.json(
-    {state, period:null, as_of_utc:now.toISOString(), public_delay_minutes:30, alerts:[]},
-    {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}}
-  );
+  const unavailable = (state: "unavailable"|"empty") => {
+    if (state === "unavailable") {
+      const historical = historicalPreview(now);
+      if (historical) return NextResponse.json(historical,{headers:{"Cache-Control":"no-store"}});
+    }
+    return NextResponse.json(
+      {state, period:null, as_of_utc:now.toISOString(), public_delay_minutes:30, alerts:[]},
+      {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}}
+    );
+  };
   const upstream = process.env.ALPHA_PUBLIC_DAILY_FEED_URL;
   const publicKey = process.env.ALPHA_PUBLIC_DAILY_FEED_PUBLIC_KEY ?? "";
   if (!upstream || !/^[a-f0-9]{64}$/.test(publicKey)) return unavailable("unavailable");
