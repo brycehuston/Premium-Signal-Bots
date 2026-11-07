@@ -43,12 +43,13 @@ function validRow(value: unknown, now: Date): PublicRow | null {
   if (timestamp.getTime() > now.getTime() - MIN_DELAY_MS) return null;
   if (timestamp.getTime() < now.getTime() - 24 * 3600_000) return null;
   if (timestamp.toISOString().slice(0,10) !== now.toISOString().slice(0,10)) return null;
-  const tx = Number(row.m5_tx);
+  const rawTx = row.m5_tx;
+  const tx = rawTx == null || rawTx === "" ? null : Number(rawTx);
   return {
     id, symbol, lane, score:Math.round(score * 100) / 100,
     timestamp_utc:timestamp.toISOString(), alert_mc:money(row.alert_mc),
     liquidity_usd:money(row.liquidity_usd),
-    m5_tx:Number.isSafeInteger(tx) && tx >= 0 && tx <= 1e9 ? tx : null,
+    m5_tx:tx !== null && Number.isSafeInteger(tx) && tx >= 0 && tx <= 1e9 ? tx : null,
   };
 }
 
