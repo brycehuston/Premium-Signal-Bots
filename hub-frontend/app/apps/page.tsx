@@ -47,6 +47,17 @@ export default function AppsWelcome() {
         <span>NO ADS. NO SIGN-UPS.</span>
         <span>BUILT FOR REAL WORK</span>
       </div>
+      <section className={styles.lockIn} aria-labelledby="lock-in-title">
+        <div>
+          <p className={styles.eyebrow}>ALPHA GRIND / THE LOCK-IN MINDSET</p>
+          <h2 id="lock-in-title">The work starts <span>before the opportunity.</span></h2>
+          <p>Markets move. Projects evolve. Your next opportunity may arrive when you least expect it. Build the routine now: protect your attention, set your atmosphere and keep your ideas organized. Alpha Grind is made for traders, builders, students and anyone ready to get meaningful work done.</p>
+        </div>
+        <div className={styles.lockInAside}>
+          <strong>LOCK IN.<br />STAY READY.<br />GO ALPHA.</strong>
+          <span>YOUR EDGE STARTS BEFORE THE SIGNAL.</span>
+        </div>
+      </section>
       <section className={styles.landingPreview} aria-labelledby="alpha-apps-preview">
         <div className={styles.landingPreviewHead}>
           <h2 id="alpha-apps-preview">The software, up close.</h2>
