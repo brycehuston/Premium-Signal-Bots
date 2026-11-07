@@ -97,6 +97,36 @@ export default function AppsWelcome() {
           ))}
         </div>
       </section>
+      <section className={styles.vibeSection} id="choose-your-vibe" aria-labelledby="choose-vibe-title">
+        <div className={styles.vibeSectionHead}>
+          <div>
+            <p className={styles.eyebrow}>YOUR WORKSPACE. YOUR COLORS.</p>
+            <h2 id="choose-vibe-title">Choose your <span>vibe.</span></h2>
+            <p>Five authentic Alpha Focus appearances, from signature gold to soft rose. Explore the original Windows captures—no invented colorways or simulated interfaces.</p>
+          </div>
+          <span>ACTUAL WINDOWS CAPTURES / OPEN FULL SIZE</span>
+        </div>
+        <div className={styles.vibeGallery} aria-label="Alpha Focus appearance screenshots">
+          {[
+            {id:"gold",name:"Signature Gold",color:"#e7bc67",image:"/apps/showcase/alpha-focus-gold-compact-layout.png",width:1074,height:941},
+            {id:"violet",name:"Electric Violet",color:"#b57be7",image:"/apps/showcase/alpha-focus-purple-deep-work.png",width:1076,height:1917},
+            {id:"blue",name:"Arctic Blue",color:"#70caea",image:"/apps/showcase/alpha-focus-cyan-deep-work.png",width:1075,height:1919},
+            {id:"red",name:"Signal Red",color:"#f06670",image:"/apps/showcase/alpha-focus-red-recovery.png",width:1068,height:1919},
+            {id:"rose",name:"Soft Rose",color:"#db90b4",image:"/apps/showcase/alpha-focus-pink-light-notes.png",width:1079,height:1913},
+          ].map(item=>(
+            <a key={item.id} className={styles.vibeGalleryCard} href={item.image}
+              target="_blank" rel="noopener noreferrer" aria-label={"View original Alpha Focus "+item.name+" screenshot"}>
+              <div className={styles.vibeGalleryImage}>
+                <Image src={item.image} alt={"Real Alpha Focus "+item.name+" appearance"}
+                  width={item.width} height={item.height} quality={85}
+                  sizes="(max-width: 600px) 60vw, (max-width: 1100px) 27vw, 210px"/>
+              </div>
+              <span><i style={{backgroundColor:item.color}} aria-hidden="true"/>{item.name}<small>VIEW ORIGINAL ↗</small></span>
+            </a>
+          ))}
+        </div>
+        <p className={styles.vibeGalleryNote}>Images depict their original captured layouts. Color availability and window configuration can differ between applications.</p>
+      </section>
       <section className={styles.grindQuiet} aria-labelledby="grind-quiet-title">
         <div>
           <p className={styles.eyebrow}>FOCUS, YOUR WAY.</p>
