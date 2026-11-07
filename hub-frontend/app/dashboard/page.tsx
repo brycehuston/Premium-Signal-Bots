@@ -10,7 +10,7 @@ import { forgetLaneArchive, readSavedLaneArchive, saveLaneArchive } from "./loca
 const LANES = ["EARLY", "GENESIS", "RECLAIM", "TREND", "STRICT", "RUNNER"] as const;
 type Lane = (typeof LANES)[number];
 const COLORS: Record<Lane,string> = {
-  EARLY:"#65c27c", GENESIS:"#a78bfa", RECLAIM:"#4fad80",
+  EARLY:"#a3ce64", GENESIS:"#a78bfa", RECLAIM:"#4bb8d1",
   TREND:"#cdd7e2", STRICT:"#d97777", RUNNER:"#d8b879"
 };
 type Daily = { date_pt:string; all_alerts:number; first_mints:number; [key:string]:string|number };
