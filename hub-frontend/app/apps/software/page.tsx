@@ -6,7 +6,7 @@ import styles from "../apps.module.css";
 
 export const metadata: Metadata = {
   title: "Alpha Grind — Focus, Vibe & Notes",
-  description: "Explore original Windows screenshots of Alpha Focus, Alpha Vibe and Alpha Notes. Choose color treatments and layouts, from FruxLabs.",
+  description: "Explore genuine Windows screenshots and practical benefits of Alpha Focus, Alpha Vibe and Alpha Notes, the Alpha Grind productivity suite.",
   alternates: { canonical: "/apps/software" },
   openGraph: {
     title: "Alpha Grind | Alpha Software",
