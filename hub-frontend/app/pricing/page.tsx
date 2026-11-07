@@ -582,15 +582,15 @@ export default function PricingPage() {
                       ? "pointer-events-none coming-soon-plan-accent coming-soon-plan-button-dim"
                       : "brightness-100 saturate-100",
                   ].join(" ")}
-                  href={isEarlyComingSoon ? undefined : `/pay/${p.slug}?period=${billing}`}
+                  href={isEarlyComingSoon ? undefined : "/contact"}
                   disabled={isEarlyComingSoon}
                   onClick={
                     isEarlyComingSoon
                       ? undefined
-                      : () => track("plan_select", { plan: p.slug, period: billing })
+                      : () => track("plan_interest", { plan: p.slug, period: billing })
                   }
                 >
-                  {isEarlyComingSoon ? "COMING SOON" : billing === "annual" ? "Choose Annual" : "Choose Monthly"}
+                  {isEarlyComingSoon ? "COMING SOON" : "REQUEST ACCESS"}
                 </Button>
               </div>
             </CardBody>
