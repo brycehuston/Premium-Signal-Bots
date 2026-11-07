@@ -1991,3 +1991,6 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
   .coming-soon-ribbon-text { animation: none !important; background-position: 0% 50%; }
 }
 /* ---------------------------------------------------------------------- */
+
+/* Premium editorial headings: uppercase hierarchy; preserve mixed-case prose and controls. */
+.alpha-home-headings :is(h1, h2, h3) { text-transform: uppercase; }
