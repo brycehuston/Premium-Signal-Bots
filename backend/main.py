@@ -11,6 +11,7 @@ from .database import Base, engine, get_db
 from .models import User, Subscription
 from .auth import hash_password, verify_password, create_access_token, decode_token
 from .supabase_auth import verify_supabase_token
+from .public_daily_feed import router as public_daily_feed_router
 from .bot import start_bot, stop_bot, bot_status, stream_logs
 
 from google.oauth2 import id_token
@@ -126,6 +127,7 @@ ensure_waitlist_schema()
 ensure_users_schema()
 
 app = FastAPI(title="SaaS Hub — Crypto Only")
+app.include_router(public_daily_feed_router)
 
 # CORS
 
