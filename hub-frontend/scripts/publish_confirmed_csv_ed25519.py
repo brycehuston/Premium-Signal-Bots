@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
-"""Export six sanitized, confirmed-telegram-delivery Alpha alerts to the public signed reel.
+"""Candidate publisher for six sanitized, delayed, Telegram-confirmed alerts.
 
-Source: current Alpha-Trend's TREND_token_alerts.csv, which this exact running
-source writes ONLY after a truthy, confirmed Telegram API delivery result.
-This process never reads Telegram credentials or edits/interrupts the sender.
+The canonical token CSV is written BEFORE Telegram sending. It is not proof
+of delivery. Only exact cross-checked candidate identities are eligible after
+independent review of the post-send feature writer contract and source SHA.
+Staged development code; do not deploy live without that review and approval.
 """
 from __future__ import annotations
 import argparse, csv, datetime as dt, hashlib, json, math, os, re, stat, sys
 import urllib.error, urllib.request
 from pathlib import Path
+from public_feed_delivery import confirmed_feature_index, has_matching_post_send_feature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 ROOT = Path("/home/ubuntu/worktrees/alpha-alerts-live-v196-20261101")
 SOURCE = ROOT / "alpha_trend_alerts.py"
 CSV = ROOT / "logs/TREND_token_alerts.csv"
+FEATURES = ROOT / "logs/TREND_alert_features.csv"
 OUTCOMES = ROOT / "logs/TREND_outcomes.csv"
 KEY = Path("/home/ubuntu/.alphaalerts/website_feed/ed25519.private")
 ENDPOINT = "https://ennbnofvmnkcuhftzlhr.supabase.co/functions/v1/alpha-public-daily-feed"
@@ -32,7 +35,7 @@ def source_verified() -> None:
     accepted = source.index('        telegram_metadata = _telegram_delivery_metadata(delivered)',send_boundary)
     written = source.index('            _log_alert_csv(token, tier, score, event_alert_num, raise_on_error=True)',accepted)
     if not (send_boundary < accepted < written):
-        raise ValueError("CSV no longer unambiguously postdates Telegram confirmation")
+        raise ValueError("post-delivery legacy audit writer contract changed")
 
 def finite_positive(v: str | None) -> float | None:
     try:
@@ -116,13 +119,18 @@ def prepare(now:dt.datetime) -> tuple[dict,dict]:
     source_verified()
     if not CSV.is_file() or CSV.is_symlink():raise ValueError("alert log missing or symlink")
     if CSV.stat().st_size > 150_000_000:raise ValueError("alert log unexpectedly large")
+    # The canonical CSV is pre-send. A post-send features match is a necessary
+    # admission gate, never a substitute for reviewing the writer contract.
+    evidence = confirmed_feature_index(FEATURES)
     dedup:dict[str,dict]={}
     with CSV.open(newline="",encoding="utf-8-sig") as f:
         reader=csv.DictReader(f)
-        needed={"timestamp_utc","event_id","symbol","alert_lane","score","mc","liq","m5_tx"}
+        needed={"timestamp_utc","event_id","mint","symbol","alert_lane","score","mc","liq","m5_tx"}
         if not reader.fieldnames or not needed.issubset(reader.fieldnames):
             raise ValueError("source columns changed")
         for row in reader:
+            if not has_matching_post_send_feature(row, evidence):
+                continue
             item=normalize(row,now)
             if item is None:continue
             old=dedup.get(item["event_id"])
