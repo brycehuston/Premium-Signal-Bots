@@ -5,11 +5,11 @@ import SoftwareShowcase from "./SoftwareShowcase";
 import styles from "../apps.module.css";
 
 export const metadata: Metadata = {
-  title: "Alpha Grind — Focus, Vibe & Notes",
+  title: "FRUXLABS SOFTWARE — Alpha Grind",
   description: "Explore genuine Windows screenshots and practical benefits of Alpha Focus, Alpha Vibe and Alpha Notes, the Alpha Grind productivity suite.",
   alternates: { canonical: "/apps/software" },
   openGraph: {
-    title: "Alpha Grind | Alpha Software",
+    title: "FRUXLABS SOFTWARE | Alpha Grind",
     description: "Explore authentic screenshots of Focus, Vibe and Notes.",
     url: "/apps/software", type: "website",
   },
@@ -36,7 +36,7 @@ export default function SoftwareCatalog() {
         </section>
         <div className={styles.closing}>
           <span>NO ADS. NO SIGN-UPS. NO BS.</span>
-          <Link href="/apps">Back to Alpha Apps <span aria-hidden="true">→</span></Link>
+          <Link href="/">← BACK TO ALPHA ALERTS</Link>
         </div>
       </div>
     </AppsShell>

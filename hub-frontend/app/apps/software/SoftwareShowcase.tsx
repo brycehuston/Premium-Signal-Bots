@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import styles from "../apps.module.css";
 
 const products = [
@@ -52,7 +53,8 @@ export default function SoftwareShowcase() {
       <div className={styles.editorialIntro}>
         <p className={styles.eyebrow}>ALPHA GRIND / THREE APPS. ONE WORKSPACE.</p>
         <h1>Focus, <span>your way.</span></h1>
-        <p>Structure your time. Set the atmosphere. Capture the ideas. Explore the three real Windows apps without mock color options or placeholder screens.</p>
+        <p>Structure your time. Set the atmosphere. Capture the ideas. Explore three focused Windows applications through their original product screenshots.</p>
+        <Link className={styles.returnLink} href="/">← BACK TO ALPHA ALERTS</Link>
       </div>
 
       <section className={styles.editorialProducts} aria-label="Explore Alpha Grind applications">
@@ -95,7 +97,7 @@ export default function SoftwareShowcase() {
         ))}
       </section>
       <p className={styles.releaseNote}>
-        <strong>Release status:</strong> The imagery shows genuine application captures. Additional colors and layouts will be showcased when comparable screenshots exist for each product. Downloads are listed only after native Windows release checks pass.
+        <strong>REAL WINDOWS CAPTURES.</strong> Appearance availability differs by application. Downloads will be listed after native Windows release verification.
       </p>
     </>
   );

@@ -752,13 +752,13 @@ function HeroAlertReel() {
         </span>
       </div>
       <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
-        {feed.period === "7d" ? "No eligible alerts in the last 24 hours. Top native scores from the last 7 days." : "Top native scores from the last 24 hours."} Confirmed public Telegram deliveries only; at least 30 minutes delayed.
+        {feed.period === "7d" ? "Historical top scores from the last 7 days." : "Top native scores from the last 24 hours."} Eligible confirmed deliveries only; at least 30 minutes delayed. Original alert dates are shown below.
       </p>
       {available ? (
         <div className="mt-4 space-y-2.5">
           {feed.alerts.map((item, index) => {
             const tone = LANE_PALETTE[item.lane] ?? LANE_PALETTE.TREND;
-            const clock = new Date(item.timestamp_utc).toLocaleTimeString("en-US",{timeZone:"UTC",hour:"2-digit",minute:"2-digit",hour12:false});
+            const clock = new Date(item.timestamp_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
             const candidatePeak = item.observed_peak_pct;
             const verifiedPeak = typeof candidatePeak === "number" && Number.isFinite(candidatePeak) && candidatePeak >= -100 && candidatePeak <= 100000 ? candidatePeak : null;
             const hasPeak = verifiedPeak !== null;
@@ -781,7 +781,7 @@ function HeroAlertReel() {
                   {hasPeak && <span title="Highest price observed after this alert, based on monitored market data. Not a realized return or guaranteed profit." className={`rounded-full border px-2 py-1 text-[10px] font-medium tabular-nums ${verifiedPeak >= 0 ? "border-[#69bd91]/35 bg-[#69bd91]/[0.07] text-[#a0dabb]" : "border-[#d97777]/35 bg-[#d97777]/[0.07] text-[#e3a0a0]"}`}>
                     {verifiedPeak >= 0 ? "↗" : "↘"} {peakMultiple.toFixed(2)}× · {verifiedPeak >= 0 ? "+" : ""}{verifiedPeak.toFixed(1)}% <span className="opacity-70">peak</span>
                   </span>}
-                  <span className="ml-auto text-[10px] tabular-nums text-muted">{clock} UTC</span>
+                  <span className="ml-auto text-[10px] tabular-nums text-muted">{clock}</span>
                 </div>
               </article>
             );
@@ -789,9 +789,9 @@ function HeroAlertReel() {
         </div>
       ) : (
         <div className="mt-4 rounded-xl border border-stroke/60 bg-bg/40 px-4 py-8 text-center">
-          <div className="text-sm font-semibold text-silver">{feed.state==="loading"?"Checking verified alerts…":feed.state==="empty"?"No verified published alerts in the last 7 days":"Verified alerts are not connected yet"}</div>
+          <div className="text-sm font-semibold text-silver">{feed.state==="loading"?"Checking verified alerts…":feed.state==="empty"?"No verified published alerts in the last 7 days":"Verified feed temporarily unavailable"}</div>
           <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
-            This display never substitutes sample wins or scanner candidates for real Telegram deliveries.
+            Only signed records with proven Telegram delivery may appear here. Scanner candidates and modeled wins are never substituted.
           </p>
         </div>
       )}
@@ -874,41 +874,37 @@ const EASE_OUT: Easing = "easeOut";
 const ROADMAP_ITEMS: RoadmapItem[] = [
   {
     step: 1,
-    title: "Stage 1 ⚡ Solana AlphaAlerts",
+    title: "Stage 1 ⚡ Alpha Alerts VPS",
     tag: "LIVE",
     bullets: [
-      "Six specialized lanes: Early, Genesis, Trend, Strict, Reclaim, Runner",
-      "Each lane uses a distinct scoring context and alert designation",
-      "Subscription availability is listed on the pricing page",
-      "Telegram alerts with one-tap links (Dex, chart, explorer)",
-      "Safety checks + scoring + \"why skipped\" reasons",
+      "Production Alpha Alerts bot infrastructure on the VPS",
+      "On-chain monitoring, alert classification and Telegram delivery",
+      "Scanner telemetry and verified delivery records are separate data sources",
     ],
-    footer: "Weekly tuning based on real results (less spam, higher quality)",
+    footer: "Production infrastructure. Status and performance claims require measured evidence.",
+    cta: { label: "VIEW STAGE 1", href: "/stage-1" },
   },
   {
     step: 2,
-    title: "Stage 2 🤖 ALPHA-X Auto Trader",
-    tag: "NEXT",
+    title: "Stage 2 ◉ Python Scanner Bots",
+    tag: "IN BUILD",
     bullets: [
-      "Auto entries on high-probability setups",
-      "Risk sizing so trades stay controlled",
-      "Layered take-profits (TP1 / TP2 / TP3)",
-      "Stop loss + trailing stop options",
-      "Break-even + runner management",
-      "Moon bag option (optional runner position with trailing stop)",
-      "Full trade logs + performance stats",
+      "Six specialized scanner lanes: Early, Genesis, Trend, Strict, Reclaim and Runner",
+      "Distinct lane identities, scoring context and risk signals",
+      "A visual explanation of the six-lane workflow; not a live scanner monitor",
     ],
+    cta: { label: "VIEW STAGE 2", href: "/stage-2" },
   },
   {
     step: 3,
-    title: "Stage 3 🌐 Multi-Chain Alerts",
+    title: "Stage 3 ◇ Forwarder Bot",
     tag: "IN BUILD",
     bullets: [
-      "BSC alerts (extra scam and trap filters)",
-      "ETH alerts (liquidity + momentum focused)",
-      "Same tiers, same scoring, same clean Telegram delivery",
-      "Unified dashboard for all chains",
+      "Visualizes routing from the central forwarder to six Alpha lanes",
+      "Genesis and Reclaim flank the animated forwarding core",
+      "Animated packets are illustrative, not a live Telegram delivery counter",
     ],
+    cta: { label: "VIEW STAGE 3", href: "/stage-3" },
   },
   {
     step: 4,
@@ -1034,10 +1030,9 @@ const RoadmapSection = memo(function RoadmapSection() {
               className="absolute left-0 top-2 hidden h-10 w-px bg-gradient-to-b from-gold/70 via-gold/30 to-transparent md:block"
             />
             <p className="text-body text-muted leading-relaxed">
-              We ship in stages. Each stage makes alerts{" "}
-              <span className="text-silver">cleaner</span>,{" "}
-              <span className="text-silver">faster</span>, and{" "}
-              <span className="text-silver">easier to use</span>.
+              Explore the production VPS and the visual scanner-to-forwarder workflow.{" "}
+              <span className="text-silver">Animated stage previews are illustrative</span>,{" "}
+              not live delivery telemetry.
             </p>
           </div>
         </div>

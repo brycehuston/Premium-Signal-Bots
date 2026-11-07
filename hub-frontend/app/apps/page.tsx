@@ -5,11 +5,11 @@ import { AppsShell, StackArt } from "./AppsShell";
 import styles from "./apps.module.css";
 
 export const metadata: Metadata = {
-  title: "Alpha Apps — Focus, Vibe & Notes",
+  title: "FRUXLABS SOFTWARE — Alpha Grind",
   description: "Alpha Grind brings Focus, Vibe and Notes together: three local-first Windows tools made for getting things done.",
   alternates: { canonical: "/apps" },
   openGraph: {
-    title: "Alpha Apps | Alpha Grind by FruxLabs",
+    title: "FRUXLABS SOFTWARE | Alpha Grind",
     description: "Three focused tools for time, music and ideas.",
     url: "/apps",
     type: "website",

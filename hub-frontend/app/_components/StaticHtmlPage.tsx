@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 type StaticHtmlPageProps = {
   src: string;
@@ -83,18 +84,28 @@ export default function StaticHtmlPage({ src, phaseId }: StaticHtmlPageProps) {
   }, [src, phaseId]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100vw",
-        height: "100dvh",
-        minHeight: "100vh",
-        zIndex: 40,
-        background: "#000",
-        overflow: "hidden",
-      }}
-    />
+    <>
+      <div
+        ref={containerRef}
+        style={{
+          position: "fixed",
+          inset: 0,
+          width: "100vw",
+          height: "100dvh",
+          minHeight: "100vh",
+          zIndex: 40,
+          background: "#000",
+          overflow: "hidden",
+        }}
+      />
+      <Link
+        href="/"
+        aria-label="Return to Alpha Alerts homepage"
+        className="fixed bottom-2 left-3 z-[70] inline-flex min-h-9 items-center rounded-md border border-[#806b43]/60 bg-[#090a0c]/90 px-3 py-2 text-[10px] font-bold tracking-[0.13em] text-[#d8bc83] shadow-lg transition-colors hover:border-[#e7bc67] hover:text-[#f5daa0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e7bc67] sm:bottom-3 sm:left-5"
+        style={{ textDecoration: "none" }}
+      >
+        ← ALPHA ALERTS
+      </Link>
+    </>
   );
 }
