@@ -100,3 +100,11 @@ Development source \`hub-frontend/scripts/public_feed_delivery.py\` implements s
 Eleven isolated synthetic regression tests passed locally in the analysis environment. The real post-delivery writer ordering and feature timestamp equality have NOT yet been independently checked against the production sender; the candidate code is therefore not release-ready.
 
 Next read-only proof: verify \`TREND_alert_features.csv\` genuinely writes only after a successful Telegram send, inspect its exact runtime timestamp field semantics, and explicitly validate \`event_id\` first-public and duplicate handling before any release.
+
+
+## 2026-11-07 PRESENTATION UPDATE — USER-DIRECTED
+
+- The user explicitly permits showing **real, accurately dated historical alerts even if about a day old**. They prioritize actual verified records being visible over minute-by-minute freshness. This is a relaxation of UI recency expectations, **NOT** permission to fabricate delivery-confirmation metadata or to expose pre-delivery scanner events as confirmed Telegram sends.
+- Public homepage product contract: when historical publisher lineage is independently verified, use the most recent actually confirmed and public-approved delayed records, display a clear observation/verification timestamp, and distinguish **RECENT VERIFIED** versus **HISTORICAL VERIFIED**. Exact 24–48h allowed cache/window requires explicit review of the Ed25519 API and Edge source provenance; never silently bypass the present 20-minute signed-snapshot freshness.
+- The supplied six-card scanner workflow reference has a premium dark/metallic 3x2 arrangement, individually colored radar dials, short lane names, and a Telegram link. It is a DESIGN REFERENCE, not authorization to replace an approved component yet. Preserve approved lane semantics and avoid fake functional volume, SFX controls, or simulated service status. Existing site's roadmap lists the six scanner lanes under Stage 1, whereas the uploaded reference says Stage 2; resolve content hierarchy before applying.
+- All principal headings (h1/h2/h3) in the website home and Alpha Apps pages should display uppercase, keeping body copy, tabs, metadata, and normal descriptive text mixed-case. This typography-only change is staged in the preview branch; avoid wider redesign.
