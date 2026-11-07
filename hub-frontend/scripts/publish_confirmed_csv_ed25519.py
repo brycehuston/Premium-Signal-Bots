@@ -82,7 +82,7 @@ def prepare(now:dt.datetime) -> tuple[dict,dict]:
             if old is None or item["timestamp_utc"]>old["timestamp_utc"]:
                 dedup[item["event_id"]]=item
     cutoff=now-dt.timedelta(hours=24)
-    scored=sorted(dedup.values(),key=lambda row:(-row["score"],row["timestamp_utc"]),reverse=False)
+    scored=sorted(dedup.values(),key=lambda row:(row["score"],row["timestamp_utc"]),reverse=True)
     day=[r for r in scored if dt.datetime.fromisoformat(r["timestamp_utc"].replace("Z","+00:00"))>=cutoff][:3]
     week=[r for r in scored if dt.datetime.fromisoformat(r["timestamp_utc"].replace("Z","+00:00"))<cutoff][:3]
     # Only six sanitized rows cross the network, never private receipts, mints,
