@@ -134,3 +134,134 @@
 @media(prefers-reduced-motion:reduce){
   .page *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
 }
+
+
+/* ALPHA GRIND / authentic product gallery: restrained charcoal, champagne metal. */
+.showcaseHead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:25px 0 27px}
+.showcaseIntro{max-width:700px;min-width:0}
+.showcaseTitle{font:750 clamp(36px,4.6vw,58px)/1.09 var(--font-display),ui-sans-serif,system-ui;
+  letter-spacing:-.045em;color:#f0f0f2;margin:15px 0 16px}
+.showcaseTitle span{color:#e7bc67}
+.showcaseIntro>p:last-child{font-size:14px;line-height:1.8;color:#aaaab4;margin:0;max-width:600px}
+.showcaseEdition{white-space:nowrap;font-size:9px;letter-spacing:.18em;color:#8c8e95;padding-bottom:6px}
+.showcaseEdition span{color:#d9b56f;padding:0 7px}
+.showcase{--capture-accent:#e7bc67;border:1px solid #323138;border-radius:16px;
+  overflow:hidden;background:linear-gradient(140deg,#131316 0%,#0b0b0e 58%,#0b0c10 100%);
+  box-shadow:0 24px 65px rgba(0,0,0,.20),inset 0 1px 0 #ffffff08}
+.showcase button{font:inherit;cursor:pointer}
+.showcase button:focus-visible,.cardImageButton:focus-visible{outline:2px solid #e7bc67;outline-offset:-2px}
+.showcaseTopbar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:15px clamp(17px,2.2vw,28px);border-bottom:1px solid #282930}
+.showcaseProductTabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.productTab,.productTabSelected{border:1px solid transparent;border-radius:7px;padding:11px 16px;
+  background:transparent;color:#9b9ca5;font-weight:700!important;font-size:11px!important;letter-spacing:.025em;
+  transition:color .15s,background .15s,border-color .15s}
+.productTab:hover{color:#e3e3e7;background:#ffffff07}
+.productTabSelected{border-color:#ae946334;color:#e9cf97!important;background:#d8b87916}
+.showcaseTopCaption{color:#888a91;font-size:9px;font-weight:700;letter-spacing:.14em;white-space:nowrap}
+.showcaseTopCaption i{display:inline-block;width:4px;height:4px;border-radius:100%;background:#d0ad68;margin:0 7px 1px}
+.showcaseGrid{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(295px,.82fr);min-width:0}
+.showcaseImagePane{background:#08090c;min-width:0;border-right:1px solid #2a2b32}
+.imagePaneTop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:14px 18px;color:#999aa2;font-size:9px;font-weight:750;letter-spacing:.15em;border-bottom:1px solid #24262c}
+.captureStatus{display:flex;align-items:center;gap:8px;color:#d1c4a8}
+.captureStatus>span{width:5px;height:5px;border-radius:50%;background:var(--capture-accent)}
+.captureSeparator{color:#696b74;margin:0 5px}
+.showcaseImageFrame{height:clamp(380px,41vw,590px);display:flex;justify-content:center;align-items:center;
+  padding:20px;background:radial-gradient(ellipse at 50% 40%,#17161a 0%,#08090c 67%);overflow:hidden}
+.showcaseImage{display:block;width:auto;max-width:100%;height:auto;max-height:100%;object-fit:contain;
+  border:1px solid #ffffff10;border-radius:7px;box-shadow:0 18px 60px #0009}
+.showcaseImageFooter{display:flex;justify-content:space-between;align-items:center;gap:17px;padding:13px 18px;
+  border-top:1px solid #24262c;color:#92939a;font-size:10px;line-height:1.55}
+.showcaseImageFooter a{color:#d4bd91!important;white-space:nowrap;font-size:9px;font-weight:750;letter-spacing:.10em}
+.showcaseImageFooter a:hover{color:#f0d394!important}
+.showcaseSide{padding:clamp(22px,2.5vw,34px);display:flex;flex-direction:column;gap:33px;min-width:0}
+.showcaseEyebrow{font-size:9px!important;letter-spacing:.23em!important;color:var(--capture-accent)!important;
+  font-weight:800;margin:0 0 17px!important}
+.showcaseSide h3{font-family:var(--font-display),ui-sans-serif,system-ui;font-weight:730;
+  font-size:clamp(24px,2.55vw,33px);line-height:1.2;letter-spacing:-.035em;color:#f1f1f3;margin:0 0 13px}
+.showcaseDetail{font-size:12px;line-height:1.85;color:#a7a8b0;margin:0}
+.captureControls{display:grid;gap:16px;padding:22px 0;border-block:1px solid #2d2d33}
+.captureControlHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.captureControlHead span{color:#84858f;font-size:9px;font-weight:800;letter-spacing:.16em}
+.captureControlHead strong{font-size:10px;font-weight:700;color:#d8d7db}
+.colorOptions{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:4px}
+.colorOption{min-width:48px;display:flex;align-items:center;flex-direction:column;gap:7px;
+  padding:9px 6px 8px;background:transparent;border:1px solid transparent;border-radius:9px;color:#a6a5ac}
+.colorOption>span{display:block;width:22px;height:22px;border-radius:50%;background:var(--swatch);
+  border:2px solid #0c0e12;box-shadow:0 0 0 1px #7775}
+.colorOption small{font-size:8px;font-weight:780;letter-spacing:.12em}
+.colorOption[aria-pressed="true"]{border-color:var(--capture-accent);background:#ffffff07;color:#f4f3f3}
+.colorOption[aria-pressed="true"]>span{box-shadow:0 0 0 2px #0a0a0e,0 0 0 3px var(--swatch)}
+.colorOption:hover{background:#ffffff07}
+.viewOptions{display:flex;flex-wrap:wrap;gap:7px}
+.viewOption{padding:9px 12px;border:1px solid #36373c;border-radius:7px;background:#141418;
+  color:#a5a6af;font-size:10px!important;font-weight:730!important}
+.viewOption:hover{border-color:#817457;color:#e2d3b0}
+.viewOption[aria-pressed="true"]{border-color:var(--capture-accent);color:#f6f2e9;background:#ffffff0b}
+.captureHint{color:#72747d;line-height:1.5;font-size:10px;margin:0}
+.showcaseDetails{display:grid;gap:12px;margin-top:auto}
+.showcaseDetails span{display:flex;align-items:center;gap:11px;color:#bcbcc2;
+  font-size:9px;font-weight:780;letter-spacing:.13em}
+.showcaseDetails i{display:block;width:5px;height:5px;flex:none;border-radius:50%;background:var(--capture-accent)}
+.cardImageButton{display:block;position:relative;width:100%;padding:0;border:0;cursor:pointer;
+  background:radial-gradient(ellipse at 50% 10%,#1b1a1c,#09090b 70%);overflow:hidden;
+  border-bottom:1px solid #292a30}
+.cardImage{display:block;width:100%;height:240px;object-fit:contain;object-position:center;
+  padding:14px;transition:transform .24s ease;filter:none}
+.cardImageButton:hover .cardImage{transform:scale(1.024)}
+.cardImageButton>span{position:absolute;right:13px;bottom:12px;background:#0b0c0ee9;border:1px solid #a88b555c;
+  border-radius:6px;color:#dec590;letter-spacing:.12em;font-size:8px;font-weight:800;padding:8px 10px}
+.cardImageButton>span>span{margin-left:8px}
+.landingPreview{margin-top:33px;padding:22px 0 0;border-top:1px solid #292a31}
+.landingPreviewHead{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:17px}
+.landingPreviewHead h2{margin:0;font-family:var(--font-display),ui-sans-serif,system-ui;
+  color:#f0f0f2;letter-spacing:-.02em;font-size:22px;font-weight:720}
+.landingPreviewHead a{color:#e1bb74!important;font-size:11px;font-weight:780}
+.landingPreviewCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.landingPreviewCard{display:block;min-width:0;border:1px solid #303037;border-radius:10px;overflow:hidden;
+  background:#111216;transition:border-color .2s,transform .2s}
+.landingPreviewCard:hover{border-color:#a88b56;transform:translateY(-2px)}
+.landingPreviewCard img{display:block;width:100%;height:170px;object-fit:contain;padding:10px;background:#08090c}
+.landingPreviewCard>span{display:flex;justify-content:space-between;align-items:center;
+  padding:14px;color:#e6e6e9;font-size:12px;font-weight:710}
+.landingPreviewCard>span>small{color:#a98b55;font-size:9px;letter-spacing:.14em}
+@media(max-width:1050px){
+  .showcaseGrid{grid-template-columns:minmax(0,1.1fr) minmax(250px,.85fr)}
+  .showcaseSide{padding:20px;gap:25px}
+  .showcaseImageFrame{height:440px;padding:16px}
+  .showcaseTopbar{padding:10px 14px}
+  .showcaseTopCaption{display:none}
+}
+@media(max-width:780px){
+  .showcaseHead{align-items:start;flex-direction:column;gap:10px}
+  .showcaseGrid{grid-template-columns:1fr}
+  .showcaseImagePane{border-right:0;border-bottom:1px solid #2a2b32}
+  .showcaseImageFrame{height:clamp(330px,67vw,530px);padding:15px}
+  .showcaseSide{padding:25px;gap:24px}
+  .showcaseDetails{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .showcaseDetails span{font-size:8px;line-height:1.55}
+  .cardImage{height:180px}
+}
+@media(max-width:650px){
+  .showcaseTitle{font-size:39px}
+  .showcaseIntro>p:last-child{font-size:12px}
+  .showcase{border-radius:11px}
+  .showcaseTopbar{padding:10px 9px}
+  .showcaseProductTabs{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+  .productTab,.productTabSelected{padding:10px 5px;font-size:10px!important}
+  .showcaseImageFrame{height:clamp(300px,91vw,475px);padding:12px}
+  .imagePaneTop{padding:12px}
+  .showcaseImageFooter{align-items:start;flex-direction:column;gap:7px;padding:12px}
+  .showcaseSide{padding:19px}
+  .showcaseDetails{grid-template-columns:1fr;gap:10px}
+  .captureControls{gap:14px;padding:18px 0}
+  .colorOption{min-width:44px;padding-inline:4px}
+  .cardImage{height:245px}
+  .landingPreviewHead{align-items:start;flex-direction:column;gap:8px}
+  .landingPreviewCards{grid-template-columns:1fr}
+  .landingPreviewCard img{height:230px}
+}
+@media(prefers-reduced-motion:reduce){
+  .cardImageButton:hover .cardImage,.landingPreviewCard:hover{transform:none}
+}
