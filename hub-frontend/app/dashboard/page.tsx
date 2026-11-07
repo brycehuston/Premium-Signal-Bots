@@ -1,10 +1,11 @@
 "use client";
 
-import { ChangeEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSupabase } from "@/components/SupabaseProvider";
 import "./intelligence.css";
+import { forgetLaneArchive, readSavedLaneArchive, saveLaneArchive } from "./localArchive";
 
 const LANES = ["EARLY", "GENESIS", "RECLAIM", "TREND", "STRICT", "RUNNER"] as const;
 type Lane = (typeof LANES)[number];
@@ -56,6 +57,54 @@ export default function LaneIntelligenceDashboard(){
  const [search,setSearch]=useState("");const [lookupLane,setLookupLane]=useState("ALL");
  const [hourLane,setHourLane]=useState("ALL");const [hourMode,setHourMode]=useState("ALL MESSAGES");
  const [expanded,setExpanded]=useState(false);
+ const [localCheck,setLocalCheck]=useState(true);
+ const [storedOnDevice,setStoredOnDevice]=useState(false);
+ const [storageBusy,setStorageBusy]=useState(false);
+ const accountId=session?.user?.id;
+ const archiveVersion=useRef(0);
+
+ useEffect(()=>{
+  const version=++archiveVersion.current;
+  setData(null);setImportName("");setStoredOnDevice(false);
+  if(!accountId){setLocalCheck(false);return;}
+  setLocalCheck(true);
+  void readSavedLaneArchive(accountId).then(saved=>{
+   if(version!==archiveVersion.current)return;
+   if(saved && validArchive(saved.archive)){
+    const archive=saved.archive;
+    setData(archive);setImportName(saved.name);
+    setStart(archive.summary.start);setEnd(archive.summary.end);setRange("ALL");
+    setStoredOnDevice(true);
+   } else if(saved) {
+    setError("A saved archive exists but did not pass validation. Import the original V4 archive again.");
+   }
+  }).catch(()=>{
+   // Storage can be blocked by private browsing; manual import must still work.
+  }).finally(()=>{if(version===archiveVersion.current)setLocalCheck(false)});
+  return ()=>{archiveVersion.current++};
+ },[accountId]);
+
+ async function saveCurrentArchive(){
+  if(!accountId||!data)return;
+  setStorageBusy(true);setError("");
+  try{
+   await saveLaneArchive(accountId,importName||"Lane Flow V4 archive",data);
+   setStoredOnDevice(true);
+  }catch{
+   setError("Archive remains loaded, but this browser could not save it. Check available storage or permissions.");
+  }finally{setStorageBusy(false)}
+ }
+ async function forgetCurrentArchive(){
+  if(!accountId)return;
+  setStorageBusy(true);setError("");
+  try{
+   await forgetLaneArchive(accountId);
+   setStoredOnDevice(false);
+  }catch{
+   setError("Could not remove the saved archive from this browser.");
+  }finally{setStorageBusy(false)}
+ }
+
  async function loadFile(event:ChangeEvent<HTMLInputElement>){
   const file=event.target.files?.[0];event.target.value="";if(!file)return;
   setError("");
@@ -72,8 +121,17 @@ export default function LaneIntelligenceDashboard(){
     parsed=JSON.parse(raw.slice(begin,stop));
    }else parsed=JSON.parse(raw);
    if(!validArchive(parsed))throw new Error("Archive does not match the Lane Flow V4 dataset schema");
+   archiveVersion.current++;
+   setLocalCheck(false);
    setData(parsed);setImportName(file.name);setStart(parsed.summary.start);setEnd(parsed.summary.end);setRange("ALL");
    setSearch("");setExpanded(false);
+   if(storedOnDevice&&accountId){
+    try{await saveLaneArchive(accountId,file.name,parsed)}
+    catch{
+     setStoredOnDevice(false);
+     setError("Archive loaded, but this browser could not update its saved copy. Save again to retain this version.");
+    }
+   }
   }catch{setError("Could not read the V4 archive. Select the original Lane Flow V4 HTML file or its exported dataset JSON.")}
  }
  const days=useMemo(()=>data?.daily.filter(d=>d.date_pt>=start&&d.date_pt<=end)||[],[data,start,end]);
@@ -126,17 +184,28 @@ export default function LaneIntelligenceDashboard(){
   </aside>
   <div className="ai-workspace">
    <div className="ai-top">
-    <div><div className="ai-wordmark">ALPHA <span>ALERTS</span></div><div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div></div>
-    <div className="ai-top-actions"><span className="ai-historical">HISTORICAL · OFFLINE</span><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></div>
+    <div className="ai-top-inner">
+     <div><div className="ai-wordmark">ALPHA <span>ALERTS</span></div><div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div></div>
+     <div className="ai-top-actions"><span className="ai-historical">HISTORICAL · OFFLINE</span><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></div>
+    </div>
    </div>
    <main className="ai-main" id="overview">
-    <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Telegram alert distribution, first appearances, transitions and market context. Historical observations only.</p></div><div className="ai-badge">{data?"ARCHIVE LOADED":"NO ARCHIVE LOADED"}</div></div>
+    <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Telegram alert distribution, first appearances, transitions and market context. Historical observations only.</p></div><div className="ai-badge">{localCheck?"CHECKING LOCAL ARCHIVE":data?"ARCHIVE LOADED":"NO ARCHIVE LOADED"}</div></div>
     <div className="ai-import">
      <div><strong>PRIVATE ARCHIVE</strong><p>{data?`Loaded locally: ${importName} · ${data.summary.start} to ${data.summary.end}`:"Import the supplied V4 HTML to begin. The file is read in your browser only; it is not uploaded."}</p></div>
-     <div className="ai-import-actions"><button type="button" className="ai-button" onClick={()=>archiveFileRef.current?.click()}>IMPORT V4 ARCHIVE</button><input ref={archiveFileRef} type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} hidden tabIndex={-1}/></div>
+     <div className="ai-import-actions">
+      {data&&<button type="button" className="ai-save-button" onClick={()=>void(storedOnDevice?forgetCurrentArchive():saveCurrentArchive())} disabled={storageBusy||localCheck} title="The archive stays on this browser only; it is never uploaded.">
+       {storageBusy?"UPDATING…":storedOnDevice?"REMOVE SAVED COPY":"SAVE ON THIS DEVICE"}
+      </button>}
+      <button type="button" className="ai-button" onClick={()=>archiveFileRef.current?.click()}>IMPORT V4 ARCHIVE</button>
+      <input ref={archiveFileRef} type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} hidden tabIndex={-1}/>
+     </div>
     </div>
     {error&&<p className="ai-error" role="alert">{error}</p>}
-    {!data?<div className="ai-empty"><span>◈</span><h2>YOUR HISTORICAL INTELLIGENCE WORKSPACE</h2><p>No sample signals, invented prices or private archive data are embedded in this website. Import your V4 file to activate all charts and research tools.</p><Link href="/dashboard/account" className="ai-link">Account & current bot controls</Link></div>:<>
+    {data&&<p className="ai-local-note" role="status">
+     {storedOnDevice?"Saved privately to this browser. This archive will reload automatically for this signed-in account on this device.":"Archive is in memory only. Select SAVE ON THIS DEVICE to reload it automatically on future visits."} No data is uploaded.
+    </p>}
+    {localCheck?<div className="ai-empty ai-empty-loading" role="status"><span>◈</span><h2>CHECKING THIS DEVICE</h2><p>Looking for your previously saved private V4 archive…</p></div>:!data?<div className="ai-empty"><span>◈</span><h2>YOUR HISTORICAL INTELLIGENCE WORKSPACE</h2><p>No sample signals, invented prices or private archive data are embedded in this website. Import your V4 file to activate all charts and research tools.</p><Link href="/dashboard/account" className="ai-link">Account & current bot controls</Link></div>:<>
      <div className="ai-filter"><span>HISTORICAL PERIOD · PACIFIC TIME</span><div className="ai-date"><label>FROM <input aria-label="Start date" type="date" value={start} min={data.summary.start} max={data.summary.end} onChange={e=>{setStart(e.target.value);setRange("ALL")}}/></label><label>TO <input aria-label="End date" type="date" value={end} min={data.summary.start} max={data.summary.end} onChange={e=>{setEnd(e.target.value);setRange("ALL")}}/></label></div><div className="ai-range">{(["7D","30D","ALL"] as const).map(r=><button className={range===r?"active":""} onClick={()=>selectRange(r)} key={r}>{r}</button>)}</div></div>
      <div className="ai-kpis">
       {[[ "ALERT EVENTS",eventTotal,"Repeats included"],["FIRST MINTS",firstTotal,"First appearances"],["OBSERVED HOURS",hours.length,"Hourly observations"],["PULSE KNOWN",pulseKnown,"Hours with matched state"]].map(([label,value,desc])=><div className="ai-metric" key={label}><span>{label}</span><strong>{fmt(Number(value))}</strong><small>{desc}</small></div>)}
