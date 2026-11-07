@@ -429,3 +429,6 @@
 @media(max-width:650px){.vibeSection{margin-top:31px;padding-top:26px}.vibeSectionHead{display:block}
  .vibeSectionHead>span{display:block;margin-top:13px;white-space:normal}.vibeGallery{grid-auto-columns:minmax(185px,59vw)}
  .vibeGalleryImage{height:185px}}
+
+/* Approved Alpha Apps display typography: headings only, not descriptions or UI labels. */
+.page :is(h1, h2, h3) { text-transform: uppercase; }
