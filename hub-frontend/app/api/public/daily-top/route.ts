@@ -8,6 +8,8 @@ const LANES = new Set(["EARLY", "GENESIS", "TREND", "STRICT", "RECLAIM", "RUNNER
 const ALIASES: Record<string,string> = {EARLY_RADAR:"EARLY", GENESIS_SMOOTH_RAMP:"GENESIS", R8_RECLAIM:"RECLAIM"};
 const MIN_DELAY_MS = 30 * 60_000;
 const MAX_FEED_AGE_MS = 20 * 60_000;
+const MAX_PUBLIC_HISTORY_MS = 7 * 24 * 3600_000;
+const PRIMARY_WINDOW_MS = 24 * 3600_000;
 const MAX_FEED_BYTES = 128 * 1024;
 
 type PublicRow = {
@@ -41,8 +43,7 @@ function validRow(value: unknown, now: Date): PublicRow | null {
   if (!LANES.has(lane) || !/^[A-Za-z0-9._-]{1,28}$/.test(symbol) || !/^[A-Za-z0-9:_-]{8,96}$/.test(id)) return null;
   if (!Number.isFinite(score) || score < 0 || score > 10 || !/Z$/.test(rawTime) || !Number.isFinite(timestamp.getTime())) return null;
   if (timestamp.getTime() > now.getTime() - MIN_DELAY_MS) return null;
-  if (timestamp.getTime() < now.getTime() - 24 * 3600_000) return null;
-  if (timestamp.toISOString().slice(0,10) !== now.toISOString().slice(0,10)) return null;
+  if (timestamp.getTime() < now.getTime() - MAX_PUBLIC_HISTORY_MS) return null;
   const rawTx = row.m5_tx;
   const tx = rawTx == null || rawTx === "" ? null : Number(rawTx);
   return {
@@ -76,7 +77,7 @@ async function limitedBody(response: Response): Promise<string> {
 export async function GET() {
   const now = new Date();
   const unavailable = (state: "unavailable"|"empty") => NextResponse.json(
-    {state, as_of_utc:now.toISOString(), public_delay_minutes:30, alerts:[]},
+    {state, period:null, as_of_utc:now.toISOString(), public_delay_minutes:30, alerts:[]},
     {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}}
   );
   const upstream = process.env.ALPHA_PUBLIC_DAILY_FEED_URL;
@@ -112,8 +113,15 @@ export async function GET() {
       const row=validRow(item, now);
       if (row) dedup.set(row.id,row);
     }
-    const alerts = [...dedup.values()].sort((a,b) => b.score-a.score || b.timestamp_utc.localeCompare(a.timestamp_utc)).slice(0,3);
-    return NextResponse.json({state:alerts.length?"verified":"empty",as_of_utc:updatedAt.toISOString(),public_delay_minutes:30,alerts},
+    // Prefer actual verified deliveries from the rolling last 24 hours, then
+    // fall back to the previous seven days. Never use private/outcome-only records.
+    const all = [...dedup.values()];
+    const recent = all.filter(row => now.getTime()-Date.parse(row.timestamp_utc) <= PRIMARY_WINDOW_MS);
+    const period: "24h" | "7d" = recent.length ? "24h" : "7d";
+    const alerts = (recent.length ? recent : all)
+      .sort((a,b) => b.score-a.score || b.timestamp_utc.localeCompare(a.timestamp_utc))
+      .slice(0,3);
+    return NextResponse.json({state:alerts.length?"verified":"empty",period,as_of_utc:updatedAt.toISOString(),public_delay_minutes:30,alerts},
       {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}});
   } catch {
     return unavailable("unavailable");
