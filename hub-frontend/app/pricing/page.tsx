@@ -7,8 +7,18 @@ import { PLANS, BUNDLE, PlanTone } from "@/lib/plans";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
 import { track } from "@/lib/analytics";
 
+const LANE_TIERS = [
+  { name: "EARLY", color: "#65C27C", label: "Early discovery", description: "Initial token and liquidity emergence." },
+  { name: "GENESIS", color: "#A78BFA", label: "Emerging momentum", description: "Early follow-through and developing structure." },
+  { name: "TREND", color: "#CDD7E2", label: "Confirmed trend", description: "Momentum, participation and continuation." },
+  { name: "STRICT", color: "#D97777", label: "Tight confirmation", description: "Higher-selectivity alert qualifications." },
+  { name: "RECLAIM", color: "#4FAD80", label: "Structure recovery", description: "Reclaim and renewed participation setups." },
+  { name: "RUNNER", color: "#D8B879", label: "Runner continuation", description: "Later-stage extension and follow-through." },
+] as const;
+
 function Check({ tone }: { tone: PlanTone }) {
   const colorClass =
+    tone === "green" ? "text-[#65c27c]" :
     tone === "bronze"
       ? "text-bronze"
       : tone === "platinum"
@@ -38,6 +48,7 @@ function Check({ tone }: { tone: PlanTone }) {
  * also apply a tone class (shimmer-bronze/platinum/gold) or the word will disappear.
  */
 function shimmerWordClass(tone: PlanTone, index: 1 | 2 | 3) {
+  if (tone === "green") return "text-[#65c27c] font-black text-[1.3em] tracking-[0.015em]";
   const cadence = index === 1 ? "shimmer-1" : index === 2 ? "shimmer-2" : "shimmer-3";
 
   const toneClass =
@@ -52,6 +63,7 @@ function shimmerWordClass(tone: PlanTone, index: 1 | 2 | 3) {
 }
 
 function cardGlowClass(tone: PlanTone) {
+  if (tone === "green") return "border-[#65c27c]/25 hover:shadow-[0_0_0_1px_rgba(101,194,124,0.27),0_20px_55px_-24px_rgba(101,194,124,0.20)]";
   // Border tint + subtle glow on hover
   if (tone === "bronze") {
     return "border-bronze/20 hover:shadow-[0_0_0_1px_rgb(var(--tone-bronze)/0.18),0_26px_90px_-26px_rgb(var(--tone-bronze)/0.25)]";
@@ -64,6 +76,7 @@ function cardGlowClass(tone: PlanTone) {
 }
 
 function tonePrimaryButtonClass(tone: PlanTone) {
+  if (tone === "green") return "!bg-[#65c27c] !text-black !border-[#65c27c]/60 hover:!brightness-[1.05]";
   const base = "text-black hover:text-black btn-text-shadow !border";
   if (tone === "bronze") {
     return [
@@ -93,6 +106,7 @@ function tonePrimaryButtonClass(tone: PlanTone) {
 }
 
 function auraClass(tone: PlanTone) {
+  if (tone === "green") return "";
   if (tone === "bronze") return "plan-aura plan-aura-bronze";
   if (tone === "platinum") return "plan-aura plan-aura-platinum";
   return "plan-aura plan-aura-gold";
@@ -292,7 +306,7 @@ export default function PricingPage() {
           PRICING
         </h1>
         <p className="mx-auto mt-3 text-[11px] text-muted sm:text-[12px] md:text-[13px]">
-          Pick your lane: Early = new tokens. Trend = momentum. Runner = continuation. Bundle = everything.
+          Six specialized signal lanes. Existing subscriptions remain unchanged; additional lane offerings are not yet separately priced.
         </p>
         <p className="mx-auto mt-3 text-[10px] text-muted sm:text-[11px] md:text-[12px]">
           Choose the alerts you want. Payments are manual for now via USDC on Solana.
@@ -338,7 +352,36 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* 3 main plans */}
+      <section className="mt-10 scroll-mt-24" aria-labelledby="lanes-heading">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.27em] text-gold/80">Alpha Signals / Six Lanes</p>
+            <h2 id="lanes-heading" className="mt-2 font-display text-[22px] font-semibold tracking-tight text-silver sm:text-[28px]">CHOOSE YOUR SIGNAL STYLE</h2>
+          </div>
+          <p className="max-w-sm text-[11px] leading-relaxed text-muted">Lane names describe alert classifications, not six independently purchasable subscriptions.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {LANE_TIERS.map((lane) => (
+            <div key={lane.name}
+              className="min-w-0 rounded-card border border-stroke/65 bg-surface/70 px-4 py-4 sm:px-5"
+              style={{borderTopColor:lane.color,borderTopWidth:2}}>
+              <div className="flex min-w-0 items-center justify-between gap-3">
+                <h3 className="text-[13px] font-extrabold tracking-[0.18em] sm:text-[14px]" style={{color:lane.color}}>
+                  ALPHA {lane.name}
+                </h3>
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{backgroundColor:lane.color}} aria-hidden="true"/>
+              </div>
+              <p className="mt-2 text-xs font-semibold text-silver">{lane.label}</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-muted">{lane.description}</p>
+              <p className="mt-3 text-[10px] uppercase tracking-[0.10em] text-muted/70">
+                {lane.name==="EARLY"?"Coming soon":lane.name==="TREND"||lane.name==="RUNNER"?"Existing pricing below":"Separate pricing not announced"}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Existing published plans — no invented prices for new lane classifications. */}
       <div
         id="plans"
         className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3 scroll-mt-24 md:scroll-mt-32"
@@ -570,6 +613,34 @@ export default function PricingPage() {
           <PricingDivider />
         </div>
       </div>
+
+      <section className="mt-12" aria-labelledby="alpha-systems-heading">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gold/80">Beyond signal alerts</p>
+        <h2 id="alpha-systems-heading" className="mt-2 font-display text-[23px] font-semibold text-silver sm:text-[30px]">ALPHA SYSTEMS</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">Independent research systems and future products. No subscriptions, live-execution claims or prices are offered here.</p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <Card className="min-w-0 border-gold/25 bg-surface/70">
+            <CardBody className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="font-display text-[21px] font-bold tracking-[0.12em] text-gold">ALPHA APEX</h3>
+                <span className="rounded-full border border-gold/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-gold">Research / Paper</span>
+              </div>
+              <p className="text-small leading-relaxed text-muted">Quantitative strategy research and execution-system development. Experimental models are not publicly offered as live trading.</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.10em] text-muted/80">No public launch or price announced</p>
+            </CardBody>
+          </Card>
+          <Card className="min-w-0 border-platinum/25 bg-surface/70">
+            <CardBody className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="font-display text-[21px] font-bold tracking-[0.12em] text-silver">ALPHA NEXUS</h3>
+                <span className="rounded-full border border-stroke px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-muted">Coming Soon</span>
+              </div>
+              <p className="text-small leading-relaxed text-muted">A future Alpha systems offering. Features, release timing and access will be announced only after verification.</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.10em] text-muted/80">Not available for purchase</p>
+            </CardBody>
+          </Card>
+        </div>
+      </section>
 
       <section className="mt-12 grid items-start gap-10 md:gap-8 lg:grid-cols-2">
         <Card className="h-full">
