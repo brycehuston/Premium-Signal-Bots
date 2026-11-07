@@ -741,6 +741,9 @@ function HeroAlertReel() {
 
   const archived = feed.state === "archived";
   const available = (feed.state === "verified" || archived) && feed.alerts.length > 0;
+  const distinctTokens = new Set(feed.alerts.map(a => a.symbol.toUpperCase())).size;
+  const distinctLanes = new Set(feed.alerts.map(a => a.lane)).size;
+  const outcomesMeasured = feed.alerts.filter(a => typeof a.observed_peak_pct === "number" && Number.isFinite(a.observed_peak_pct)).length;
   const archiveAsOf = archived && feed.as_of_utc && Number.isFinite(Date.parse(feed.as_of_utc))
     ? new Date(feed.as_of_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"}) : null;
   return (
@@ -748,7 +751,7 @@ function HeroAlertReel() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.23em] text-muted">
           <span className="h-1.5 w-1.5 rounded-full bg-gold/70" aria-hidden="true"/>
-          {archived ? "TOP 3 ARCHIVED PUBLIC RECORDS" : "TOP 3 VERIFIED ALERTS"}
+          {archived ? "ALPHA ALERT ACTIVITY" : "TOP VERIFIED ALERTS"}
         </div>
         <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available && !archived?"border-emerald-400/30 text-emerald-300":archived?"border-amber-300/40 text-amber-200":"border-stroke/60 text-muted"}`}>
           {archived?"SIGNED ARCHIVE":available?feed.period==="7d"?"VERIFIED · 7 DAYS":"VERIFIED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
@@ -759,6 +762,11 @@ function HeroAlertReel() {
       </p>
       {available ? (
         <div className="mt-4 space-y-2.5">
+          <div className="grid grid-cols-3 gap-2 border-y border-stroke/50 py-3" aria-label="Actual alerts displayed in this panel">
+            <div><strong className="block text-lg font-bold tabular-nums text-silver">{feed.alerts.length}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Alerts shown</span></div>
+            <div><strong className="block text-lg font-bold tabular-nums text-silver">{distinctTokens}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Distinct tokens</span></div>
+            <div><strong className="block text-lg font-bold tabular-nums text-silver">{distinctLanes}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Lanes shown</span></div>
+          </div>
           {feed.alerts.map((item, index) => {
             const tone = LANE_PALETTE[item.lane] ?? LANE_PALETTE.TREND;
             const clock = new Date(item.timestamp_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
@@ -775,7 +783,7 @@ function HeroAlertReel() {
                     <span className={`text-[11px] font-bold tracking-[0.2em] ${tone.text}`}>{item.lane}</span>
                     <strong className="text-sm text-silver">${item.symbol}</strong>
                   </div>
-                  <span className="text-[12px] font-semibold tabular-nums text-[#e7bc67]">{item.score.toFixed(2)}<span className="text-muted">/10</span></span>
+                  <span className="text-[12px] font-semibold tabular-nums text-[#e7bc67]"><span className="mr-1 text-[9px] font-normal tracking-wide text-muted">SCORE</span>{item.score.toFixed(2)}<span className="text-muted">/10</span></span>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   <span className="rounded-full border border-[#72a5cf]/35 bg-[#72a5cf]/[0.07] px-2 py-1 text-[10px] text-[#a8cce7]">MC {formatAlertMoney(item.alert_mc)}</span>
@@ -799,7 +807,7 @@ function HeroAlertReel() {
         </div>
       )}
       <p className="mt-3 text-[10px] leading-relaxed text-muted/70">
-        Scores are informational, not profit probabilities. Ranking by score is not trading performance.{archived ? " Archived records are shown for historical reference only while the delivery-proof pipeline is being repaired." : ""}
+        Scores are informational, not profit probabilities. {outcomesMeasured === 0 && available ? "No validated post-alert returns are available for the records shown. " : ""}Ranking by score is not trading performance.{archived ? " Archived records are shown for historical reference only while the delivery-proof pipeline is being repaired." : ""}
       </p>
     </section>
   );

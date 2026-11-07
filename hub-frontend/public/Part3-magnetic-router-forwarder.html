@@ -203,7 +203,7 @@
       position: absolute;
       left: 0;
       top: 0;
-      transform: translate(-50%, calc(-50% - (var(--u, 38px) * 3.4)));
+      transform: translate(-50%, calc(-50% - (var(--u, 38px) * 4.05)));
       padding: 5px 12px;
       border: 0;
       border-radius: 0;
@@ -2156,12 +2156,12 @@
 
             // Orb colors
             inOrb: [245, 250, 255],
-            early: [163,206,100],
-            trend: [205,215,226],
-            runner: [216,184,121],
-            genesis: [167,139,250],
-            strict: [217,119,119],
-            reclaim: [75,184,209],
+            early: [180,226,83],
+            trend: [144,212,246],
+            runner: [241,188,92],
+            genesis: [190,122,248],
+            strict: [247,106,118],
+            reclaim: [67,223,215],
 
             // Layout tuning (matches your screenshot)
             forwarderNudgeX: 0,
@@ -2621,17 +2621,17 @@
             // - subtle bead highlights (feels alive, not a flat line)
             const b = clamp(boost, 0, 1);
 
-            const mainW = 6.1 + b * 4.0;     // thicker lane body (more noticeable)
+            const mainW = 5.7 + b * 3.9;     // thicker lane body (more noticeable)
             const filamentW = 1.65 + b * 1.35;
             const glowBlur = 28 + b * 56;
 
             // Gradient across the lane (tapered ends)
             const grad = ctx.createLinearGradient(p0.x, p0.y, p3.x, p3.y);
-            grad.addColorStop(0.00, rgba(color, 0.08));
-            grad.addColorStop(0.22, rgba(color, 0.30 + b * 0.22));
-            grad.addColorStop(0.50, rgba(color, 0.42 + b * 0.30));
-            grad.addColorStop(0.78, rgba(color, 0.30 + b * 0.22));
-            grad.addColorStop(1.00, rgba(color, 0.08));
+            grad.addColorStop(0.00, rgba(color, 0.14));
+            grad.addColorStop(0.22, rgba(color, 0.40 + b * 0.22));
+            grad.addColorStop(0.50, rgba(color, 0.54 + b * 0.27));
+            grad.addColorStop(0.78, rgba(color, 0.40 + b * 0.22));
+            grad.addColorStop(1.00, rgba(color, 0.14));
 
             ctx.save();
             ctx.lineCap = "round";
@@ -2719,7 +2719,7 @@
             ctx.translate(x - w / 2, y - h / 2);
 
             // glass background
-            const fillGlow = 0.28 * glow;
+            const fillGlow = 0.052 + 0.24 * glow;
             ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${fillGlow})`;
             roundRect(0, 0, w, h, r);
             ctx.fill();
@@ -2732,7 +2732,7 @@
 
             // border (premium + subtle)
             ctx.lineWidth = 2.0;
-            ctx.strokeStyle = rgba(color, (isCenter ? 0.60 : 0.46) + glow * 0.36);
+            ctx.strokeStyle = rgba(color, (isCenter ? 0.80 : 0.60) + glow * 0.18);
             ctx.shadowBlur = 14 + glow * 24;
             ctx.shadowColor = rgba(color, 0.85);
             ctx.stroke();
