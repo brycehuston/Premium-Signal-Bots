@@ -203,15 +203,13 @@
       position: absolute;
       left: 0;
       top: 0;
-      transform: translate(-50%, calc(-50% - (var(--u, 38px) * 3.62)));
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1.5px solid rgba(255, 205, 110, 0.35);
-      box-shadow:
-        0 0 22px rgba(255, 205, 110, 0.12),
-        0 0 60px rgba(255, 205, 110, 0.06);
-      color: rgba(247, 251, 255, 0.92);
+      transform: translate(-50%, calc(-50% - (var(--u, 38px) * 3.98)));
+      padding: 7px 11px;
+      border-radius: 4px;
+      background: rgba(9, 11, 15, 0.70);
+      border: 0;
+      box-shadow: none;
+      color: rgba(231, 188, 103, 0.95);
       font-weight: 700;
       font-size: 12px;
       letter-spacing: 0.18em;
@@ -2295,6 +2293,11 @@
             if (Math.abs(nextW-W) < 2 && Math.abs(nextH-H) < 2 && DPR === prevDpr) return;
             const previousW = W, previousH = H;
             W = nextW; H = nextH;
+            // Keep the two side columns clear of the cube on very narrow phones.
+            if (mobileMQ.matches) {
+              CFG.pillW = W < 360 ? 90 : 104;
+              CFG.pillFont = W < 360 ? 10 : 11;
+            }
 
             canvas.width = Math.floor(W * DPR);
             canvas.height = Math.floor(H * DPR);
@@ -2361,34 +2364,31 @@
             const sx = W * CFG.sourceX;
             const rx = W * CFG.forwarderX;
 
-            // Keep every pill fully inside narrow mobile frames.
+            // Arrange three colored outputs on each side of the central core.
+            // Push narrow-screen pills toward the safe edges, never into the cube.
             const edgeGap = W < 500 ? 10 : 20;
-            const laneOffsetPx = Math.min(
-              Math.max(0, W / 2 - CFG.pillW / 2 - edgeGap),
-              Math.max(W * 0.23, W < 500 ? 95 : 150)
-            );
-            const laneX0 = rx - laneOffsetPx;
-            const laneX1 = rx;
-            const laneX2 = rx + laneOffsetPx;
-
-            // Latest approved visual reading order: EARLY / GENESIS / TREND above; STRICT / RECLAIM / RUNNER below.
-            const pillY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
-            const topPillY = Math.max(
+            const maxOffset = Math.max(0, W / 2 - CFG.pillW / 2 - edgeGap);
+            const sideOffset = Math.min(maxOffset, W < 500 ? maxOffset : Math.max(W * 0.27, 165));
+            const laneLeftX = rx - sideOffset;
+            const laneRightX = rx + sideOffset;
+            const pillBottomY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
+            const pillTopY = Math.max(
               CFG.pillH / 2 + 70,
               Math.min(ry - cubeHalf - (H < 540 ? 55 : 90), H * 0.18)
             );
-            sy = Math.min(sy, topPillY - CFG.pillH * 0.5 - 24);
+            sy = Math.min(sy, pillTopY - CFG.pillH * 0.5 - 24);
 
             return {
-              sx, sy, rx, ry, outY, pillY, topPillY,
+              sx, sy, rx, ry, outY, pillY:pillBottomY, topPillY:pillTopY,
               lanes: [
                 // Keep laneId === array index: packet routing indexes curves[op.laneId].
-                { laneId: 0, x: laneX0, y: topPillY, row:"top", label: "EARLY" },
-                { laneId: 1, x: laneX2, y: topPillY, row:"top", label: "TREND" },
-                { laneId: 2, x: laneX2, y: pillY, row:"bottom", label: "RUNNER" },
-                { laneId: 3, x: laneX1, y: topPillY, row:"top", label: "GENESIS" },
-                { laneId: 4, x: laneX0, y: pillY, row:"bottom", label: "STRICT" },
-                { laneId: 5, x: laneX1, y: pillY, row:"bottom", label: "RECLAIM" }
+                // LEFT: EARLY / GENESIS / STRICT. RIGHT: TREND / RECLAIM / RUNNER.
+                { laneId: 0, x: laneLeftX, y: pillTopY, row:"top", side:"left", label: "EARLY" },
+                { laneId: 1, x: laneRightX, y: pillTopY, row:"top", side:"right", label: "TREND" },
+                { laneId: 2, x: laneRightX, y: pillBottomY, row:"bottom", side:"right", label: "RUNNER" },
+                { laneId: 3, x: laneLeftX, y: ry, row:"middle", side:"left", label: "GENESIS" },
+                { laneId: 4, x: laneLeftX, y: pillBottomY, row:"bottom", side:"left", label: "STRICT" },
+                { laneId: 5, x: laneRightX, y: ry, row:"middle", side:"right", label: "RECLAIM" }
               ]
             };
           }
@@ -2409,14 +2409,21 @@
 
           function buildCurves(L, cubeHalf) {
             return L.lanes.map(lane => {
-              const isTop = lane.row === "top";
-              const p0 = { x:L.rx, y: L.ry + (isTop ? -cubeHalf * 0.98 : cubeHalf * 0.98) };
-              const p3 = { x:lane.x, y:lane.y + (isTop ? CFG.pillH * 0.5 + 2 : -CFG.pillH * 0.5 - 2) };
-              const dx = lane.x - L.rx;
+              const side = lane.side === "left" ? -1 : 1;
+              const elevation = lane.row === "top" ? -1 : lane.row === "bottom" ? 1 : 0;
+              // Exit from the matching face of the cube; enter the pill's inner edge.
+              const p0 = {
+                x:L.rx + side * cubeHalf * (elevation ? 0.73 : 0.98),
+                y:L.ry + elevation * cubeHalf * 0.60
+              };
+              const p3 = {
+                x:lane.x - side * (CFG.pillW * 0.5 + 2),
+                y:lane.y
+              };
+              const dx = p3.x - p0.x;
               const dy = p3.y - p0.y;
-              // Preserve the original smooth cubic routing, mirrored for upper exits.
-              const p1 = { x:L.rx + dx * 0.10, y:p0.y + dy * 0.40 };
-              const p2 = { x:L.rx + dx * 0.90, y:p0.y + dy * 0.91 };
+              const p1 = { x:p0.x + dx * 0.32, y:p0.y + dy * 0.10 };
+              const p2 = { x:p0.x + dx * 0.68, y:p0.y + dy * 0.90 };
               return {laneId:lane.laneId,p0,p1,p2,p3};
             });
           }
