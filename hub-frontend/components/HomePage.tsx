@@ -691,17 +691,18 @@ type VerifiedDailyAlert = {
 type VerifiedDailyFeed = {
   state: "loading" | "verified" | "empty" | "unavailable";
   as_of_utc?: string;
+  period?: "24h" | "7d" | null;
   public_delay_minutes?: number;
   alerts: VerifiedDailyAlert[];
 };
 
 const LANE_PALETTE: Record<string, { text: string; dot: string; chip: string }> = {
-  EARLY: {text:"text-[#d0924c]",dot:"bg-[#d0924c]",chip:"border-[#d0924c]/40 text-[#d0924c]"},
-  GENESIS: {text:"text-[#7fcbc7]",dot:"bg-[#7fcbc7]",chip:"border-[#7fcbc7]/40 text-[#7fcbc7]"},
-  TREND: {text:"text-[#dce4f2]",dot:"bg-[#dce4f2]",chip:"border-[#dce4f2]/40 text-[#dce4f2]"},
-  STRICT: {text:"text-[#bfa6f4]",dot:"bg-[#bfa6f4]",chip:"border-[#bfa6f4]/40 text-[#bfa6f4]"},
-  RECLAIM: {text:"text-[#7ed3a7]",dot:"bg-[#7ed3a7]",chip:"border-[#7ed3a7]/40 text-[#7ed3a7]"},
-  RUNNER: {text:"text-[#f8d870]",dot:"bg-[#f8d870]",chip:"border-[#f8d870]/40 text-[#f8d870]"},
+  EARLY: {text:"text-[#65c27c]",dot:"bg-[#65c27c]",chip:"border-[#65c27c]/40 text-[#65c27c]"},
+  GENESIS: {text:"text-[#a78bfa]",dot:"bg-[#a78bfa]",chip:"border-[#a78bfa]/40 text-[#a78bfa]"},
+  TREND: {text:"text-[#cdd7e2]",dot:"bg-[#cdd7e2]",chip:"border-[#cdd7e2]/40 text-[#cdd7e2]"},
+  STRICT: {text:"text-[#d97777]",dot:"bg-[#d97777]",chip:"border-[#d97777]/40 text-[#d97777]"},
+  RECLAIM: {text:"text-[#4fad80]",dot:"bg-[#4fad80]",chip:"border-[#4fad80]/40 text-[#4fad80]"},
+  RUNNER: {text:"text-[#d8b879]",dot:"bg-[#d8b879]",chip:"border-[#d8b879]/40 text-[#d8b879]"},
 };
 
 function formatAlertMoney(n: number | null): string {
@@ -723,6 +724,7 @@ function HeroAlertReel() {
         if (mounted) setFeed({
           state:data.state === "verified" || data.state === "empty" ? data.state : "unavailable",
           as_of_utc:data.as_of_utc,
+          period:data.period === "24h" || data.period === "7d" ? data.period : null,
           public_delay_minutes:30,
           alerts:Array.isArray(data.alerts) ? data.alerts.slice(0,3) : []
         });
@@ -738,18 +740,18 @@ function HeroAlertReel() {
 
   const available = feed.state === "verified" && feed.alerts.length > 0;
   return (
-    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Top three published Alpha Alerts today">
+    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Top three verified published Alpha Alerts">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.23em] text-muted">
           <span className="h-1.5 w-1.5 rounded-full bg-gold/70" aria-hidden="true"/>
-          TODAY'S TOP 3 ALERTS
+          TOP 3 VERIFIED ALERTS
         </div>
         <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available?"border-emerald-400/30 text-emerald-300":"border-stroke/60 text-muted"}`}>
-          {available?"VERIFIED DELIVERY":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
+          {available?feed.period==="7d"?"VERIFIED · 7 DAYS":"VERIFIED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
         </span>
       </div>
       <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
-        Highest native alert scores today (UTC). Published signals only; at least 30 minutes delayed.
+        {feed.period === "7d" ? "No eligible alerts in the last 24 hours. Top native scores from the last 7 days." : "Top native scores from the last 24 hours."} Confirmed public Telegram deliveries only; at least 30 minutes delayed.
       </p>
       {available ? (
         <div className="mt-4 space-y-2.5">
@@ -779,7 +781,7 @@ function HeroAlertReel() {
         </div>
       ) : (
         <div className="mt-4 rounded-xl border border-stroke/60 bg-bg/40 px-4 py-8 text-center">
-          <div className="text-sm font-semibold text-silver">{feed.state==="loading"?"Checking verified alerts…":feed.state==="empty"?"No eligible published alerts today":"Verified alerts are not connected yet"}</div>
+          <div className="text-sm font-semibold text-silver">{feed.state==="loading"?"Checking verified alerts…":feed.state==="empty"?"No verified published alerts in the last 7 days":"Verified alerts are not connected yet"}</div>
           <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
             This display never substitutes sample wins or scanner candidates for real Telegram deliveries.
           </p>
@@ -867,9 +869,9 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
     title: "Stage 1 ⚡ Solana AlphaAlerts",
     tag: "LIVE",
     bullets: [
-      "Alpha Early Alerts (ultra-early Solana pools + tokens)",
-      "Alpha Trend Alerts (momentum + continuation setups)",
-      "Alpha Runner Alerts (second-leg + follow-through moves)",
+      "Six specialized lanes: Early, Genesis, Trend, Strict, Reclaim, Runner",
+      "Each lane uses a distinct scoring context and alert designation",
+      "Subscription availability is listed on the pricing page",
       "Telegram alerts with one-tap links (Dex, chart, explorer)",
       "Safety checks + scoring + \"why skipped\" reasons",
     ],
@@ -1248,7 +1250,7 @@ export default function Page() {
   });
   const shouldReduceMotion = useReducedMotion();
 
-  const [heroView, setHeroView] = useState<"chart" | "reel">("chart");
+  const [heroView, setHeroView] = useState<"chart" | "reel">("reel");
   const [showStealthCta, setShowStealthCta] = useState(false);
   const stealthTimerRef = useRef<number | null>(null);
   const [trustStep, setTrustStep] = useState(0);
@@ -1446,22 +1448,6 @@ export default function Page() {
               >
                 <button
                   type="button"
-                  onClick={() => setHeroView("chart")}
-                  aria-pressed={heroView === "chart"}
-                  aria-label="Show chart"
-                  className="relative -m-2 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
-                >
-                  <span
-                    className={[
-                      "block h-2.5 w-2.5 rounded-full transition",
-                      heroView === "chart"
-                        ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
-                        : "bg-stroke/70 hover:bg-silver/40",
-                    ].join(" ")}
-                  />
-                </button>
-                <button
-                  type="button"
                   onClick={() => setHeroView("reel")}
                   aria-pressed={heroView === "reel"}
                   aria-label="Show alert reel"
@@ -1471,6 +1457,22 @@ export default function Page() {
                     className={[
                       "block h-2.5 w-2.5 rounded-full transition",
                       heroView === "reel"
+                        ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
+                        : "bg-stroke/70 hover:bg-silver/40",
+                    ].join(" ")}
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeroView("chart")}
+                  aria-pressed={heroView === "chart"}
+                  aria-label="Show chart"
+                  className="relative -m-2 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                >
+                  <span
+                    className={[
+                      "block h-2.5 w-2.5 rounded-full transition",
+                      heroView === "chart"
                         ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
                         : "bg-stroke/70 hover:bg-silver/40",
                     ].join(" ")}
@@ -1683,7 +1685,7 @@ export default function Page() {
             step={1}
             order={1}
             title="Pick Your Plan"
-            description="Early, Trend, Runner, or Bundle."
+            description="Choose an available plan and explore all six alert lanes."
           />
           <StepItem
             step={2}
