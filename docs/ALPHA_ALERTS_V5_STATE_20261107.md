@@ -54,3 +54,20 @@
 3. Only after independent review, propose the minimal publisher-only SHA pin update (if appropriate). Do not change the running sender for the website's convenience.
 4. Owner approval required before production publisher modification/restart. First run the publisher's dry-run mode; then one controlled service attempt, confirm fresh signed Supabase state, API `verified` result and homepage Top 3. Preserve 30-minute publication delay and 20-minute snapshot-freshness checks.
 5. In parallel, inspect real CSV fields and data coverage before designing registered historical ingestion; the six-row signed public snapshot cannot populate subscriber historical analytics.
+
+
+## ALPHA ALERTS MAIN HANDOFF RECONCILIATION — 2026-11-07
+
+**Source:** User-supplied recovery report from Alpha Alerts Main. Its direct-VPS findings are AGENT-REPORTED here until cross-checked in the live filesystem. Separately, the GitHub source map and Phase 3 regression test were directly inspected at \`brycehuston/Alpha-Trend-V2\`, ref \`4e0efeca4d1b45847af440f516158e6bfc427450\`.
+
+- Agent-reported live sender SHA-256: \`40b355756e6aa6b02c0b516ea39219f029d983254ec5a5bf02b3ec68f18386f8\`. Publisher still expects \`0c2bf122e3acea2471f02dde6faf420875b6f0301f84ce785fe94ff013db704a\`. Never update the pin without reviewing the full delivery contract.
+- Agent-reported clean release worktree: \`/home/ubuntu/worktrees/alpha-alerts-v1925-veto-stage-20261107\`, branch \`release/v1.9.25-producer-structural-veto\`, commit \`b0d623054404b2a02721f292fb74c75fd367443d\`. v1.9.25 only changes the version label relative to its imported v1.9.24 baseline; the pre-Telegram flush predates this version bump.
+- **Directly inspected upstream test:** \`tests/test_phase3_unified_patch.py\` asserts \`_canonical_csv_flushed_pre_telegram\` and no duplicate post-delivery canonical CSV write. Pre-flush was an intentional durability feature, not proof of a sender regression. **The unsafe assumption is in the website publisher:** the pre-flush CSV cannot prove Telegram delivery.
+- Agent-reported recent VPS counts: canonical token CSV 2,078 rows (pre-send); alert features 2,014 rows; legacy MEV post-send log 2,014 rows; opportunities 6,330; outcomes 1,551; price snapshots 196,056; forward states 90,121. The 64-row canonical/features difference does NOT establish 64 failed deliveries.
+- Agent-reported outcomes: \`DONE=79\`, \`PENDING=1461\`, \`EXPIRED_PARTIAL_DATA=11\`. Never include incomplete outcomes in completed-cohort returns or label modeled peaks as realized P&L.
+- **Directly inspected upstream map:** \`docs/ALPHA_TREND_DATA_MAP.md\` maps canonical/feature \`event_id\` to outcomes \`alert_id\`, and \`opportunity_id\` to price observations. This is a schema-level map, not proof of exact live referential integrity.
+- High-priority candidate: reconcile \`TREND_token_alerts.csv\` with the agent-reported post-delivery \`TREND_alert_features.csv\` on exact event ID, exact mint, normalized lane, and valid timestamps. Use \`mev_alert_log.csv\` for cross-checking only when its identity/timestamp semantics are verified. **Do not publish candidates without tracing the actual post-delivery writer contract and receipt guarantees.**
+- **Directly verified access blocker:** the currently connected read-only SentinelX identity receives PermissionError for all five relevant production CSV files. Do not elevate connector permissions silently. An owner-authenticated SSH session can perform the bounded read-only reconciliation.
+- **Validated local test artifact:** \`audit_delivery_lineage.py\` with eight synthetic unit tests, designed to output aggregate join counts only, never identifiers or private Telegram data. It does not sign, send, rewrite or approve any events. Stage to the repository only after reviewing the source and test artifacts; no publisher replacement is authorized.
+
+**Decision:** Preserve scanner pre-flush, repair the signed public publisher's delivery-proof source contract, then independently implement authenticated history ETL. Keep public six-row snapshots separate from the private/full historical dataset.
