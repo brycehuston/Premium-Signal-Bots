@@ -203,18 +203,18 @@
       position: absolute;
       left: 0;
       top: 0;
-      transform: translate(-50%, calc(-50% - (var(--u, 38px) * 2.8)));
-      padding: 8px 14px;
-      border-radius: 4px;
-      background: rgba(9, 11, 15, 0.74);
+      transform: translate(-50%, calc(-50% - (var(--u, 38px) * 3.4)));
+      padding: 5px 12px;
       border: 0;
+      border-radius: 0;
+      background: transparent;
       box-shadow: none;
       color: #f4d99e;
       font-weight: 850;
-      font-size: clamp(13px, 1.13vw, 17px);
+      font-size: clamp(14px, 1.25vw, 19px);
       letter-spacing: 0.21em;
       text-transform: uppercase;
-      text-shadow: 0 0 16px rgba(246, 212, 139, 0.16);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 18px rgba(246, 212, 139, 0.18);
       pointer-events: none;
       user-select: none;
       white-space: nowrap;
@@ -2358,9 +2358,13 @@
           function getLayout() {
             const cubeHalf = currentCubeHalf;
             const centerY = H * CFG.centerY;
-
-            let ry = centerY + H * CFG.forwarderOffsetY;
-            let outY = centerY + H * CFG.outOffsetY;
+            // The original bug: middle pills were aligned with the TITLE
+            // instead of the cube. Symmetric rows around a displaced cube
+            // cannot look balanced, regardless of how equal their gaps are.
+            // Keep the legacy compact/mobile geometry until its separate QA.
+            const symmetric = window.innerWidth > 820 && W >= 760 && H >= 520;
+            let ry = symmetric ? H * 0.50 : centerY + H * CFG.forwarderOffsetY;
+            let outY = symmetric ? ry + H * 0.30 : centerY + H * CFG.outOffsetY;
             let sy = centerY + H * CFG.sourceOffsetY;
 
             const topSafe = cubeHalf + 80;
@@ -2373,36 +2377,38 @@
             const sx = W * CFG.sourceX;
             const rx = W * CFG.forwarderX;
 
-            // Arrange three colored outputs on each side of the central core.
-            // Push narrow-screen pills toward the safe edges, never into the cube.
+            // Two truly mirrored columns; middle pair protrudes slightly.
             const edgeGap = W < 500 ? 10 : 20;
             const maxOffset = Math.max(0, W / 2 - CFG.pillW / 2 - edgeGap);
             const sideOffset = Math.min(maxOffset, W < 500 ? maxOffset : Math.max(W * 0.27, 165));
             const laneLeftX = rx - sideOffset;
             const laneRightX = rx + sideOffset;
-            const middleAccentOffset = W >= 640 ? Math.min(32, W * 0.027) : 0;
+            const middleAccentOffset = W >= 640 ? Math.min(18, W * 0.012) : 0;
             const middleLeftX = Math.max(CFG.pillW / 2 + edgeGap, laneLeftX - middleAccentOffset);
             const middleRightX = Math.min(W - CFG.pillW / 2 - edgeGap, laneRightX + middleAccentOffset);
-            const legacyPillBottomY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
-            const pillTopY = Math.max(
-              CFG.pillH / 2 + 70,
-              Math.min(ry - cubeHalf - (H < 540 ? 55 : 90), H * 0.21)
-            );
-            sy = Math.min(sy, pillTopY - CFG.pillH * 0.5 - 24);
 
-            // Give the FORWARDER BOT title a clear centered lane: flank it
-            // with GENESIS (left) and RECLAIM (right), while preserving the
-            // existing middle row when shorter/narrower viewports cannot fit.
-            // Title and middle pills share a row; the cube sits just below.
-            const titleLineY = ry - clamp(Math.min(W, H) * 0.038, 26, 64) * 2.8;
-            const titleFlankFits = W >= 640 && titleLineY >= pillTopY + CFG.pillH + 16;
-            const middlePillY = titleFlankFits ? titleLineY : ry;
-            // Enforce equal spacing EARLY -> GENESIS -> STRICT and
-            // TREND -> RECLAIM -> RUNNER. The old bottom row used outY,
-            // which left an enormous gap beneath the middle pills.
-            const pillBottomY = titleFlankFits
-              ? Math.min(H - CFG.pillH / 2 - 30, middlePillY * 2 - pillTopY)
-              : legacyPillBottomY;
+            let pillTopY, middlePillY, pillBottomY;
+            if (symmetric) {
+              // The CUBE is the geometric center of all six lane exits.
+              // Top and bottom are equally distant from the middle row.
+              // Reserve space for the badge and the centered bottom CTA.
+              const upperLimit = Math.max(CFG.pillH / 2 + 110, H * 0.18);
+              const lowerLimit = H - (CFG.pillH / 2 + 125);
+              const rowGap = Math.max(CFG.pillH + 24,
+                Math.min(H * 0.235, ry - upperLimit, lowerLimit - ry));
+              pillTopY = ry - rowGap;
+              middlePillY = ry;
+              pillBottomY = ry + rowGap;
+            } else {
+              // Unchanged smaller-screen positions until separately visual-QA'd.
+              pillTopY = Math.max(CFG.pillH / 2 + 70,
+                Math.min(ry - cubeHalf - (H < 540 ? 55 : 90), H * 0.21));
+              const oldTitleLineY = ry - clamp(Math.min(W,H) * 0.038,26,64) * 2.8;
+              middlePillY = W >= 640 && oldTitleLineY >= pillTopY + CFG.pillH + 16
+                ? oldTitleLineY : ry;
+              pillBottomY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
+            }
+            sy = Math.min(sy, pillTopY - CFG.pillH * 0.5 - 24);
 
             return {
               sx, sy, rx, ry, outY, pillY:pillBottomY, topPillY:pillTopY,
