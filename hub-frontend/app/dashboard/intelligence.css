@@ -7,10 +7,11 @@
 .ai-rail a:hover{border-color:#4a535a;background:#161b1f;color:#ebc58b}
 .ai-rail .ai-rail-mark{height:54px;font-size:31px;font-weight:800;color:#d8ae70;border-bottom:1px solid #2d343b;border-radius:0}
 .ai-rail .ai-rail-account{margin-top:auto}
-.ai-workspace{min-width:0}.ai-top{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px clamp(16px,3vw,38px);border-bottom:1px solid #292f35;background:#080a0d}
+.ai-workspace{min-width:0}.ai-top{min-height:78px;display:flex;align-items:center;padding:15px 0;border-bottom:1px solid #292f35;background:#080a0d}
+.ai-top-inner{width:100%;max-width:1152px;margin:0 auto;padding:0 clamp(16px,2.2vw,30px);display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0}
 .ai-wordmark{font-size:22px;letter-spacing:.19em;font-weight:800}.ai-wordmark span{color:#eabe76}.ai-overline{margin-top:5px;font-size:9px;letter-spacing:.19em;color:#9aa5ad}
 .ai-top-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.ai-historical{font-size:10px;letter-spacing:.14em;color:#a2b2aa}.ai-link,.ai-text-button{color:#dbb579!important;font-size:10px!important;font-weight:700;letter-spacing:.1em;background:transparent;border:0}
-.ai-main{max-width:1740px;margin:auto;padding:26px clamp(15px,2vw,30px) 40px}.ai-title-row{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}
+.ai-main{width:100%;max-width:1152px;margin:0 auto;padding:26px clamp(16px,2.2vw,30px) 40px}.ai-title-row{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}
 .ai-kicker{font-size:10px;font-weight:800;letter-spacing:.22em;color:#d8ae70}.ai-title-row h1{font-size:24px;font-weight:750;letter-spacing:.085em;margin:8px 0 6px;color:#f3f5f6;line-height:1.35}
 .ai-title-row p,.ai-import p{color:#9facb4;margin:0;line-height:1.6}.ai-badge{white-space:nowrap;font-size:9px;letter-spacing:.11em;color:#bed0c4;border:1px solid #3b5247;padding:8px 11px;border-radius:7px}
 .ai-import,.ai-filter{border:1px solid #303941;background:#0e1215;border-radius:10px;padding:15px 17px;display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:14px}
@@ -68,3 +69,12 @@ body:has(.ai-shell) > .pb-16 > footer{display:none!important}
 body:has(.ai-shell) > .fixed.bottom-0{display:none!important}
 .ai-rail .ai-rail-mark img{width:52px;height:44px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(224,174,96,.12))}
 @media(max-width:640px){.ai-rail .ai-rail-mark img{width:39px;height:37px}}
+
+/* Match the homepage's centered 72rem content rhythm; keep the side rail independent. */
+.ai-import-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.ai-save-button{background:transparent;border:1px solid #3d4a4d;border-radius:7px;padding:10px 12px;color:#c2d3d5;font-size:10px;font-weight:700;letter-spacing:.06em;white-space:nowrap}
+.ai-save-button:hover{border-color:#aa905e;color:#ead3a8}
+.ai-save-button:disabled{cursor:default;opacity:.5}
+.ai-local-note{margin:-3px 0 14px;font-size:10px;line-height:1.65;color:#a4b5b5}
+.ai-empty-loading{min-height:280px}
+@media(max-width:640px){.ai-top-inner{align-items:flex-start;flex-wrap:wrap;padding:0 13px}.ai-import-actions{width:100%;justify-content:stretch}.ai-import-actions .ai-button,.ai-import-actions .ai-save-button{flex:1 1 175px;white-space:normal;text-align:center}.ai-main{padding:18px 13px 35px}}
