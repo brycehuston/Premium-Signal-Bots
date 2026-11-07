@@ -687,6 +687,7 @@ type VerifiedDailyAlert = {
   alert_mc: number | null;
   liquidity_usd: number | null;
   m5_tx: number | null;
+  observed_peak_pct?: number | null;
 };
 type VerifiedDailyFeed = {
   state: "loading" | "verified" | "empty" | "unavailable";
@@ -696,13 +697,13 @@ type VerifiedDailyFeed = {
   alerts: VerifiedDailyAlert[];
 };
 
-const LANE_PALETTE: Record<string, { text: string; dot: string; chip: string }> = {
-  EARLY: {text:"text-[#a3ce64]",dot:"bg-[#a3ce64]",chip:"border-[#a3ce64]/40 text-[#a3ce64]"},
-  GENESIS: {text:"text-[#a78bfa]",dot:"bg-[#a78bfa]",chip:"border-[#a78bfa]/40 text-[#a78bfa]"},
-  TREND: {text:"text-[#cdd7e2]",dot:"bg-[#cdd7e2]",chip:"border-[#cdd7e2]/40 text-[#cdd7e2]"},
-  STRICT: {text:"text-[#d97777]",dot:"bg-[#d97777]",chip:"border-[#d97777]/40 text-[#d97777]"},
-  RECLAIM: {text:"text-[#4bb8d1]",dot:"bg-[#4bb8d1]",chip:"border-[#4bb8d1]/40 text-[#4bb8d1]"},
-  RUNNER: {text:"text-[#d8b879]",dot:"bg-[#d8b879]",chip:"border-[#d8b879]/40 text-[#d8b879]"},
+const LANE_PALETTE: Record<string, { text: string; dot: string; chip: string; accent: string }> = {
+  EARLY: {text:"text-[#a3ce64]",dot:"bg-[#a3ce64]",chip:"border-[#a3ce64]/40 text-[#a3ce64]",accent:"#a3ce64"},
+  GENESIS: {text:"text-[#a78bfa]",dot:"bg-[#a78bfa]",chip:"border-[#a78bfa]/40 text-[#a78bfa]",accent:"#a78bfa"},
+  TREND: {text:"text-[#cdd7e2]",dot:"bg-[#cdd7e2]",chip:"border-[#cdd7e2]/40 text-[#cdd7e2]",accent:"#cdd7e2"},
+  STRICT: {text:"text-[#d97777]",dot:"bg-[#d97777]",chip:"border-[#d97777]/40 text-[#d97777]",accent:"#d97777"},
+  RECLAIM: {text:"text-[#4bb8d1]",dot:"bg-[#4bb8d1]",chip:"border-[#4bb8d1]/40 text-[#4bb8d1]",accent:"#4bb8d1"},
+  RUNNER: {text:"text-[#d8b879]",dot:"bg-[#d8b879]",chip:"border-[#d8b879]/40 text-[#d8b879]",accent:"#d8b879"},
 };
 
 function formatAlertMoney(n: number | null): string {
@@ -758,21 +759,27 @@ function HeroAlertReel() {
           {feed.alerts.map((item, index) => {
             const tone = LANE_PALETTE[item.lane] ?? LANE_PALETTE.TREND;
             const clock = new Date(item.timestamp_utc).toLocaleTimeString("en-US",{timeZone:"UTC",hour:"2-digit",minute:"2-digit",hour12:false});
+            const verifiedPeak = item.observed_peak_pct;
+            const hasPeak = typeof verifiedPeak === "number" && Number.isFinite(verifiedPeak) && verifiedPeak >= -100 && verifiedPeak <= 100000;
+            const peakMultiple = hasPeak ? 1 + verifiedPeak / 100 : 0;
             return (
               <article key={item.id} className="rounded-xl border border-stroke/70 bg-bg/45 px-3 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold tabular-nums text-muted">#{index+1}</span>
-                    <span className={`h-2 w-2 rounded-full ${tone.dot}`} aria-hidden="true"/>
+                    <span className={`h-2 w-2 rounded-full ${tone.dot}`} style={{boxShadow:`0 0 0 3px ${tone.accent}1c`}} aria-hidden="true"/>
                     <span className={`text-[11px] font-bold tracking-[0.2em] ${tone.text}`}>{item.lane}</span>
                     <strong className="text-sm text-silver">${item.symbol}</strong>
                   </div>
-                  <span className="text-[12px] font-semibold tabular-nums text-silver">{item.score.toFixed(2)}<span className="text-muted">/10</span></span>
+                  <span className="text-[12px] font-semibold tabular-nums text-[#e7bc67]">{item.score.toFixed(2)}<span className="text-muted">/10</span></span>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  <span className={`rounded-full border px-2 py-1 text-[10px] ${tone.chip}`}>MC {formatAlertMoney(item.alert_mc)}</span>
-                  <span className="rounded-full border border-stroke/60 px-2 py-1 text-[10px] text-muted">LIQ {formatAlertMoney(item.liquidity_usd)}</span>
-                  {item.m5_tx != null && <span className="rounded-full border border-stroke/60 px-2 py-1 text-[10px] text-muted">5M TX {item.m5_tx.toLocaleString("en-US")}</span>}
+                  <span className="rounded-full border border-[#72a5cf]/35 bg-[#72a5cf]/[0.07] px-2 py-1 text-[10px] text-[#a8cce7]">MC {formatAlertMoney(item.alert_mc)}</span>
+                  <span className="rounded-full border border-[#b28ad0]/35 bg-[#b28ad0]/[0.07] px-2 py-1 text-[10px] text-[#d1b0e5]">LIQ {formatAlertMoney(item.liquidity_usd)}</span>
+                  {item.m5_tx != null && <span className="rounded-full border border-[#69bd91]/35 bg-[#69bd91]/[0.07] px-2 py-1 text-[10px] text-[#a0dabb]">5M TX {item.m5_tx.toLocaleString("en-US")}</span>}
+                  {hasPeak && <span title="Highest price observed after this alert, based on monitored market data. Not a realized return or guaranteed profit." className={`rounded-full border px-2 py-1 text-[10px] font-medium tabular-nums ${verifiedPeak >= 0 ? "border-[#69bd91]/35 bg-[#69bd91]/[0.07] text-[#a0dabb]" : "border-[#d97777]/35 bg-[#d97777]/[0.07] text-[#e3a0a0]"}`}>
+                    {verifiedPeak >= 0 ? "↗" : "↘"} {peakMultiple.toFixed(2)}× · {verifiedPeak >= 0 ? "+" : ""}{verifiedPeak.toFixed(1)}% <span className="opacity-70">peak</span>
+                  </span>}
                   <span className="ml-auto text-[10px] tabular-nums text-muted">{clock} UTC</span>
                 </div>
               </article>
