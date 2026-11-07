@@ -7,14 +7,109 @@ import { PLANS, BUNDLE, PlanTone } from "@/lib/plans";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
 import { track } from "@/lib/analytics";
 
-const LANE_TIERS = [
-  { name: "EARLY", color: "#65C27C", label: "Early discovery", description: "Initial token and liquidity emergence." },
-  { name: "GENESIS", color: "#A78BFA", label: "Emerging momentum", description: "Early follow-through and developing structure." },
-  { name: "TREND", color: "#CDD7E2", label: "Confirmed trend", description: "Momentum, participation and continuation." },
-  { name: "STRICT", color: "#D97777", label: "Tight confirmation", description: "Higher-selectivity alert qualifications." },
-  { name: "RECLAIM", color: "#4FAD80", label: "Structure recovery", description: "Reclaim and renewed participation setups." },
-  { name: "RUNNER", color: "#D8B879", label: "Runner continuation", description: "Later-stage extension and follow-through." },
-] as const;
+const UPCOMING_LANES = {
+  GENESIS: {
+    color: "#A78BFA", soft: "#a78bfa16",
+    tagline: "Early momentum formation",
+    summary: "Recognizing developing structure before the broader trend is established.",
+    highlights: [
+      "Early participation and acceleration context",
+      "Emerging structure and confirmation signals",
+      "Native scoring with clear lane identity",
+      "Telegram delivery within the Alpha signal system",
+    ],
+  },
+  STRICT: {
+    color: "#D97777", soft: "#d9777716",
+    tagline: "High-selectivity confirmation",
+    summary: "A more selective view of setup quality and market structure.",
+    highlights: [
+      "Additional qualification and safety gates",
+      "Structure and participation checks",
+      "Clearer separation of qualified setups",
+      "Distinct scoring context and alert designation",
+    ],
+  },
+  RECLAIM: {
+    color: "#4BB8D1", soft: "#4bb8d116",
+    tagline: "Recovery and renewed strength",
+    summary: "Tracking structure recovery when momentum starts to rebuild.",
+    highlights: [
+      "Reclaim and renewed-interest observations",
+      "Price structure and participation context",
+      "Repeat-alert and lane-transition awareness",
+      "Native risk and quality observations",
+    ],
+  },
+} as const;
+
+type UpcomingLaneName = keyof typeof UPCOMING_LANES;
+const LANE_CARD_ORDER = ["EARLY","GENESIS","TREND","STRICT","RECLAIM","RUNNER"] as const;
+
+function UpcomingLaneCard({ lane }: { lane: UpcomingLaneName }) {
+  const info = UPCOMING_LANES[lane];
+  return (
+    <div className="group relative min-w-0 rounded-card p-px transition-transform duration-200 hover:-translate-y-0.5"
+         style={{ background: `linear-gradient(153deg,${info.color}88,rgba(255,255,255,0.08) 42%,${info.color}26)` }}>
+      <Card className="relative h-full min-w-0 overflow-hidden !border-0 !bg-[#0e1115] transition-shadow duration-200 group-hover:!shadow-[0_24px_60px_-24px_rgba(0,0,0,0.65)]">
+        <div className="pointer-events-none absolute inset-0" aria-hidden
+             style={{ background:`radial-gradient(ellipse 100% 67% at 4% -12%,${info.color}20,transparent 69%)` }} />
+        <div className="pointer-events-none absolute left-7 right-7 top-0 h-px opacity-75" aria-hidden
+             style={{background:`linear-gradient(90deg,transparent,${info.color},transparent)`}} />
+        <CardBody className="relative flex h-full min-h-[440px] flex-col gap-5 !p-6 sm:!p-7">
+          <div className="flex items-center justify-between gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border"
+                  style={{borderColor:`${info.color}65`, backgroundColor:info.soft,color:info.color}}>
+              <svg viewBox="0 0 28 28" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
+                {lane==="GENESIS"?(
+                  <><path d="M14 2 24 14 14 26 4 14Z"/><path d="M14 8 19 14 14 20 9 14Z"/><path d="M14 2v6m0 12v6"/></>
+                ):lane==="STRICT"?(
+                  <><path d="M14 2 24 6v8c0 7-4 10-10 12C8 24 4 21 4 14V6Z"/><path d="m9 14 3 3 7-7"/></>
+                ):(
+                  <><path d="M23 12a9 9 0 1 0 .5 5"/><path d="m19 8 4 4 3-4"/><path d="m9 17 4-5 3 2 4-5"/></>
+                )}
+              </svg>
+            </span>
+            <span className="rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em]"
+                  style={{borderColor:`${info.color}50`,color:info.color,backgroundColor:info.soft}}>
+              LANE PREVIEW
+            </span>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-display text-[22px] font-semibold tracking-tight text-silver sm:text-[24px]">
+              ALPHA <span style={{color:info.color}}>{lane}</span> ALERTS
+            </h3>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{color:info.color}}>
+              {info.tagline}
+            </p>
+            <p className="text-[13px] leading-relaxed text-muted">{info.summary}</p>
+          </div>
+          <div className="h-px w-full opacity-60" style={{background:`linear-gradient(90deg,${info.color}80,transparent)`}} aria-hidden />
+          <div className="space-y-1">
+            <div className="font-display text-[24px] font-semibold tracking-tight text-silver">PRICING TBA</div>
+            <p className="text-[11px] leading-relaxed text-muted">Separate subscription pricing has not been announced.</p>
+          </div>
+          <ul className="space-y-3 text-[12px] leading-relaxed text-muted" aria-label={`Alpha ${lane} capabilities`}>
+            {info.highlights.map(item => (
+              <li className="flex items-start gap-3" key={item}>
+                <svg viewBox="0 0 20 20" className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke={info.color} strokeWidth="2" strokeLinecap="round" aria-hidden>
+                  <path d="m4 10 4 4 8-9" />
+                </svg>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-auto pt-3">
+            <div className="flex min-h-11 items-center justify-center rounded-[7px] border bg-[#161a20] px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-silver/75"
+                 style={{borderColor:`${info.color}47`}} aria-label={`Alpha ${lane} not available for purchase`}>
+              Not available yet
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
 
 function Check({ tone }: { tone: PlanTone }) {
   const colorClass =
@@ -352,32 +447,11 @@ export default function PricingPage() {
         </div>
       </div>
 
-      <section className="mt-10 scroll-mt-24" aria-labelledby="lanes-heading">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.27em] text-gold/80">Alpha Signals / Six Lanes</p>
-            <h2 id="lanes-heading" className="mt-2 font-display text-[22px] font-semibold tracking-tight text-silver sm:text-[28px]">CHOOSE YOUR SIGNAL STYLE</h2>
-          </div>
-          <p className="max-w-sm text-[11px] leading-relaxed text-muted">Lane names describe alert classifications, not six independently purchasable subscriptions.</p>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {LANE_TIERS.map((lane) => (
-            <div key={lane.name}
-              className="min-w-0 rounded-card border border-stroke/65 bg-surface/70 px-4 py-4 sm:px-5"
-              style={{borderTopColor:lane.color,borderTopWidth:2}}>
-              <div className="flex min-w-0 items-center justify-between gap-3">
-                <h3 className="text-[13px] font-extrabold tracking-[0.18em] sm:text-[14px]" style={{color:lane.color}}>
-                  ALPHA {lane.name}
-                </h3>
-                <span className="h-2 w-2 shrink-0 rounded-full" style={{backgroundColor:lane.color}} aria-hidden="true"/>
-              </div>
-              <p className="mt-2 text-xs font-semibold text-silver">{lane.label}</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-muted">{lane.description}</p>
-              <p className="mt-3 text-[10px] uppercase tracking-[0.10em] text-muted/70">
-                {lane.name==="EARLY"?"Coming soon":lane.name==="TREND"||lane.name==="RUNNER"?"Existing pricing below":"Separate pricing not announced"}
-              </p>
-            </div>
-          ))}
+      <section className="mt-12 scroll-mt-24" aria-labelledby="lanes-heading">
+        <div className="mx-auto max-w-2xl space-y-2 text-center">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-gold/80">Alpha Signals / Six Specialized Lanes</p>
+          <h2 id="lanes-heading" className="font-display text-[25px] font-semibold tracking-tight text-silver sm:text-[33px]">THE ALPHA SIGNAL STACK</h2>
+          <p className="text-sm leading-relaxed text-muted">Distinct signals, shared intelligence. Three existing subscription tiers plus three emerging lane classifications, each with its own identity.</p>
         </div>
       </section>
 
@@ -386,7 +460,9 @@ export default function PricingPage() {
         id="plans"
         className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3 scroll-mt-24 md:scroll-mt-32"
       >
-        {orderedPlans.map((p) => {
+        {LANE_CARD_ORDER.map((lane) => {
+          const p = orderedPlans.find(plan => plan.titleEmphasis === lane);
+          if (!p) return <UpcomingLaneCard key={lane} lane={lane as UpcomingLaneName} />;
           const isEarlyComingSoon = p.slug === "alpha-early-alerts";
           const isRunnerPlan = p.slug === "alpha-runner-alerts";
           return (
@@ -614,31 +690,67 @@ export default function PricingPage() {
         </div>
       </div>
 
-      <section className="mt-12" aria-labelledby="alpha-systems-heading">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gold/80">Beyond signal alerts</p>
-        <h2 id="alpha-systems-heading" className="mt-2 font-display text-[23px] font-semibold text-silver sm:text-[30px]">ALPHA SYSTEMS</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">Independent research systems and future products. No subscriptions, live-execution claims or prices are offered here.</p>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <Card className="min-w-0 border-gold/25 bg-surface/70">
-            <CardBody className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-display text-[21px] font-bold tracking-[0.12em] text-gold">ALPHA APEX</h3>
-                <span className="rounded-full border border-gold/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-gold">Research / Paper</span>
-              </div>
-              <p className="text-small leading-relaxed text-muted">Quantitative strategy research and execution-system development. Experimental models are not publicly offered as live trading.</p>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.10em] text-muted/80">No public launch or price announced</p>
-            </CardBody>
-          </Card>
-          <Card className="min-w-0 border-platinum/25 bg-surface/70">
-            <CardBody className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-display text-[21px] font-bold tracking-[0.12em] text-silver">ALPHA NEXUS</h3>
-                <span className="rounded-full border border-stroke px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-muted">Coming Soon</span>
-              </div>
-              <p className="text-small leading-relaxed text-muted">A future Alpha systems offering. Features, release timing and access will be announced only after verification.</p>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.10em] text-muted/80">Not available for purchase</p>
-            </CardBody>
-          </Card>
+      <section className="mt-14" aria-labelledby="alpha-systems-heading">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.31em] text-gold/80">The Next Frontier</p>
+          <h2 id="alpha-systems-heading" className="mt-2 font-display text-[26px] font-semibold tracking-tight text-silver sm:text-[34px]">ALPHA SYSTEMS</h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">Beyond signal alerts. Purpose-built research and future systems, presented without premature launch or profit claims.</p>
+        </div>
+        <div className="mt-7 grid gap-6 lg:grid-cols-2">
+          <div className="group relative min-w-0 rounded-card p-px transition-transform duration-200 hover:-translate-y-0.5"
+               style={{background:"linear-gradient(145deg,#d8b8798c,rgba(255,255,255,.09) 50%,#d8b87924)"}}>
+            <Card className="relative h-full overflow-hidden !border-0 !bg-[#0d1014]">
+              <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_8%_0%,rgba(216,184,121,0.14),transparent_62%)]"/>
+              <CardBody className="relative flex min-h-[380px] flex-col gap-5 !p-6 sm:!p-8">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="grid h-14 w-14 place-items-center rounded-xl border border-[#d8b879]/35 bg-[#d8b879]/10 text-[#d8b879]">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden className="h-10 w-10">
+                      <path d="M6 37 17 24 24 30 41 11"/><path d="M30 11h11v11"/><path d="M5 43h38" opacity=".5"/><path d="M16 8v8m-4-4h8" opacity=".6"/>
+                    </svg>
+                  </div>
+                  <span className="rounded-full border border-[#d8b879]/35 bg-[#d8b879]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.13em] text-[#d8b879]">Research / Paper</span>
+                </div>
+                <div className="space-y-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d8b879]/85">Quantitative Research / Execution Development</p>
+                  <h3 className="font-display text-[36px] font-bold tracking-[-0.02em] text-silver sm:text-[44px]">ALPHA <span className="text-[#d8b879]">APEX</span></h3>
+                  <p className="max-w-md text-sm leading-relaxed text-muted">A research-driven execution program. Strategy testing, simulated fills and risk engineering before any live-access offering.</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {["Strategy validation","Paper execution","Risk / fill analysis","Evidence before release"].map(item=>(
+                    <span key={item} className="rounded-lg border border-[#d8b879]/15 bg-[#d8b879]/[0.035] px-3 py-2 text-[11px] font-medium text-silver/80">{item}</span>
+                  ))}
+                </div>
+                <div className="mt-auto border-t border-[#d8b879]/25 pt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#d8b879]">No live trading service or public checkout</div>
+              </CardBody>
+            </Card>
+          </div>
+          <div className="group relative min-w-0 rounded-card p-px transition-transform duration-200 hover:-translate-y-0.5"
+               style={{background:"linear-gradient(145deg,#9bbbdc8c,rgba(255,255,255,.09) 50%,#9bbbdc24)"}}>
+            <Card className="relative h-full overflow-hidden !border-0 !bg-[#0d1014]">
+              <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_92%_0%,rgba(155,187,220,0.14),transparent_62%)]"/>
+              <CardBody className="relative flex min-h-[380px] flex-col gap-5 !p-6 sm:!p-8">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="grid h-14 w-14 place-items-center rounded-xl border border-[#9bbbdc]/35 bg-[#9bbbdc]/10 text-[#9bbbdc]">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden className="h-10 w-10">
+                      <path d="M24 5 42 15v18L24 43 6 33V15Z"/><path d="m6 15 18 10 18-10M24 25v18"/><circle cx="24" cy="5" r="2.5" fill="currentColor"/><circle cx="6" cy="33" r="2.5" fill="currentColor"/><circle cx="42" cy="33" r="2.5" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  <span className="rounded-full border border-[#9bbbdc]/35 bg-[#9bbbdc]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.13em] text-[#9bbbdc]">Coming Soon</span>
+                </div>
+                <div className="space-y-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#9bbbdc]/85">Next-Generation Infrastructure</p>
+                  <h3 className="font-display text-[36px] font-bold tracking-[-0.02em] text-silver sm:text-[44px]">ALPHA <span className="text-[#9bbbdc]">NEXUS</span></h3>
+                  <p className="max-w-md text-sm leading-relaxed text-muted">The next systems layer in the Alpha family. Availability and supported capabilities will be announced when verified.</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {["Systems architecture","Performance engineering","Reliability-first design","Release details pending"].map(item=>(
+                    <span key={item} className="rounded-lg border border-[#9bbbdc]/15 bg-[#9bbbdc]/[0.035] px-3 py-2 text-[11px] font-medium text-silver/80">{item}</span>
+                  ))}
+                </div>
+                <div className="mt-auto border-t border-[#9bbbdc]/25 pt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9bbbdc]">No release date or purchase option announced</div>
+              </CardBody>
+            </Card>
+          </div>
         </div>
       </section>
 
