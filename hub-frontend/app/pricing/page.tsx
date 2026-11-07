@@ -113,7 +113,7 @@ function UpcomingLaneCard({ lane }: { lane: UpcomingLaneName }) {
 
 function Check({ tone }: { tone: PlanTone }) {
   const colorClass =
-    tone === "green" ? "text-[#65c27c]" :
+    tone === "green" ? "text-[#a3ce64]" :
     tone === "bronze"
       ? "text-bronze"
       : tone === "platinum"
@@ -143,7 +143,7 @@ function Check({ tone }: { tone: PlanTone }) {
  * also apply a tone class (shimmer-bronze/platinum/gold) or the word will disappear.
  */
 function shimmerWordClass(tone: PlanTone, index: 1 | 2 | 3) {
-  if (tone === "green") return "text-[#65c27c] font-black text-[1.3em] tracking-[0.015em]";
+  if (tone === "green") return "text-[#a3ce64] font-black text-[1.3em] tracking-[0.015em]";
   const cadence = index === 1 ? "shimmer-1" : index === 2 ? "shimmer-2" : "shimmer-3";
 
   const toneClass =
@@ -158,7 +158,7 @@ function shimmerWordClass(tone: PlanTone, index: 1 | 2 | 3) {
 }
 
 function cardGlowClass(tone: PlanTone) {
-  if (tone === "green") return "border-[#65c27c]/25 hover:shadow-[0_0_0_1px_rgba(101,194,124,0.27),0_20px_55px_-24px_rgba(101,194,124,0.20)]";
+  if (tone === "green") return "border-[#a3ce64]/25 hover:shadow-[0_0_0_1px_rgba(101,194,124,0.27),0_20px_55px_-24px_rgba(101,194,124,0.20)]";
   // Border tint + subtle glow on hover
   if (tone === "bronze") {
     return "border-bronze/20 hover:shadow-[0_0_0_1px_rgb(var(--tone-bronze)/0.18),0_26px_90px_-26px_rgb(var(--tone-bronze)/0.25)]";
@@ -171,7 +171,7 @@ function cardGlowClass(tone: PlanTone) {
 }
 
 function tonePrimaryButtonClass(tone: PlanTone) {
-  if (tone === "green") return "!bg-[#65c27c] !text-black !border-[#65c27c]/60 hover:!brightness-[1.05]";
+  if (tone === "green") return "!bg-[#a3ce64] !text-black !border-[#a3ce64]/60 hover:!brightness-[1.05]";
   const base = "text-black hover:text-black btn-text-shadow !border";
   if (tone === "bronze") {
     return [
