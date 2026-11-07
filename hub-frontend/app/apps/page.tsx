@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { AppsShell, StackArt } from "./AppsShell";
 import styles from "./apps.module.css";
 
@@ -46,6 +47,26 @@ export default function AppsWelcome() {
         <span>NO ADS. NO SIGN-UPS.</span>
         <span>BUILT FOR REAL WORK</span>
       </div>
+      <section className={styles.landingPreview} aria-labelledby="alpha-apps-preview">
+        <div className={styles.landingPreviewHead}>
+          <h2 id="alpha-apps-preview">The software, up close.</h2>
+          <Link href="/apps/software">EXPLORE THE COLLECTION <span aria-hidden="true">↗</span></Link>
+        </div>
+        <div className={styles.landingPreviewCards}>
+          {[
+            { title: "Alpha Focus", category: "DEEP WORK", src: "/apps/showcase/alpha-focus-gold-compact-layout.png", width: 1074, height: 941 },
+            { title: "Alpha Vibe", category: "SOUND & VISUALS", src: "/apps/showcase/alpha-vibe-frequency-spectrum-gold.png", width: 1075, height: 720 },
+            { title: "Alpha Notes", category: "CLEAR THINKING", src: "/apps/showcase/alpha-notes-gold-editor.png", width: 1072, height: 773 },
+          ].map((item) => (
+            <Link href="/apps/software" className={styles.landingPreviewCard} key={item.title}>
+              <Image src={item.src} width={item.width} height={item.height}
+                sizes="(max-width: 650px) 92vw, 32vw"
+                quality={85} alt={item.title + " genuine Windows application interface"} />
+              <span>{item.title}<small>{item.category}</small></span>
+            </Link>
+          ))}
+        </div>
+      </section>
     </AppsShell>
   );
 }
