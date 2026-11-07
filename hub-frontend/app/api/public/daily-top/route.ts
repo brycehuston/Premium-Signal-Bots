@@ -10,6 +10,7 @@ const ALIASES: Record<string,string> = {EARLY_RADAR:"EARLY", GENESIS_SMOOTH_RAMP
 const MIN_DELAY_MS = 30 * 60_000;
 const MAX_FEED_AGE_MS = 20 * 60_000;
 const MAX_PUBLIC_HISTORY_MS = 7 * 24 * 3600_000;
+const MAX_SIGNED_ARCHIVE_AGE_MS = 5 * 365 * 24 * 3600_000;
 const PRIMARY_WINDOW_MS = 24 * 3600_000;
 const MAX_FEED_BYTES = 128 * 1024;
 
@@ -30,7 +31,7 @@ function money(v: unknown): number | null {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 && n < 1e13 ? Math.round(n * 100) / 100 : null;
 }
-function validRow(value: unknown, now: Date): PublicRow | null {
+function validRow(value: unknown, now: Date, maxHistoricalAgeMs = MAX_PUBLIC_HISTORY_MS): PublicRow | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const row = value as Record<string, unknown>;
   // A public record must be explicitly approved AND tied to a successful Telegram send.
@@ -45,7 +46,7 @@ function validRow(value: unknown, now: Date): PublicRow | null {
   if (!LANES.has(lane) || !/^[A-Za-z0-9._-]{1,28}$/.test(symbol) || !/^[A-Za-z0-9:_-]{8,96}$/.test(id)) return null;
   if (!Number.isFinite(score) || score < 0 || score > 10 || !/Z$/.test(rawTime) || !Number.isFinite(timestamp.getTime())) return null;
   if (timestamp.getTime() > now.getTime() - MIN_DELAY_MS) return null;
-  if (timestamp.getTime() < now.getTime() - MAX_PUBLIC_HISTORY_MS) return null;
+  if (timestamp.getTime() < now.getTime() - maxHistoricalAgeMs) return null;
   const rawTx = row.m5_tx;
   const tx = rawTx == null || rawTx === "" ? null : Number(rawTx);
   const rawPeak = row.observed_peak_pct;
@@ -100,14 +101,14 @@ function historicalPreview(now: Date) {
     if (parsed.version !== 1 || parsed.source !== "confirmed-telegram-delivery" ||
         !Number.isFinite(captured.getTime()) ||
         captured.getTime() > now.getTime() ||
-        now.getTime() - captured.getTime() > MAX_PUBLIC_HISTORY_MS ||
+        now.getTime() - captured.getTime() > MAX_SIGNED_ARCHIVE_AGE_MS ||
         !Array.isArray(parsed.daily_alerts) || parsed.daily_alerts.length !== 6) return null;
-    const values = parsed.daily_alerts.map(x=>validRow(x,now));
+    const values = parsed.daily_alerts.map(x=>validRow(x,now,MAX_SIGNED_ARCHIVE_AGE_MS));
     if (values.some(x=>x===null)) return null;
     const alerts = (values as PublicRow[])
       .sort((a,b)=>b.score-a.score || b.timestamp_utc.localeCompare(a.timestamp_utc))
       .slice(0,3);
-    return {state:"archived" as const,period:"7d" as const,
+    return {state:"archived" as const,period:null,
       as_of_utc:captured.toISOString(),public_delay_minutes:30,
       alerts,delivery_independently_verified:false};
   } catch { return null; }
@@ -116,10 +117,8 @@ function historicalPreview(now: Date) {
 export async function GET() {
   const now = new Date();
   const unavailable = (state: "unavailable"|"empty") => {
-    if (state === "unavailable") {
-      const historical = historicalPreview(now);
-      if (historical) return NextResponse.json(historical,{headers:{"Cache-Control":"no-store"}});
-    }
+    const historical = historicalPreview(now);
+    if (historical) return NextResponse.json(historical,{headers:{"Cache-Control":"no-store"}});
     return NextResponse.json(
       {state, period:null, as_of_utc:now.toISOString(), public_delay_minutes:30, alerts:[]},
       {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}}

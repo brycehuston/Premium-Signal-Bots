@@ -203,7 +203,7 @@
       position: absolute;
       left: 0;
       top: 0;
-      transform: translate(-50%, calc(-50% - (var(--u, 38px) * 3.98)));
+      transform: translate(-50%, calc(-50% - (var(--u, 38px) * 2.8)));
       padding: 8px 14px;
       border-radius: 4px;
       background: rgba(9, 11, 15, 0.74);
@@ -1545,13 +1545,13 @@
       }
     }
 
-    /* ==========================
-       GO ALPHA CTA (bottom-right)
-       ========================== */
+    /* Centered final action, aligned to the same axis as the routing core. */
     .goAlphaWrap {
       position: absolute;
-      right: 18px;
-      bottom: 92px;
+      left: 50%;
+      right: auto;
+      bottom: 38px;
+      transform: translateX(-50%);
       z-index: 40;
       pointer-events: auto;
     }
@@ -1703,7 +1703,7 @@
         <canvas id="warpCv"></canvas>
       </div>
 
-      <!-- Bottom-right CTA -->
+      <!-- Centered footer action; retains existing portal behavior -->
       <div class="goAlphaWrap">
         <button class="goAlphaBtn" id="goAlphaBtn" type="button">GO ALPHA</button>
       </div>
@@ -2166,7 +2166,7 @@
             // Layout tuning (matches your screenshot)
             forwarderNudgeX: 0,
             forwarderNudgeY: 0,
-            centerY: 0.65,  // balanced stage geometry: core sits below the centered title
+            centerY: 0.61,  // central cube closer to vertical center, title above
             forwarderX: 0.50,
             sourceX: 0.50,
             forwarderOffsetY: -0.03,  // ✅ moved up a touch for cleaner spacing
@@ -2380,19 +2380,22 @@
             const sideOffset = Math.min(maxOffset, W < 500 ? maxOffset : Math.max(W * 0.27, 165));
             const laneLeftX = rx - sideOffset;
             const laneRightX = rx + sideOffset;
+            const middleAccentOffset = W >= 640 ? Math.min(32, W * 0.027) : 0;
+            const middleLeftX = Math.max(CFG.pillW / 2 + edgeGap, laneLeftX - middleAccentOffset);
+            const middleRightX = Math.min(W - CFG.pillW / 2 - edgeGap, laneRightX + middleAccentOffset);
             const legacyPillBottomY = Math.min(H - CFG.pillH / 2 - 12, outY + CFG.pillYOffset);
             const pillTopY = Math.max(
               CFG.pillH / 2 + 70,
-              Math.min(ry - cubeHalf - (H < 540 ? 55 : 90), H * 0.18)
+              Math.min(ry - cubeHalf - (H < 540 ? 55 : 90), H * 0.21)
             );
             sy = Math.min(sy, pillTopY - CFG.pillH * 0.5 - 24);
 
             // Give the FORWARDER BOT title a clear centered lane: flank it
             // with GENESIS (left) and RECLAIM (right), while preserving the
             // existing middle row when shorter/narrower viewports cannot fit.
-            // The title itself sits 3.98 cube units above the core center.
-            const titleLineY = ry - clamp(Math.min(W, H) * 0.038, 26, 64) * 3.98;
-            const titleFlankFits = W >= 700 && titleLineY >= pillTopY + CFG.pillH + 16;
+            // Title and middle pills share a row; the cube sits just below.
+            const titleLineY = ry - clamp(Math.min(W, H) * 0.038, 26, 64) * 2.8;
+            const titleFlankFits = W >= 640 && titleLineY >= pillTopY + CFG.pillH + 16;
             const middlePillY = titleFlankFits ? titleLineY : ry;
             // Enforce equal spacing EARLY -> GENESIS -> STRICT and
             // TREND -> RECLAIM -> RUNNER. The old bottom row used outY,
@@ -2409,9 +2412,9 @@
                 { laneId: 0, x: laneLeftX, y: pillTopY, row:"top", side:"left", label: "EARLY" },
                 { laneId: 1, x: laneRightX, y: pillTopY, row:"top", side:"right", label: "TREND" },
                 { laneId: 2, x: laneRightX, y: pillBottomY, row:"bottom", side:"right", label: "RUNNER" },
-                { laneId: 3, x: laneLeftX, y: middlePillY, row:"middle", side:"left", label: "GENESIS" },
+                { laneId: 3, x: middleLeftX, y: middlePillY, row:"middle", side:"left", label: "GENESIS" },
                 { laneId: 4, x: laneLeftX, y: pillBottomY, row:"bottom", side:"left", label: "STRICT" },
-                { laneId: 5, x: laneRightX, y: middlePillY, row:"middle", side:"right", label: "RECLAIM" }
+                { laneId: 5, x: middleRightX, y: middlePillY, row:"middle", side:"right", label: "RECLAIM" }
               ]
             };
           }
