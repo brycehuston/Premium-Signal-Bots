@@ -8,7 +8,7 @@
 - The inspected Supabase `public` schema has four public-feed configuration/state tables, with RLS enabled, but no historical analytics event/outcome tables.
 - The VPS `alpha-alerts-public-feed.service` repeatedly exits with status 1; its timer remains enabled. Last inspected signed snapshot: 2026-11-07 08:01:57 UTC, six approved public records. Supabase's public GET correctly rejects snapshots over 20 minutes old.
 - The existing signed feed publishes only six approved/confirmed delayed rows (three recent and three weekly reserves), not complete user history.
-- Publisher runtime traceback/source are restricted to the owner/service account; status code alone does not establish root cause.
+- **Publisher root cause CONFIRMED 2026-11-07 via owner-provided sudo journalctl traceback:** `source_verified()` raises `ValueError("sender source changed: abort publishing pending code review")` at line 28 of `/home/ubuntu/.alphaalerts/website_feed/publish_confirmed_csv_ed25519.py`. The pinned `EXPECTED_SOURCE_SHA256` does not match the running sender's bytes. This is an intentional fail-closed safety guard, not a known Supabase failure. Do NOT update the fingerprint or bypass `source_verified()` before reviewing the actual sender diff and verifying post-Telegram-confirmation CSV logging. Current sender fingerprint and precise code diff remain UNKNOWN.
 - The frontend preview uses real Focus/Vibe/Notes images; the requested complete laptop hero artwork and logo replacement are NOT verified on the website.
 
 ## TARGET — USER APPROVED
@@ -47,3 +47,10 @@
 1. Read-only inspection of production publisher stderr/traceback as the authorized service owner; fix via reviewed source changes, then request controlled production release permission.
 2. Obtain the canonical private V4 dataset/telemetry and a secure target schema for staging; connect authenticated retrieval before removing the prototype importer.
 3. Run actual user-session auth QA and browser visual QA at 320, 375, 768, 1280 and 1920 widths. Do not claim release readiness on builds alone.
+
+## VERIFIED SOURCE-DRIFT RECOVERY PROCEDURE
+1. From the production host as the authorized owner, read only the sender and pinned fingerprint. Record the current SHA-256, `git status`, last source commits and the diff from the approved version. Do not read/export the private Ed25519 signer.
+2. Inspect and test the `if not delivered` -> `_telegram_delivery_metadata` -> `_log_alert_csv(...raise_on_error=True)` ordering and actual delivery-confirmation semantics. An unchanged string sequence alone is NOT proof of equivalent behavior.
+3. Only after independent review, propose the minimal publisher-only SHA pin update (if appropriate). Do not change the running sender for the website's convenience.
+4. Owner approval required before production publisher modification/restart. First run the publisher's dry-run mode; then one controlled service attempt, confirm fresh signed Supabase state, API `verified` result and homepage Top 3. Preserve 30-minute publication delay and 20-minute snapshot-freshness checks.
+5. In parallel, inspect real CSV fields and data coverage before designing registered historical ingestion; the six-row signed public snapshot cannot populate subscriber historical analytics.
