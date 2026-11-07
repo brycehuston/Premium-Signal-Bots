@@ -401,7 +401,7 @@
     }
 
     .panel[data-bot="EARLY"] .panelTitle .name {
-      color: #65C27C;
+      color: #A3CE64;
     }
 
     .panel[data-bot="TREND"] .panelTitle .name {
@@ -1065,19 +1065,19 @@
     .panelTitle { font-size: clamp(10px, 1.12vw, 14px); letter-spacing: .16em; gap: 6px; }
     .panel[data-bot="GENESIS"] .panelTitle .name { color: #A78BFA; }
     .panel[data-bot="STRICT"] .panelTitle .name { color: #D97777; }
-    .panel[data-bot="RECLAIM"] .panelTitle .name { color: #4FAD80; }
-    .panel[data-bot="EARLY"] { border-color: rgba(101,194,124,.16); }
+    .panel[data-bot="RECLAIM"] .panelTitle .name { color: #4BB8D1; }
+    .panel[data-bot="EARLY"] { border-color: rgba(163,206,100,.16); }
     .panel[data-bot="GENESIS"] { border-color: rgba(167,139,250,.17); }
     .panel[data-bot="TREND"] { border-color: rgba(205,215,226,.13); }
     .panel[data-bot="STRICT"] { border-color: rgba(217,119,119,.17); }
-    .panel[data-bot="RECLAIM"] { border-color: rgba(79,173,128,.17); }
+    .panel[data-bot="RECLAIM"] { border-color: rgba(75,184,209,.17); }
     .panel[data-bot="RUNNER"] { border-color: rgba(216,184,121,.18); }
     .panel::after { content:""; position:absolute; z-index:3; top:0; left:18%; right:18%; height:2px; border-radius:999px; opacity:.55; background:var(--lane-color); pointer-events:none; }
-    .panel[data-bot="EARLY"] { --lane-color:#65C27C; }
+    .panel[data-bot="EARLY"] { --lane-color:#A3CE64; }
     .panel[data-bot="GENESIS"] { --lane-color:#A78BFA; }
     .panel[data-bot="TREND"] { --lane-color:#CDD7E2; }
     .panel[data-bot="STRICT"] { --lane-color:#D97777; }
-    .panel[data-bot="RECLAIM"] { --lane-color:#4FAD80; }
+    .panel[data-bot="RECLAIM"] { --lane-color:#4BB8D1; }
     .panel[data-bot="RUNNER"] { --lane-color:#D8B879; }
     @media (max-width: 980px) {
       .frame { display: flex; flex-direction: column; }
@@ -3218,11 +3218,11 @@
     }
 
     const LANES = [
-      {id:"EARLY",coreId:"coreEarly",color:[101,194,124],highlight:[201,249,213]},
+      {id:"EARLY",coreId:"coreEarly",color:[163,206,100],highlight:[224,243,180]},
       {id:"GENESIS",coreId:"coreGenesis",color:[167,139,250],highlight:[226,214,255]},
       {id:"TREND",coreId:"coreTrend",color:[205,215,226],highlight:[246,249,252]},
       {id:"STRICT",coreId:"coreStrict",color:[217,119,119],highlight:[255,212,212]},
-      {id:"RECLAIM",coreId:"coreReclaim",color:[79,173,128],highlight:[177,232,198]},
+      {id:"RECLAIM",coreId:"coreReclaim",color:[75,184,209],highlight:[182,230,245]},
       {id:"RUNNER",coreId:"coreRunner",color:[216,184,121],highlight:[255,232,180]}
     ];
 
