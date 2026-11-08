@@ -455,10 +455,9 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* Alpha Grind stack — three isolated single beats, not a continuously pulsing stack.
-   A .55s flash passes top -> middle -> bottom at 0/.65/1.30 seconds;
-   it then remains quiet until the 10-second sequence repeats.
-   The layers reuse the approved artwork; no new render is substituted. */
+/* Alpha Grind stack — one gold rim pulse per plate, top to bottom.
+   Each .55s beat starts .65s apart; 10-second cycle with an idle interval.
+   Overlay is vector only: no copied images, banding, or oversized blooms. */
 .stackArt {
   position: relative;
   isolation: isolate;
@@ -466,37 +465,36 @@
   border-radius: 12px;
   background-color: transparent;
   filter: saturate(.93) brightness(.98);
-  -webkit-mask-image: radial-gradient(ellipse 82% 82% at 50% 50%,#000 70%,transparent 100%);
-  mask-image: radial-gradient(ellipse 82% 82% at 50% 50%,#000 70%,transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 82% 82% at 50% 50%, #000 70%, transparent 100%);
+  mask-image: radial-gradient(ellipse 82% 82% at 50% 50%, #000 70%, transparent 100%);
 }
-.stackPulse {
+.stackPulseOverlay {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  background: url("/apps/alpha-stack.webp") center / contain no-repeat;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   mix-blend-mode: screen;
-  filter: brightness(1.9) saturate(1.28);
+  pointer-events: none;
+}
+.stackPulseTrace {
+  fill: none;
+  stroke: #ffd888;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px #f0b957) drop-shadow(0 0 7px #c88e2a);
   opacity: 0;
   animation: alphaStackSingleBeat 10s ease-in-out infinite;
-  will-change: opacity;
 }
-.stackPulseTop {
-  clip-path: polygon(50% 7%,97% 25%,97% 45%,50% 58%,3% 45%,3% 25%);
-  animation-delay: 0s;
-}
-.stackPulseMiddle {
-  clip-path: polygon(50% 33%,97% 44%,97% 64%,50% 78%,3% 64%,3% 44%);
-  animation-delay: .65s;
-}
-.stackPulseBottom {
-  clip-path: polygon(50% 58%,97% 66%,97% 86%,50% 100%,3% 86%,3% 66%);
-  animation-delay: 1.3s;
-}
+.stackPulseTop { animation-delay: 0s; }
+.stackPulseMiddle { animation-delay: .65s; }
+.stackPulseBottom { animation-delay: 1.3s; }
 @keyframes alphaStackSingleBeat {
-  0%,1% { opacity: 0; }
-  3% { opacity: .76; }
-  6%,100% { opacity: 0; }
+  0%, 1% { opacity: 0; }
+  3% { opacity: .92; }
+  6%, 100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stackPulse { animation: none !important; opacity: 0 !important; }
+  .stackPulseTrace { animation: none !important; opacity: 0 !important; }
 }

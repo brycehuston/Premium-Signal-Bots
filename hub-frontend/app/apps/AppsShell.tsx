@@ -27,9 +27,15 @@ export function StackArt() {
   return (
     <div className={styles.stackArt} role="img"
       aria-label="The Alpha emblem on three dark metallic layers representing Focus, Vibe and Notes. The layers pulse once each from top to bottom approximately every ten seconds.">
-      <span aria-hidden="true" className={`${styles.stackPulse} ${styles.stackPulseTop}`} />
-      <span aria-hidden="true" className={`${styles.stackPulse} ${styles.stackPulseMiddle}`} />
-      <span aria-hidden="true" className={`${styles.stackPulse} ${styles.stackPulseBottom}`} />
+      <svg className={styles.stackPulseOverlay} aria-hidden="true" focusable="false"
+        viewBox="0 0 365 365" preserveAspectRatio="xMidYMid meet">
+        <path className={`${styles.stackPulseTrace} ${styles.stackPulseTop}`}
+          d="M47 121 L47 132 Q47 143 62 149 L178 201 Q187 207 199 201 L345 140 L345 121" />
+        <path className={`${styles.stackPulseTrace} ${styles.stackPulseMiddle}`}
+          d="M47 190 L47 212 Q47 221 61 228 L178 270 Q189 275 201 270 L345 218 L345 191" />
+        <path className={`${styles.stackPulseTrace} ${styles.stackPulseBottom}`}
+          d="M47 264 L47 296 Q48 305 62 311 L179 350 Q188 356 201 351 L345 300 L345 269" />
+      </svg>
     </div>
   );
 }
