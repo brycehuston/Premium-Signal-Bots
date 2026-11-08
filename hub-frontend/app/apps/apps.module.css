@@ -455,9 +455,10 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* Alpha Grind stack — one gold rim pulse per plate, top to bottom.
-   Each .55s beat starts .65s apart; 10-second cycle with an idle interval.
-   Overlay is vector only: no copied images, banding, or oversized blooms. */
+/* Alpha Grind energy transfer — one smooth pulse per plate, then silence.
+   All three animations share a 10-second clock (no animation-delay drift):
+   TOP 0.00–0.45s | MIDDLE 0.50–0.95s | BOTTOM 1.00–1.45s.
+   Each stroke only illuminates an existing tile edge; the artwork stays static. */
 .stackArt {
   position: relative;
   isolation: isolate;
@@ -479,21 +480,36 @@
 }
 .stackPulseTrace {
   fill: none;
-  stroke: #ffd888;
-  stroke-width: 2.8;
+  stroke: #f5cf85;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 4px #f0b957) drop-shadow(0 0 7px #c88e2a);
+  filter: drop-shadow(0 0 3px rgba(222, 165, 65, .46));
   opacity: 0;
-  animation: alphaStackSingleBeat 10s ease-in-out infinite;
+  will-change: opacity;
+  animation-duration: 10s;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(.45, 0, .55, 1);
 }
-.stackPulseTop { animation-delay: 0s; }
-.stackPulseMiddle { animation-delay: .65s; }
-.stackPulseBottom { animation-delay: 1.3s; }
-@keyframes alphaStackSingleBeat {
-  0%, 1% { opacity: 0; }
-  3% { opacity: .92; }
-  6%, 100% { opacity: 0; }
+.stackPulseTop { animation-name: alphaStackPulseTop; }
+.stackPulseMiddle { animation-name: alphaStackPulseMiddle; }
+.stackPulseBottom { animation-name: alphaStackPulseBottom; }
+/* Exact percentages of ten seconds: .45s duration, .50s onset spacing.
+   No glow spikes, steps, strokes traveling across the tile or overlap. */
+@keyframes alphaStackPulseTop {
+  0% { opacity: 0; }
+  2.25% { opacity: .76; }
+  4.5%, 100% { opacity: 0; }
+}
+@keyframes alphaStackPulseMiddle {
+  0%, 5% { opacity: 0; }
+  7.25% { opacity: .76; }
+  9.5%, 100% { opacity: 0; }
+}
+@keyframes alphaStackPulseBottom {
+  0%, 10% { opacity: 0; }
+  12.25% { opacity: .76; }
+  14.5%, 100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .stackPulseTrace { animation: none !important; opacity: 0 !important; }
