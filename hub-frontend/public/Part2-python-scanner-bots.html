@@ -1057,22 +1057,41 @@
       }
     }
 
-    /* Approved Stage 2 reference: six precise metallic radar surfaces. */
+    /* Stage 2: premium metallic scanner composition. Retain six original canvases. */
     :root { --panelTitleTop: 16px; --botsTopGap: 8px; --botsBottomGap: 102px; --panelGap: clamp(10px, 1vw, 16px); }
     .clusterWrap { min-height:0; justify-content:stretch; }
     .cluster { height:100%; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); }
     .panel {
       height:auto; min-height:0;
-      border:1px solid rgba(198,211,223,.22);
-      background:radial-gradient(ellipse 60% 52% at 50% 55%,rgba(255,255,255,.027),transparent 88%),
-                 linear-gradient(155deg,#101216 0%,#090a0d 68%,#0d1013 100%);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.065),0 5px 18px rgba(0,0,0,.23);
+      border:1px solid rgba(196,204,213,.30);
+      border-radius:clamp(14px,1.35vw,22px);
+      background:
+        radial-gradient(ellipse 66% 70% at 50% 54%,rgba(27,34,43,.23) 0%,rgba(9,11,15,.01) 76%),
+        linear-gradient(155deg,#101216 0%,#08090d 65%,#0e1115 100%);
+      box-shadow:inset 0 1px 0 rgba(245,247,255,.075),0 10px 26px rgba(0,0,0,.21);
     }
-    .panelTitle { font-size:clamp(11px,1.16vw,17px); letter-spacing:.15em; gap:7px; }
-    .panelTitle .alpha { color:#f3f4f7; }
-    .panel::after {content:"";position:absolute;z-index:3;top:0;left:22%;right:22%;height:1px;
-      border-radius:999px;opacity:.48;background:var(--lane-color);
-      box-shadow:0 0 11px var(--lane-color);pointer-events:none;}
+    .panel::before {
+      content:""; position:absolute; inset:2px; pointer-events:none; border-radius:inherit;
+      background:radial-gradient(ellipse 30% 56% at 50% 53%,color-mix(in srgb,var(--lane-color) 8%,transparent),transparent 95%);
+      opacity:.68; mix-blend-mode:screen; z-index:0;
+    }
+    .panelHead { top:var(--panelTitleTop); }
+    .panelTitle {
+      font-size:clamp(11px,1.1vw,17px); letter-spacing:.15em; gap:8px;
+      align-items:center; line-height:1.35; padding:0 16px;
+    }
+    .panelTitle::before,.panelTitle::after {
+      content:""; display:block; flex:1 1 auto; max-width:94px; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(196,205,213,.30));
+    }
+    .panelTitle::after { transform:rotate(180deg); }
+    .panelTitle .alpha { color:#f2f3f6; }
+    .panelTitle .name { text-shadow:0 0 15px color-mix(in srgb,var(--lane-color) 24%,transparent); }
+    .panel::after {
+      content:""; position:absolute; z-index:3; top:0; left:29%; right:29%; height:1px;
+      border-radius:999px; opacity:.42; background:var(--lane-color); pointer-events:none;
+      box-shadow:0 0 8px var(--lane-color);
+    }
     .panel[data-bot="EARLY"] { --lane-color:#F0C76A; }
     .panel[data-bot="EARLY"] .panelTitle .name { color:#F0C76A; }
     .panel[data-bot="GENESIS"] { --lane-color:#B987F5; }
@@ -1712,12 +1731,12 @@
         this.onDispatch = overlayDispatchFn;
 
         this.KNOBS = {
-          coreSizeMul: 0.165,
-          ringRadiusMul: 1.36,
+          coreSizeMul: 0.270,   // near-full metallic scanner, rather than a tiny center glow
+          ringRadiusMul: IS_MOBILE ? 1.94 : 2.43, // distinct exterior particle orbit
           coreA: accentRGB,
           coreB: accent2RGB,
           radarFanDeg: 76,
-          radarFanAlpha: 0.15,
+          radarFanAlpha: 0.64,
           dotSpawnPerSec: profile.dotSpawnPerSec,
           maxDots: 3,
           dotSize: 2.6,
@@ -1727,12 +1746,12 @@
 
         this.CFG = {
           sparkSpeed: 0.012,
-          ringThickness: 0.30,
+          ringThickness: 0.25,
           ringBrightness: Math.min(profile.ringBrightness * 1.08, 1.48),
-          sparks: 270,
+          sparks: 155, // fewer, brighter particles to lower frame cost
           bgStars: 55,
           dprMax: DPR_CAP,
-          radarRadiusMul: 0.78,
+          radarRadiusMul: 0.84,
           gridAlpha: 0.105,
           gridRings: 4,
           gridSpokes: 8,
@@ -1753,7 +1772,7 @@
         if (IS_MOBILE) {
           this.KNOBS.maxDots = 2;
           this.KNOBS.dotAlpha = 0.8;
-          this.CFG.sparks = 160;
+          this.CFG.sparks = 88;
           this.CFG.bgStars = 30;
           this.CFG.zapSegs = 20;
           this.CFG.zapJitter = 4;
@@ -1830,6 +1849,7 @@
 
         this.initStars();
         this.initSparks();
+        this.buildMetalBezel();
       }
 
       project3D(x, y, z, cx, cy) {
@@ -1996,7 +2016,7 @@
         const g = ctx.createRadialGradient(cx, cy, rIn, cx, cy, rOut);
         g.addColorStop(0.00, rgba(this.KNOBS.coreA, 0.00));
         g.addColorStop(0.22, rgba(this.KNOBS.coreA, this.KNOBS.radarFanAlpha * alphaMul));
-        g.addColorStop(0.92, rgba(this.KNOBS.coreB, this.KNOBS.radarFanAlpha * 0.38 * alphaMul));
+        g.addColorStop(0.92, rgba(this.KNOBS.coreB, this.KNOBS.radarFanAlpha * 0.60 * alphaMul));
         g.addColorStop(1.00, "rgba(0,0,0,0)");
 
         ctx.save();
@@ -2013,6 +2033,15 @@
         ctx.arc(cx, cy, rIn, a1, a0, true);
         ctx.closePath();
         ctx.fill();
+        // Leading edge stays crisp while the underlying scanner rotates.
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a1) * radarR * .95, cy + Math.sin(a1) * radarR * .95);
+        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = rgba(this.KNOBS.coreB, .72 * alphaMul);
+        ctx.shadowColor = rgba(this.KNOBS.coreA, .7);
+        ctx.shadowBlur = 8;
+        ctx.stroke();
 
         ctx.restore();
       }
@@ -2537,7 +2566,7 @@
 
         for (const d of list) {
           const glow = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.size * 4.6);
-          glow.addColorStop(0.0, rgba(this.KNOBS.coreB, d.a * 0.58));
+          glow.addColorStop(0.0, rgba(this.KNOBS.coreB, d.a * 0.78));
           glow.addColorStop(0.7, rgba(this.KNOBS.coreB, d.a * 0.16));
           glow.addColorStop(1.0, "rgba(0,0,0,0)");
           ctx.fillStyle = glow;
@@ -2546,7 +2575,7 @@
           ctx.fill();
 
           ctx.globalCompositeOperation = "screen";
-          ctx.fillStyle = `rgba(255,252,244,${clamp(d.a * 1.10, 0, 1)})`;
+          ctx.fillStyle = `rgba(255,252,247,${clamp(d.a * 1.28, 0, 1)})`;
           ctx.beginPath();
           ctx.arc(d.x, d.y, Math.max(1.1, d.size * 0.58), 0, Math.PI * 2);
           ctx.fill();
@@ -2557,13 +2586,137 @@
         ctx.restore();
       }
 
+      // Build the reflective metal ring ONCE per resize, not every animation frame.
+      // The center stays transparent so the existing radar sweep remains live.
+      buildMetalBezel() {
+        const radius = Math.min(this.W, this.H) * 0.308;
+        const pad = Math.max(12, radius * 0.22);
+        const side = Math.ceil((radius + pad) * 2);
+        const dpr = Math.min(this.DPR, 1.8);
+        const plate = document.createElement("canvas");
+        plate.width = Math.ceil(side * dpr);
+        plate.height = Math.ceil(side * dpr);
+        const g = plate.getContext("2d");
+        if (!g) { this.metalBezel = null; return; }
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        g.translate(side / 2, side / 2);
+        const ring = (r, w, paint) => {
+          g.beginPath();
+          g.arc(0, 0, r, 0, Math.PI * 2);
+          g.lineWidth = w;
+          g.strokeStyle = paint;
+          g.stroke();
+        };
+
+        // Deep inner and outer shadows establish actual thickness.
+        g.shadowBlur = 15;
+        g.shadowColor = "rgba(0,0,0,.86)";
+        ring(radius - 0.5, radius * .16, "#11151c");
+        g.shadowBlur = 0;
+
+        const chrome = g.createLinearGradient(-radius, -radius, radius, radius);
+        chrome.addColorStop(0, "#f3f5f5");
+        chrome.addColorStop(.13, "#87939d");
+        chrome.addColorStop(.28, "#151a21");
+        chrome.addColorStop(.42, "#c9d1d6");
+        chrome.addColorStop(.59, "#202a34");
+        chrome.addColorStop(.76, "#e4e8eb");
+        chrome.addColorStop(.90, "#343d45");
+        chrome.addColorStop(1, "#bec8cf");
+        ring(radius * .946, radius * .137, chrome);
+        ring(radius * 1.020, 1.3, "rgba(226,236,239,.58)");
+        ring(radius * .866, 1.8, "rgba(5,8,12,.95)");
+        ring(radius * .843, 1.0, "rgba(211,221,229,.45)");
+        ring(radius * .788, 4.0, "rgba(3,8,13,.94)");
+        ring(radius * .763, 1.3, "rgba(190,203,215,.29)");
+
+        // Brushed steel microstripes and individual instrument ticks.
+        for (let i = 0; i < 84; i++) {
+          const a = (i / 84) * Math.PI * 2;
+          const major = i % 7 === 0;
+          const r1 = radius * (major ? .800 : .808);
+          const r2 = radius * (major ? .831 : .818);
+          g.beginPath();
+          g.moveTo(Math.cos(a) * r1, Math.sin(a) * r1);
+          g.lineTo(Math.cos(a) * r2, Math.sin(a) * r2);
+          g.lineWidth = major ? 1.0 : .55;
+          g.strokeStyle = major ? "rgba(233,242,248,.45)" : "rgba(202,221,232,.18)";
+          g.stroke();
+        }
+
+        // Chrome catches light in deliberate arcs; never a full neon outline.
+        g.save();
+        g.shadowColor = "rgba(248,248,255,.33)";
+        g.shadowBlur = 7;
+        g.strokeStyle = "rgba(246,250,255,.86)";
+        g.lineWidth = 2;
+        g.beginPath(); g.arc(0,0,radius * .980,Math.PI*1.10,Math.PI*1.63);g.stroke();
+        g.strokeStyle = "rgba(205,221,234,.48)";
+        g.lineWidth = 1.5;
+        g.beginPath(); g.arc(0,0,radius*.903,-.34,1.12);g.stroke();
+        g.restore();
+
+        // A restrained lane-colored secondary dial embedded inside steel.
+        g.shadowColor = rgba(this.KNOBS.coreA, .58);
+        g.shadowBlur = 9;
+        ring(radius * .738, 1.25, rgba(this.KNOBS.coreA, .65));
+        g.shadowBlur = 0;
+        ring(radius * .728, .75, "rgba(207,220,229,.25)");
+
+        this.metalBezel = plate;
+        this.metalBezelSide = side;
+      }
+
+      drawMetalBezel(cx, cy) {
+        if (!this.metalBezel) return;
+        const half = this.metalBezelSide / 2;
+        this.ctx.drawImage(this.metalBezel, cx - half, cy - half, this.metalBezelSide, this.metalBezelSide);
+      }
+
+      // Dark map/globe relief below the scanner beam; presentation only.
+      drawGlobeRelief(cx, cy, coreR) {
+        const ctx = this.ctx;
+        const radius = coreR * .89;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.lineWidth = .65;
+        ctx.strokeStyle = "rgba(174,202,216,.075)";
+        for (let k = -2; k <= 2; k++) {
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, radius * (1 - Math.abs(k) * .27), radius, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.ellipse(cx,cy + k * radius*.29,radius,Math.max(2,radius*.10 + (2-Math.abs(k))*radius*.10),0,0,Math.PI*2);
+          ctx.stroke();
+        }
+        const shapes = [
+          [[-.75,-.45],[-.50,-.63],[-.31,-.49],[-.36,-.22],[-.13,-.17],[-.37,.05],[-.31,.24],[-.49,.16],[-.54,-.12],[-.74,-.16]],
+          [[-.29,.18],[-.08,.28],[-.02,.59],[-.17,.84],[-.33,.65],[-.40,.40]],
+          [[.12,-.55],[.40,-.65],[.80,-.44],[.71,-.19],[.43,-.09],[.34,.15],[.12,.05],[-.06,-.19]],
+          [[.14,.03],[.36,.24],[.30,.67],[.10,.79],[.04,.47]],
+          [[.58,.60],[.80,.69],[.76,.81],[.53,.76]]
+        ];
+        ctx.fillStyle = "rgba(152,176,188,.09)";
+        ctx.strokeStyle = "rgba(186,204,214,.075)";
+        ctx.lineWidth = .6;
+        for (const points of shapes) {
+          ctx.beginPath();
+          points.forEach(([x,y],i)=>{if(i===0)ctx.moveTo(cx+x*radius,cy+y*radius);else ctx.lineTo(cx+x*radius,cy+y*radius);});
+          ctx.closePath();
+          ctx.fill();ctx.stroke();
+        }
+        ctx.restore();
+      }
+
       drawCoreSphere(cx, cy, coreR, pulse) {
         const ctx = this.ctx;
 
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
         const bloom = ctx.createRadialGradient(cx, cy, coreR * 0.12, cx, cy, coreR * 2.9);
-        bloom.addColorStop(0.0, rgba(this.KNOBS.coreA, 0.20));
+        bloom.addColorStop(0.0, rgba(this.KNOBS.coreA, 0.16));
         bloom.addColorStop(0.35, rgba(this.KNOBS.coreB, 0.10));
         bloom.addColorStop(1.0, "rgba(0,0,0,0)");
         ctx.fillStyle = bloom;
@@ -2574,8 +2727,8 @@
         const lx = cx - coreR * 0.35;
         const ly = cy - coreR * 0.40;
         const base = ctx.createRadialGradient(lx, ly, coreR * 0.15, cx, cy, coreR * 1.25);
-        base.addColorStop(0.0, rgba(this.KNOBS.coreB, 0.42));
-        base.addColorStop(0.40, rgba(this.KNOBS.coreA, 0.30));
+        base.addColorStop(0.0, rgba(this.KNOBS.coreB, 0.19));
+        base.addColorStop(0.40, rgba(this.KNOBS.coreA, 0.12));
         base.addColorStop(0.85, "rgba(0,0,0,0.58)");
         base.addColorStop(1.0, "rgba(0,0,0,0.78)");
         ctx.globalCompositeOperation = "source-over";
@@ -2587,15 +2740,15 @@
         ctx.globalCompositeOperation = "lighter";
         const nucR = coreR * 0.20;
         const nucleus = ctx.createRadialGradient(cx - nucR * 0.25, cy - nucR * 0.25, 0, cx, cy, nucR * 1.25);
-        nucleus.addColorStop(0.0, "rgba(255,255,255,0.75)");
-        nucleus.addColorStop(0.35, rgba(this.KNOBS.coreA, 0.58));
+        nucleus.addColorStop(0.0, "rgba(255,255,255,0.34)");
+        nucleus.addColorStop(0.35, rgba(this.KNOBS.coreA, 0.36));
         nucleus.addColorStop(1.0, "rgba(0,0,0,0)");
         ctx.fillStyle = nucleus;
         ctx.beginPath();
         ctx.arc(cx, cy, nucR * (1.0 + pulse * 0.10), 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = rgba(this.KNOBS.coreA, 0.52);
+        ctx.strokeStyle = rgba(this.KNOBS.coreA, 0.28);
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(cx, cy, coreR * 0.98, 0, Math.PI * 2);
@@ -2655,6 +2808,11 @@
         const baseR = Math.min(this.W, this.H) * 0.19;
 
         this.drawStars();
+        // Physical dial and globe are laid down first: radar and scan effects
+        // remain visible ON TOP, with the cached chrome frame added last.
+        const pulse = (Math.sin(this.frameT * 0.03) + 1) * 0.5;
+        this.drawCoreSphere(cx, cy, coreR, pulse);
+        this.drawGlobeRelief(cx, cy, coreR);
         this.drawRadarGrid(cx, cy, radarR);
 
         this.spawnClock += dt;
@@ -2702,9 +2860,9 @@
           this.capturedOrbs.length = 0;
         }
 
-        const pulse = (Math.sin(this.frameT * 0.03) + 1) * 0.5;
-        this.drawCoreSphere(cx, cy, coreR, pulse);
-
+        // All rotating radar physics are unchanged. The bezel is a visual
+        // overlay only; it never intercepts scan, zap or packet events.
+        this.drawMetalBezel(cx, cy);
         this.drawGlass(cx, cy, Math.min(this.W, this.H) * 0.46);
 
         this.frameT++;
