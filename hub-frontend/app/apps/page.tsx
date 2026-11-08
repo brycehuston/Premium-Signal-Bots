@@ -79,7 +79,7 @@ export default function AppsWelcome() {
             {
               title: "Alpha Vibe", category: "FIND YOUR RHYTHM",
               src: "/apps/showcase/alpha-vibe-frequency-spectrum-gold.png", width: 1075, height: 720,
-              description: "Music and sound-reactive visuals to build the right atmosphere around your work."
+              description: "Original instrumental focus music, steady rhythms and subtle tonal layers, paired with audio-reactive visuals to set your working atmosphere."
             },
             {
               title: "Alpha Notes", category: "CAPTURE EVERYTHING",

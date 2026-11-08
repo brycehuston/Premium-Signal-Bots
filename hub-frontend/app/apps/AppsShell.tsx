@@ -26,6 +26,10 @@ export function AppsShell({ active, children }: { active: "intro" | "software"; 
 export function StackArt() {
   return (
     <div className={styles.stackArt} role="img"
-      aria-label="The Alpha emblem on three dark metallic layers representing Focus, Vibe and Notes" />
+      aria-label="The Alpha emblem on three dark metallic layers representing Focus, Vibe and Notes. The layers pulse once each from top to bottom approximately every ten seconds.">
+      <span aria-hidden="true" className={`${styles.stackPulse} ${styles.stackPulseTop}`} />
+      <span aria-hidden="true" className={`${styles.stackPulse} ${styles.stackPulseMiddle}`} />
+      <span aria-hidden="true" className={`${styles.stackPulse} ${styles.stackPulseBottom}`} />
+    </div>
   );
 }
