@@ -112,11 +112,12 @@
 @media (max-width:650px){
   .subnav{align-items:start;gap:12px;flex-wrap:wrap}
   .subnavLinks{width:100%;gap:20px}
-  .hero{grid-template-columns:1fr;padding:35px 0 27px;gap:10px}
+  .hero{grid-template-columns:1fr;padding:39px 0 44px;row-gap:clamp(32px,9vw,44px)}
   .heroTitle{font-size:clamp(31px,8.5vw,46px);margin:19px 0 13px}
-  .heroVisual{margin:0 auto;width:min(100%,340px)}
-  .visualCaption{margin-top:-7px}
-  .heroActions{margin-top:24px}
+  .heroVisual{margin:0 auto;width:min(100%,310px);gap:10px}
+  .stackArt{max-width:310px}
+  .visualCaption{margin-top:5px}
+  .heroActions{margin-top:27px;gap:12px 14px}
   .valueRow{grid-template-columns:1fr;gap:13px;padding:19px 0}
   .valueRow span{justify-content:start}
   .catalogIntro{align-items:start;flex-direction:column;gap:14px;padding:9px 0 25px}
@@ -455,10 +456,9 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* Alpha Grind energy transfer — one smooth pulse per plate, then silence.
-   All three animations share a 10-second clock (no animation-delay drift):
-   TOP 0.00–0.45s | MIDDLE 0.50–0.95s | BOTTOM 1.00–1.45s.
-   Each stroke only illuminates an existing tile edge; the artwork stays static. */
+/* Alpha Grind: one smooth full-plate illumination pulse at a time.
+   0.00-.70s top, .85-1.55s middle, 1.70-2.40s bottom.
+   The stack then rests through 10.00s. Original artwork remains untouched. */
 .stackArt {
   position: relative;
   isolation: isolate;
@@ -466,51 +466,51 @@
   border-radius: 12px;
   background-color: transparent;
   filter: saturate(.93) brightness(.98);
-  -webkit-mask-image: radial-gradient(ellipse 82% 82% at 50% 50%, #000 70%, transparent 100%);
-  mask-image: radial-gradient(ellipse 82% 82% at 50% 50%, #000 70%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 82% 82% at 50% 50%,#000 70%,transparent 100%);
+  mask-image: radial-gradient(ellipse 82% 82% at 50% 50%,#000 70%,transparent 100%);
 }
 .stackPulseOverlay {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  overflow: visible;
-  mix-blend-mode: screen;
   pointer-events: none;
+  mix-blend-mode: screen;
 }
-.stackPulseTrace {
-  fill: none;
-  stroke: #f5cf85;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px rgba(222, 165, 65, .46));
+.stackPulsePlate {
   opacity: 0;
   will-change: opacity;
   animation-duration: 10s;
   animation-iteration-count: infinite;
-  animation-timing-function: cubic-bezier(.45, 0, .55, 1);
+  animation-timing-function: cubic-bezier(.4,0,.6,1);
+}
+.stackPulseFace { fill: url("#alphaFaceLight"); }
+.stackPulseSide { fill: url("#alphaSideLight"); }
+.stackPulseEdge {
+  fill: none;
+  stroke: #ffe1a0;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 2px rgba(247,189,82,.48));
 }
 .stackPulseTop { animation-name: alphaStackPulseTop; }
 .stackPulseMiddle { animation-name: alphaStackPulseMiddle; }
 .stackPulseBottom { animation-name: alphaStackPulseBottom; }
-/* Exact percentages of ten seconds: .45s duration, .50s onset spacing.
-   No glow spikes, steps, strokes traveling across the tile or overlap. */
 @keyframes alphaStackPulseTop {
   0% { opacity: 0; }
-  2.25% { opacity: .76; }
-  4.5%, 100% { opacity: 0; }
+  3.5% { opacity: .88; }
+  7%,100% { opacity: 0; }
 }
 @keyframes alphaStackPulseMiddle {
-  0%, 5% { opacity: 0; }
-  7.25% { opacity: .76; }
-  9.5%, 100% { opacity: 0; }
+  0%,8.5% { opacity: 0; }
+  12% { opacity: .88; }
+  15.5%,100% { opacity: 0; }
 }
 @keyframes alphaStackPulseBottom {
-  0%, 10% { opacity: 0; }
-  12.25% { opacity: .76; }
-  14.5%, 100% { opacity: 0; }
+  0%,17% { opacity: 0; }
+  20.5% { opacity: .88; }
+  24%,100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stackPulseTrace { animation: none !important; opacity: 0 !important; }
+  .stackPulsePlate { animation: none !important; opacity: 0 !important; }
 }
