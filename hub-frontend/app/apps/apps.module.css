@@ -36,10 +36,7 @@
 .heroMeta{display:flex;align-items:center;gap:9px;color:#8c8d96;font-size:9px;font-weight:650;letter-spacing:.12em;white-space:nowrap}
 .heroMeta i{width:3px;height:3px;border-radius:50%;background:#8d7b58}
 .heroVisual{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:5px}
-.stackArt{width:100%;max-width:365px;aspect-ratio:1/1;background-color:transparent;
-  background-image:url("/apps/alpha-stack.webp");background-size:contain;
-  background-position:center;background-repeat:no-repeat;
-  filter:saturate(.80) brightness(.92)}
+.stackArt{width:100%;max-width:365px;aspect-ratio:1/1;background:transparent}
 .visualCaption{color:#747780;font-size:9px;letter-spacing:.14em;text-align:center}
 .visualCaption span{color:#977941;padding:0 5px}
 .valueRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
@@ -112,11 +109,11 @@
 @media (max-width:650px){
   .subnav{align-items:start;gap:12px;flex-wrap:wrap}
   .subnavLinks{width:100%;gap:20px}
-  .hero{grid-template-columns:1fr;padding:39px 0 44px;row-gap:clamp(32px,9vw,44px)}
+  .hero{grid-template-columns:1fr;padding:39px 0 46px;row-gap:clamp(26px,7vw,36px)}
   .heroTitle{font-size:clamp(31px,8.5vw,46px);margin:19px 0 13px}
-  .heroVisual{margin:0 auto;width:min(100%,310px);gap:10px}
+  .heroVisual{margin:clamp(46px,12vw,66px) auto 0;width:min(100%,310px);gap:12px}
   .stackArt{max-width:310px}
-  .visualCaption{margin-top:5px}
+  .visualCaption{margin-top:6px}
   .heroActions{margin-top:27px;gap:12px 14px}
   .valueRow{grid-template-columns:1fr;gap:13px;padding:19px 0}
   .valueRow span{justify-content:start}
@@ -456,60 +453,57 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* Alpha Grind: one smooth full-plate illumination pulse at a time.
-   0.00-.70s top, .85-1.55s middle, 1.70-2.40s bottom.
-   The stack then rests through 10.00s. Original artwork remains untouched. */
+/* One coherent 10-second cycle: TOP 0-.54s, MIDDLE .58-1.12s,
+   BOTTOM 1.16-1.70s, then a quiet 8.3s. No overlapping or flicker. */
 .stackArt {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-radius: 12px;
-  background-color: transparent;
-  filter: saturate(.93) brightness(.98);
-  -webkit-mask-image: radial-gradient(ellipse 82% 82% at 50% 50%,#000 70%,transparent 100%);
-  mask-image: radial-gradient(ellipse 82% 82% at 50% 50%,#000 70%,transparent 100%);
+  background: transparent;
 }
 .stackPulseOverlay {
+  display: block;
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  mix-blend-mode: screen;
+  overflow: visible;
+  isolation: isolate;
 }
 .stackPulsePlate {
+  mix-blend-mode: screen;
   opacity: 0;
   will-change: opacity;
   animation-duration: 10s;
   animation-iteration-count: infinite;
-  animation-timing-function: cubic-bezier(.4,0,.6,1);
+  animation-timing-function: cubic-bezier(.42,0,.58,1);
 }
-.stackPulseFace { fill: url("#alphaFaceLight"); }
-.stackPulseSide { fill: url("#alphaSideLight"); }
+.stackPulseBright { filter: brightness(2.1) saturate(1.2); }
 .stackPulseEdge {
   fill: none;
-  stroke: #ffe1a0;
-  stroke-width: 1.7;
+  stroke: #ffde9c;
+  stroke-width: 1.2;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 2px rgba(247,189,82,.48));
+  filter: drop-shadow(0 0 2px rgba(244,185,80,.4));
 }
 .stackPulseTop { animation-name: alphaStackPulseTop; }
 .stackPulseMiddle { animation-name: alphaStackPulseMiddle; }
 .stackPulseBottom { animation-name: alphaStackPulseBottom; }
 @keyframes alphaStackPulseTop {
   0% { opacity: 0; }
-  3.5% { opacity: .88; }
-  7%,100% { opacity: 0; }
+  2.7% { opacity: .73; }
+  5.4%, 100% { opacity: 0; }
 }
 @keyframes alphaStackPulseMiddle {
-  0%,8.5% { opacity: 0; }
-  12% { opacity: .88; }
-  15.5%,100% { opacity: 0; }
+  0%,5.8% { opacity: 0; }
+  8.5% { opacity: .73; }
+  11.2%,100% { opacity: 0; }
 }
 @keyframes alphaStackPulseBottom {
-  0%,17% { opacity: 0; }
-  20.5% { opacity: .88; }
-  24%,100% { opacity: 0; }
+  0%,11.6% { opacity: 0; }
+  14.3% { opacity: .73; }
+  17%,100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .stackPulsePlate { animation: none !important; opacity: 0 !important; }
