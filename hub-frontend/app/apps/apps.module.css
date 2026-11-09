@@ -111,9 +111,9 @@
   .subnavLinks{width:100%;gap:20px}
   .hero{grid-template-columns:1fr;padding:39px 0 46px;row-gap:clamp(26px,7vw,36px)}
   .heroTitle{font-size:clamp(31px,8.5vw,46px);margin:19px 0 13px}
-  .heroVisual{margin:clamp(46px,12vw,66px) auto 0;width:min(100%,310px);gap:23px}
+  .heroVisual{margin:clamp(66px,17vw,92px) auto 0;width:min(100%,310px);gap:26px}
   .stackArt{max-width:310px}
-  .visualCaption{margin-top:14px}
+  .visualCaption{margin-top:16px}
   .heroActions{margin-top:27px;gap:12px 14px}
   .valueRow{grid-template-columns:1fr;gap:13px;padding:19px 0}
   .valueRow span{justify-content:start}
