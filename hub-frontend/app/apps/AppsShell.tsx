@@ -22,9 +22,10 @@ export function AppsShell({ active, children }: { active: "intro" | "software"; 
   );
 }
 
-/* Original stack silhouette at rest: fully graphite/silver, including the A.
- * Only the active tile reveals warm gold as its whole surface gently pulses.
- * The image, plate boundaries, and the 10-second sequence remain unchanged. */
+/* Original Alpha Grind image, clipped to the three real metal plate shapes.
+ * Idle: all-black/graphite, no permanent gold anywhere (including the A).
+ * Active: one whole plate, including face and sides, warmly illuminates and fades.
+ * Never generate extra imagery or add perpetual glowing lines. */
 export function StackArt() {
   const top = "M43 103 Q43 94 54 90 L185 30 Q196 25 206 30 L343 91 Q353 95 353 105 L353 118 Q353 127 343 133 L209 193 Q198 200 185 192 L54 132 Q43 127 43 119Z";
   const middle = "M43 184 Q43 177 54 172 L185 116 Q198 109 210 117 L343 173 Q353 178 353 186 L353 206 Q353 216 343 221 L209 273 Q198 280 185 273 L54 220 Q43 215 43 207Z";
@@ -51,6 +52,10 @@ export function StackArt() {
               {plate.occludedBy.map((shape, i) => <path key={i} d={shape} fill="black" />)}
             </mask>
           ))}
+          <linearGradient id="alphaStackGoldCharge" x1=".15" y1="0" x2=".8" y2="1">
+            <stop offset="0" stopColor="#ffe1a0" stopOpacity=".27" />
+            <stop offset="1" stopColor="#c9882a" stopOpacity=".22" />
+          </linearGradient>
         </defs>
         <image href="/apps/alpha-stack.webp" width="365" height="365"
           className={styles.stackBaseMetal} mask="url(#alphaStackSilhouette)" />
@@ -60,6 +65,7 @@ export function StackArt() {
             mask={`url(#alphaStackMask-${plate.id})`}>
             <image href="/apps/alpha-stack.webp" width="365" height="365"
               className={styles.stackPulseBright} />
+            <path d={plate.shape} fill="url(#alphaStackGoldCharge)" />
           </g>
         ))}
       </svg>
