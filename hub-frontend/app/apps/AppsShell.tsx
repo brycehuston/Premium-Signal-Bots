@@ -22,10 +22,9 @@ export function AppsShell({ active, children }: { active: "intro" | "software"; 
   );
 }
 
-/* Original Alpha Grind image, clipped to the three real metal plate shapes.
- * Idle: all-black/graphite, no permanent gold anywhere (including the A).
- * Active: one whole plate, including face and sides, warmly illuminates and fades.
- * Never generate extra imagery or add perpetual glowing lines. */
+/* Preserve the approved 3D artwork. At rest use readable charcoal/metal,
+ * subtle physical gold edge definition, and the original Alpha logo.
+ * Individual masked plate layers warm and fade one at a time; no GIF or JS timer. */
 export function StackArt() {
   const top = "M43 103 Q43 94 54 90 L185 30 Q196 25 206 30 L343 91 Q353 95 353 105 L353 118 Q353 127 343 133 L209 193 Q198 200 185 192 L54 132 Q43 127 43 119Z";
   const middle = "M43 184 Q43 177 54 172 L185 116 Q198 109 210 117 L343 173 Q353 178 353 186 L353 206 Q353 216 343 221 L209 273 Q198 280 185 273 L54 220 Q43 215 43 207Z";
@@ -37,7 +36,7 @@ export function StackArt() {
   ];
   return (
     <div className={styles.stackArt} role="img"
-      aria-label="Three graphite Alpha Grind tiles. One tile at a time glows gold from top to bottom, then rests until the ten-second sequence repeats.">
+      aria-label="Three dark metallic Alpha Grind tiles with a subtle gold edge and a visible gold Alpha emblem. One whole tile glows warm gold at a time from top to bottom, then pauses before repeating.">
       <svg className={styles.stackPulseOverlay} aria-hidden="true" focusable="false"
         viewBox="0 0 365 365" preserveAspectRatio="xMidYMid meet">
         <defs>
@@ -53,12 +52,28 @@ export function StackArt() {
             </mask>
           ))}
           <linearGradient id="alphaStackGoldCharge" x1=".15" y1="0" x2=".8" y2="1">
-            <stop offset="0" stopColor="#ffe1a0" stopOpacity=".27" />
-            <stop offset="1" stopColor="#c9882a" stopOpacity=".22" />
+            <stop offset="0" stopColor="#ffe1a0" stopOpacity=".29" />
+            <stop offset="1" stopColor="#c9882a" stopOpacity=".20" />
           </linearGradient>
+          <radialGradient id="alphaLogoSoftFalloff">
+            <stop offset="0" stopColor="white" />
+            <stop offset=".55" stopColor="white" />
+            <stop offset="1" stopColor="black" />
+          </radialGradient>
+          <mask id="alphaLogoReveal" maskUnits="userSpaceOnUse">
+            <rect width="365" height="365" fill="black" />
+            <ellipse cx="195" cy="92" rx="63" ry="52" fill="url(#alphaLogoSoftFalloff)" />
+          </mask>
         </defs>
         <image href="/apps/alpha-stack.webp" width="365" height="365"
           className={styles.stackBaseMetal} mask="url(#alphaStackSilhouette)" />
+        <image href="/apps/alpha-stack.webp" width="365" height="365"
+          className={styles.stackIdleLogo} mask="url(#alphaLogoReveal)" />
+        <g className={styles.stackIdleRims}>
+          <path d="M44 116 L185 190 Q196 197 209 190 L352 116" />
+          <path d="M44 205 L185 270 Q198 277 209 270 L352 205" />
+          <path d="M43 286 L185 349 Q198 356 211 349 L352 286" />
+        </g>
         {plates.map((plate) => (
           <g key={plate.id}
             className={`${styles.stackPulsePlate} ${plate.className}`}
