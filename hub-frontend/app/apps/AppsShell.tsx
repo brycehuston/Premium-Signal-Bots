@@ -22,10 +22,9 @@ export function AppsShell({ active, children }: { active: "intro" | "software"; 
   );
 }
 
-/* Preserve the original Alpha Grind artwork and golden A emblem.
- * The metallic plates are desaturated to dark graphite, removing the baked
- * gold-trim treatment without changing the image or duplicating its silhouette.
- * A softly overlapping, neutral illumination travels top to bottom. */
+/* Original stack silhouette at rest: fully graphite/silver, including the A.
+ * Only the active tile reveals warm gold as its whole surface gently pulses.
+ * The image, plate boundaries, and the 10-second sequence remain unchanged. */
 export function StackArt() {
   const top = "M43 103 Q43 94 54 90 L185 30 Q196 25 206 30 L343 91 Q353 95 353 105 L353 118 Q353 127 343 133 L209 193 Q198 200 185 192 L54 132 Q43 127 43 119Z";
   const middle = "M43 184 Q43 177 54 172 L185 116 Q198 109 210 117 L343 173 Q353 178 353 186 L353 206 Q353 216 343 221 L209 273 Q198 280 185 273 L54 220 Q43 215 43 207Z";
@@ -37,7 +36,7 @@ export function StackArt() {
   ];
   return (
     <div className={styles.stackArt} role="img"
-      aria-label="Three floating dark metallic Alpha Grind tiles with a gold Alpha emblem. A soft white pulse illuminates each tile from top to bottom every ten seconds.">
+      aria-label="Three graphite Alpha Grind tiles. One tile at a time glows gold from top to bottom, then rests until the ten-second sequence repeats.">
       <svg className={styles.stackPulseOverlay} aria-hidden="true" focusable="false"
         viewBox="0 0 365 365" preserveAspectRatio="xMidYMid meet">
         <defs>
@@ -52,19 +51,9 @@ export function StackArt() {
               {plate.occludedBy.map((shape, i) => <path key={i} d={shape} fill="black" />)}
             </mask>
           ))}
-          <radialGradient id="alphaLogoReveal" cx="50%" cy="50%" r="50%">
-            <stop offset="48%" stopColor="white" />
-            <stop offset="100%" stopColor="black" />
-          </radialGradient>
-          <mask id="alphaLogoOnly" maskUnits="userSpaceOnUse">
-            <rect width="365" height="365" fill="black" />
-            <ellipse cx="195" cy="92" rx="65" ry="56" fill="url(#alphaLogoReveal)" />
-          </mask>
         </defs>
         <image href="/apps/alpha-stack.webp" width="365" height="365"
           className={styles.stackBaseMetal} mask="url(#alphaStackSilhouette)" />
-        <image href="/apps/alpha-stack.webp" width="365" height="365"
-          mask="url(#alphaLogoOnly)" />
         {plates.map((plate) => (
           <g key={plate.id}
             className={`${styles.stackPulsePlate} ${plate.className}`}

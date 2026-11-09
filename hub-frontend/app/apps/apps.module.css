@@ -472,7 +472,7 @@
   overflow:visible;
   isolation:isolate;
 }
-.stackBaseMetal { filter:grayscale(1) brightness(.84) contrast(1.14); }
+.stackBaseMetal { filter: grayscale(1) brightness(.87) contrast(1.16); }
 .stackPulsePlate {
   mix-blend-mode:screen;
   opacity:0;
@@ -481,23 +481,23 @@
   animation-iteration-count:infinite;
   animation-timing-function:cubic-bezier(.42,0,.58,1);
 }
-.stackPulseBright { filter:grayscale(1) brightness(1.65) contrast(1.05); }
+.stackPulseBright { filter: sepia(.9) saturate(2.35) hue-rotate(-10deg) brightness(1.28) contrast(1.07); }
 .stackPulseTop { animation-name:alphaStackPulseTop; }
 .stackPulseMiddle { animation-name:alphaStackPulseMiddle; }
 .stackPulseBottom { animation-name:alphaStackPulseBottom; }
 @keyframes alphaStackPulseTop {
   0% { opacity:0; }
-  3.6% { opacity:.62; }
+  3.6% { opacity:.74; }
   7.2%,100% { opacity:0; }
 }
 @keyframes alphaStackPulseMiddle {
   0%,5.2% { opacity:0; }
-  8.8% { opacity:.62; }
+  8.8% { opacity:.74; }
   12.4%,100% { opacity:0; }
 }
 @keyframes alphaStackPulseBottom {
   0%,10.4% { opacity:0; }
-  14% { opacity:.62; }
+  14% { opacity:.74; }
   17.6%,100% { opacity:0; }
 }
 @media (prefers-reduced-motion:reduce) {
