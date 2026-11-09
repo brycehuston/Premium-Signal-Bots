@@ -473,16 +473,9 @@
   overflow: visible;
   isolation: isolate;
 }
-.stackBaseMetal { filter: grayscale(1) brightness(.65) contrast(1.16); }
-.stackIdleLogo { opacity: .76; filter: brightness(.84) saturate(.76); }
-.stackIdleRims {
-  fill: none;
-  stroke: #bc985b;
-  stroke-opacity: .53;
-  stroke-width: 1.35;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
+.stackBaseMetal { filter: grayscale(1) brightness(.70) contrast(1.12); }
+.stackIdleSourceColor { opacity: .38; filter: brightness(.78) saturate(.70); }
+.stackIdleLogo { opacity: .75; filter: brightness(.95) saturate(1.05); }
 .stackPulsePlate {
   mix-blend-mode: screen;
   opacity: 0;
