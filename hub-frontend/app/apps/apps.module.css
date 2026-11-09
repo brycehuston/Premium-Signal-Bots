@@ -35,7 +35,7 @@
 .primaryAction:hover{background:linear-gradient(155deg,#f5ddab,#e7bc67);transform:translateY(-1px)}
 .heroMeta{display:flex;align-items:center;gap:9px;color:#8c8d96;font-size:9px;font-weight:650;letter-spacing:.12em;white-space:nowrap}
 .heroMeta i{width:3px;height:3px;border-radius:50%;background:#8d7b58}
-.heroVisual{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.heroVisual{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:18px}
 .stackArt{width:100%;max-width:365px;aspect-ratio:1/1;background:transparent}
 .visualCaption{color:#747780;font-size:9px;letter-spacing:.14em;text-align:center}
 .visualCaption span{color:#977941;padding:0 5px}
@@ -111,9 +111,9 @@
   .subnavLinks{width:100%;gap:20px}
   .hero{grid-template-columns:1fr;padding:39px 0 46px;row-gap:clamp(26px,7vw,36px)}
   .heroTitle{font-size:clamp(31px,8.5vw,46px);margin:19px 0 13px}
-  .heroVisual{margin:clamp(46px,12vw,66px) auto 0;width:min(100%,310px);gap:12px}
+  .heroVisual{margin:clamp(46px,12vw,66px) auto 0;width:min(100%,310px);gap:23px}
   .stackArt{max-width:310px}
-  .visualCaption{margin-top:6px}
+  .visualCaption{margin-top:14px}
   .heroActions{margin-top:27px;gap:12px 14px}
   .valueRow{grid-template-columns:1fr;gap:13px;padding:19px 0}
   .valueRow span{justify-content:start}
@@ -453,8 +453,9 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* One coherent 10-second cycle: TOP 0-.54s, MIDDLE .58-1.12s,
-   BOTTOM 1.16-1.70s, then a quiet 8.3s. No overlapping or flicker. */
+/* One ten-second sequence: pulses begin at 0.00, 0.52 and 1.04 seconds.
+   Each lasts .72 seconds, with a soft .20-second crossfade into the next.
+   All return to rest at 1.76s; no extra gold outlines or trim. */
 .stackArt {
   position: relative;
   isolation: isolate;
@@ -462,49 +463,43 @@
   background: transparent;
 }
 .stackPulseOverlay {
-  display: block;
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: visible;
-  isolation: isolate;
+  display:block;
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  overflow:visible;
+  isolation:isolate;
 }
+.stackBaseMetal { filter:grayscale(1) brightness(.84) contrast(1.14); }
 .stackPulsePlate {
-  mix-blend-mode: screen;
-  opacity: 0;
-  will-change: opacity;
-  animation-duration: 10s;
-  animation-iteration-count: infinite;
-  animation-timing-function: cubic-bezier(.42,0,.58,1);
+  mix-blend-mode:screen;
+  opacity:0;
+  will-change:opacity;
+  animation-duration:10s;
+  animation-iteration-count:infinite;
+  animation-timing-function:cubic-bezier(.42,0,.58,1);
 }
-.stackPulseBright { filter: brightness(2.1) saturate(1.2); }
-.stackPulseEdge {
-  fill: none;
-  stroke: #ffde9c;
-  stroke-width: 1.2;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 2px rgba(244,185,80,.4));
-}
-.stackPulseTop { animation-name: alphaStackPulseTop; }
-.stackPulseMiddle { animation-name: alphaStackPulseMiddle; }
-.stackPulseBottom { animation-name: alphaStackPulseBottom; }
+.stackPulseBright { filter:grayscale(1) brightness(1.65) contrast(1.05); }
+.stackPulseTop { animation-name:alphaStackPulseTop; }
+.stackPulseMiddle { animation-name:alphaStackPulseMiddle; }
+.stackPulseBottom { animation-name:alphaStackPulseBottom; }
 @keyframes alphaStackPulseTop {
-  0% { opacity: 0; }
-  2.7% { opacity: .73; }
-  5.4%, 100% { opacity: 0; }
+  0% { opacity:0; }
+  3.6% { opacity:.62; }
+  7.2%,100% { opacity:0; }
 }
 @keyframes alphaStackPulseMiddle {
-  0%,5.8% { opacity: 0; }
-  8.5% { opacity: .73; }
-  11.2%,100% { opacity: 0; }
+  0%,5.2% { opacity:0; }
+  8.8% { opacity:.62; }
+  12.4%,100% { opacity:0; }
 }
 @keyframes alphaStackPulseBottom {
-  0%,11.6% { opacity: 0; }
-  14.3% { opacity: .73; }
-  17%,100% { opacity: 0; }
+  0%,10.4% { opacity:0; }
+  14% { opacity:.62; }
+  17.6%,100% { opacity:0; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .stackPulsePlate { animation: none !important; opacity: 0 !important; }
+@media (prefers-reduced-motion:reduce) {
+  .stackPulsePlate { animation:none!important;opacity:0!important; }
 }
