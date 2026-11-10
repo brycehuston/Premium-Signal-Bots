@@ -16,6 +16,8 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import os
+from signed_delivery_receipts import load_signed_receipts
 import json
 import re
 from collections import Counter, defaultdict
@@ -157,17 +159,9 @@ def audit(canonical, features, receipts, approved_chat, outcomes=()):
                 or not 8<=len(event)<=180 or len(value(a,"mint"))>128):
             counts["invalid_identity_or_lane"] += 1
             continue
+        # Incomplete or DONE outcomes do not validate price paths.
         observed_peak = None
         outcome_status = "UNAVAILABLE"
-        matches = outcome_by_id.get(event,[])
-        if len(matches)==1 and value(matches[0],"mint")==value(a,"mint"):
-            status = value(matches[0],"status").upper()
-            if status=="DONE":
-                # Outcome engine is observational, NOT a trading ledger. Never call it PNL.
-                observed_peak=positive_float(value(matches[0],"max_multiple"))
-                outcome_status="OBSERVED_PEAK" if observed_peak is not None else "UNAVAILABLE"
-            elif status in {"PENDING", "EXPIRED_PARTIAL_DATA"}:
-                outcome_status=status
         source_hash=hashlib.sha256(json.dumps({"a":a,"f":f,"r":r},sort_keys=True,separators=(",",":")).encode()).hexdigest()
         validated.append({
             "event_id":event,"event_at":utc(value(a,"timestamp_utc")),"symbol":symbol,
@@ -189,14 +183,16 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--canonical",required=True)
     p.add_argument("--features",required=True)
-    p.add_argument("--receipts",required=True,help="Reviewed event-id linked direct Telegram API success receipts")
+    p.add_argument("--signed-receipts",required=True,help="Signed post-send Ed25519 envelope")
+    p.add_argument("--receipt-public-key-hex",required=True)
+    p.add_argument("--approved-producer-sha256",required=True)
     p.add_argument("--approved-chat-id",required=True,help="Exact approved PUBLIC Telegram channel; never stored")
     p.add_argument("--outcomes")
     p.add_argument("--output",help="Local staging JSON file. No live upload performed")
     args=p.parse_args()
     canonical=csv_rows(args.canonical,REQUIRED)
     features=csv_rows(args.features,REQUIRED)
-    receipts=csv_rows(args.receipts,WITNESS_REQUIRED)
+    receipts=load_signed_receipts(args.signed_receipts,args.receipt_public_key_hex,args.approved_producer_sha256)
     outcomes=csv_rows(args.outcomes,{"alert_id","mint","status"}) if args.outcomes else []
     rows,counts=audit(canonical,features,receipts,args.approved_chat_id,outcomes)
     print(json.dumps({"mode":"READ_ONLY_STAGING","counts":counts,"eligible_for_import":bool(rows)},sort_keys=True,indent=2))
@@ -207,10 +203,10 @@ def main():
         if dst.exists() or dst.is_symlink():
             raise SystemExit("Refusing to overwrite an existing audit artifact")
         # Respect umask; avoid publishing mint/receipt hashes into repo or web assets.
-        with dst.open("x",encoding="utf-8") as f:
+        fd=os.open(dst,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+        with os.fdopen(fd,"w",encoding="utf-8") as f:
             json.dump({"schema_version":1,"records":rows,"counts":counts},f,sort_keys=True,indent=2)
             f.write("\n")
-        dst.chmod(0o600)
 
 
 if __name__=="__main__":

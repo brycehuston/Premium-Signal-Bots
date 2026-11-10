@@ -11,7 +11,7 @@ O={"alert_id":"event_001","mint":"mint123","status":"DONE","max_multiple":"3.4"}
 
 class HistorySafetyTests(unittest.TestCase):
  def test_joined_direct_receipt(self):
-  rows,c=audit([A],[F],[R],CHAT,[O]);self.assertEqual(len(rows),1);self.assertEqual(rows[0]["lane"],"RECLAIM");self.assertEqual(rows[0]["observed_max_multiple"],3.4)
+  rows,c=audit([A],[F],[R],CHAT,[O]);self.assertEqual(len(rows),1);self.assertEqual(rows[0]["lane"],"RECLAIM");self.assertIsNone(rows[0]["observed_max_multiple"])
  def test_no_receipt_no_history(self):
   rows,_=audit([A],[F],[],CHAT);self.assertEqual(rows,[])
  def test_candidate_is_not_receipt(self):
