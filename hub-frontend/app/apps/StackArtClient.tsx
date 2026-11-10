@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./apps.module.css";
 
-/** Source-isolated plates: never animate three copies of the complete stack. */
+/** Three complete plates reconstructed from an intact metallic surface, maintaining the approved Alpha logo on the top tile only. */
 const plates = [
   { name: "bottom", source: "/apps/alpha-stack-tile-bottom.webp", drop: styles.stackAssemblyBottom, pulse: styles.stackPulseBottom },
   { name: "middle", source: "/apps/alpha-stack-tile-middle.webp", drop: styles.stackAssemblyMiddle, pulse: styles.stackPulseMiddle },
@@ -42,7 +42,7 @@ export function StackArtClient() {
     >
       <svg
         className={styles.stackPulseOverlay}
-        viewBox="0 0 335 370"
+        viewBox="39 26 280 299"
         preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
         focusable="false"
@@ -73,7 +73,7 @@ export function StackArtClient() {
         </defs>
         <ellipse
           className={styles.stackGroundShadow}
-          cx="169" cy="323" rx="112" ry="25"
+          cx="169" cy="310" rx="100" ry="19"
           fill="url(#alphaGrindFloorGlow)"
         />
         {plates.map((plate) => (
