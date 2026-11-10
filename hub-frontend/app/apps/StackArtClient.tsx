@@ -18,18 +18,56 @@ export function StackArtClient() {
   useEffect(() => {
     const node = root.current;
     if (!node) return;
-    if (typeof IntersectionObserver === "undefined") {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setEntered(true);
       return;
     }
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
+
+    // The entrance starts only after both the page has finished loading and
+    // the hero has remained in view for 4.2 seconds. Hidden tabs never consume
+    // the delay; unmount or scroll-away cancels the pending entrance.
+    let active = true;
+    let inView = typeof IntersectionObserver === "undefined";
+    let loaded = document.readyState === "complete";
+    let timer: number | undefined;
+    let observer: IntersectionObserver | null = null;
+    const schedule = () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+      timer = undefined;
+      if (!active || !loaded || !inView || document.visibilityState !== "visible") return;
+      timer = window.setTimeout(() => {
+        timer = undefined;
+        if (!active || !inView || document.visibilityState !== "visible") return;
         setEntered(true);
-        observer.disconnect();
-      }
-    }, { threshold: 0.12 });
-    observer.observe(node);
-    return () => observer.disconnect();
+        observer?.disconnect();
+        document.removeEventListener("visibilitychange", schedule);
+        window.removeEventListener("load", markLoaded);
+      }, 4200);
+    };
+    const markLoaded = () => {
+      loaded = true;
+      schedule();
+    };
+    if (!loaded) window.addEventListener("load", markLoaded);
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver((entries) => {
+        const visible = entries.some((entry) => entry.isIntersecting);
+        if (inView !== visible) {
+          inView = visible;
+          schedule();
+        }
+      }, { threshold: 0.12 });
+      observer.observe(node);
+    }
+    document.addEventListener("visibilitychange", schedule);
+    schedule();
+    return () => {
+      active = false;
+      if (timer !== undefined) window.clearTimeout(timer);
+      observer?.disconnect();
+      document.removeEventListener("visibilitychange", schedule);
+      window.removeEventListener("load", markLoaded);
+    };
   }, []);
 
   return (
@@ -42,7 +80,7 @@ export function StackArtClient() {
     >
       <svg
         className={styles.stackPulseOverlay}
-        viewBox="39 26 280 299"
+        viewBox="31 18 292 314"
         preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
         focusable="false"
