@@ -453,77 +453,50 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* Alpha Grind stack: visible graphite and brushed-gold edge at rest.
-   Pulses start at 0, .43 and .86 seconds; each eases in/out over .83 s.
-   Gentle overlapping tails create a controlled top-to-bottom energy flow.
-   End at 1.69s, then remain still until the 10s cycle repeats. */
+/* LOCKED: approved rotated-logo artwork. No hand-drawn borders or emblems.
+   One cinematic gold bloom per tile; 10 s loop, 7.35 s fully still. */
 .stackArt {
   position: relative;
-  isolation: isolate;
+  width: 100%;
+  max-width: 350px;
+  aspect-ratio: 365 / 363;
   overflow: hidden;
+  isolation: isolate;
   background: transparent;
 }
 .stackPulseOverlay {
   display: block;
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  overflow: visible;
-  isolation: isolate;
 }
-.stackBaseMetal { filter: grayscale(1) brightness(.70) contrast(1.12); }
-.stackIdleSourceColor { opacity: .38; filter: brightness(.78) saturate(.70); }
-.stackIdleLogo { opacity: .75; filter: brightness(.95) saturate(1.05); }
 .stackPulsePlate {
-  mix-blend-mode: screen;
   opacity: 0;
   will-change: opacity;
   animation-duration: 10s;
+  animation-timing-function: cubic-bezier(.42, 0, .58, 1);
   animation-iteration-count: infinite;
-  animation-timing-function: linear;
 }
 .stackPulseBright {
-  filter: sepia(1) saturate(2) hue-rotate(-7deg) brightness(1.4) contrast(1.09);
+  filter: sepia(.65) saturate(2.4) brightness(1.8) contrast(1.08);
 }
 .stackPulseTop { animation-name: alphaStackPulseTop; }
 .stackPulseMiddle { animation-name: alphaStackPulseMiddle; }
 .stackPulseBottom { animation-name: alphaStackPulseBottom; }
-/* Sampled soft sine-in/sine-out curve, with one peak per plate.
-   No abrupt keyframe interpolation or flashing. */
 @keyframes alphaStackPulseTop {
   0% { opacity: 0; }
-  1.04% { opacity: .08; }
-  2.08% { opacity: .31; }
-  3.11% { opacity: .60; }
-  4.15% { opacity: .78; }
-  5.19% { opacity: .60; }
-  6.23% { opacity: .31; }
-  7.26% { opacity: .08; }
-  8.3%, 100% { opacity: 0; }
+  5.75% { opacity: .88; }
+  11.5%, 100% { opacity: 0; }
 }
 @keyframes alphaStackPulseMiddle {
-  0%, 4.3% { opacity: 0; }
-  5.34% { opacity: .08; }
-  6.38% { opacity: .31; }
-  7.41% { opacity: .60; }
-  8.45% { opacity: .78; }
-  9.49% { opacity: .60; }
-  10.53% { opacity: .31; }
-  11.56% { opacity: .08; }
-  12.6%, 100% { opacity: 0; }
+  0%, 7.5% { opacity: 0; }
+  13.25% { opacity: .88; }
+  19%, 100% { opacity: 0; }
 }
 @keyframes alphaStackPulseBottom {
-  0%, 8.6% { opacity: 0; }
-  9.64% { opacity: .08; }
-  10.68% { opacity: .31; }
-  11.71% { opacity: .60; }
-  12.75% { opacity: .78; }
-  13.79% { opacity: .60; }
-  14.83% { opacity: .31; }
-  15.86% { opacity: .08; }
-  16.9%, 100% { opacity: 0; }
+  0%, 15% { opacity: 0; }
+  20.75% { opacity: .88; }
+  26.5%, 100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .stackPulsePlate { animation: none !important; opacity: 0 !important; }

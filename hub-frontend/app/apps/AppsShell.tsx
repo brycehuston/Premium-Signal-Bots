@@ -22,60 +22,46 @@ export function AppsShell({ active, children }: { active: "intro" | "software"; 
   );
 }
 
-/* Exact original image pixels provide the metal rims and Alpha logo.
- * Remove approximated SVG outlines and fuzzy oval logo masking.
- * The three whole-tile pulse masks and mobile layout are retained. */
+/* Approved Alpha Grind stack, cropped from the user-selected mockup.
+ * Exactly the original rotated Alpha emblem; no reconstructed logo or fake rims.
+ * Render the source image at rest and animate illuminated copies behind per-plate
+ * clipping masks. Masks have NO stroke and never change the object silhouette. */
 export function StackArt() {
-  const top = "M43 103 Q43 94 54 90 L185 30 Q196 25 206 30 L343 91 Q353 95 353 105 L353 118 Q353 127 343 133 L209 193 Q198 200 185 192 L54 132 Q43 127 43 119Z";
-  const middle = "M43 184 Q43 177 54 172 L185 116 Q198 109 210 117 L343 173 Q353 178 353 186 L353 206 Q353 216 343 221 L209 273 Q198 280 185 273 L54 220 Q43 215 43 207Z";
-  const bottom = "M43 263 Q43 254 54 251 L185 190 Q197 186 211 190 L343 251 Q353 255 353 264 L353 290 Q353 298 343 303 L210 350 Q198 357 185 351 L54 306 Q43 300 43 291Z";
+  const top = "M76 103 Q76 94 91 88 L185 57 Q199 50 211 56 L318 95 Q334 103 333 114 L333 133 Q329 141 316 147 L211 178 Q198 182 186 176 L91 148 Q76 143 76 133 Z";
+  const middle = "M77 172 Q78 164 92 157 L187 122 Q199 119 211 123 L319 161 Q333 167 333 180 L333 201 Q332 211 316 216 L211 246 Q199 250 186 245 L90 216 Q77 211 77 198 Z";
+  const bottom = "M77 240 Q78 233 93 227 L188 192 Q200 188 213 193 L318 230 Q332 236 332 248 L333 269 Q331 278 315 284 L210 311 Q197 317 185 311 L89 284 Q77 279 77 265 Z";
   const plates = [
-    { id: "top", shape: top, className: styles.stackPulseTop, occludedBy: [] },
-    { id: "middle", shape: middle, className: styles.stackPulseMiddle, occludedBy: [top] },
-    { id: "bottom", shape: bottom, className: styles.stackPulseBottom, occludedBy: [top, middle] },
+    { id: "top", outline: top, className: styles.stackPulseTop, front: [] },
+    { id: "middle", outline: middle, className: styles.stackPulseMiddle, front: [top] },
+    { id: "bottom", outline: bottom, className: styles.stackPulseBottom, front: [top, middle] },
   ];
+  const src = "/apps/alpha-grind-approved-stack.webp";
   return (
     <div className={styles.stackArt} role="img"
-      aria-label="Three dark metallic Alpha Grind tiles with a subtle gold edge and a visible gold Alpha emblem. One whole tile glows warm gold at a time from top to bottom, then pauses before repeating.">
-      <svg className={styles.stackPulseOverlay} aria-hidden="true" focusable="false"
-        viewBox="0 0 365 365" preserveAspectRatio="xMidYMid meet">
+      aria-label="Three aligned metallic Alpha Grind tiles with the approved rotated gold Alpha logo. Each plate gently illuminates top to bottom, then pauses before repeating.">
+      <svg className={styles.stackPulseOverlay} viewBox="0 0 365 363"
+        preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
         <defs>
-          <mask id="alphaStackSilhouette" maskUnits="userSpaceOnUse">
-            <rect width="365" height="365" fill="black" />
-            {plates.map((plate) => <path key={plate.id} d={plate.shape} fill="white" />)}
-          </mask>
-          {plates.map((plate) => (
-            <mask key={plate.id} id={`alphaStackMask-${plate.id}`} maskUnits="userSpaceOnUse">
-              <rect width="365" height="365" fill="black" />
-              <path d={plate.shape} fill="white" />
-              {plate.occludedBy.map((shape, i) => <path key={i} d={shape} fill="black" />)}
+          {plates.map(plate => (
+            <mask id={"alphaTilePulse-" + plate.id} key={plate.id}
+              maskUnits="userSpaceOnUse" x="0" y="0" width="365" height="363">
+              <rect width="365" height="363" fill="#000" />
+              <path d={plate.outline} fill="#fff" />
+              {plate.front.map((outline, i) => <path d={outline} fill="#000" key={i} />)}
             </mask>
           ))}
-          <linearGradient id="alphaStackGoldCharge" x1=".15" y1="0" x2=".8" y2="1">
-            <stop offset="0" stopColor="#ffe1a0" stopOpacity=".29" />
-            <stop offset="1" stopColor="#c9882a" stopOpacity=".20" />
-          </linearGradient>
-          {/* Loose crop around the emblem; the logo itself is never redrawn.
-              Its exact original pixels and shading come from the source image. */}
-          <clipPath id="alphaOriginalEmblemCrop">
-            <path d="M142 129 L195 42 L254 130 Z" />
-          </clipPath>
+          <radialGradient id="alphaTileWarmth">
+            <stop offset="0" stopColor="#ffe9ae" stopOpacity=".38" />
+            <stop offset=".8" stopColor="#e9aa45" stopOpacity=".16" />
+            <stop offset="1" stopColor="#a76b24" stopOpacity=".04" />
+          </radialGradient>
         </defs>
-        <image href="/apps/alpha-stack.webp" width="365" height="365"
-          className={styles.stackBaseMetal} mask="url(#alphaStackSilhouette)" />
-        {/* Matching source pixels supply the exact borders, light catches,
-            and emblem instead of freehand gold paths offset from the object. */}
-        <image href="/apps/alpha-stack.webp" width="365" height="365"
-          className={styles.stackIdleSourceColor} mask="url(#alphaStackSilhouette)" />
-        <image href="/apps/alpha-stack.webp" width="365" height="365"
-          className={styles.stackIdleLogo} clipPath="url(#alphaOriginalEmblemCrop)" />
-        {plates.map((plate) => (
-          <g key={plate.id}
-            className={`${styles.stackPulsePlate} ${plate.className}`}
-            mask={`url(#alphaStackMask-${plate.id})`}>
-            <image href="/apps/alpha-stack.webp" width="365" height="365"
-              className={styles.stackPulseBright} />
-            <path d={plate.shape} fill="url(#alphaStackGoldCharge)" />
+        <image href={src} width="365" height="363" />
+        {plates.map(plate => (
+          <g key={plate.id} className={styles.stackPulsePlate + " " + plate.className}
+            mask={"url(#alphaTilePulse-" + plate.id + ")"}>
+            <image href={src} width="365" height="363" className={styles.stackPulseBright} />
+            <path d={plate.outline} fill="url(#alphaTileWarmth)" />
           </g>
         ))}
       </svg>
