@@ -16,7 +16,8 @@
 2. `sql/STAGED_alpha_history_schema.sql`: two private-by-grants tables in `public`, RLS enabled, no anon/authenticated access; service role accesses only via a server-side authenticated API. **Do not apply to prod without owner authorization and security review.**
 3. `app/api/history/route.ts`: authenticates the caller's Supabase access token, checks backend `/me` active plan/role, then queries only eligible server-side records with server-only credentials. No browser-to-service-key exposure. 5,000-event response guard; marks partial counts when truncated.
 4. `app/dashboard/history/page.tsx`: dedicated signed-in history view with real date, lane distribution, call-time market caps, 24h/7d/30d/all; no importer or sample figures. Explicit distinction between observed peak and realized P&L. Shows "not yet available" until provenance and storage gates pass.
-5. 17 synthetic + static safety tests. No fabricated live test results.
+5. `scripts/import_validated_history.py`: bounded, idempotent REST upsert tool with dry-run default, exact destination check, reviewed provenance and explicit owner release flag. Never automatically writes the production database.
+6. 25 synthetic + static safety tests. No fabricated live test results.
 
 ## Required proof before real backfill
 

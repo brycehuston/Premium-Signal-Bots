@@ -4,10 +4,10 @@ from build_validated_history import audit, confirmed_receipt
 
 CHAT = '-100123'
 T='2026-11-07T04:00:00Z'
-A={"event_id":"ev_001", "mint":"mint123", "alert_lane":"R8_RECLAIM", "timestamp_utc":T, "symbol":"RECL", "mc":"56000","liq":"22000","m5_tx":"103"}
+A={"event_id":"event_001", "mint":"mint123", "alert_lane":"R8_RECLAIM", "timestamp_utc":T, "symbol":"RECL", "mc":"56000","liq":"22000","m5_tx":"103"}
 F={**A}
 R={**A,"delivery_status":"DELIVERED","evidence_source":"telegram_api_response","channel_class":"PUBLIC","approved_for_history":"true","telegram_message_id":"42","telegram_chat_id":CHAT}
-O={"alert_id":"ev_001","mint":"mint123","status":"DONE","max_multiple":"3.4"}
+O={"alert_id":"event_001","mint":"mint123","status":"DONE","max_multiple":"3.4"}
 
 class HistorySafetyTests(unittest.TestCase):
  def test_joined_direct_receipt(self):

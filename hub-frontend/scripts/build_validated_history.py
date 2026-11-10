@@ -154,7 +154,7 @@ def audit(canonical, features, receipts, approved_chat, outcomes=()):
         symbol = value(a,"symbol")
         current_lane = lane(a.get("alert_lane"))
         if (current_lane not in LANES or not re.fullmatch(r"[A-Za-z0-9._-]{1,28}",symbol)
-                or len(event)>180 or len(value(a,"mint"))>128):
+                or not 8<=len(event)<=180 or len(value(a,"mint"))>128):
             counts["invalid_identity_or_lane"] += 1
             continue
         observed_peak = None
