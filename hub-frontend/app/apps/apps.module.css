@@ -111,7 +111,7 @@
   .subnavLinks{width:100%;gap:20px}
   .hero{grid-template-columns:1fr;padding:39px 0 42px;row-gap:clamp(24px,6vw,34px)}
   .heroTitle{font-size:clamp(31px,8.5vw,46px);margin:19px 0 13px}
-  .heroVisual{margin:clamp(16px,4vw,28px) auto 0;width:min(100%,335px);gap:7px}
+  .heroVisual{margin:clamp(44px,10vw,60px) auto 0;width:min(100%,335px);gap:7px}
   .stackArt{max-width:335px}
   .visualCaption{margin-top:0}
   .heroActions{margin-top:27px;gap:12px 14px}
@@ -453,58 +453,78 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* Full-size original-stack artwork with transparent padded edges.
-   Native per-plate masks preserve the approved 1.45s gold pulse and 10s loop.
-   No position hacks, scaling distortion, or artificially traced borders. */
+/* Independently isolated plate artwork, no duplicated complete-stack layers. */
 .stackArt {
   position: relative;
   width: 100%;
-  max-width: 405px;
+  max-width: 395px;
   aspect-ratio: 335 / 370;
-  overflow: visible;
   isolation: isolate;
+  overflow: visible;
   background: transparent;
 }
-.stackPulseOverlay {
-  display: block;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: visible;
-}
-.stackPulsePlate {
+.stackPulseOverlay { display: block; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.stackFallbackImage { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.stackBaseTile { filter: saturate(.60) brightness(.81) contrast(1.08); }
+.stackAssemblyLayer {
   opacity: 0;
-  mix-blend-mode: screen;
-  will-change: opacity;
+  transform: translate3d(0,-105px,0);
+  will-change: transform, opacity;
+}
+.stackArt[data-entered="true"] .stackAssemblyBottom {
+  animation: alphaGrindTileDrop .88s cubic-bezier(.20,.72,.26,1) 0s both;
+}
+.stackArt[data-entered="true"] .stackAssemblyMiddle {
+  animation: alphaGrindTileDrop .88s cubic-bezier(.20,.72,.26,1) .43s both;
+}
+.stackArt[data-entered="true"] .stackAssemblyTop {
+  animation: alphaGrindTileDrop .88s cubic-bezier(.20,.72,.26,1) .86s both;
+}
+@keyframes alphaGrindTileDrop {
+  0% { opacity: 0; transform: translate3d(0,-105px,0); }
+  14% { opacity: 1; }
+  76% { opacity: 1; transform: translate3d(0,2.5px,0); }
+  100% { opacity: 1; transform: translate3d(0,0,0); }
+}
+.stackGroundShadow { opacity: 0; }
+.stackArt[data-entered="true"] .stackGroundShadow {
+  animation: alphaGrindShadowSettle .55s ease-out 1.32s both;
+}
+@keyframes alphaGrindShadowSettle { from { opacity: 0; } to { opacity: .65; } }
+.stackPulsePlate { opacity: 0; mix-blend-mode: screen; will-change: opacity; }
+.stackPulseBright { filter: sepia(.88) saturate(2.25) brightness(1.72) contrast(1.05); }
+.stackArt[data-entered="true"] .stackPulseTop,
+.stackArt[data-entered="true"] .stackPulseMiddle,
+.stackArt[data-entered="true"] .stackPulseBottom {
   animation-duration: 10s;
-  animation-timing-function: cubic-bezier(.45,0,.55,1);
+  animation-delay: 1.95s;
   animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(.45,0,.55,1);
+  animation-fill-mode: both;
 }
-.stackPulseBright { filter: sepia(.78) saturate(2.2) brightness(1.72); }
-.stackPulseTop { animation-name: alphaStackPulseTop; }
-.stackPulseMiddle { animation-name: alphaStackPulseMiddle; }
-.stackPulseBottom { animation-name: alphaStackPulseBottom; }
-@keyframes alphaStackPulseTop {
+.stackArt[data-entered="true"] .stackPulseTop { animation-name: alphaGrindGlowTop; }
+.stackArt[data-entered="true"] .stackPulseMiddle { animation-name: alphaGrindGlowMiddle; }
+.stackArt[data-entered="true"] .stackPulseBottom { animation-name: alphaGrindGlowBottom; }
+/* Full-tile gold activation: 1.45s each, stagger 1s, then ~6.55s rest. */
+@keyframes alphaGrindGlowTop {
   0% { opacity: 0; }
-  7.25% { opacity: .78; }
-  14.5%,100% { opacity: 0; }
+  7.25% { opacity: .72; }
+  14.5%, 100% { opacity: 0; }
 }
-@keyframes alphaStackPulseMiddle {
-  0%,10% { opacity: 0; }
-  17.25% { opacity: .78; }
-  24.5%,100% { opacity: 0; }
+@keyframes alphaGrindGlowMiddle {
+  0%, 10% { opacity: 0; }
+  17.25% { opacity: .72; }
+  24.5%, 100% { opacity: 0; }
 }
-@keyframes alphaStackPulseBottom {
-  0%,20% { opacity: 0; }
-  27.25% { opacity: .78; }
-  34.5%,100% { opacity: 0; }
+@keyframes alphaGrindGlowBottom {
+  0%, 20% { opacity: 0; }
+  27.25% { opacity: .72; }
+  34.5%, 100% { opacity: 0; }
 }
-@media (max-width:880px) {
-  .stackArt { max-width: 365px; }
-}
-@media (max-width:650px) {
-  .stackArt { max-width: 335px; }
-}
+@media (max-width:880px) { .stackArt { max-width: 365px; } }
+@media (max-width:650px) { .stackArt { max-width: 335px; } }
 @media (prefers-reduced-motion: reduce) {
-  .stackPulsePlate { animation: none !important; opacity: 0 !important; }
+  .stackAssemblyLayer { animation: none !important; transform: none !important; opacity: 1 !important; will-change: auto; }
+  .stackGroundShadow { animation: none !important; opacity: .65 !important; }
+  .stackPulsePlate { animation: none !important; opacity: 0 !important; will-change: auto; }
 }
