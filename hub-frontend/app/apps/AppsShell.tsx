@@ -22,46 +22,45 @@ export function AppsShell({ active, children }: { active: "intro" | "software"; 
   );
 }
 
-/* Exact Alpha Grind tiles isolated from the approved user-supplied reference.
- * Three parallel metallic plates with their actual perspective-aligned A emblem.
- * Source image is never reconstructed or covered by hand-drawn border/logo layers.
- * Native SVG masks only control the per-plate illumination. */
+/* Source-corrected complete Alpha Grind stack.
+ * The original approved logo and all three metallic plates are preserved.
+ * The asset is transparent with deliberate edge padding, so no tile is cropped.
+ * Only illumination changes; no reconstructed shapes, labels or trims. */
 export function StackArt() {
-  const top = "M 42 99 C 41 92 45 87 53 83 L 194 29 Q 207 21 222 27 L 364 80 Q 374 86 373 97 L 373 116 Q 372 125 365 130 L 221 178 Q 203 185 191 179 L 52 129 Q 42 125 42 117 Z";
-  const middle = "M 42 179 Q 40 173 53 167 L 192 113 Q 205 106 219 115 L 364 166 Q 374 172 373 180 L 373 201 Q 371 211 364 217 L 219 269 Q 203 275 191 268 L 53 216 Q 42 210 42 201 Z";
-  const bottom = "M 42 266 Q 40 257 53 251 L 190 198 Q 205 193 219 199 L 364 251 Q 373 257 373 269 L 372 289 Q 371 299 363 304 L 219 365 Q 204 369 191 365 L 53 306 Q 42 300 42 288 Z";
+  const top = "M167 39 L178 41 L289 94 L300 99 L304 104 L303 124 L297 134 L177 181 L168 184 L156 180 L59 139 L54 130 L53 108 L55 100 L61 95 Z";
+  const middle = "M166 137 L175 137 L291 168 L300 170 L304 177 L303 195 L299 205 L178 248 L168 254 L157 251 L59 214 L54 204 L53 183 L55 173 L62 169 Z";
+  const bottom = "M165 227 L176 226 L291 240 L300 243 L304 248 L303 274 L299 285 L175 314 L166 318 L156 315 L59 282 L54 274 L53 250 L55 245 L63 242 Z";
   const plates = [
     { id: "top", shape: top, className: styles.stackPulseTop, front: [] },
     { id: "middle", shape: middle, className: styles.stackPulseMiddle, front: [top] },
     { id: "bottom", shape: bottom, className: styles.stackPulseBottom, front: [top, middle] },
   ];
-  const src = "/apps/alpha-grind-reference-stack.avif";
+  const src = "/apps/alpha-grind-stack-complete.avif";
   return (
     <div className={styles.stackArt} role="img"
-      aria-label="Three identical parallel charcoal-and-gold Alpha Grind tiles with a correctly integrated Alpha emblem. Each tile glows from top to bottom in a slow cinematic sequence.">
-      <svg className={styles.stackPulseOverlay} viewBox="0 0 420 402"
+      aria-label="Three complete, parallel charcoal and gold Alpha Grind tiles with a centered Alpha emblem, illuminating one at a time from top to bottom.">
+      <svg className={styles.stackPulseOverlay} viewBox="0 0 335 370"
         preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
         <defs>
-          {plates.map(plate => (
-            <mask id={"alphaTilePulse-" + plate.id} key={plate.id}
-              maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="402">
-              <rect width="420" height="402" fill="#000" />
-              <path d={plate.shape} fill="#fff" />
-              {plate.front.map((shape, i) => <path d={shape} fill="#000" key={i} />)}
+          {plates.map((plate) => (
+            <mask id={"alphaStackComplete-" + plate.id} key={plate.id}
+              maskUnits="userSpaceOnUse" x="0" y="0" width="335" height="370">
+              <rect width="335" height="370" fill="black" />
+              <path d={plate.shape} fill="white" />
+              {plate.front.map((shape, i) => <path key={i} d={shape} fill="black" />)}
             </mask>
           ))}
-          <radialGradient id="alphaTileWarmth">
-            <stop offset="0" stopColor="#ffe5a0" stopOpacity=".40" />
-            <stop offset=".8" stopColor="#eab75e" stopOpacity=".22" />
-            <stop offset="1" stopColor="#a36e28" stopOpacity=".05" />
+          <radialGradient id="alphaStackCompleteWarm">
+            <stop offset="0" stopColor="#ffe3a0" stopOpacity=".22" />
+            <stop offset="1" stopColor="#cd8a30" stopOpacity=".07" />
           </radialGradient>
         </defs>
-        <image href={src} width="420" height="402" />
-        {plates.map(plate => (
+        <image href={src} width="335" height="370" />
+        {plates.map((plate) => (
           <g key={plate.id} className={styles.stackPulsePlate + " " + plate.className}
-            mask={"url(#alphaTilePulse-" + plate.id + ")"}>
-            <image href={src} width="420" height="402" className={styles.stackPulseBright} />
-            <path d={plate.shape} fill="url(#alphaTileWarmth)" />
+             mask={"url(#alphaStackComplete-" + plate.id + ")"}>
+            <image href={src} width="335" height="370" className={styles.stackPulseBright} />
+            <path d={plate.shape} fill="url(#alphaStackCompleteWarm)" />
           </g>
         ))}
       </svg>

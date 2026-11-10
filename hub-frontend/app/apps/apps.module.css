@@ -35,7 +35,7 @@
 .primaryAction:hover{background:linear-gradient(155deg,#f5ddab,#e7bc67);transform:translateY(-1px)}
 .heroMeta{display:flex;align-items:center;gap:9px;color:#8c8d96;font-size:9px;font-weight:650;letter-spacing:.12em;white-space:nowrap}
 .heroMeta i{width:3px;height:3px;border-radius:50%;background:#8d7b58}
-.heroVisual{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.heroVisual{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .stackArt{width:100%;max-width:365px;aspect-ratio:1/1;background:transparent}
 .visualCaption{color:#747780;font-size:9px;letter-spacing:.14em;text-align:center}
 .visualCaption span{color:#977941;padding:0 5px}
@@ -109,11 +109,11 @@
 @media (max-width:650px){
   .subnav{align-items:start;gap:12px;flex-wrap:wrap}
   .subnavLinks{width:100%;gap:20px}
-  .hero{grid-template-columns:1fr;padding:39px 0 46px;row-gap:clamp(26px,7vw,36px)}
+  .hero{grid-template-columns:1fr;padding:39px 0 42px;row-gap:clamp(24px,6vw,34px)}
   .heroTitle{font-size:clamp(31px,8.5vw,46px);margin:19px 0 13px}
-  .heroVisual{margin:clamp(66px,17vw,92px) auto 0;width:min(100%,310px);gap:26px}
-  .stackArt{max-width:310px}
-  .visualCaption{margin-top:16px}
+  .heroVisual{margin:clamp(16px,4vw,28px) auto 0;width:min(100%,335px);gap:7px}
+  .stackArt{max-width:335px}
+  .visualCaption{margin-top:0}
   .heroActions{margin-top:27px;gap:12px 14px}
   .valueRow{grid-template-columns:1fr;gap:13px;padding:19px 0}
   .valueRow span{justify-content:start}
@@ -453,15 +453,15 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* Reference-matched metallic tiles: source silhouettes, integrated logo,
-   no synthetic strokes or label. Smooth native SVG per-tile illumination.
-   ~1.45s pulse, 1s stagger, fully still from 3.45s to 10s. */
+/* Full-size original-stack artwork with transparent padded edges.
+   Native per-plate masks preserve the approved 1.45s gold pulse and 10s loop.
+   No position hacks, scaling distortion, or artificially traced borders. */
 .stackArt {
   position: relative;
   width: 100%;
-  max-width: 410px;
-  aspect-ratio: 420 / 402;
-  overflow: hidden;
+  max-width: 405px;
+  aspect-ratio: 335 / 370;
+  overflow: visible;
   isolation: isolate;
   background: transparent;
 }
@@ -470,35 +470,40 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  overflow: visible;
 }
 .stackPulsePlate {
   opacity: 0;
   mix-blend-mode: screen;
   will-change: opacity;
   animation-duration: 10s;
-  animation-timing-function: cubic-bezier(.45, 0, .55, 1);
+  animation-timing-function: cubic-bezier(.45,0,.55,1);
   animation-iteration-count: infinite;
 }
-.stackPulseBright {
-  filter: sepia(.8) saturate(2.4) brightness(1.85);
-}
+.stackPulseBright { filter: sepia(.78) saturate(2.2) brightness(1.72); }
 .stackPulseTop { animation-name: alphaStackPulseTop; }
 .stackPulseMiddle { animation-name: alphaStackPulseMiddle; }
 .stackPulseBottom { animation-name: alphaStackPulseBottom; }
 @keyframes alphaStackPulseTop {
   0% { opacity: 0; }
-  7.25% { opacity: .81; }
-  14.5%, 100% { opacity: 0; }
+  7.25% { opacity: .78; }
+  14.5%,100% { opacity: 0; }
 }
 @keyframes alphaStackPulseMiddle {
-  0%, 10% { opacity: 0; }
-  17.25% { opacity: .81; }
-  24.5%, 100% { opacity: 0; }
+  0%,10% { opacity: 0; }
+  17.25% { opacity: .78; }
+  24.5%,100% { opacity: 0; }
 }
 @keyframes alphaStackPulseBottom {
-  0%, 20% { opacity: 0; }
-  27.25% { opacity: .81; }
-  34.5%, 100% { opacity: 0; }
+  0%,20% { opacity: 0; }
+  27.25% { opacity: .78; }
+  34.5%,100% { opacity: 0; }
+}
+@media (max-width:880px) {
+  .stackArt { max-width: 365px; }
+}
+@media (max-width:650px) {
+  .stackArt { max-width: 335px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .stackPulsePlate { animation: none !important; opacity: 0 !important; }
