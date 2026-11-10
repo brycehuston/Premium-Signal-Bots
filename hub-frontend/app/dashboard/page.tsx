@@ -182,11 +182,18 @@ export default function LaneIntelligenceDashboard(){
    <div className="ai-top">
     <div className="ai-top-inner">
      <div><div className="ai-wordmark">ALPHA <span>ALERTS</span></div><div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div></div>
-     <nav className="ai-top-actions" aria-label="Dashboard sections"><Link href="/" className="ai-link">ALPHA ALERTS HOME</Link><a href="#overview" className="ai-link">OVERVIEW</a><a href="#composition" className="ai-link">LANES</a><a href="#heatmap" className="ai-link">HEATMAP</a><a href="#lookup" className="ai-link">HISTORY</a><Link href="/dashboard/history" className="ai-link">SERVER HISTORY</Link><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></nav>
+     <nav className="ai-top-actions" aria-label="Dashboard sections"><Link href="/" className="ai-link">ALPHA ALERTS HOME</Link><a href="#overview" className="ai-link">OVERVIEW</a><a href="#composition" className="ai-link">LANES</a><a href="#heatmap" className="ai-link">HEATMAP</a><Link href="/dashboard/history" className="ai-link">AUTO HISTORY</Link><a href="#lookup" className="ai-link">LEGACY HISTORY</a><Link href="/dashboard/history" className="ai-link">SERVER HISTORY</Link><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></nav>
     </div>
    </div>
    <main className="ai-main" id="overview">
     <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Telegram alert distribution, first appearances, transitions and market context. Historical observations only.</p></div><div className="ai-badge">{localCheck?"CHECKING LOCAL ARCHIVE":data?"ARCHIVE LOADED":"NO ARCHIVE LOADED"}</div></div>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:15,flexWrap:"wrap",padding:"16px 18px",marginBottom:20,border:"1px solid #3d3a34",borderRadius:12,background:"#151412"}}>
+      <div><strong style={{color:"#e6bc68",fontSize:12,letterSpacing:".1em"}}>SERVER-SIDE HISTORICAL ALERTS</strong>
+      <p style={{margin:"6px 0 0",fontSize:12,color:"#a9a9af"}}>Automatically loaded 24H / 7D / 30D history, without uploading archives.</p></div>
+      <Link href="/dashboard/history" className="ai-button">OPEN HISTORICAL ALERTS</Link>
+    </div>
+    <details style={{marginTop:12}}>
+     <summary style={{cursor:"pointer",fontSize:11,letterSpacing:".1em",color:"#a5a6ab",padding:"12px 0"}}>OPTIONAL LEGACY V4 RESEARCH ARCHIVE (LOCAL DEVICE)</summary>
     <div className="ai-import">
      <div><strong>PRIVATE ARCHIVE</strong><p>{data?`Loaded locally: ${importName} · ${data.summary.start} to ${data.summary.end}`:"Import the V4 archive once; it is saved only in this browser for future visits, not uploaded."}</p></div>
      <div className="ai-import-actions">
@@ -233,6 +240,7 @@ export default function LaneIntelligenceDashboard(){
      </div>
      <Panel id="lookup" title="FIRST-ALERT LOOKUP" detail={`${fmt(firstRows.length)} MATCHES`} className="ai-lookup" ><div className="ai-lookup-controls"><input aria-label="Search token or mint" placeholder="Search ticker or mint address…" value={search} onChange={e=>{setSearch(e.target.value);setExpanded(false)}}/><select value={lookupLane} aria-label="Filter lane" onChange={e=>{setLookupLane(e.target.value);setExpanded(false)}}><option value="ALL">ALL LANES</option>{LANES.map(l=><option key={l}>{l}</option>)}</select></div><div className="ai-table-wrap"><table><thead><tr><th>FIRST SEEN (PT)</th><th>TOKEN</th><th>LANE</th><th>FIRST MC</th><th>MESSAGES</th><th>SOURCE</th></tr></thead><tbody>{selectedRows.map(r=><tr key={r.mint}><td>{r.date}</td><td><div className="ai-token">{r.symbol}</div><small className="ai-mint">{r.mint.slice(0,7)}…{r.mint.slice(-5)}</small></td><td><span className="ai-lane-chip" style={{color:COLORS[r.lane as Lane]||"#bbc3c6"}}>{r.lane}</span></td><td>{formatMoney(r.mc)}</td><td>{r.alerts}</td><td>{trustedTelegram(r.url)?<a target="_blank" rel="noopener noreferrer" href={trustedTelegram(r.url)!}>VIEW ↗</a>:"—"}</td></tr>)}</tbody></table>{!selectedRows.length&&<div className="ai-nodata">No results match your filters.</div>}</div>{firstRows.length>100&&!expanded&&<button className="ai-more" onClick={()=>setExpanded(true)}>SHOW ALL {fmt(firstRows.length)} RESULTS</button>}</Panel>
     </>}
+    </details>
     <footer className="ai-footer"><span>© FRUXLABS / ALPHA ALERTS · HISTORICAL RESEARCH</span><span>PRIVATE DEVICE ARCHIVE · NO FINANCIAL ADVICE · NO LIVE DATA</span></footer>
    </main>
   </div>
