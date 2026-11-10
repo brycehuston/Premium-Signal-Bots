@@ -453,12 +453,14 @@
   .returnLink { margin-top: 20px; }
 }
 
-/* LOCKED: approved rotated-logo artwork. No hand-drawn borders or emblems.
-   One cinematic gold bloom per tile; 10 s loop, 7.35 s fully still. */
+/* Approved perspective-aligned 3D Alpha Grind artwork and embedded mark.
+   Keep original source pixels: never redraw rims or add a separate logo sticker.
+   Cinematic sequence: top -> middle -> bottom, 1.30s per pulse and .85s stagger.
+   All three settle by 3.0s; seven seconds of stillness in the 10s loop. */
 .stackArt {
   position: relative;
   width: 100%;
-  max-width: 350px;
+  max-width: 332px;
   aspect-ratio: 365 / 363;
   overflow: hidden;
   isolation: isolate;
@@ -478,25 +480,25 @@
   animation-iteration-count: infinite;
 }
 .stackPulseBright {
-  filter: sepia(.65) saturate(2.4) brightness(1.8) contrast(1.08);
+  filter: sepia(.95) saturate(2.8) brightness(2) contrast(1.08);
 }
 .stackPulseTop { animation-name: alphaStackPulseTop; }
 .stackPulseMiddle { animation-name: alphaStackPulseMiddle; }
 .stackPulseBottom { animation-name: alphaStackPulseBottom; }
 @keyframes alphaStackPulseTop {
   0% { opacity: 0; }
-  5.75% { opacity: .88; }
-  11.5%, 100% { opacity: 0; }
+  6.5% { opacity: .82; }
+  13%, 100% { opacity: 0; }
 }
 @keyframes alphaStackPulseMiddle {
-  0%, 7.5% { opacity: 0; }
-  13.25% { opacity: .88; }
-  19%, 100% { opacity: 0; }
+  0%, 8.5% { opacity: 0; }
+  15% { opacity: .82; }
+  21.5%, 100% { opacity: 0; }
 }
 @keyframes alphaStackPulseBottom {
-  0%, 15% { opacity: 0; }
-  20.75% { opacity: .88; }
-  26.5%, 100% { opacity: 0; }
+  0%, 17% { opacity: 0; }
+  23.5% { opacity: .82; }
+  30%, 100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .stackPulsePlate { animation: none !important; opacity: 0 !important; }

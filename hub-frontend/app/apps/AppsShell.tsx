@@ -51,9 +51,9 @@ export function StackArt() {
             </mask>
           ))}
           <radialGradient id="alphaTileWarmth">
-            <stop offset="0" stopColor="#ffe9ae" stopOpacity=".38" />
-            <stop offset=".8" stopColor="#e9aa45" stopOpacity=".16" />
-            <stop offset="1" stopColor="#a76b24" stopOpacity=".04" />
+            <stop offset="0" stopColor="#ffe8aa" stopOpacity=".47" />
+            <stop offset=".78" stopColor="#e6a647" stopOpacity=".24" />
+            <stop offset="1" stopColor="#9a641f" stopOpacity=".045" />
           </radialGradient>
         </defs>
         <image href={src} width="365" height="363" />
