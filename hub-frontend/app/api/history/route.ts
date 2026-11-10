@@ -37,11 +37,11 @@ function isEntitled(profile:unknown):boolean {
   return !["","free","none","inactive","trial"].includes(me.plan.trim().toLowerCase());
 }
 export async function GET(request:NextRequest) {
-  const config=configuration();
-  if (!config) return reply({state:"unavailable",reason:"history_not_configured"},503);
   const bearer=request.headers.get("authorization") ?? "";
   const token=/^Bearer ([A-Za-z0-9._~+/=-]{24,8192})$/.exec(bearer)?.[1];
   if (!token) return reply({state:"unauthorized"},401);
+  const config=configuration();
+  if (!config) return reply({state:"unavailable",reason:"history_not_configured"},503);
   const rangeParam=request.nextUrl.searchParams.get("range") ?? "30d";
   if (!Object.prototype.hasOwnProperty.call(RANGES,rangeParam)) return reply({state:"invalid_range"},400);
   const range=rangeParam as HistoryRange;
