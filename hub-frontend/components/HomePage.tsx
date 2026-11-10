@@ -694,6 +694,8 @@ type VerifiedDailyFeed = {
   as_of_utc?: string;
   period?: "24h" | "7d" | null;
   public_delay_minutes?: number;
+  reference_time_utc?: string;
+  hour_alert?: VerifiedDailyAlert | null;
   alerts: VerifiedDailyAlert[];
 };
 
@@ -725,6 +727,8 @@ function HeroAlertReel() {
         if (mounted) setFeed({
           state:data.state === "verified" || data.state === "archived" || data.state === "empty" ? data.state : "unavailable",
           as_of_utc:data.as_of_utc,
+          reference_time_utc:data.reference_time_utc,
+          hour_alert:data.hour_alert&&typeof data.hour_alert==="object"?data.hour_alert:null,
           period:data.period === "24h" || data.period === "7d" ? data.period : null,
           public_delay_minutes:30,
           alerts:Array.isArray(data.alerts) ? data.alerts.slice(0,3) : []
@@ -741,27 +745,43 @@ function HeroAlertReel() {
 
   const archived = feed.state === "archived";
   const available = (feed.state === "verified" || archived) && feed.alerts.length > 0;
+  const oneHour = available ? feed.hour_alert : null;
   const distinctTokens = new Set(feed.alerts.map(a => a.symbol.toUpperCase())).size;
   const distinctLanes = new Set(feed.alerts.map(a => a.lane)).size;
   const outcomesMeasured = feed.alerts.filter(a => typeof a.observed_peak_pct === "number" && Number.isFinite(a.observed_peak_pct)).length;
   const archiveAsOf = archived && feed.as_of_utc && Number.isFinite(Date.parse(feed.as_of_utc))
     ? new Date(feed.as_of_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"}) : null;
   return (
-    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Public Alpha Alerts verified and archived alert records">
+    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Alpha Alerts recorded market heartbeat">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.23em] text-muted">
           <span className="h-1.5 w-1.5 rounded-full bg-gold/70" aria-hidden="true"/>
-          {archived ? "ALPHA ALERT ACTIVITY" : "TOP VERIFIED ALERTS"}
+          {"ALPHA ALERTS / MARKET HEARTBEAT"}
         </div>
         <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available && !archived?"border-emerald-400/30 text-emerald-300":archived?"border-amber-300/40 text-amber-200":"border-stroke/60 text-muted"}`}>
-          {archived?"SIGNED ARCHIVE":available?feed.period==="7d"?"VERIFIED · 7 DAYS":"VERIFIED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
+          {archived?"DATED HISTORICAL ARCHIVE":available?feed.period==="7d"?"RECORDED · 7D":"RECORDED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
         </span>
       </div>
       <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
-        {archived ? `Actual public-approved entries from the last signed snapshot${archiveAsOf ? " · " + archiveAsOf : ""}. Delivery confirmation for individual events is under review; do not treat these as independently verified fills or wins.` : `${feed.period === "7d" ? "Historical top scores from the last 7 days." : "Top native scores from the last 24 hours."} Eligible confirmed deliveries only; at least 30 minutes delayed. Original alert dates are shown below.`}
+        {archived ? `Dated entries from a signed public archive${archiveAsOf ? " · " + archiveAsOf : ""}. Individual delivery evidence is not independently reconciled. Historical, not live.` : `${feed.period === "7d" ? "Delayed public alerts from the past seven days." : "Delayed public alerts recorded during the past 24 hours."} Signed delivery records only; minimum 30-minute delay. Ranked by event time, not by score.`}
       </p>
       {available ? (
         <div className="mt-4 space-y-2.5">
+          <div className="grid grid-cols-2 gap-2" aria-label="One-hour highlight and three recent alerts">
+            <div className="rounded-lg border border-stroke/60 bg-bg/45 p-3">
+              <div className="text-[9px] font-semibold tracking-wide text-muted">{archived?"LAST RECORDED 24H":feed.period==="7d"?"7D FALLBACK":"ROLLING 24H"}</div>
+              <strong className="mt-1 block text-lg tabular-nums text-silver">{feed.alerts.length} RECENT ALERTS</strong>
+            </div>
+            <div className="rounded-lg border border-stroke/60 bg-bg/45 p-3">
+              <div className="text-[9px] font-semibold tracking-wide text-muted">{archived?"LAST RECORDED HOUR":"LAST 1 HOUR"}</div>
+              <strong className="mt-1 block truncate text-xs text-[#e7bc67]">{oneHour?"$"+oneHour.symbol+" · "+oneHour.lane:"NO ELIGIBLE ALERT"}</strong>
+            </div>
+          </div>
+          {oneHour && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#aa8a51]/35 bg-[#aa8a51]/[0.045] px-3 py-2">
+            <span className="text-[10px] font-semibold tracking-wide text-[#e7bc67]">1H HIGHLIGHT · {oneHour.lane} / {"$"+oneHour.symbol}</span>
+            <span className="text-[10px] tabular-nums text-muted">RECORDED MC {formatAlertMoney(oneHour.alert_mc)} · {new Date(oneHour.timestamp_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"})}</span>
+          </div>}
+          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{archived?"THREE MOST RECENT · DATED HISTORICAL RECORDS":feed.period==="7d"?"THREE MOST RECENT · 7D":"THREE MOST RECENT · 24H"}</div>
           <div className="grid grid-cols-3 gap-2 border-y border-stroke/50 py-3" aria-label="Actual alerts displayed in this panel">
             <div><strong className="block text-lg font-bold tabular-nums text-silver">{feed.alerts.length}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Alerts shown</span></div>
             <div><strong className="block text-lg font-bold tabular-nums text-silver">{distinctTokens}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Distinct tokens</span></div>
@@ -783,7 +803,7 @@ function HeroAlertReel() {
                     <span className={`text-[11px] font-bold tracking-[0.2em] ${tone.text}`}>{item.lane}</span>
                     <strong className="text-sm text-silver">${item.symbol}</strong>
                   </div>
-                  <span className="text-[12px] font-semibold tabular-nums text-[#e7bc67]"><span className="mr-1 text-[9px] font-normal tracking-wide text-muted">SCORE</span>{item.score.toFixed(2)}<span className="text-muted">/10</span></span>
+                  <span className="text-[10px] tabular-nums text-muted">RECORDED {clock}</span>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   <span className="rounded-full border border-[#72a5cf]/35 bg-[#72a5cf]/[0.07] px-2 py-1 text-[10px] text-[#a8cce7]">MC {formatAlertMoney(item.alert_mc)}</span>
@@ -807,7 +827,7 @@ function HeroAlertReel() {
         </div>
       )}
       <p className="mt-3 text-[10px] leading-relaxed text-muted/70">
-        Scores are informational, not profit probabilities. {outcomesMeasured === 0 && available ? "No validated post-alert returns are available for the records shown. " : ""}Ranking by score is not trading performance.{archived ? " Archived records are shown for historical reference only while the delivery-proof pipeline is being repaired." : ""}
+        Market cap and liquidity are the values captured with each alert, not realized exits. {outcomesMeasured === 0 && available ? "Verified post-alert outcomes are not available for these records. " : ""}Do not interpret a recorded alert as a profitable trade.{archived ? " This is a dated signed archive while delivery-proof reconciliation is pending." : ""}
       </p>
     </section>
   );
