@@ -105,12 +105,17 @@ function historicalPreview(now: Date) {
         !Array.isArray(parsed.daily_alerts) || parsed.daily_alerts.length !== 6) return null;
     const values = parsed.daily_alerts.map(x=>validRow(x,now,MAX_SIGNED_ARCHIVE_AGE_MS));
     if (values.some(x=>x===null)) return null;
-    const alerts = (values as PublicRow[])
-      .sort((a,b)=>b.score-a.score || b.timestamp_utc.localeCompare(a.timestamp_utc))
-      .slice(0,3);
+    const ordered = (values as PublicRow[]).sort((a,b)=>b.timestamp_utc.localeCompare(a.timestamp_utc));
+    // Archive windows are anchored to the LAST RECORDED EVENT, never to today's clock.
+    // They describe historical activity, not performance or a current-hour leader.
+    const anchorMs = Date.parse(ordered[0].timestamp_utc);
+    const last24 = ordered.filter(row => Date.parse(row.timestamp_utc) >= anchorMs-PRIMARY_WINDOW_MS);
+    const alerts = (last24.length >= 3 ? last24 : ordered).slice(0,3);
+    const hourAlert = ordered.find(row => Date.parse(row.timestamp_utc) >= anchorMs-60*60_000) ?? null;
     return {state:"archived" as const,period:null,
-      as_of_utc:captured.toISOString(),public_delay_minutes:30,
-      alerts,delivery_independently_verified:false};
+      as_of_utc:captured.toISOString(),reference_time_utc:ordered[0].timestamp_utc,
+      public_delay_minutes:30, alerts, hour_alert:hourAlert,
+      delivery_independently_verified:false};
   } catch { return null; }
 }
 
@@ -120,7 +125,8 @@ export async function GET() {
     const historical = historicalPreview(now);
     if (historical) return NextResponse.json(historical,{headers:{"Cache-Control":"no-store"}});
     return NextResponse.json(
-      {state, period:null, as_of_utc:now.toISOString(), public_delay_minutes:30, alerts:[]},
+      {state, period:null, as_of_utc:now.toISOString(),reference_time_utc:now.toISOString(),
+       public_delay_minutes:30, alerts:[],hour_alert:null},
       {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}}
     );
   };
@@ -163,9 +169,16 @@ export async function GET() {
     const recent = all.filter(row => now.getTime()-Date.parse(row.timestamp_utc) <= PRIMARY_WINDOW_MS);
     const period: "24h" | "7d" = recent.length ? "24h" : "7d";
     const alerts = (recent.length ? recent : all)
-      .sort((a,b) => b.score-a.score || b.timestamp_utc.localeCompare(a.timestamp_utc))
+      .sort((a,b) => b.timestamp_utc.localeCompare(a.timestamp_utc))
       .slice(0,3);
-    return NextResponse.json({state:alerts.length?"verified":"empty",period,as_of_utc:updatedAt.toISOString(),public_delay_minutes:30,alerts},
+    // A live 1-hour spotlight can only use a signed, delayed event from that hour.
+    // Never substitute an old event and call it current.
+    const hourAlert = all.filter(row =>
+      now.getTime()-Date.parse(row.timestamp_utc) <= 60*60_000
+    ).sort((a,b) => b.timestamp_utc.localeCompare(a.timestamp_utc))[0] ?? null;
+    return NextResponse.json({state:alerts.length?"verified":"empty",period,
+      as_of_utc:updatedAt.toISOString(),reference_time_utc:now.toISOString(),
+      public_delay_minutes:30,alerts,hour_alert:hourAlert},
       {headers:{"Cache-Control":"public, max-age=30, stale-while-revalidate=60"}});
   } catch {
     return unavailable("unavailable");
