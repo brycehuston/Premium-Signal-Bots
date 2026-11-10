@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- static fallback for users without JavaScript */
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./apps.module.css";
@@ -63,7 +64,7 @@ export function StackArtClient() {
               id={"alphaGrindPlateMask-" + plate.name}
               maskUnits="userSpaceOnUse"
               maskContentUnits="userSpaceOnUse"
-              maskType="alpha"
+              className={styles.stackImageAlphaMask}
               x="0" y="0" width="335" height="370"
             >
               <image href={plate.source} width="335" height="370" />
