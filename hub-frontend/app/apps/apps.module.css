@@ -468,13 +468,18 @@
 .stackFallbackImage { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
 .stackBaseTile { filter: saturate(.53) brightness(.78) contrast(1.06); }
 .stackAssemblyLayer { opacity: 0; transform: translate3d(0,-68px,0); will-change:transform,opacity; }
-.stackArt[data-entered="true"] .stackAssemblyBottom { animation:alphaGrindTileDrop .56s cubic-bezier(.16,1,.3,1) 0s both; }
-.stackArt[data-entered="true"] .stackAssemblyMiddle { animation:alphaGrindTileDrop .56s cubic-bezier(.16,1,.3,1) .24s both; }
-.stackArt[data-entered="true"] .stackAssemblyTop { animation:alphaGrindTileDrop .56s cubic-bezier(.16,1,.3,1) .48s both; }
+.stackArt[data-entered="true"] .stackAssemblyBottom { animation:alphaGrindTileDrop .52s cubic-bezier(.16,.84,.3,1) 0s both; }
+.stackArt[data-entered="true"] .stackAssemblyMiddle { animation:alphaGrindTileDrop .56s cubic-bezier(.16,.84,.3,1) .22s both; }
+.stackArt[data-entered="true"] .stackAssemblyTop { animation:alphaGrindFinalTileDrop .80s cubic-bezier(.24,.70,.32,1) .44s both; }
 @keyframes alphaGrindTileDrop {
   0% { opacity:0; transform:translate3d(0,-68px,0); }
-  18% { opacity:1; }
-  84% { transform:translate3d(0,1.5px,0); }
+  16% { opacity:1; }
+  100% { opacity:1; transform:translate3d(0,0,0); }
+}
+@keyframes alphaGrindFinalTileDrop {
+  0% { opacity:0; transform:translate3d(0,-78px,0); }
+  16% { opacity:1; }
+  78% { opacity:1; transform:translate3d(0,1px,0); }
   100% { opacity:1; transform:translate3d(0,0,0); }
 }
 .stackGroundShadow { opacity:0; }
@@ -483,14 +488,16 @@
 .stackPulsePlate {opacity:0; mix-blend-mode:screen;will-change:opacity;}
 .stackPulseBright {filter:sepia(.86) saturate(2) brightness(1.58) contrast(1.04);}
 .stackArt[data-entered="true"] .stackPulseTop,.stackArt[data-entered="true"] .stackPulseMiddle,.stackArt[data-entered="true"] .stackPulseBottom {
- animation-duration:10s; animation-delay:1.25s; animation-iteration-count:infinite; animation-timing-function:cubic-bezier(.45,0,.55,1); animation-fill-mode:both;
+ animation-duration:10s; animation-delay:1.34s; animation-iteration-count:infinite; animation-timing-function:cubic-bezier(.45,0,.55,1); animation-fill-mode:both;
 }
 .stackArt[data-entered="true"] .stackPulseTop {animation-name:alphaGrindGlowTop;}
 .stackArt[data-entered="true"] .stackPulseMiddle {animation-name:alphaGrindGlowMiddle;}
 .stackArt[data-entered="true"] .stackPulseBottom {animation-name:alphaGrindGlowBottom;}
-@keyframes alphaGrindGlowTop { 0% {opacity:0;} 5.25% {opacity:.76;} 10.5%,100% {opacity:0;} }
-@keyframes alphaGrindGlowMiddle { 0%,6.2% {opacity:0;} 11.45% {opacity:.76;} 16.7%,100% {opacity:0;} }
-@keyframes alphaGrindGlowBottom { 0%,12.4% {opacity:0;} 17.65% {opacity:.76;} 22.9%,100% {opacity:0;} }
+/* Shorter, flowing gold ping: 0.90s glow, 0.52s staggers.
+   The final plate lands at 1.24s; the first light begins at 1.34s. */
+@keyframes alphaGrindGlowTop { 0% {opacity:0;} 4.5% {opacity:.76;} 9%,100% {opacity:0;} }
+@keyframes alphaGrindGlowMiddle { 0%,5.2% {opacity:0;} 9.7% {opacity:.76;} 14.2%,100% {opacity:0;} }
+@keyframes alphaGrindGlowBottom { 0%,10.4% {opacity:0;} 14.9% {opacity:.76;} 19.4%,100% {opacity:0;} }
 @media(max-width:880px) {.stackArt {max-width:345px;}}
 @media(max-width:650px) {.stackArt {max-width:315px;}}
 @media(prefers-reduced-motion:reduce) {

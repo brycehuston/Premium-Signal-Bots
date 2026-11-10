@@ -4,11 +4,11 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./apps.module.css";
 
-/** Three complete plates reconstructed from an intact metallic surface, maintaining the approved Alpha logo on the top tile only. */
+/** Three unbroken matching metallic plates source-aligned to the approved Alpha artwork. The top-only logo is preserved. */
 const plates = [
-  { name: "bottom", source: "/apps/alpha-stack-tile-bottom.webp", drop: styles.stackAssemblyBottom, pulse: styles.stackPulseBottom },
-  { name: "middle", source: "/apps/alpha-stack-tile-middle.webp", drop: styles.stackAssemblyMiddle, pulse: styles.stackPulseMiddle },
-  { name: "top", source: "/apps/alpha-stack-tile-top.webp", drop: styles.stackAssemblyTop, pulse: styles.stackPulseTop },
+  { name: "bottom", source: "/apps/alpha-stack-v2-bottom.webp", drop: styles.stackAssemblyBottom, pulse: styles.stackPulseBottom },
+  { name: "middle", source: "/apps/alpha-stack-v2-middle.webp", drop: styles.stackAssemblyMiddle, pulse: styles.stackPulseMiddle },
+  { name: "top", source: "/apps/alpha-stack-v2-top.webp", drop: styles.stackAssemblyTop, pulse: styles.stackPulseTop },
 ] as const;
 
 export function StackArtClient() {
@@ -99,7 +99,7 @@ export function StackArtClient() {
       </svg>
       <noscript>
         <img
-          src="/apps/alpha-grind-stack-complete.avif"
+          src="/apps/alpha-stack-v2-assembled.webp"
           alt="Alpha Grind three-tile metallic stack"
           className={styles.stackFallbackImage}
         />
