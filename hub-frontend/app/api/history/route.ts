@@ -43,7 +43,7 @@ export async function GET(request:NextRequest) {
   const token=/^Bearer ([A-Za-z0-9._~+/=-]{24,8192})$/.exec(bearer)?.[1];
   if (!token) return reply({state:"unauthorized"},401);
   const rangeParam=request.nextUrl.searchParams.get("range") ?? "30d";
-  if (!(rangeParam in RANGES)) return reply({state:"invalid_range"},400);
+  if (!Object.prototype.hasOwnProperty.call(RANGES,rangeParam)) return reply({state:"invalid_range"},400);
   const range=rangeParam as HistoryRange;
   // Supabase validates signature, expiry and subject against Auth, not metadata.
   const auth=createClient(config.url,config.publishable, {auth:{persistSession:false,autoRefreshToken:false}});
