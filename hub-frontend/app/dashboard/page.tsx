@@ -182,7 +182,7 @@ export default function LaneIntelligenceDashboard(){
    <div className="ai-top">
     <div className="ai-top-inner">
      <div><div className="ai-wordmark">ALPHA <span>ALERTS</span></div><div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div></div>
-     <nav className="ai-top-actions" aria-label="Dashboard sections"><Link href="/" className="ai-link">ALPHA ALERTS HOME</Link><a href="#overview" className="ai-link">OVERVIEW</a><a href="#composition" className="ai-link">LANES</a><a href="#heatmap" className="ai-link">HEATMAP</a><a href="#lookup" className="ai-link">HISTORY</a><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></nav>
+     <nav className="ai-top-actions" aria-label="Dashboard sections"><Link href="/" className="ai-link">ALPHA ALERTS HOME</Link><a href="#overview" className="ai-link">OVERVIEW</a><a href="#composition" className="ai-link">LANES</a><a href="#heatmap" className="ai-link">HEATMAP</a><a href="#lookup" className="ai-link">HISTORY</a><Link href="/dashboard/history" className="ai-link">SERVER HISTORY</Link><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></nav>
     </div>
    </div>
    <main className="ai-main" id="overview">
