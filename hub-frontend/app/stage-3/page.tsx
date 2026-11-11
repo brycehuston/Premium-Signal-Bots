@@ -5,7 +5,7 @@ const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
-  title: `Stage 3 | ${BRAND}`,
+  title: "Stage 3",
   description: `Stage 3 system flow visualization for ${BRAND}.`,
   alternates: {
     canonical: `${SITE_URL}/stage-3`,
