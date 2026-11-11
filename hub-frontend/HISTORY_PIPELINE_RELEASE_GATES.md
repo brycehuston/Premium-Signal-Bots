@@ -35,3 +35,9 @@
 - No fabricated score, return, win-rate, or subscriber history.
 - No reliance on six-row public snapshot for private historical analytics.
 - No removal of the currently functioning legacy dashboard importer until replacement is proven on real authenticated sessions; `/dashboard/history` is a safe preview candidate.
+## 2026-11-10 read-only runtime-correlation staging
+- `scripts/build_postsend_history.py` is a distinct **QUARANTINE ONLY** builder for the current audited scanner source SHA `6dfd39df0db8a64cf15a5e4806a99edbd6d474538f581845aee54d93514631af` and attested start time `2026-11-09T21:42:32Z`.
+- Requires exact canonical/feature IDs, mint, normalized lane and UTC timestamp plus a unique matching outcome explicitly labeled `DELIVERED`; disqualifies duplicate/ambiguous IDs, unknown lanes, unsupported symbols and mismatched source fingerprint.
+- Output is **NOT authorized for import**: `proof_kind=POST_SEND_RUNTIME_CORRELATION`, `approved_for_history=false`, `public_delivery_verified=false`, and no performance multiple. Existing release importer rejects this quarantined payload intentionally.
+- 17 synthetic tests passed locally. The builder was run on the connected VPS with **no `--output` argument and no writes**. A representative snapshot admitted 320 records; counts increase as live telemetry is appended. This is narrower than the 334 current-runtime identity/status matches because 16 records have unsafe export formatting. Verify the exclusion counts at backfill time.
+- Public channel provenance and the subscriber data-sharing/release approval remain unresolved. No production database was mutated.
