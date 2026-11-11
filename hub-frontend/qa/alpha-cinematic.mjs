@@ -87,6 +87,33 @@ for(const {w,h} of sizes)for(const stage of [1,2,3]){
  } catch(e){checks.push({stage,width:w,height:h,error:String(e).slice(0,430)});}
  finally{await page.close()}
 }
+
+const workflowTransitions=[];
+for (const {w,h} of [{w:390,h:844},{w:844,h:390}]) {
+  const page=await browser.newPage({viewport:{width:w,height:h},isMobile:w<500,hasTouch:w<500,reducedMotion:"reduce"});
+  try {
+    await page.goto(base+"/stage-1",{waitUntil:"domcontentloaded",timeout:30000});
+    const core=page.frameLocator("iframe").locator("#cv");
+    await core.waitFor({timeout:20000});
+    await core.focus();
+    await page.keyboard.press("Enter");
+    await page.waitForURL("**/stage-2",{timeout:14000});
+    const router=page.frameLocator("iframe").locator("#routerBtn");
+    await router.waitFor({timeout:18000});
+    await router.click({timeout:12000});
+    await page.waitForURL("**/stage-3",{timeout:14000});
+    const go=page.frameLocator("iframe").locator("#goAlphaBtn");
+    await go.waitFor({timeout:18000});
+    await go.click({timeout:12000});
+    await page.waitForURL("**/pricing",{timeout:14000});
+    workflowTransitions.push({width:w,height:h,result:"stage1 -> stage2 -> stage3 -> pricing verified"});
+  } catch(error) {
+    const issue={width:w,height:h,error:String(error).slice(0,500)};
+    workflowTransitions.push(issue);
+    errors.push({stage:"navigation",width:w,error:issue.error});
+  } finally { await page.close(); }
+}
+
 await browser.close();
 await writeFile(path.join(dir,"stage-results.json"),JSON.stringify({base,checks,errors},null,2));
 const failures=[];
@@ -124,5 +151,5 @@ for(const c of checks){
  }
 }
 const summary=checks.map(c=>({stage:c.stage,w:c.width,h:c.height,http:c.http,error:c.error,frame:c.frame,canvas:c.canvas,coverage:c.canvasPixels?.covered,panels:c.panels?.map(x=>x.lane),scroll:c.wrapScroll,last:c.lastPanelScroll,labels:[...new Set(c.canvasLaneLabels?.map(x=>x.text)||[])],labelPositions:c.stage===3?Object.values(Object.fromEntries((c.canvasLaneLabels||[]).map(x=>[x.text,[x.absX,x.absY]]))):undefined,sourcePositions:c.stage===1?Object.values(Object.fromEntries((c.sourceLabels||[]).map(x=>[x.text,[x.absX,x.absY]]))):undefined}));
-console.log(JSON.stringify({tests:checks.length,failures,errors,summary},null,2));
+console.log(JSON.stringify({tests:checks.length,workflowTransitions,failures,errors,summary},null,2));
 if(checks.length!==sizes.length*3||failures.length||errors.length)process.exitCode=1;
