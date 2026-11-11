@@ -74,8 +74,105 @@ def build():
  "quality":{"source_rows":rows,"accepted_unique_events":len(events),"invalid_rows":rows-len(events)-len(duplicate),
  "duplicate_ids_quarantined":len(duplicate),"has_public_delivery_proof":False,"has_verified_peak_outcomes":False,
  "first_token_lookup_coverage":"not_included_aggregate_only","regime_coverage":"unavailable","hour_coverage":"observed_hours_only"}}
+
+def build_bot_movers(now:dt.datetime):
+ """Verified primary-bot Telegram delivery + repeated pair-matched DEX observations.
+
+ Private destination is not represented as a public-channel post.
+ Public market data is delayed 31 minutes; raw mint/address/message IDs never leave VPS.
+ """
+ import math
+ import collections
+ state_path=ROOT/"state/mev_alert_state.json"
+ snaps_path=ROOT/"reports/runtime/TREND_price_snapshots.csv"
+ if state_path.is_symlink() or not state_path.is_file() or state_path.stat().st_size>150_000_000:raise ValueError("UNSAFE_STATE")
+ if snaps_path.is_symlink() or not snaps_path.is_file() or snaps_path.stat().st_size>100_000_000:raise ValueError("UNSAFE_SNAPSHOTS")
+ state=json.loads(state_path.read_text())
+ cutoff=now-dt.timedelta(minutes=31)
+ first={}
+ with CSV.open(newline="",encoding="utf-8-sig") as f:
+  for row in csv.DictReader(f):
+   mint=(row.get("mint") or "").strip()
+   raw=(row.get("timestamp_utc") or "").strip()
+   if not mint or not raw.endswith("Z"):continue
+   try:stamp=dt.datetime.strptime(raw,"%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
+   except ValueError:continue
+   if stamp>cutoff or stamp<now-dt.timedelta(days=90):continue
+   if mint not in first or stamp<first[mint][0]:first[mint]=(stamp,row)
+ calls={}
+ dests=set()
+ for mint,(stamp,row) in first.items():
+  details=state.get(mint)
+  if not isinstance(details,dict):continue
+  try:
+   msg=int(details.get("first_public_alert_telegram_message_id") or 0)
+   chat=int(details.get("first_public_alert_telegram_chat_id") or 0)
+   ts=float(details.get("first_public_alert_ts") or 0)
+   base=float(details.get("first_public_alert_mc") or 0)
+   alert_mc=float(row.get("mc") or 0)
+  except (ValueError,TypeError):continue
+  # The message ID/chat are recorded only from Telegram API delivery metadata.
+  if msg<=0 or chat==0 or not (math.isfinite(base) and 0<base<1e13) or abs(ts-stamp.timestamp())>3 or abs(base-alert_mc)>max(1,base*.02):continue
+  symbol=(row.get("symbol") or "").strip().lstrip("$")
+  lane=(row.get("alert_lane") or "").upper().strip();lane=ALIASES.get(lane,lane)
+  if not re.fullmatch(r"[A-Za-z0-9._-]{1,28}",symbol) or lane not in LANES:continue
+  pair=(row.get("pair_address") or "").strip()
+  if not pair:continue
+  dests.add(chat)
+  calls[mint]=(stamp,symbol,lane,base,pair)
+ # Fail closed if several Telegram destinations appear in an allegedly single-channel cohort.
+ if len(dests)>1:raise ValueError("TELEGRAM_DESTINATION_CONFLICT")
+ observations=collections.defaultdict(list)
+ with snaps_path.open(newline="",encoding="utf-8-sig") as f:
+  reader=csv.DictReader(f)
+  fields={"mint","pair_address","ts_utc","market_cap_usd","source","ok"}
+  if not reader.fieldnames or not fields.issubset(reader.fieldnames):raise ValueError("SNAPSHOT_COLUMNS_CHANGED")
+  for row in reader:
+   mint=(row.get("mint") or "").strip()
+   if mint not in calls or (row.get("pair_address") or "").strip()!=calls[mint][4]:continue
+   if (row.get("source") or "").lower()!="dexscreener" or (row.get("ok") or "").lower() not in ("true","1","yes"):continue
+   raw=(row.get("ts_utc") or "").strip()
+   try:
+    stamp=dt.datetime.fromisoformat(raw.replace("Z","+00:00"))
+    value=float(row.get("market_cap_usd") or 0)
+   except (ValueError,TypeError):continue
+   if stamp.tzinfo is None or stamp>cutoff or stamp<calls[mint][0] or not(math.isfinite(value) and 0<value<1e13):continue
+   observations[mint].append((stamp,value))
+ valid=[]
+ for mint,seq in observations.items():
+  if len(seq)<2:continue
+  peak=max(price for _,price in seq)
+  near=sorted((stamp,price) for stamp,price in seq if price>=peak*.80)
+  if len(near)<2 or (near[-1][0]-near[0][0]).total_seconds()<30:continue
+  called,symbol,lane,base,pair=calls[mint]
+  if peak<base:continue
+  first_mc=round(base,2);peak_mc=round(peak,2)
+  valid.append((called,{"id":hashlib.sha256(mint.encode()).hexdigest()[:24],"symbol":symbol,"lane":lane,
+   "called_at_utc":called.isoformat().replace("+00:00","Z"),"first_mc":first_mc,"peak_mc":peak_mc,
+   "multiple":round(peak_mc/first_mc,4)}))
+ valid.sort(key=lambda entry:entry[0],reverse=True)
+ # Latest complete 24-hour call cohort; otherwise most recent past 24h cohort.
+ for days_back in range(90):
+  if days_back==0:
+   start=now-dt.timedelta(hours=24);end=cutoff;window="24h";ref=now
+  else:
+   end=now-dt.timedelta(hours=24*days_back)
+   start=end-dt.timedelta(hours=24);window="historical";ref=end
+  group=[row for call,row in valid if start<=call<=end]
+  group.sort(key=lambda item:(item["multiple"],item["peak_mc"]),reverse=True)
+  seen=set();distinct=[]
+  for m in group:
+   if m["id"] not in seen:distinct.append(m);seen.add(m["id"])
+   if len(distinct)==3:break
+  if len(distinct)==3:
+   return {"state":"verified","window":window,"as_of_utc":now.isoformat().replace("+00:00","Z"),
+    "reference_time_utc":ref.isoformat().replace("+00:00","Z"),"movers":distinct,
+    "telegram_delivery_confirmed":True,"observed_peaks_corroborated":True,
+    "method":"BOT_DELIVERY_AND_REPEATED_DEXSCREENER_PAIR_SNAPSHOTS"}
+ raise ValueError("NO_VERIFIABLE_TOP_3_COHORT")
+
 def main():
- body=build();wire=json.dumps(body,separators=(",",":"),ensure_ascii=False)
+ body=build();body['public_report']=build_bot_movers(dt.datetime.fromisoformat(body['as_of_utc'].replace('Z','+00:00')));wire=json.dumps(body,separators=(",",":"),ensure_ascii=False)
  if len(wire.encode())>300_000:raise ValueError("PAYLOAD_TOO_LARGE")
  key=Ed25519PrivateKey.from_private_bytes(KEY.read_bytes())
  if key.public_key().public_bytes(Encoding.Raw,PublicFormat.Raw).hex()!=PUBKEY:raise ValueError("UNEXPECTED_KEY")
