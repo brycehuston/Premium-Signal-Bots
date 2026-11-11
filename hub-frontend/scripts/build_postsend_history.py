@@ -114,6 +114,7 @@ def build(canonical,features,outcomes, *, since_utc: str, source_sha256: str, re
             "alert_mc":mc,"liquidity_usd":liq,"m5_tx":m5num,
             "outcome_status":"UNAVAILABLE","observed_max_multiple":None,
             "proof_kind":"POST_SEND_RUNTIME_CORRELATION","source_sha256":proof,
+            "postsend_event_correlated":True,"outcome_delivery_correlated":True,
             "producer_sha256":source_sha256,
             "approved_for_history":False,
             "public_delivery_verified":False
@@ -121,6 +122,8 @@ def build(canonical,features,outcomes, *, since_utc: str, source_sha256: str, re
     records.sort(key=lambda r:(r["event_at"],r["event_id"]))
     counts["runtime_correlated_events"]=len(records)
     counts["public_channel_verified_events"]=0
+    counts["postsend_outcome_correlated_N"]=len(records)
+    counts["history_approved_N"]=0
     return records,dict(sorted(counts.items()))
 
 
