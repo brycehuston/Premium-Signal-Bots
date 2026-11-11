@@ -3,12 +3,10 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { animate, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import type { Variants } from "framer-motion";
 import type { Easing } from "motion-utils";
 import { Webhook } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
 import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
-import RollingNumber from "@/components/RollingNumber";
 
 declare global {
   interface Window {
@@ -856,38 +854,6 @@ function StepItem({ step, order, title, description }: StepItemProps) {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  decimals = 0,
-  suffix = "",
-  variants,
-}: {
-  label: string;
-  value: number;
-  decimals?: number;
-  suffix?: string;
-  variants?: Variants;
-}) {
-  return (
-    <motion.div
-      className="rounded-card border border-stroke/70 bg-surface/80 p-5 text-center shadow-soft"
-      variants={variants}
-      style={{ willChange: "transform, opacity" }}
-    >
-      <div className="mb-2 flex items-baseline justify-center gap-1">
-        <RollingNumber
-          value={value}
-          decimals={decimals}
-          suffix={suffix}
-          className="font-display tabular-nums text-2xl md:text-3xl font-semibold tracking-tight text-silver"
-        />
-      </div>
-      <div className="text-[11px] uppercase tracking-[0.28em] text-muted/80">{label}</div>
-    </motion.div>
-  );
-}
-
 type RoadmapItem = {
   step: number;
   title: string;
@@ -1270,7 +1236,6 @@ const RoadmapSection = memo(function RoadmapSection() {
 
 export default function Page() {
   const { ref: featuresScope, inView: featuresInView } = useInView({ threshold: 0.2, once: true });
-  const { ref: statsRef } = useInView({ threshold: 0.35, once: true });
   const { ref: howRef, inView: howInView } = useInView({ threshold: 0.35, once: false });
   const { scrollYProgress } = useScroll();
   const glowDrift = useTransform(scrollYProgress, [0, 1], [0, 120]);
@@ -1380,26 +1345,6 @@ export default function Page() {
     whileInView: { opacity: 1, y: 0, filter: "blur(0px)" },
     viewport: { once: true, amount: 0.18 },
     transition: { duration: shouldReduceMotion ? 0 : 0.85, ease: EASE_OUT },
-  };
-  const statsStagger = {
-    hidden: { opacity: 0, y: 16 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: shouldReduceMotion ? 0 : 0.7,
-        ease: [0.22, 1, 0.36, 1] as Easing,
-      },
-    },
-  };
-  const statsGroup = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: shouldReduceMotion ? 0 : 0.35,
-        delayChildren: shouldReduceMotion ? 0 : 0.2,
-      },
-    },
   };
   const heroSwapTransition = {
     duration: shouldReduceMotion ? 0 : 0.9,
@@ -2380,51 +2325,30 @@ export default function Page() {
 
       <SectionDivider />
 
-      <motion.section ref={statsRef as any} className="space-y-7">
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.25 }}
-          className="space-y-7"
-        >
-          <motion.div variants={statsStagger}>
-            <SectionHeading
-              eyebrow="Performance"
-              title="Speed And Transparency"
-              subtitle="Beta metrics - directional only."
-            />
-          </motion.div>
-          <motion.div variants={statsGroup} className="grid gap-5 md:grid-cols-3 md:gap-4">
-            <StatCard
-              label="Median alert time"
-              value={120}
-              suffix="ms"
-              variants={statsStagger}
-            />
-            <StatCard
-              label="Pairs watched"
-              value={100}
-              suffix="+"
-              variants={statsStagger}
-            />
-            <StatCard
-              label="Uptime"
-              value={99.9}
-              decimals={1}
-              suffix="%"
-              variants={statsStagger}
-            />
-          </motion.div>
-          <motion.div variants={statsStagger} className="flex justify-center">
-            <Button
-              href="/pricing#plans"
-              size="md"
-              className="min-w-[150px] !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
-            >
-              GO ALPHA
-            </Button>
-          </motion.div>
-        </motion.div>
+      <motion.section {...revealProps} aria-labelledby="alpha-evidence-title" className="space-y-7">
+        <div className="mx-auto max-w-3xl space-y-3 text-center">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gold">EVIDENCE BEFORE HYPE</p>
+          <h2 id="alpha-evidence-title" className="font-display text-[27px] font-semibold tracking-[-0.025em] text-silver sm:text-[36px]">
+            Clear records. <span className="text-gold">Honest context.</span>
+          </h2>
+          <p className="mx-auto max-w-2xl text-[13px] leading-[1.85] text-muted sm:text-sm">
+            Market activity and research are meaningful only when their source, timestamp and observation limits are visible.
+            We do not present theoretical peaks as executed profits or publish unmeasured latency and uptime claims.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+          {[
+            { title: "Recorded alerts", description: "Dated alert activity with source and delivery status where independently verified." },
+            { title: "Observed market moves", description: "Price observations are distinguished from realized returns and labeled with their available horizon." },
+            { title: "Historical intelligence", description: "Lane flow and research are presented with sample size, completeness and data freshness." },
+          ].map((item) => (
+            <div key={item.title} className="rounded-[13px] border border-stroke bg-surface p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6">
+              <div className="mb-3 h-[2px] w-8 rounded-full bg-gold/80" aria-hidden="true" />
+              <h3 className="font-display text-[17px] font-semibold text-silver">{item.title}</h3>
+              <p className="mt-2 text-[12px] leading-[1.8] text-muted">{item.description}</p>
+            </div>
+          ))}
+        </div>
       </motion.section>
 
       <SectionDivider />

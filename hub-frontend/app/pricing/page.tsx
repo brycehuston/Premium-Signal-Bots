@@ -701,6 +701,46 @@ export default function PricingPage() {
           <h2 id="alpha-systems-heading" className="mt-2 font-display text-[26px] font-semibold tracking-tight text-silver sm:text-[34px]">ALPHA SYSTEMS</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted">Beyond signal alerts. Purpose-built research and future systems, presented without premature launch or profit claims.</p>
         </div>
+        {/* Alpha Pulse is market intelligence, not a seventh trading-alert lane. */}
+        <div className="mt-7 overflow-hidden rounded-[16px] border border-[#89cff0]/30 bg-[#10151a] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="grid gap-6 p-6 sm:p-8 md:grid-cols-[minmax(0,1.25fr)_minmax(230px,.75fr)] md:items-center md:gap-10">
+            <div className="min-w-0">
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <span className="grid h-11 w-11 place-items-center rounded-xl border border-[#89cff0]/35 bg-[#89cff0]/10 text-[#89cff0]" aria-hidden="true">
+                  <svg viewBox="0 0 40 40" width="29" height="29" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 24h7l4-10 7 17 5-14 4 7h7" />
+                    <path d="M5 34h30M5 7h30" opacity=".38" />
+                  </svg>
+                </span>
+                <span className="rounded-full border border-[#89cff0]/30 bg-[#89cff0]/[0.07] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.13em] text-[#a7d9ee]">
+                  Market intelligence / Research preview
+                </span>
+              </div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#89cff0]">Understand the environment before the alert</p>
+              <h3 className="mt-2 font-display text-[32px] font-semibold tracking-[-0.025em] text-[#ebebed] sm:text-[42px]">
+                ALPHA <span className="text-[#89cff0]">PULSE</span>
+              </h3>
+              <p className="mt-3 max-w-xl text-sm leading-[1.85] text-[#b6b9c2]">
+                Market-regime context for BTC, ETH and SOL. Track directional structure, changing risk conditions
+                and potential regime transitions with multi-timeframe evidence instead of relying on a single indicator.
+              </p>
+            </div>
+            <div className="min-w-0 border-t border-[#89cff0]/20 pt-5 md:border-l md:border-t-0 md:py-1 md:pl-7">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.19em] text-[#89cff0]">Research focus</p>
+              <ul className="mt-4 space-y-3 text-[12px] leading-relaxed text-[#c7c9d0]">
+                {["BTC / ETH / SOL market context", "Multi-timeframe state confirmation", "Risk posture and invalidation levels", "Regime shifts and capital rotation"].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#89cff0]" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 border-t border-[#89cff0]/20 pt-4 text-[10px] font-semibold uppercase tracking-[0.13em] text-[#a7b2bf]">
+                Access &amp; pricing not announced · No checkout
+              </p>
+            </div>
+          </div>
+        </div>
         <div className="mt-7 grid gap-6 lg:grid-cols-2">
           <div className="group relative min-w-0 rounded-card p-px transition-transform duration-200 hover:-translate-y-0.5"
                style={{background:"linear-gradient(145deg,#d8b8798c,rgba(255,255,255,.09) 50%,#d8b87924)"}}>

@@ -7,12 +7,12 @@
   color-scheme: dark;
 
   /* Core tokens (RGB triplets for alpha support) */
-  --bg: 5 5 6;
-  --surface: 12 13 16;
-  --surface2: 16 18 23;
-  --text: 229 230 234;
+  --bg: 9 9 11;
+  --surface: 16 17 21;
+  --surface2: 22 23 27;
+  --text: 235 235 237;
   --muted: 165 168 176;
-  --stroke: 44 46 53;
+  --stroke: 38 39 44;
   --stroke2: 60 64 73;
   --success: 52 211 153;
   --danger: 248 113 113;
@@ -21,8 +21,8 @@
   /* Brand metals */
   --silver: 215 217 222;
   --silver-strong: 243 244 246;
-  --gold: 200 163 81;
-  --gold2: 217 180 96;
+  --gold: 231 188 103;
+  --gold2: 242 218 171;
   --gold3: 170 132 58;
 
   /* Plan tones */

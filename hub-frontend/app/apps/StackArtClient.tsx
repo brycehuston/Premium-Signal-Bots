@@ -29,12 +29,16 @@ export function StackArtClient() {
     let active = true;
     let inView = typeof IntersectionObserver === "undefined";
     let loaded = document.readyState === "complete";
+    let assetsReady = false;
+    // Keep the original 4.2s first-look pause on desktop; scrolling users on
+    // smaller screens should not encounter a blank visual for that long.
+    const holdMs = window.innerWidth <= 650 ? 1000 : window.innerWidth <= 880 ? 2300 : 4200;
     let timer: number | undefined;
     let observer: IntersectionObserver | null = null;
     const schedule = () => {
       if (timer !== undefined) window.clearTimeout(timer);
       timer = undefined;
-      if (!active || !loaded || !inView || document.visibilityState !== "visible") return;
+      if (!active || !loaded || !assetsReady || !inView || document.visibilityState !== "visible") return;
       timer = window.setTimeout(() => {
         timer = undefined;
         if (!active || !inView || document.visibilityState !== "visible") return;
@@ -42,13 +46,26 @@ export function StackArtClient() {
         observer?.disconnect();
         document.removeEventListener("visibilitychange", schedule);
         window.removeEventListener("load", markLoaded);
-      }, 4200);
+      }, holdMs);
     };
     const markLoaded = () => {
       loaded = true;
       schedule();
     };
     if (!loaded) window.addEventListener("load", markLoaded);
+    // A tile must be decoded before its entrance begins. The same URLs are
+    // consumed by the SVG image layers, so the decoded images are cacheable.
+    Promise.all(plates.map(({ source }) => new Promise<void>((resolve) => {
+      const image = new window.Image();
+      image.onload = () => resolve();
+      image.onerror = () => resolve();
+      image.src = source;
+      if (image.complete) resolve();
+    }))).then(() => {
+      if (!active) return;
+      assetsReady = true;
+      schedule();
+    });
     if (typeof IntersectionObserver !== "undefined") {
       observer = new IntersectionObserver((entries) => {
         const visible = entries.some((entry) => entry.isIntersecting);
@@ -80,7 +97,7 @@ export function StackArtClient() {
     >
       <svg
         className={styles.stackPulseOverlay}
-        viewBox="31 18 292 314"
+        viewBox="20 8 314 338"
         preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
         focusable="false"

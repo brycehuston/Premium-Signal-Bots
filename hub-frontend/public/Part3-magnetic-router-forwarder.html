@@ -3282,7 +3282,8 @@
 
             // Navigate after the dive ends (no flicker)
             setTimeout(() => {
-              window.location.href = TARGET_URL;
+              const navTarget = (window.top && window.top !== window) ? window.top : window;
+              navTarget.location.href = TARGET_URL;
             }, DIVE_MS);
           }
 
