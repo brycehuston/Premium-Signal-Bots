@@ -24,7 +24,7 @@ for(const {w,h} of sizes)for(const stage of [1,2,3]){
   const r=await page.goto(base+route,{waitUntil:"domcontentloaded",timeout:35000});
   const iframe=page.locator("iframe").first();
   await iframe.waitFor({timeout:17000});
-  const frame=await iframe.contentFrame();
+  const frame=await (await iframe.elementHandle()).contentFrame();
   if(!frame)throw Error("Missing embedded frame "+stage);
   await frame.locator(".frame").waitFor({timeout:18000});
   await page.waitForTimeout(1900);
