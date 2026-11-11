@@ -1334,7 +1334,7 @@ export default function Page() {
   };
 
   return (
-    <div className="alpha-home-headings relative flex flex-col gap-8 md:gap-10">
+    <div className="alpha-home-headings relative flex flex-col overflow-x-clip gap-8 md:gap-10">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute -top-36 left-10 h-[26rem] w-[26rem] rounded-full bg-gold/10 blur-[140px]"
