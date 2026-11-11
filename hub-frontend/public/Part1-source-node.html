@@ -510,6 +510,17 @@
     .mobileNextHint { display:none; position:absolute; z-index:9; left:50%; bottom:calc(55px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); max-width:90vw; white-space:nowrap; color:#e7bc67; border:1px solid rgba(231,188,103,.36); background:rgba(9,9,11,.85); border-radius:999px; padding:9px 13px; font:700 10px/1.4 "Sora",ui-sans-serif,system-ui,sans-serif; letter-spacing:.11em; pointer-events:none; text-align:center; }
     @media (hover:none), (pointer:coarse) { .mobileNextHint {display:block;} }
     #cv:focus-visible {outline:2px solid #e7bc67;outline-offset:-4px;}
+    /* Landscape phones: fit the complete three-source → VPS workflow.
+       No content scroll, only a tighter short-height composition. */
+    @media (max-height: 500px) and (min-width: 521px) {
+      .stage { padding: 0; }
+      .frame { width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0; }
+      .brandMark { top:7px;left:10px;padding:5px 8px;font-size:9px;letter-spacing:.15em; }
+      .brandMark .brandPhase {padding:3px 7px;letter-spacing:.10em;}
+      .workflowNote {display:none;}
+      .sphereHint {font-size:9px;letter-spacing:.12em;padding:5px 8px;}
+    }
+
   </style>
 </head>
 
@@ -1216,18 +1227,18 @@
       function getLayout(baseCoreR) {
         const isNarrow = W < 520;
         const isTiny = W < 380;
-        const srcY = H * (isNarrow ? 0.23 : 0.115);
-        let bottomLabelY = clamp(
-          H * (isNarrow ? 0.82 : 0.92),
-          H * (isNarrow ? 0.70 : 0.80),
-          H - (isNarrow ? 32 : 44)
-        );
-        bottomLabelY -= isNarrow ? 10 : 45;
+        const isShort = H < 520;
+        // A short landscape canvas cannot fit the desktop vertical offsets.
+        // Adapt the source, core and footer as one coherent geometry.
+        const srcY = H * (isShort ? (isNarrow ? 0.31 : 0.20) : (isNarrow ? 0.23 : 0.115));
+        let bottomLabelY = isShort
+          ? Math.min(H - 30, H * 0.85)
+          : clamp(H * (isNarrow ? 0.82 : 0.92), H * (isNarrow ? 0.70 : 0.80), H - (isNarrow ? 32 : 44)) - (isNarrow ? 10 : 45);
 
         let sinkY = (srcY + bottomLabelY) * 0.52;
-        const minSinkY = srcY + 110 + baseCoreR;
-        const maxSinkY = bottomLabelY - 70 - baseCoreR;
-        sinkY = clamp(sinkY, minSinkY, maxSinkY);
+        const minSinkY = srcY + (isShort ? 24 : 110) + baseCoreR;
+        const maxSinkY = bottomLabelY - (isShort ? 26 : 70) - baseCoreR;
+        sinkY = clamp(sinkY, minSinkY, Math.max(minSinkY, maxSinkY));
 
         const leftX = clamp(W * (isNarrow ? 0.22 : 0.32), isNarrow ? 56 : 140, W * 0.44);
         const midX = W * 0.50;
@@ -1936,7 +1947,7 @@
         ctx.restore();
 
 
-        const baseCoreR = Math.min(W, H) * CFG.coreRadiusMul;
+        const baseCoreR = Math.min(W, H) * (H < 520 ? Math.min(CFG.coreRadiusMul, 0.15) : CFG.coreRadiusMul);
         const L = getLayout(baseCoreR);
 
         // Core center + radius (during dive we pull it to true center)
