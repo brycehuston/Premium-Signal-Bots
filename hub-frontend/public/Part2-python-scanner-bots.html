@@ -1654,6 +1654,45 @@
       .panel,.routerDock {animation:none!important;transition:none!important}
     }
 
+    /* Alpha lane identity / final color-grade calibration.
+       These variables were previously referenced but not assigned.
+       Match the RGB values of the canvas reactors; keep restrained surfaces. */
+    .panel[data-bot="EARLY"]   { --lane-color:#a3ce64; --lane-rgb:163,206,100; }
+    .panel[data-bot="GENESIS"] { --lane-color:#b987f5; --lane-rgb:185,135,245; }
+    .panel[data-bot="TREND"]   { --lane-color:#8ed5f3; --lane-rgb:142,213,243; }
+    .panel[data-bot="STRICT"]  { --lane-color:#f4797d; --lane-rgb:244,121,125; }
+    .panel[data-bot="RECLAIM"] { --lane-color:#56d9d3; --lane-rgb:86,217,211; }
+    .panel[data-bot="RUNNER"]  { --lane-color:#edb861; --lane-rgb:237,184,97; }
+    .panel {
+      border-color:rgba(149,161,174,.36);
+      background:
+        radial-gradient(ellipse 67% 65% at 52% 46%,rgba(var(--lane-rgb),.105),transparent 76%),
+        linear-gradient(151deg,#22252b 0%,#14171d 56%,#1b2026 100%);
+      box-shadow:inset 0 1px 0 rgba(225,229,235,.11),inset 0 -1px 0 rgba(0,0,0,.34),0 12px 28px rgba(0,0,0,.21);
+    }
+    .panel::before {
+      opacity:1;
+      background:radial-gradient(ellipse 58% 62% at 50% 52%,rgba(var(--lane-rgb),.135),transparent 81%);
+    }
+    .panel::after { opacity:.95; box-shadow:0 0 10px rgba(var(--lane-rgb),.22); }
+    .panel.is-scanning {
+      border-color:rgba(var(--lane-rgb),.58);
+      background:
+        radial-gradient(ellipse 66% 66% at 50% 51%,rgba(var(--lane-rgb),.19),transparent 78%),
+        linear-gradient(151deg,#262b32 0%,#171b21 58%,#1d242b 100%);
+      box-shadow:inset 0 1px 0 rgba(231,236,242,.14),0 0 0 1px rgba(var(--lane-rgb),.10),0 14px 34px rgba(0,0,0,.28);
+    }
+    .panelTitle .name {color:var(--lane-color)!important;text-shadow:0 0 14px rgba(var(--lane-rgb),.18);}
+    .panelLed {opacity:.82;box-shadow:0 0 12px rgba(var(--lane-rgb),.38);}
+    .panel.is-scanning .panelLed {opacity:1;box-shadow:0 0 13px rgba(var(--lane-rgb),.68);}
+    .title .scan {color:#e7bc67;text-shadow:0 0 21px rgba(231,188,103,.13);}
+    .railCenter {color:#c7cbd1;}
+    @media (max-width:560px) {
+      .panel {border-color:rgba(149,161,174,.38);}
+      .panel::before {background:radial-gradient(ellipse 64% 66% at 50% 50%,rgba(var(--lane-rgb),.16),transparent 78%);}
+      .panelTitle .name {text-shadow:none;}
+    }
+
   </style>
 </head>
 
@@ -3941,7 +3980,7 @@
     }
 
     const LANES = [
-      {id:"EARLY",coreId:"coreEarly",color:[240,199,106],highlight:[255,233,164]},
+      {id:"EARLY",coreId:"coreEarly",color:[163,206,100],highlight:[224,245,180]},
       {id:"GENESIS",coreId:"coreGenesis",color:[185,135,245],highlight:[239,208,255]},
       {id:"TREND",coreId:"coreTrend",color:[142,213,243],highlight:[224,244,255]},
       {id:"STRICT",coreId:"coreStrict",color:[244,121,125],highlight:[255,207,213]},
