@@ -799,79 +799,45 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mt-12 grid items-start gap-10 md:gap-8 lg:grid-cols-2">
-        <Card className="h-full">
-          <CardBody className="space-y-6">
-            <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">
-              What happens after you pay
-            </div>
-            <ol className="space-y-5">
-              <li className="flex items-start gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold leading-none">
-                  1
-                </div>
-                <div>
-                  <div className="text-small font-semibold text-silver">
-                    We confirm your payment
+      <section className="mt-14 grid items-stretch gap-5 lg:grid-cols-2" aria-label="Access and subscription information">
+        <Card className="h-full !rounded-[16px] border-[#34353a] bg-[#101115] !shadow-none hover:!translate-y-0 hover:!shadow-none">
+          <CardBody className="p-6 sm:p-8">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-gold">AFTER YOU REQUEST ACCESS</p>
+            <h2 className="mt-3 font-display text-[24px] font-semibold tracking-[-0.025em] text-[#f0f0f2] sm:text-[30px]">From request to private alerts.</h2>
+            <p className="mt-3 max-w-md text-[13px] leading-[1.8] text-[#b9bbc3]">Availability is confirmed before payment. Each step is handled directly with the team.</p>
+            <ol className="mt-7 space-y-3">
+              {[
+                { title: "Confirm your plan", detail: "Contact support to confirm the lane is available and receive the current payment instructions." },
+                { title: "Verify your payment", detail: "If approved, send your USDC on Solana transaction link and Telegram username to support." },
+                { title: "Receive your invite", detail: "After verification, we send access to the private Telegram channel tied to your plan." },
+              ].map((item, index) => (
+                <li key={item.title} className="flex min-w-0 items-start gap-4 rounded-[11px] border border-[#303138] bg-[#16171b] p-4 sm:p-5">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-gold/40 bg-gold/10 font-display text-[13px] font-semibold text-[#f0cd8a]">{index + 1}</span>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-[14px] font-semibold text-[#f0f0f2]">{item.title}</h3>
+                    <p className="mt-1.5 text-[12px] leading-[1.8] text-[#b7b9c2]">{item.detail}</p>
                   </div>
-                  <div className="text-small text-muted leading-relaxed">
-                    Manual USDC on Solana, verified by the team. After payment, send your transaction link + Telegram username to support.
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold leading-none">
-                  2
-                </div>
-                <div>
-                  <div className="text-small font-semibold text-silver">You get your invite</div>
-                  <div className="text-small text-muted leading-relaxed">
-                    We add your Telegram and send channel access.
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-4 rounded-card border border-stroke/60 bg-surface/70 p-4">
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-gold/15 text-gold text-sm font-semibold leading-none">
-                  3
-                </div>
-                <div>
-                  <div className="text-small font-semibold text-silver">Alerts start flowing</div>
-                  <div className="text-small text-muted leading-relaxed">
-                    Live signals, links, and filters straight to Telegram.
-                  </div>
-                </div>
-              </li>
+                </li>
+              ))}
             </ol>
-            <div className="text-small text-muted/80 leading-relaxed">
-              Need help? Message us after purchase and we will onboard you.
-            </div>
           </CardBody>
         </Card>
-
-        <Card className="h-full">
-          <CardBody className="space-y-4">
-            <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/80">
-              Details
-            </div>
-            <div className="divide-y divide-stroke/60 rounded-card border border-stroke/60 bg-surface/70">
-              <div className="p-4">
-                <div className="text-small font-semibold text-silver">How delivery works</div>
-                <div className="mt-2 text-small text-muted leading-relaxed">
-                  Alerts are delivered in Telegram channels tied to your plan.
+        <Card className="h-full !rounded-[16px] border-[#34353a] bg-[#101115] !shadow-none hover:!translate-y-0 hover:!shadow-none">
+          <CardBody className="p-6 sm:p-8">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-gold">SERVICE DETAILS</p>
+            <h2 className="mt-3 font-display text-[24px] font-semibold tracking-[-0.025em] text-[#f0f0f2] sm:text-[30px]">Know what to expect.</h2>
+            <p className="mt-3 max-w-md text-[13px] leading-[1.8] text-[#b9bbc3]">Clear delivery and subscription information without hidden checkout promises.</p>
+            <div className="mt-7 overflow-hidden rounded-[11px] border border-[#303138] bg-[#16171b]">
+              {[
+                { title: "Delivery", detail: "Available alerts are delivered to the private Telegram channels included in your verified plan." },
+                { title: "Payment", detail: "Manual USDC on Solana. Request access before sending funds; checkout is not enabled until the configuration is verified." },
+                { title: "Cancellation", detail: "Contact support before your next billing cycle to cancel or discuss your subscription." },
+              ].map((item, index) => (
+                <div key={item.title} className={`px-5 py-5 ${index ? "border-t border-[#303138]" : ""}`}>
+                  <h3 className="font-display text-[14px] font-semibold text-[#f0f0f2]">{item.title}</h3>
+                  <p className="mt-2 text-[12px] leading-[1.8] text-[#b7b9c2]">{item.detail}</p>
                 </div>
-              </div>
-              <div className="p-4">
-                <div className="text-small font-semibold text-silver">Payment method</div>
-                <div className="mt-2 text-small text-muted leading-relaxed">
-                  Manual USDC on Solana for now. We confirm and invite you quickly. Manual verification keeps access clean and stops shared invites.
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="text-small font-semibold text-silver">Cancellation</div>
-                <div className="mt-2 text-small text-muted leading-relaxed">
-                  Cancel any time by messaging support before your next cycle.
-                </div>
-              </div>
+              ))}
             </div>
           </CardBody>
         </Card>
