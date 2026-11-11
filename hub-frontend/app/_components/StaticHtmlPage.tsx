@@ -27,8 +27,8 @@ export default function StaticHtmlPage({ src, phaseId }: StaticHtmlPageProps) {
       <a
         href={src}
         aria-label={`Open ${phaseId} directly without the embedded viewer`}
-        className="fixed right-3 top-3 z-[70] rounded-lg border border-[#3d3f45]/70 bg-[#090a0c]/80 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#aeb2bc] transition-colors hover:border-[#e7bc67]/50 hover:text-[#e7bc67] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e7bc67] sm:right-5 sm:top-5"
-        style={{ textDecoration: "none" }}
+        className="fixed right-3 bottom-3 z-[70] rounded-lg border border-[#3d3f45]/70 bg-[#090a0c]/80 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#aeb2bc] transition-colors hover:border-[#e7bc67]/50 hover:text-[#e7bc67] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e7bc67] sm:right-5 sm:bottom-5"
+        style={{ textDecoration: "none", bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
       >
         Direct view
       </a>
