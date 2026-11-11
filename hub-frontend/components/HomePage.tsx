@@ -6,6 +6,7 @@ import { animate, motion, useReducedMotion, useScroll, useTransform } from "fram
 import type { Variants } from "framer-motion";
 import type { Easing } from "motion-utils";
 import { Webhook } from "lucide-react";
+import ProductRoadmapSection from "./ProductRoadmapSection";
 import HeroChart from "@/components/HeroChart";
 import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
 
@@ -841,15 +842,11 @@ type StepItemProps = {
 
 function StepItem({ step, order, title, description }: StepItemProps) {
   return (
-      <li
-        className={`how-step how-step-${order} flex h-full gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4.5 shadow-soft md:p-5`}
-      >
-      <div className="how-step-badge mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-semibold tabular-nums leading-none">
-        {step}
-      </div>
-      <div className="space-y-1">
-        <div className="how-step-title text-small font-semibold">{title}</div>
-        <div className="how-step-desc text-small">{description}</div>
+    <li className={`how-step how-step-${order} flex h-full min-w-0 items-start gap-4 rounded-[13px] border p-5 sm:p-6`}>
+      <span className="how-step-badge grid h-10 w-10 shrink-0 place-items-center rounded-full font-display text-[15px] font-semibold tabular-nums" aria-hidden="true">{step}</span>
+      <div className="min-w-0 space-y-2">
+        <h3 className="how-step-title font-display text-[15px] font-semibold tracking-[-0.01em]">{title}</h3>
+        <p className="how-step-desc max-w-[32ch] text-[13px] leading-[1.75]">{description}</p>
       </div>
     </li>
   );
@@ -903,29 +900,6 @@ const ROADMAP_ITEMS: RoadmapItem[] = [
       "Animated packets are illustrative, not a live Telegram delivery counter",
     ],
     cta: { label: "VIEW STAGE 3", href: "/stage-3" },
-  },
-  {
-    step: 4,
-    title: "Stage 4 ALPHA Access Token",
-    tag: "PLANNED",
-    bullets: [
-      "Pay for subscriptions with $ALPHA (optional)",
-      "Discounts for paying with $ALPHA",
-      "Staking perks (beta access, extra features, priority drops)",
-      "Community votes on roadmap priorities",
-    ],
-    disclaimer: "Real Utility Token. Built for Access and Features.",
-  },
-  {
-    step: 5,
-    title: "Stage 5 🧭 Pro Dashboard + Self-Serve Billing",
-    tag: "PLANNED",
-    bullets: [
-      "Self-serve checkout (no more manual payments)",
-      "Alert history + search + saved filters",
-      "Performance reports (hit rate, drawdown, best horizons)",
-      "Webhook delivery (TradingView, Discord, your own bots)",
-    ],
   },
 ];
 
@@ -1004,7 +978,7 @@ const RoadmapSection = memo(function RoadmapSection() {
 
   return (
     <section
-      id="roadmap"
+      id="system-walkthrough"
       className="relative overflow-hidden rounded-card border border-stroke/70 bg-surface/70 p-6 shadow-soft md:p-10"
     >
       <div
@@ -1012,12 +986,12 @@ const RoadmapSection = memo(function RoadmapSection() {
         className="pointer-events-none absolute -top-24 left-1/2 h-52 w-[520px] -translate-x-1/2 rounded-full bg-gold/12 blur-[110px]"
       />
       <div className="relative">
-        <div className="text-eyebrow uppercase tracking-[0.35em] text-gold/70">Release Plan</div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.23em] text-gold">SYSTEM WALKTHROUGH / THREE STAGES</div>
         <div className="mt-4 grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-end">
           <div className="space-y-3">
             <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold drop-shadow-[0_18px_50px_rgb(var(--gold)/0.25)]">
-                Roadmap
+                Inside the Alpha pipeline
               </span>
             </h2>
             <div className="h-px w-24 bg-gradient-to-r from-gold/80 via-gold/40 to-transparent" />
@@ -1028,9 +1002,8 @@ const RoadmapSection = memo(function RoadmapSection() {
               className="absolute left-0 top-2 hidden h-10 w-px bg-gradient-to-b from-gold/70 via-gold/30 to-transparent md:block"
             />
             <p className="text-body text-muted leading-relaxed">
-              Explore the production VPS and the visual scanner-to-forwarder workflow.{" "}
-              <span className="text-silver">Animated stage previews are illustrative</span>,{" "}
-              not live delivery telemetry.
+              Three interactive illustrations follow the journey from on-chain sources to scanning and Telegram routing.{" "}
+              <span className="text-silver">The scenes explain the architecture, not live delivery telemetry.</span>
             </p>
           </div>
         </div>
@@ -1056,8 +1029,6 @@ const RoadmapSection = memo(function RoadmapSection() {
             const hasMore = extraBullets.length > 0;
             const isExpanded = !!expanded[item.step];
             const extraId = `roadmap-extra-${item.step}`;
-            const isStageFour = item.step === 4;
-            const stageFourTitle = "ALPHA Access Token";
 
             return (
               <div
@@ -1135,14 +1106,7 @@ const RoadmapSection = memo(function RoadmapSection() {
                         </span>
                         <h3 className="font-display text-title-lg md:text-h3 font-semibold text-silver leading-snug break-words">
                           <span className="block max-w-full text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold drop-shadow-[0_12px_30px_rgb(var(--gold)/0.35)]">
-                            {isStageFour ? (
-                              <span className="inline-flex items-center gap-2">
-                                <span className="stage4-emoji">🜂</span>
-                                <span>{stageFourTitle}</span>
-                              </span>
-                            ) : (
-                              titleRest
-                            )}
+                            {titleRest}
                           </span>
                         </h3>
                       </div>
@@ -1655,29 +1619,29 @@ export default function Page() {
         className={`how-it-works ${howInView ? "how-it-works--active" : ""} rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft md:p-8`}
       >
         <SectionHeading
-          eyebrow="How it works"
-          title="Go Live In 3 Steps"
-          subtitle="Pick a plan, pay in USDC, get invited to your private Telegram channel."
-          className="space-y-3"
+          eyebrow="HOW ACCESS WORKS"
+          title="Go live in three steps."
+          subtitle="Choose an available plan, confirm payment instructions with support, and receive access to your private Telegram channel."
+          className="space-y-4"
         />
-        <ol className="mt-6 grid items-stretch gap-4 md:grid-cols-3 md:auto-rows-fr">
+        <ol className="mt-8 grid items-stretch gap-4 md:grid-cols-3 md:auto-rows-fr">
           <StepItem
             step={1}
             order={1}
             title="Pick Your Plan"
-            description="Choose an available plan and explore all six alert lanes."
+            description="Choose an available plan and request access. New lane offerings may still be pending."
           />
           <StepItem
             step={2}
             order={2}
-            title="Pay + Send Proof"
-            description="Pay USDC on Solana, then message your transaction link + Telegram username."
+            title="Verify Payment"
+            description="Follow confirmed payment instructions, then send your transaction link and Telegram username to support."
           />
           <StepItem
             step={3}
             order={3}
             title="Get Your Invite"
-            description="We verify and invite you. Alerts start flowing."
+            description="After verification, receive the invite to the private channel included in your plan."
           />
         </ol>
       </motion.section>
@@ -2356,6 +2320,10 @@ export default function Page() {
 
       <motion.div {...revealProps}>
         <RoadmapSection />
+      </motion.div>
+
+      <motion.div {...revealProps}>
+        <ProductRoadmapSection />
       </motion.div>
 
       <motion.section
