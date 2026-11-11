@@ -100,7 +100,8 @@ for (const {w,h} of [{w:390,h:844},{w:844,h:390}]) {
     await page.waitForURL("**/stage-2",{timeout:14000});
     const router=page.frameLocator("iframe").locator("#routerBtn");
     await router.waitFor({timeout:18000});
-    await router.click({timeout:12000});
+    if(w<500) await router.tap({timeout:12000,noWaitAfter:true});
+    else await router.click({timeout:12000,noWaitAfter:true});
     await page.waitForURL("**/stage-3",{timeout:14000});
     const go=page.frameLocator("iframe").locator("#goAlphaBtn");
     await go.waitFor({timeout:18000});
