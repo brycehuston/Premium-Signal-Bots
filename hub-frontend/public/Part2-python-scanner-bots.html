@@ -1464,6 +1464,196 @@
       .routerBtn::after{animation:none!important}
     }
 
+
+    /* ALPHA COMMAND CENTER v2 — readability, breathing room, and optical contrast.
+       The v1 surface was over-muted and the duplicate microcopy crowded the artwork.
+       Keep the existing six canvas instruments, sequence and Stage 3 navigation. */
+    :root {--panelGap:clamp(20px,2.1vw,30px);--headerHeight:108px}
+    .stage {background:radial-gradient(ellipse 74% 84% at 50% 42%,#171b20 0%,#0b0d11 50%,#050608 100%)}
+    .frame {
+      width:min(1450px,calc(100vw - 36px));
+      height:min(830px,calc(100dvh - 38px));
+      background:
+        radial-gradient(ellipse 78% 69% at 50% 39%,rgba(117,132,146,.115),transparent 67%),
+        linear-gradient(143deg,#14171c 0%,#0d1014 52%,#111419 100%);
+      border-color:rgba(150,164,177,.34);
+      box-shadow:0 30px 85px rgba(0,0,0,.48),inset 0 1px 0 rgba(222,230,237,.095);
+    }
+    .frame::after {
+      background:radial-gradient(ellipse 56% 28% at 50% 8%,rgba(216,177,107,.075),transparent 82%);
+      opacity:1;
+    }
+    .badgeStack {top:24px;left:29px;max-width:none}
+    .workflowNote {display:none}
+    .brandText {color:#e0e4e9}
+    .brandMark {gap:11px}
+    .phaseTag {border-color:rgba(236,192,116,.42);color:#f3cc8d}
+    .header {height:108px;padding:22px 28px 0}
+    .header::after {bottom:3px;left:29px;right:29px;opacity:.62}
+    .titleBlock {top:22px;width:min(660px,52%)}
+    .title {
+      font-size:clamp(24px,2.85vw,38px);
+      letter-spacing:.085em;
+      font-weight:800;gap:10px;
+      text-shadow:0 2px 15px rgba(0,0,0,.36);
+    }
+    .title .py {color:#f5f6f7}
+    .title .scan {color:#f0c981;text-shadow:0 0 18px rgba(223,181,108,.14)}
+    .title .bots {color:#d8dee5}
+    .titleMeta {display:none}
+    .controlMenu {position:absolute;right:27px;top:22px;z-index:24}
+    .controlMenu summary {
+      list-style:none;cursor:pointer;user-select:none;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      height:33px;padding:0 12px;
+      border:1px solid rgba(149,161,174,.31);
+      border-radius:7px;background:rgba(27,31,38,.86);
+      color:#c9d0d8;font:700 10px/1 "Sora",ui-sans-serif,system-ui;
+      letter-spacing:.115em;
+      transition:background .2s,border-color .2s;
+    }
+    .controlMenu summary::-webkit-details-marker {display:none}
+    .controlMenu summary::marker {content:""}
+    .controlMenu summary:hover,.controlMenu summary:focus-visible {
+      border-color:rgba(230,191,125,.75);background:#24282f;outline-offset:3px;
+    }
+    .controlMenu summary span {color:#efc987;font-size:16px;line-height:1;transform:translateY(-2px)}
+    .controlMenu[open] summary span {transform:rotate(180deg) translateY(2px)}
+    .controlMenu .master {
+      position:absolute;top:43px;right:0;
+      display:flex;align-items:center;gap:7px;
+      width:max-content;padding:10px;
+      border:1px solid rgba(160,171,184,.35);border-radius:10px;
+      background:#191e24;box-shadow:0 16px 42px rgba(0,0,0,.48);
+    }
+    .controlMenu .master .pill {background:#11161b;color:#e5e8ec}
+    .controlMenu .master .btn {border-color:rgba(166,180,191,.3);background:#10151a}
+    .commandRail {
+      top:106px;left:50%;right:auto;transform:translateX(-50%);
+      width:max-content;max-width:90%;min-height:32px;
+      padding:0;border:0;justify-content:center;pointer-events:none;
+    }
+    .railSide {display:none}
+    .railCenter {
+      color:#c4ccd4;font-size:10px;font-weight:700;
+      letter-spacing:.14em;line-height:1.6;white-space:normal;text-align:center;
+    }
+    .railCenter::before {background:#e2b66c;box-shadow:0 0 0 3px rgba(223,177,101,.15)}
+    .clusterWrap {
+      height:calc(100% - 108px);
+      padding:56px clamp(32px,3.3vw,54px) 108px;
+      overflow:hidden;justify-content:center;
+    }
+    .cluster {
+      max-width:1220px;max-height:500px;
+      gap:var(--panelGap);
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-rows:repeat(2,minmax(0,1fr));
+    }
+    .panel {
+      border:1px solid rgba(158,176,191,.33);
+      border-radius:16px;
+      background:
+        radial-gradient(ellipse 65% 63% at 50% 48%,rgba(90,107,124,.22),transparent 74%),
+        linear-gradient(148deg,#20252c 0%,#13171c 56%,#1b2027 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(220,229,237,.11),
+        inset 0 -1px 0 rgba(2,5,9,.45),
+        0 10px 25px rgba(0,0,0,.22);
+      animation-duration:.44s;
+      contain:paint;
+    }
+    .panel::before {
+      opacity:1;
+      background:radial-gradient(ellipse 39% 57% at 50% 53%,color-mix(in srgb,var(--lane-color) 13%,transparent),transparent 84%);
+    }
+    .panel::after {left:21px;width:46px;opacity:.88;height:2px;background:var(--lane-color);border-radius:999px}
+    .panel.is-scanning {
+      border-color:color-mix(in srgb,var(--lane-color) 43%,rgba(164,183,199,.43));
+      background:
+        radial-gradient(ellipse 64% 60% at 50% 50%,color-mix(in srgb,var(--lane-color) 12%,transparent),transparent 74%),
+        linear-gradient(148deg,#232a31,#161b21 56%,#1d232a);
+    }
+    .panel.is-scanning::after {width:64px}
+    .panelHead {top:19px;left:20px;right:19px;gap:9px}
+    .panelIdentity {gap:0}
+    .panelEyebrow,.panelFooter,.panelStateText {display:none}
+    .panelTitle {font-size:clamp(13px,1.25vw,17px);letter-spacing:.12em;gap:8px;white-space:nowrap}
+    .panelTitle .alpha {color:#f1f3f6}
+    .panelTitle .name {text-shadow:0 0 12px color-mix(in srgb,var(--lane-color) 14%,transparent)}
+    .panelState {padding:4px 0}
+    .panelLed {
+      background:var(--lane-color);opacity:.74;width:6px;height:6px;
+      box-shadow:0 0 9px color-mix(in srgb,var(--lane-color) 29%,transparent);
+    }
+    .panel.is-scanning .panelLed {opacity:1;box-shadow:0 0 10px color-mix(in srgb,var(--lane-color) 58%,transparent)}
+    .signalPath {display:none}
+    .routerDock {
+      bottom:22px;min-width:280px;
+      padding:9px 22px 9px 10px;gap:14px;
+      border-color:rgba(209,177,122,.47);
+      background:linear-gradient(135deg,#252a30,#171c22 90%);
+      box-shadow:inset 0 1px 0 rgba(246,222,178,.105),0 10px 25px rgba(0,0,0,.23);
+    }
+    .routerDock::before {
+      content:"";position:absolute;bottom:100%;left:50%;width:1px;height:18px;
+      background:linear-gradient(0deg,rgba(233,192,123,.65),transparent);
+      pointer-events:none;
+    }
+    .routerBtn {border-color:rgba(236,194,124,.55);background:linear-gradient(140deg,rgba(238,194,118,.22),rgba(16,20,25,.6))}
+    .routerLabel .outIndex {display:none}
+    .routerLabel strong {font-size:13px;letter-spacing:.10em;color:#f2f3f5}
+    .routerLabel small {font-size:9px;color:#c7cbd0}
+    @media (max-height:760px) and (min-width:981px) {
+      .frame {height:calc(100dvh - 20px)}
+      .clusterWrap {padding-top:45px;padding-bottom:104px}
+      .cluster {gap:18px}
+      .routerDock {bottom:14px}
+    }
+    @media (max-width:980px) {
+      :root {--panelGap:17px}
+      .stage {padding:9px}
+      .frame {width:calc(100vw - 18px);height:calc(100dvh - 18px);padding:14px}
+      .badgeStack {position:relative;top:auto;left:auto;max-width:100%;width:auto;margin:0 0 8px}
+      .header {position:relative;height:auto;min-height:0;padding:14px 0 10px}
+      .titleBlock {position:static;transform:none;width:100%}
+      .title {font-size:clamp(22px,3vw,30px);letter-spacing:.08em}
+      .controlMenu {position:absolute;top:15px;right:15px}
+      .commandRail {position:relative;top:auto;left:auto;transform:none;width:100%;margin:0 auto;min-height:28px}
+      .clusterWrap {flex:1 1 auto;height:auto;max-height:none;padding:12px 12px 118px;overflow-y:auto;justify-content:flex-start}
+      .cluster {height:auto;max-height:none;max-width:750px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;gap:17px}
+      .panel {height:clamp(207px,24vh,264px);min-height:207px}
+      .panelTitle {font-size:14px}
+      .routerDock {bottom:14px}
+    }
+    @media (max-width:560px) {
+      .stage{padding:0}
+      .frame {height:100dvh;width:100vw;padding:10px 11px 0;border:0;border-radius:0}
+      .badgeStack {margin:2px 0 9px}
+      .brandText{font-size:9px}
+      .controlMenu {top:11px;right:11px}
+      .controlMenu summary {height:30px;padding:0 8px;font-size:9px}
+      .controlMenu .master {max-width:calc(100vw - 22px);flex-wrap:wrap;justify-content:center}
+      .header {padding:13px 0 8px}
+      .title {font-size:clamp(20px,5.5vw,25px);gap:6px;letter-spacing:.055em}
+      .commandRail {min-height:26px}
+      .railCenter{font-size:9px;letter-spacing:.07em}
+      .clusterWrap {padding:12px 3px 109px;overflow-y:auto}
+      .cluster {gap:12px}
+      .panel {height:clamp(185px,22svh,210px);min-height:185px;border-radius:12px}
+      .panelHead {top:14px;left:12px;right:12px}
+      .panelTitle {font-size:clamp(11px,2.85vw,13px);letter-spacing:.045em;gap:4px}
+      .panelLed {width:5px;height:5px}
+      .routerDock {bottom:12px;min-width:0;width:calc(100% - 24px);padding:8px 12px;gap:12px}
+      .routerBtn{width:48px;height:48px}
+      .routerLabel strong{font-size:11px}
+      .routerLabel small{font-size:8px}
+      .routerDock::before {display:none}
+    }
+    @media(prefers-reduced-motion:reduce) {
+      .panel,.routerDock {animation:none!important;transition:none!important}
+    }
+
   </style>
 </head>
 
@@ -1488,12 +1678,15 @@
           <div class="titleMeta">SIX SCANNER LANES · ONE SIGNAL PATH</div>
         </div>
 
-        <div class="master">
-          <div class="pill" id="masterReadout">TILT 0.00</div>
-          <button class="btn" id="masterUp" title="Tilt all up">▲</button>
-          <button class="btn" id="masterDown" title="Tilt all down">▼</button>
-          <button class="btn sfxBtn" id="sfxToggle" title="Toggle sound effects">SFX</button>
-        </div>
+        <details class="controlMenu">
+          <summary aria-label="Show scanner controls">CONTROLS <span aria-hidden="true">⌄</span></summary>
+          <div class="master">
+            <div class="pill" id="masterReadout">TILT 0.00</div>
+            <button class="btn" id="masterUp" title="Tilt all up" aria-label="Tilt scanner grid up">▲</button>
+            <button class="btn" id="masterDown" title="Tilt all down" aria-label="Tilt scanner grid down">▼</button>
+            <button class="btn sfxBtn" id="sfxToggle" title="Toggle sound effects">SFX</button>
+          </div>
+        </details>
       </div>
 
       <div class="commandRail" aria-label="Illustrative scanner topology">
@@ -2981,14 +3174,14 @@
         g.shadowBlur = 0;
 
         const chrome = g.createLinearGradient(-radius, -radius, radius, radius);
-        chrome.addColorStop(0, "#87949f");
+        chrome.addColorStop(0, "#a3b1bf");
         chrome.addColorStop(.13, "#47545f");
         chrome.addColorStop(.28, "#161b22");
-        chrome.addColorStop(.42, "#8c98a4");
+        chrome.addColorStop(.42, "#b0beca");
         chrome.addColorStop(.59, "#222d36");
-        chrome.addColorStop(.76, "#a0adb6");
+        chrome.addColorStop(.76, "#c0cad4");
         chrome.addColorStop(.90, "#38424d");
-        chrome.addColorStop(1, "#75838d");
+        chrome.addColorStop(1, "#91a1af");
         ring(radius * .946, radius * .137, chrome);
         ring(radius * 1.020, 1.0, "rgba(179,193,204,.32)");
         ring(radius * .866, 1.8, "rgba(5,8,12,.95)");
@@ -3025,7 +3218,7 @@
         // A restrained lane-colored secondary dial embedded inside steel.
         g.shadowColor = rgba(this.KNOBS.coreA, .30);
         g.shadowBlur = 4;
-        ring(radius * .738, 1.1, rgba(this.KNOBS.coreA, .52));
+        ring(radius * .738, 1.1, rgba(this.KNOBS.coreA, .67));
         g.shadowBlur = 0;
         ring(radius * .728, .75, "rgba(207,220,229,.25)");
 
