@@ -7,6 +7,7 @@ import type { Variants } from "framer-motion";
 import type { Easing } from "motion-utils";
 import { Webhook } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
+import RollingNumber from "@/components/RollingNumber";
 import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
 
 declare global {
@@ -2327,27 +2328,35 @@ export default function Page() {
 
       <SectionDivider />
 
-      <motion.section {...revealProps} aria-labelledby="alpha-evidence-title" className="space-y-7">
+      <motion.section {...revealProps} aria-labelledby="alpha-numbers-title" className="space-y-7">
         <div className="mx-auto max-w-3xl space-y-3 text-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gold">EVIDENCE BEFORE HYPE</p>
-          <h2 id="alpha-evidence-title" className="font-display text-[27px] font-semibold tracking-[-0.025em] text-silver sm:text-[36px]">
-            Clear records. <span className="text-gold">Honest context.</span>
+          <p className="text-[10px] font-bold uppercase tracking-[0.23em] text-gold">SYSTEM AT A GLANCE</p>
+          <h2 id="alpha-numbers-title" className="font-display text-[28px] font-semibold tracking-[-0.025em] text-silver sm:text-[38px]">
+            Alpha. <span className="text-gold">By the numbers.</span>
           </h2>
           <p className="mx-auto max-w-2xl text-[13px] leading-[1.85] text-muted sm:text-sm">
-            Market activity and research are meaningful only when their source, timestamp and observation limits are visible.
-            We do not present theoretical peaks as executed profits or publish unmeasured latency and uptime claims.
+            Six distinct alert lanes, three interactive system stages and two planned blockchain expansions.
+            These are system and roadmap counts, not latency, uptime or trading-performance claims.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-3 md:gap-5">
           {[
-            { title: "Recorded alerts", description: "Dated alert activity with source and delivery status where independently verified." },
-            { title: "Observed market moves", description: "Price observations are distinguished from realized returns and labeled with their available horizon." },
-            { title: "Historical intelligence", description: "Lane flow and research are presented with sample size, completeness and data freshness." },
-          ].map((item) => (
-            <div key={item.title} className="rounded-[13px] border border-stroke bg-surface p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6">
-              <div className="mb-3 h-[2px] w-8 rounded-full bg-gold/80" aria-hidden="true" />
-              <h3 className="font-display text-[17px] font-semibold text-silver">{item.title}</h3>
-              <p className="mt-2 text-[12px] leading-[1.8] text-muted">{item.description}</p>
+            { value: 6, label: "ALPHA LANES", detail: "Six distinct scanner identities" },
+            { value: 3, label: "SYSTEM STAGES", detail: "Interactive workflow walkthrough" },
+            { value: 2, label: "FUTURE CHAINS", detail: "BSC + ETH · planned, not live" },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-[15px] border border-[#32343a] bg-[#131417] p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-7">
+              <div className="flex min-h-[50px] items-center justify-center">
+                <RollingNumber
+                  value={stat.value}
+                  durationMs={1650}
+                  staggerMs={70}
+                  cycles={1}
+                  className="font-display text-[42px] font-semibold tracking-[-0.035em] text-[#f0f0f2] sm:text-[48px]"
+                />
+              </div>
+              <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.20em] text-[#e7bc67]">{stat.label}</div>
+              <p className="mt-2 text-[12px] leading-[1.65] text-[#b7b9c2]">{stat.detail}</p>
             </div>
           ))}
         </div>

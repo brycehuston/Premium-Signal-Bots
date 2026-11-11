@@ -1540,7 +1540,7 @@
     const frameEl = document.getElementById("frame");
     const IS_COARSE = window.matchMedia && window.matchMedia("(max-width: 820px), (pointer: coarse)").matches;
     const PREFERS_REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const DPR_CAP = PREFERS_REDUCED ? 1.2 : (IS_COARSE ? 1.35 : 1.75);
+    const DPR_CAP = PREFERS_REDUCED ? 1 : (IS_COARSE ? 1.2 : 1.35);
     const fadeOutEl = document.getElementById("fadeOut");
     const portalCanvas = document.getElementById("portalFx");
     const portalCtx = portalCanvas.getContext("2d", { alpha: true, desynchronized: true });
@@ -1715,7 +1715,7 @@
 
     const WHITE = [255, 255, 255];
 
-    class ReactorCore {
+       class ReactorCore {
       constructor(rootEl, botName, accentRGB, accent2RGB, overlayDispatchFn) {
         this.root = rootEl;
         this.botName = botName;
@@ -1743,8 +1743,8 @@
           sparkSpeed: 0.009,
           ringThickness: 0.25,
           ringBrightness: Math.min(profile.ringBrightness * 1.00, 1.30),
-          sparks: 155, // fewer, brighter particles to lower frame cost
-          bgStars: 55,
+          sparks: 60, // cached sprite ring with bounded frame cost
+          bgStars: 24,
           dprMax: DPR_CAP,
           radarRadiusMul: 0.84,
           gridAlpha: 0.105,
@@ -1765,8 +1765,8 @@
         if (IS_MOBILE) {
           this.KNOBS.maxDots = 2;
           this.KNOBS.dotAlpha = 0.8;
-          this.CFG.sparks = 88;
-          this.CFG.bgStars = 30;
+          this.CFG.sparks = 34;
+          this.CFG.bgStars = 16;
           this.CFG.zapSegs = 20;
           this.CFG.zapJitter = 4;
           this.CFG.vignette = 0.4;
@@ -1831,11 +1831,18 @@
         const dpr = Math.max(1, Math.min(this.CFG.dprMax, window.devicePixelRatio || 1));
         this.DPR = dpr;
 
-        this.W = Math.max(1, Math.floor(r.width));
-        this.H = Math.max(1, Math.floor(r.height));
-
-        this.canvas.width = Math.floor(this.W * dpr);
-        this.canvas.height = Math.floor(this.H * dpr);
+        const w = Math.max(1, Math.floor(r.width));
+        const h = Math.max(1, Math.floor(r.height));
+        const pw = Math.max(1, Math.floor(w * dpr));
+        const ph = Math.max(1, Math.floor(h * dpr));
+        // Resize may be fired repeatedly by the mobile browser chrome.
+        if (this.W === w && this.H === h &&
+            this.canvas.width === pw && this.canvas.height === ph &&
+            this.metalBezel && this.sparkSprite) return;
+        this.W = w;
+        this.H = h;
+        this.canvas.width = pw;
+        this.canvas.height = ph;
         this.canvas.style.width = this.W + "px";
         this.canvas.style.height = this.H + "px";
 
@@ -1844,6 +1851,7 @@
         this.initStars();
         this.initSparks();
         this.buildMetalBezel();
+        this.buildSparkSprite();
       }
 
       project3D(x, y, z, cx, cy) {
@@ -2506,6 +2514,23 @@
         }
       }
 
+      // Cached once per resize; reuse for all projected orbit particles.
+      buildSparkSprite() {
+        const sprite = document.createElement("canvas");
+        sprite.width = 48;
+        sprite.height = 48;
+        const g = sprite.getContext("2d");
+        if (!g) { this.sparkSprite = null; return; }
+        const fill = g.createRadialGradient(24, 24, 0, 24, 24, 23);
+        fill.addColorStop(0, "rgba(255,252,247,.96)");
+        fill.addColorStop(.18, rgba(this.KNOBS.coreB, .90));
+        fill.addColorStop(.53, rgba(this.KNOBS.coreA, .30));
+        fill.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = fill;
+        g.fillRect(0, 0, 48, 48);
+        this.sparkSprite = sprite;
+      }
+
       drawRing(cx, cy, baseR, t) {
         const ctx = this.ctx;
         const ringR = baseR * this.KNOBS.ringRadiusMul;
@@ -2531,26 +2556,17 @@
 
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
-
         for (const d of list) {
-          const glow = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.size * 4.6);
-          glow.addColorStop(0.0, rgba(this.KNOBS.coreB, d.a * 0.78));
-          glow.addColorStop(0.7, rgba(this.KNOBS.coreB, d.a * 0.16));
-          glow.addColorStop(1.0, "rgba(0,0,0,0)");
-          ctx.fillStyle = glow;
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, d.size * 1.05, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.globalCompositeOperation = "screen";
-          ctx.fillStyle = `rgba(255,252,247,${clamp(d.a * 1.28, 0, 1)})`;
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, Math.max(1.1, d.size * 0.58), 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.globalCompositeOperation = "lighter";
+          if (!Number.isFinite(d.x) || !Number.isFinite(d.y)) continue;
+          const radius = Math.max(3, d.size * 3.0);
+          ctx.globalAlpha = clamp(d.a, .12, .95);
+          if (this.sparkSprite) {
+            ctx.drawImage(this.sparkSprite, d.x - radius, d.y - radius, radius * 2, radius * 2);
+          } else {
+            ctx.fillStyle = rgba(this.KNOBS.coreB, .7);
+            ctx.fillRect(d.x - 1, d.y - 1, 2, 2);
+          }
         }
-
         ctx.restore();
       }
 
@@ -2837,7 +2853,7 @@
       }
     }
 
-    class PacketOverlay {
+ class PacketOverlay {
       constructor(canvas, frameEl, routerEl) {
         this.canvas = canvas;
         this.frame = frameEl;
@@ -3385,7 +3401,11 @@
       overlay.resize();
       resizePortal();
     }
-    window.addEventListener("resize", () => setTimeout(resizeAll, 0));
+    let resizeTimer = 0;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resizeAll, 140);
+    }, { passive: true });
     const clusterWrap = document.querySelector(".clusterWrap");
     if (clusterWrap) {
       clusterWrap.addEventListener("scroll", () => overlay.updateAnchors(), { passive: true });
@@ -3421,7 +3441,7 @@
         rafId = 0;
         return;
       }
-      if (!loop.lastDraw || nowMs - loop.lastDraw >= (IS_MOBILE ? 1000/24 : 1000/40)) {
+      if (!loop.lastDraw || nowMs - loop.lastDraw >= (IS_COARSE ? 1000/24 : 1000/30)) {
         loop.lastDraw = nowMs;
         for (const core of cores) {
           if (!visibleCores.has(core)) continue;
