@@ -3381,9 +3381,15 @@
       document.getElementById(lane.coreId), lane.id, lane.color, lane.highlight,
       (bot, payload) => overlay.spawnPacketFromZap(bot, payload)
     ));
-    // Avoid rendering hidden mobile cards, and cap work to prevent six canvases from janking.
-    const visibleCores = new Set(cores);
+    // Determine initial visible panels before the first animation frame.
+    // IntersectionObserver keeps this set current after mobile/tablet scrolling.
     const clusterScroll = document.querySelector(".clusterWrap");
+    const scrollBounds = clusterScroll && clusterScroll.getBoundingClientRect();
+    const visibleCores = new Set(cores.filter(core => {
+      if (!scrollBounds || !("IntersectionObserver" in window)) return true;
+      const rect = core.root.getBoundingClientRect();
+      return rect.bottom >= scrollBounds.top - 48 && rect.top <= scrollBounds.bottom + 48;
+    }));
     if ("IntersectionObserver" in window && clusterScroll) {
       const observer = new IntersectionObserver(entries => {
         for (const entry of entries) {
@@ -3441,7 +3447,8 @@
         rafId = 0;
         return;
       }
-      if (!loop.lastDraw || nowMs - loop.lastDraw >= (IS_COARSE ? 1000/24 : 1000/30)) {
+      // Small timestamp tolerance avoids irregular 30/20 fps cadence on 60 Hz screens.
+      if (!loop.lastDraw || nowMs - loop.lastDraw >= (1000 / 30 - 2)) {
         loop.lastDraw = nowMs;
         for (const core of cores) {
           if (!visibleCores.has(core)) continue;
