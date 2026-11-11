@@ -23,36 +23,29 @@ export function StackArtClient() {
       return;
     }
 
-    // The entrance starts only after both the page has finished loading and
-    // the hero has remained in view for 4.2 seconds. Hidden tabs never consume
-    // the delay; unmount or scroll-away cancels the pending entrance.
+    // Begin shortly after the actual tile assets are ready and the hero enters
+    // view. Reading the heading should never require staring at a blank scene.
+    // A hidden tab or scrolled-away hero does not consume the intro delay.
     let active = true;
     let inView = typeof IntersectionObserver === "undefined";
-    let loaded = document.readyState === "complete";
     let assetsReady = false;
-    // Keep the original 4.2s first-look pause on desktop; scrolling users on
-    // smaller screens should not encounter a blank visual for that long.
-    const holdMs = window.innerWidth <= 650 ? 1000 : window.innerWidth <= 880 ? 2300 : 4200;
+    // First-look pacing: a short beat before bottom/middle/top assemble.
+    // The 1.24s assembly then finishes while the visitor reads hero copy.
+    const holdMs = window.innerWidth <= 650 ? 650 : window.innerWidth <= 880 ? 900 : 1200;
     let timer: number | undefined;
     let observer: IntersectionObserver | null = null;
     const schedule = () => {
       if (timer !== undefined) window.clearTimeout(timer);
       timer = undefined;
-      if (!active || !loaded || !assetsReady || !inView || document.visibilityState !== "visible") return;
+      if (!active || !assetsReady || !inView || document.visibilityState !== "visible") return;
       timer = window.setTimeout(() => {
         timer = undefined;
         if (!active || !inView || document.visibilityState !== "visible") return;
         setEntered(true);
         observer?.disconnect();
         document.removeEventListener("visibilitychange", schedule);
-        window.removeEventListener("load", markLoaded);
       }, holdMs);
     };
-    const markLoaded = () => {
-      loaded = true;
-      schedule();
-    };
-    if (!loaded) window.addEventListener("load", markLoaded);
     // A tile must be decoded before its entrance begins. The same URLs are
     // consumed by the SVG image layers, so the decoded images are cacheable.
     Promise.all(plates.map(({ source }) => new Promise<void>((resolve) => {
@@ -83,7 +76,6 @@ export function StackArtClient() {
       if (timer !== undefined) window.clearTimeout(timer);
       observer?.disconnect();
       document.removeEventListener("visibilitychange", schedule);
-      window.removeEventListener("load", markLoaded);
     };
   }, []);
 
