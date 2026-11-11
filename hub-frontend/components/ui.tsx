@@ -58,10 +58,10 @@ export function SectionHeading({
   return (
     <div className={cn("space-y-3", alignClass, className)}>
       {eyebrow ? (
-        <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">{eyebrow}</div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.23em] text-gold/90">{eyebrow}</div>
       ) : null}
-      <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">{title}</h2>
-      {subtitle ? <p className="text-body text-muted">{subtitle}</p> : null}
+      <h2 className="font-display text-h2 font-semibold leading-[1.15] tracking-[-0.025em] text-[#f0f0f2]">{title}</h2>
+      {subtitle ? <p className="text-[14px] leading-[1.8] text-[#b9bbc3]">{subtitle}</p> : null}
     </div>
   );
 }

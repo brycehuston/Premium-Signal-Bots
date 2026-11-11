@@ -8,24 +8,25 @@ import { Toaster } from "sonner";
 import React from "react";
 import BottomTickerBar from "@/components/BottomTickerBar";
 import Header from "@/components/Header";
+import HideOnStandalone from "@/components/HideOnStandalone";
 import StructuredData from "@/components/StructuredData";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import SupabaseProvider from "@/components/SupabaseProvider";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const display = Sora({ subsets: ["latin"], variable: "--font-display" });
-const BRAND = process.env.NEXT_PUBLIC_BRAND || "AlphaAlerts";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const BRAND = "Alpha Alerts";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://alphaalerts.dev";
 
 // Optional but nice: tell mobile browsers your theme color
 export const viewport: Viewport = {
-  themeColor: "#060606",
+  themeColor: "#09090b",
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${BRAND} Pro`,
+    default: `${BRAND} | Premium Crypto Signals`,
     template: `%s | ${BRAND}`,
   },
   description: "Premium crypto alerts with clean signals, smart filters, and fast delivery.",
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/favicon.ico",
+        url: "/alpha-lane-v4-logo.png",
       },
     ],
   },
@@ -45,13 +46,13 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${BRAND} Pro`,
     description: "Premium crypto alerts with clean signals, smart filters, and fast delivery.",
-    images: ["/favicon.ico"],
+    images: ["/alpha-lane-v4-logo.png"],
   },
 
   // Force favicon paths (App Router)
   icons: {
-    icon: [{ url: "/favicon.ico" }],
-    shortcut: [{ url: "/favicon.ico" }],
+    icon: [{ url: "/alpha-lane-v4-logo.png", type: "image/png" }],
+    shortcut: [{ url: "/alpha-lane-v4-logo.png", type: "image/png" }],
     apple: [],
   },
 };
@@ -87,7 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster richColors position="top-center" />
 
         {/* navbar */}
-        <Header brand={BRAND} />
+        <HideOnStandalone><Header brand={BRAND} /></HideOnStandalone>
 
         {/*
           IMPORTANT:
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Container>{children}</Container>
           </main>
 
+          <HideOnStandalone>
           <footer className="mt-14 border-t border-stroke/60">
             <Container>
               <div className="flex flex-col gap-3 py-8 text-small text-muted text-center sm:text-left sm:flex-row sm:items-center sm:justify-between">
@@ -115,18 +117,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <a className="hover:text-text" href="/contact" data-no-link-style>
                     Contact
                   </a>
+                  <a className="hover:text-text" href="/support" data-no-link-style>Support</a>
                 </div>
               </div>
             </Container>
           </footer>
+          </HideOnStandalone>
         </div>
 
         {/* Bottom live ticker bar (BTC / ETH / SOL + social links) */}
+        <HideOnStandalone>
         <BottomTickerBar
           telegramUrl={process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/alphaalerts"}
           xUrl={process.env.NEXT_PUBLIC_X_URL || "https://x.com/alphaalerts"}
           refreshMs={8000}
         />
+        </HideOnStandalone>
 
         <Analytics />
 

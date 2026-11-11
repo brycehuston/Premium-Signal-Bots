@@ -1,100 +1,52 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 type StaticHtmlPageProps = {
   src: string;
   phaseId: string;
 };
 
+/**
+ * Stage visualizations are standalone HTML applications with their own CSS,
+ * global handlers and requestAnimationFrame loops. A same-origin iframe keeps
+ * those resources isolated, and navigation destroys the previous document.
+ * Script injection into the Next document leaked styles and running loops.
+ */
 export default function StaticHtmlPage({ src, phaseId }: StaticHtmlPageProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const injectAttr = `data-phase-inject-${phaseId}`;
-    const prevOverflow = document.body.style.overflow;
-    const injectedScripts: HTMLScriptElement[] = [];
-    const injectedStyles: HTMLStyleElement[] = [];
-
-    const cleanup = () => {
-      document.head.querySelectorAll(`[${injectAttr}]`).forEach((node) => node.remove());
-      injectedScripts.forEach((script) => script.remove());
-      injectedStyles.forEach((style) => style.remove());
-      document.body.style.overflow = prevOverflow;
-      if (containerRef.current) containerRef.current.innerHTML = "";
-    };
-
-    const run = async () => {
-      const res = await fetch(src, { cache: "no-store" });
-      const html = await res.text();
-      if (cancelled) return;
-
-      const doc = new DOMParser().parseFromString(html, "text/html");
-      const container = containerRef.current;
-      if (!container) return;
-
-      cleanup();
-
-      document.body.style.overflow = "hidden";
-
-      for (const node of Array.from(doc.head.children)) {
-        if (node.tagName === "SCRIPT") continue;
-        const clone = node.cloneNode(true) as Element;
-        clone.setAttribute(injectAttr, "");
-        document.head.appendChild(clone);
-      }
-
-      const phaseStyle = document.createElement("style");
-      phaseStyle.setAttribute(injectAttr, "");
-      phaseStyle.textContent = `
-        body { overflow: hidden; }
-      `;
-      document.head.appendChild(phaseStyle);
-      injectedStyles.push(phaseStyle);
-
-      for (const node of Array.from(doc.body.children)) {
-        if (node.tagName === "SCRIPT") continue;
-        container.appendChild(node.cloneNode(true));
-      }
-
-      for (const script of Array.from(doc.querySelectorAll("script"))) {
-        const injected = document.createElement("script");
-        injected.setAttribute(injectAttr, "");
-        injected.type = script.type || "text/javascript";
-        if (script.src) {
-          injected.src = script.src;
-          injected.async = script.async;
-          injected.defer = script.defer;
-        } else {
-          injected.text = script.textContent || "";
-        }
-        document.body.appendChild(injected);
-        injectedScripts.push(injected);
-      }
-    };
-
-    run().catch(() => cleanup());
-
-    return () => {
-      cancelled = true;
-      cleanup();
-    };
-  }, [src, phaseId]);
-
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100vw",
-        height: "100dvh",
-        minHeight: "100vh",
-        zIndex: 40,
-        background: "#000",
-        overflow: "hidden",
-      }}
-    />
+    <div data-phase={phaseId} className="fixed inset-0 z-40 h-[100dvh] w-screen overflow-hidden bg-[#09090b]">
+      {phaseId === "stage-2" ? (
+        <style>{`@media (max-width:560px) {
+          [data-phase="stage-2"] > a {
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 105px) !important;
+          }
+        }`}</style>
+      ) : null}
+      <iframe
+        key={phaseId}
+        title={`Alpha Alerts — ${phaseId} system visualization`}
+        src={src}
+        loading="eager"
+        className="block h-full w-full border-0 bg-[#09090b]"
+        allowFullScreen
+      />
+      <a
+        href={src}
+        aria-label={`Open ${phaseId} directly without the embedded viewer`}
+        className="fixed right-3 bottom-3 z-[70] rounded-lg border border-[#3d3f45]/70 bg-[#090a0c]/80 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#aeb2bc] transition-colors hover:border-[#e7bc67]/50 hover:text-[#e7bc67] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e7bc67] sm:right-5 sm:bottom-5"
+        style={{ textDecoration: "none", bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
+      >
+        Direct view
+      </a>
+      <Link
+        href="/"
+        aria-label="Return to Alpha Alerts homepage"
+        className="fixed bottom-3 left-3 z-[70] inline-flex min-h-11 items-center rounded-lg border border-[#806b43]/70 bg-[#090a0c]/95 px-4 py-2 text-[11px] font-bold tracking-[0.12em] text-[#e7bc67] shadow-lg transition-colors hover:border-[#e7bc67] hover:bg-[#14151a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e7bc67] sm:bottom-5 sm:left-5"
+        style={{ textDecoration: "none", bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
+      >
+        ← ALPHA ALERTS
+      </Link>
+    </div>
   );
 }

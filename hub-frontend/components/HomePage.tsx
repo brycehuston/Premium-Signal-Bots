@@ -7,8 +7,8 @@ import type { Variants } from "framer-motion";
 import type { Easing } from "motion-utils";
 import { Webhook } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
-import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
 import RollingNumber from "@/components/RollingNumber";
+import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
 
 declare global {
   interface Window {
@@ -678,171 +678,158 @@ function FeatureRow({ active }: { active: boolean }) {
   );
 }
 
-type AlertReelTone = "bronze" | "platinum" | "gold";
-
-type AlertReelItem = {
+type VerifiedDailyAlert = {
   id: string;
-  tone: AlertReelTone;
-  label: string;
-  pair: string;
-  signal: string;
-  score: string;
-  meta: string[];
+  symbol: string;
+  lane: string;
+  score: number;
+  timestamp_utc: string;
+  alert_mc: number | null;
+  liquidity_usd: number | null;
+  m5_tx: number | null;
+  observed_peak_pct?: number | null;
+};
+type VerifiedDailyFeed = {
+  state: "loading" | "verified" | "archived" | "empty" | "unavailable";
+  as_of_utc?: string;
+  period?: "24h" | "7d" | null;
+  public_delay_minutes?: number;
+  reference_time_utc?: string;
+  hour_alert?: VerifiedDailyAlert | null;
+  alerts: VerifiedDailyAlert[];
 };
 
-const ALERT_REEL_ITEMS: AlertReelItem[] = [
-  {
-    id: "early",
-    tone: "bronze",
-    label: "EARLY",
-    pair: "SOL/USDC",
-    signal: "New pool detected + safety clear",
-    score: "Score 86",
-    meta: ["Liq 17k", "Holders 114", "Age 2m"],
-  },
-  {
-    id: "trend",
-    tone: "platinum",
-    label: "TREND",
-    pair: "SOL/USDC",
-    signal: "Momentum + continuation setup",
-    score: "Score 91",
-    meta: ["Tx 1.4k", "Vol +38%", "State BREAKING"],
-  },
-  {
-    id: "runner",
-    tone: "gold",
-    label: "RUNNER",
-    pair: "SOL/USDC",
-    signal: "Second-leg breakout confirmed",
-    score: "Score 88",
-    meta: ["Vol +52%", "Liq 410k", "Trend strong"],
-  },
-];
-
-const ALERT_REEL_TONES: Record<
-  AlertReelTone,
-  { text: string; dot: string; chip: string; scan: string }
-> = {
-  bronze: {
-    text: "text-bronze",
-    dot: "bg-bronze/80 shadow-[0_0_12px_rgb(var(--tone-bronze)/0.6)]",
-    chip: "border-bronze/40 text-bronze bg-bronze/10",
-    scan: "rgb(var(--tone-bronze) / 0.35)",
-  },
-  platinum: {
-    text: "text-platinum",
-    dot: "bg-platinum/80 shadow-[0_0_12px_rgb(var(--tone-platinum)/0.55)]",
-    chip: "border-platinum/40 text-platinum bg-platinum/10",
-    scan: "rgb(var(--tone-platinum) / 0.35)",
-  },
-  gold: {
-    text: "text-gold",
-    dot: "bg-gold/80 shadow-[0_0_12px_rgb(var(--gold)/0.55)]",
-    chip: "border-gold/40 text-gold bg-gold/10",
-    scan: "rgb(var(--gold) / 0.35)",
-  },
+const LANE_PALETTE: Record<string, { text: string; dot: string; chip: string; accent: string }> = {
+  EARLY: {text:"text-[#a3ce64]",dot:"bg-[#a3ce64]",chip:"border-[#a3ce64]/40 text-[#a3ce64]",accent:"#a3ce64"},
+  GENESIS: {text:"text-[#a78bfa]",dot:"bg-[#a78bfa]",chip:"border-[#a78bfa]/40 text-[#a78bfa]",accent:"#a78bfa"},
+  TREND: {text:"text-[#cdd7e2]",dot:"bg-[#cdd7e2]",chip:"border-[#cdd7e2]/40 text-[#cdd7e2]",accent:"#cdd7e2"},
+  STRICT: {text:"text-[#d97777]",dot:"bg-[#d97777]",chip:"border-[#d97777]/40 text-[#d97777]",accent:"#d97777"},
+  RECLAIM: {text:"text-[#4bb8d1]",dot:"bg-[#4bb8d1]",chip:"border-[#4bb8d1]/40 text-[#4bb8d1]",accent:"#4bb8d1"},
+  RUNNER: {text:"text-[#d8b879]",dot:"bg-[#d8b879]",chip:"border-[#d8b879]/40 text-[#d8b879]",accent:"#d8b879"},
 };
+
+function formatAlertMoney(n: number | null): string {
+  if (n === null || !Number.isFinite(n)) return "N/A";
+  return "$" + (n >= 1_000_000 ? (n/1_000_000).toFixed(2) + "M" : n >= 1_000 ? (n/1_000).toFixed(1) + "K" : Math.round(n).toLocaleString("en-US"));
+}
 
 function HeroAlertReel() {
-  const prefersReduced = useReducedMotion();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(true);
-
+  const [feed, setFeed] = useState<VerifiedDailyFeed>({state:"loading", alerts:[]});
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setAutoPlay((prev) => !prev);
-    }, 60000);
-    return () => window.clearInterval(id);
+    let mounted = true;
+    const controller = new AbortController();
+    async function refresh() {
+      if (document.hidden) return;
+      try {
+        const response = await fetch("/api/public/daily-top", { cache:"no-store",signal:controller.signal });
+        if (!response.ok) throw new Error("feed unavailable");
+        const data = await response.json();
+        if (mounted) setFeed({
+          state:data.state === "verified" || data.state === "archived" || data.state === "empty" ? data.state : "unavailable",
+          as_of_utc:data.as_of_utc,
+          reference_time_utc:data.reference_time_utc,
+          hour_alert:data.hour_alert&&typeof data.hour_alert==="object"?data.hour_alert:null,
+          period:data.period === "24h" || data.period === "7d" ? data.period : null,
+          public_delay_minutes:30,
+          alerts:Array.isArray(data.alerts) ? data.alerts.slice(0,3) : []
+        });
+      } catch {
+        if (mounted && !controller.signal.aborted) setFeed({state:"unavailable",alerts:[]});
+      }
+    }
+    refresh();
+    const timer = window.setInterval(refresh,60000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {mounted=false;controller.abort();window.clearInterval(timer);document.removeEventListener("visibilitychange",refresh);};
   }, []);
 
-  useEffect(() => {
-    if (prefersReduced || !autoPlay) return;
-    const id = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % ALERT_REEL_ITEMS.length);
-    }, 5200);
-    return () => window.clearInterval(id);
-  }, [prefersReduced, autoPlay]);
-
+  const archived = feed.state === "archived";
+  const available = (feed.state === "verified" || archived) && feed.alerts.length > 0;
+  const oneHour = available ? feed.hour_alert : null;
+  const distinctTokens = new Set(feed.alerts.map(a => a.symbol.toUpperCase())).size;
+  const distinctLanes = new Set(feed.alerts.map(a => a.lane)).size;
+  const outcomesMeasured = feed.alerts.filter(a => typeof a.observed_peak_pct === "number" && Number.isFinite(a.observed_peak_pct)).length;
+  const archiveAsOf = archived && feed.as_of_utc && Number.isFinite(Date.parse(feed.as_of_utc))
+    ? new Date(feed.as_of_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"}) : null;
   return (
-    <div className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-muted/80">
-          <span className="h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_10px_rgb(var(--gold)/0.55)]" />
-          Alert Reel
+    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Alpha Alerts recorded market heartbeat">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.23em] text-muted">
+          <span className="h-1.5 w-1.5 rounded-full bg-gold/70" aria-hidden="true"/>
+          {"ALPHA ALERTS / MARKET HEARTBEAT"}
         </div>
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted/70">
-          <span
-            className={[
-              "relative h-4 w-9 rounded-full border border-stroke/70 bg-surface/70 transition-colors",
-              autoPlay ? "border-emerald-400/40 bg-emerald-400/10" : "",
-            ].join(" ")}
-          >
-            <span
-              className={[
-                "absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full transition-transform",
-                autoPlay
-                  ? "translate-x-[18px] bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
-                  : "translate-x-[3px] bg-muted/70",
-              ].join(" ")}
-            />
-          </span>
-          <span
-            className={[
-              "h-2 w-2 rounded-full",
-              prefersReduced || !autoPlay ? "bg-muted/60" : "bg-success/80 animate-pulse",
-              "shadow-[0_0_10px_rgb(var(--success)/0.55)]",
-            ].join(" ")}
-          />
-          {autoPlay ? "Live" : "Idle"}
-        </div>
+        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available && !archived?"border-emerald-400/30 text-emerald-300":archived?"border-amber-300/40 text-amber-200":"border-stroke/60 text-muted"}`}>
+          {archived?"DATED HISTORICAL ARCHIVE":available?feed.period==="7d"?"RECORDED · 7D":"RECORDED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
+        </span>
       </div>
-
-      <div className="mt-3 space-y-3">
-        {ALERT_REEL_ITEMS.map((item, index) => {
-          const tone = ALERT_REEL_TONES[item.tone];
-          const isActive = index === activeIndex;
-          return (
-            <div
-              key={item.id}
-              className={[
-                "alert-reel-item",
-                isActive ? "alert-reel-item--active" : "opacity-70",
-              ].join(" ")}
-              style={{ ["--reel-color" as any]: tone.scan }}
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${tone.dot}`} />
-                  <span className={`text-[11px] font-semibold tracking-[0.35em] ${tone.text}`}>
-                    {item.label}
-                  </span>
-                </div>
-                <span className="text-[11px] uppercase tracking-[0.2em] text-muted/70">
-                  {item.pair}
-                </span>
-              </div>
-
-              <div className="mt-2 flex items-center justify-between gap-4 text-small">
-                <span className="text-silver">{item.signal}</span>
-                <span className="text-muted">{item.score}</span>
-              </div>
-
-              <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
-                {item.meta.map((meta) => (
-                  <span
-                    key={meta}
-                    className={`rounded-pill border px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${tone.chip}`}
-                  >
-                    {meta}
-                  </span>
-                ))}
-              </div>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
+        {archived ? `Dated entries from a signed public archive${archiveAsOf ? " · " + archiveAsOf : ""}. Individual delivery evidence is not independently reconciled. Historical, not live.` : `${feed.period === "7d" ? "Delayed public alerts from the past seven days." : "Delayed public alerts recorded during the past 24 hours."} Signed delivery records only; minimum 30-minute delay. Ranked by event time, not by score.`}
+      </p>
+      {available ? (
+        <div className="mt-4 space-y-2.5">
+          <div className="grid grid-cols-2 gap-2" aria-label="One-hour highlight and three recent alerts">
+            <div className="rounded-lg border border-stroke/60 bg-bg/45 p-3">
+              <div className="text-[9px] font-semibold tracking-wide text-muted">{archived?"LAST RECORDED 24H":feed.period==="7d"?"7D FALLBACK":"ROLLING 24H"}</div>
+              <strong className="mt-1 block text-lg tabular-nums text-silver">{feed.alerts.length} RECENT ALERTS</strong>
             </div>
-          );
-        })}
-      </div>
-    </div>
+            <div className="rounded-lg border border-stroke/60 bg-bg/45 p-3">
+              <div className="text-[9px] font-semibold tracking-wide text-muted">{archived?"LAST RECORDED HOUR":"LAST 1 HOUR"}</div>
+              <strong className="mt-1 block truncate text-xs text-[#e7bc67]">{oneHour?"$"+oneHour.symbol+" · "+oneHour.lane:"NO ELIGIBLE ALERT"}</strong>
+            </div>
+          </div>
+          {oneHour && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#aa8a51]/35 bg-[#aa8a51]/[0.045] px-3 py-2">
+            <span className="text-[10px] font-semibold tracking-wide text-[#e7bc67]">1H HIGHLIGHT · {oneHour.lane} / {"$"+oneHour.symbol}</span>
+            <span className="text-[10px] tabular-nums text-muted">RECORDED MC {formatAlertMoney(oneHour.alert_mc)} · {new Date(oneHour.timestamp_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"})}</span>
+          </div>}
+          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{archived?"THREE MOST RECENT · DATED HISTORICAL RECORDS":feed.period==="7d"?"THREE MOST RECENT · 7D":"THREE MOST RECENT · 24H"}</div>
+          <div className="grid grid-cols-3 gap-2 border-y border-stroke/50 py-3" aria-label="Actual alerts displayed in this panel">
+            <div><strong className="block text-lg font-bold tabular-nums text-silver">{feed.alerts.length}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Alerts shown</span></div>
+            <div><strong className="block text-lg font-bold tabular-nums text-silver">{distinctTokens}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Distinct tokens</span></div>
+            <div><strong className="block text-lg font-bold tabular-nums text-silver">{distinctLanes}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Lanes shown</span></div>
+          </div>
+          {feed.alerts.map((item, index) => {
+            const tone = LANE_PALETTE[item.lane] ?? LANE_PALETTE.TREND;
+            const clock = new Date(item.timestamp_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
+            const candidatePeak = item.observed_peak_pct;
+            const verifiedPeak = typeof candidatePeak === "number" && Number.isFinite(candidatePeak) && candidatePeak >= -100 && candidatePeak <= 100000 ? candidatePeak : null;
+            const hasPeak = verifiedPeak !== null;
+            const peakMultiple = hasPeak ? 1 + verifiedPeak / 100 : 0;
+            return (
+              <article key={item.id} className="rounded-xl border border-stroke/70 bg-bg/45 px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold tabular-nums text-muted">#{index+1}</span>
+                    <span className={`h-2 w-2 rounded-full ${tone.dot}`} style={{boxShadow:`0 0 0 3px ${tone.accent}1c`}} aria-hidden="true"/>
+                    <span className={`text-[11px] font-bold tracking-[0.2em] ${tone.text}`}>{item.lane}</span>
+                    <strong className="text-sm text-silver">${item.symbol}</strong>
+                  </div>
+                  <span className="text-[10px] tabular-nums text-muted">RECORDED {clock}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="rounded-full border border-[#72a5cf]/35 bg-[#72a5cf]/[0.07] px-2 py-1 text-[10px] text-[#a8cce7]">MC {formatAlertMoney(item.alert_mc)}</span>
+                  <span className="rounded-full border border-[#b28ad0]/35 bg-[#b28ad0]/[0.07] px-2 py-1 text-[10px] text-[#d1b0e5]">LIQ {formatAlertMoney(item.liquidity_usd)}</span>
+                  {item.m5_tx != null && <span className="rounded-full border border-[#69bd91]/35 bg-[#69bd91]/[0.07] px-2 py-1 text-[10px] text-[#a0dabb]">5M TX {item.m5_tx.toLocaleString("en-US")}</span>}
+                  {hasPeak && <span title="Highest price observed after this alert, based on monitored market data. Not a realized return or guaranteed profit." className={`rounded-full border px-2 py-1 text-[10px] font-medium tabular-nums ${verifiedPeak >= 0 ? "border-[#69bd91]/35 bg-[#69bd91]/[0.07] text-[#a0dabb]" : "border-[#d97777]/35 bg-[#d97777]/[0.07] text-[#e3a0a0]"}`}>
+                    {verifiedPeak >= 0 ? "↗" : "↘"} {peakMultiple.toFixed(2)}× · {verifiedPeak >= 0 ? "+" : ""}{verifiedPeak.toFixed(1)}% <span className="opacity-70">peak</span>
+                  </span>}
+                  <span className="ml-auto text-[10px] tabular-nums text-muted">{clock}</span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="mt-4 rounded-xl border border-stroke/60 bg-bg/40 px-4 py-8 text-center">
+          <div className="text-sm font-semibold text-silver">{feed.state==="loading"?"Checking verified alerts…":feed.state==="empty"?"No verified published alerts in the last 7 days":"Verified feed temporarily unavailable"}</div>
+          <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
+            Only signed records with proven Telegram delivery may appear here. Scanner candidates and modeled wins are never substituted.
+          </p>
+        </div>
+      )}
+      <p className="mt-3 text-[10px] leading-relaxed text-muted/70">
+        Market cap and liquidity are the values captured with each alert, not realized exits. {outcomesMeasured === 0 && available ? "Verified post-alert outcomes are not available for these records. " : ""}Do not interpret a recorded alert as a profitable trade.{archived ? " This is a dated signed archive while delivery-proof reconciliation is pending." : ""}
+      </p>
+    </section>
   );
 }
 
@@ -855,49 +842,13 @@ type StepItemProps = {
 
 function StepItem({ step, order, title, description }: StepItemProps) {
   return (
-      <li
-        className={`how-step how-step-${order} flex h-full gap-3 rounded-card border border-stroke/70 bg-surface/70 p-4.5 shadow-soft md:p-5`}
-      >
-      <div className="how-step-badge mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-semibold tabular-nums leading-none">
-        {step}
-      </div>
-      <div className="space-y-1">
-        <div className="how-step-title text-small font-semibold">{title}</div>
-        <div className="how-step-desc text-small">{description}</div>
+    <li className={`how-step how-step-${order} flex h-full min-w-0 items-start gap-4 rounded-[13px] border p-5 sm:p-6`}>
+      <span className="how-step-badge grid h-10 w-10 shrink-0 place-items-center rounded-full font-display text-[15px] font-semibold tabular-nums" aria-hidden="true">{step}</span>
+      <div className="min-w-0 space-y-2">
+        <h3 className="how-step-title font-display text-[15px] font-semibold tracking-[-0.01em]">{title}</h3>
+        <p className="how-step-desc max-w-[32ch] text-[13px] leading-[1.75]">{description}</p>
       </div>
     </li>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  decimals = 0,
-  suffix = "",
-  variants,
-}: {
-  label: string;
-  value: number;
-  decimals?: number;
-  suffix?: string;
-  variants?: Variants;
-}) {
-  return (
-    <motion.div
-      className="rounded-card border border-stroke/70 bg-surface/80 p-5 text-center shadow-soft"
-      variants={variants}
-      style={{ willChange: "transform, opacity" }}
-    >
-      <div className="mb-2 flex items-baseline justify-center gap-1">
-        <RollingNumber
-          value={value}
-          decimals={decimals}
-          suffix={suffix}
-          className="font-display tabular-nums text-2xl md:text-3xl font-semibold tracking-tight text-silver"
-        />
-      </div>
-      <div className="text-[11px] uppercase tracking-[0.28em] text-muted/80">{label}</div>
-    </motion.div>
   );
 }
 
@@ -1062,7 +1013,7 @@ const RoadmapSection = memo(function RoadmapSection() {
         className="pointer-events-none absolute -top-24 left-1/2 h-52 w-[520px] -translate-x-1/2 rounded-full bg-gold/12 blur-[110px]"
       />
       <div className="relative">
-        <div className="text-eyebrow uppercase tracking-[0.35em] text-gold/70">Release Plan</div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.23em] text-gold">Release Plan</div>
         <div className="mt-4 grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-end">
           <div className="space-y-3">
             <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
@@ -1184,7 +1135,7 @@ const RoadmapSection = memo(function RoadmapSection() {
                         <span className="text-eyebrow uppercase tracking-[0.35em] text-gold/70">
                           {phaseLabel}
                         </span>
-                        <h3 className="font-display text-title-lg md:text-h3 font-semibold text-silver leading-snug break-words">
+                        <h3 className="font-display text-title-lg md:text-h3 font-semibold tracking-[-0.025em] text-[#f0f0f2] leading-snug break-words">
                           <span className="block max-w-full text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold drop-shadow-[0_12px_30px_rgb(var(--gold)/0.35)]">
                             {isStageFour ? (
                               <span className="inline-flex items-center gap-2">
@@ -1207,7 +1158,7 @@ const RoadmapSection = memo(function RoadmapSection() {
 
                     <div className="mt-4 h-px w-full bg-gradient-to-r from-stroke/70 via-stroke/40 to-transparent" />
 
-                    <ul className="mt-4 space-y-3 text-small text-muted">
+                    <ul className="mt-4 space-y-3 text-[13px] leading-[1.7] text-[#b9bbc3]">
                       {previewBullets.map((bullet) => (
                         <li key={bullet} className="flex min-w-0 gap-3">
                           <span className="mt-2 h-1.5 w-1.5 rounded-full bg-gold/80 shadow-[0_0_10px_rgb(var(--gold)/0.6)]" />
@@ -1288,7 +1239,6 @@ const RoadmapSection = memo(function RoadmapSection() {
 
 export default function Page() {
   const { ref: featuresScope, inView: featuresInView } = useInView({ threshold: 0.2, once: true });
-  const { ref: statsRef } = useInView({ threshold: 0.35, once: true });
   const { ref: howRef, inView: howInView } = useInView({ threshold: 0.35, once: false });
   const { scrollYProgress } = useScroll();
   const glowDrift = useTransform(scrollYProgress, [0, 1], [0, 120]);
@@ -1302,20 +1252,14 @@ export default function Page() {
   });
   const shouldReduceMotion = useReducedMotion();
 
-  const [heroView, setHeroView] = useState<"chart" | "reel">("chart");
+  const [heroView, setHeroView] = useState<"chart" | "reel">("reel");
   const [showStealthCta, setShowStealthCta] = useState(false);
   const stealthTimerRef = useRef<number | null>(null);
   const [trustStep, setTrustStep] = useState(0);
   const trustTimersRef = useRef<number[]>([]);
   const trustCycleRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (shouldReduceMotion) return;
-    const id = window.setInterval(() => {
-      setHeroView((prev) => (prev === "chart" ? "reel" : "chart"));
-    }, 60000);
-    return () => window.clearInterval(id);
-  }, [shouldReduceMotion]);
+  // Preserve the visitor's chosen view; avoid surprising swaps while reading or interacting.
 
   const { ref: stealthRef, inView: stealthInView } = useInView({
     threshold: 0.25,
@@ -1405,33 +1349,13 @@ export default function Page() {
     viewport: { once: true, amount: 0.18 },
     transition: { duration: shouldReduceMotion ? 0 : 0.85, ease: EASE_OUT },
   };
-  const statsStagger = {
-    hidden: { opacity: 0, y: 16 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: shouldReduceMotion ? 0 : 0.7,
-        ease: [0.22, 1, 0.36, 1] as Easing,
-      },
-    },
-  };
-  const statsGroup = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: shouldReduceMotion ? 0 : 0.35,
-        delayChildren: shouldReduceMotion ? 0 : 0.2,
-      },
-    },
-  };
   const heroSwapTransition = {
     duration: shouldReduceMotion ? 0 : 0.9,
     ease: [0.22, 1, 0.36, 1] as Easing,
   };
 
   return (
-    <div className="relative flex flex-col gap-8 md:gap-10">
+    <div className="alpha-home-headings relative flex flex-col gap-8 md:gap-10">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute -top-36 left-10 h-[26rem] w-[26rem] rounded-full bg-gold/10 blur-[140px]"
@@ -1506,22 +1430,6 @@ export default function Page() {
               >
                 <button
                   type="button"
-                  onClick={() => setHeroView("chart")}
-                  aria-pressed={heroView === "chart"}
-                  aria-label="Show chart"
-                  className="relative -m-2 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
-                >
-                  <span
-                    className={[
-                      "block h-2.5 w-2.5 rounded-full transition",
-                      heroView === "chart"
-                        ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
-                        : "bg-stroke/70 hover:bg-silver/40",
-                    ].join(" ")}
-                  />
-                </button>
-                <button
-                  type="button"
                   onClick={() => setHeroView("reel")}
                   aria-pressed={heroView === "reel"}
                   aria-label="Show alert reel"
@@ -1531,6 +1439,22 @@ export default function Page() {
                     className={[
                       "block h-2.5 w-2.5 rounded-full transition",
                       heroView === "reel"
+                        ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
+                        : "bg-stroke/70 hover:bg-silver/40",
+                    ].join(" ")}
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeroView("chart")}
+                  aria-pressed={heroView === "chart"}
+                  aria-label="Show chart"
+                  className="relative -m-2 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                >
+                  <span
+                    className={[
+                      "block h-2.5 w-2.5 rounded-full transition",
+                      heroView === "chart"
                         ? "bg-gold shadow-[0_0_8px_rgb(var(--gold)/0.65)]"
                         : "bg-stroke/70 hover:bg-silver/40",
                     ].join(" ")}
@@ -1733,29 +1657,29 @@ export default function Page() {
         className={`how-it-works ${howInView ? "how-it-works--active" : ""} rounded-card border border-stroke/70 bg-surface/80 p-6 shadow-soft md:p-8`}
       >
         <SectionHeading
-          eyebrow="How it works"
-          title="Go Live In 3 Steps"
-          subtitle="Pick a plan, pay in USDC, get invited to your private Telegram channel."
-          className="space-y-3"
+          eyebrow="HOW ACCESS WORKS"
+          title="Go live in three steps."
+          subtitle="Choose an available plan, confirm payment instructions with support, and receive access to your private Telegram channel."
+          className="space-y-4"
         />
-        <ol className="mt-6 grid items-stretch gap-4 md:grid-cols-3 md:auto-rows-fr">
+        <ol className="mt-8 grid items-stretch gap-4 md:grid-cols-3 md:auto-rows-fr">
           <StepItem
             step={1}
             order={1}
             title="Pick Your Plan"
-            description="Early, Trend, Runner, or Bundle."
+            description="Choose an available plan and request access. New lane offerings may still be pending."
           />
           <StepItem
             step={2}
             order={2}
-            title="Pay + Send Proof"
-            description="Pay USDC on Solana, then message your transaction link + Telegram username."
+            title="Verify Payment"
+            description="Follow confirmed payment instructions, then send your transaction link and Telegram username to support."
           />
           <StepItem
             step={3}
             order={3}
             title="Get Your Invite"
-            description="We verify and invite you. Alerts start flowing."
+            description="After verification, receive the invite to the private channel included in your plan."
           />
         </ol>
       </motion.section>
@@ -1794,7 +1718,7 @@ export default function Page() {
               <div className="phase-grid">
                 <div className="phase-left">
                   <div className="phase-hero-line">Signal Pipeline</div>
-                  <div className="phase-support-line">ON-CHAIN IN • FILTER SCORE • ALERTS OUT</div>
+                  <div className="phase-support-line">ON-CHAIN DATA • LANE FILTERS • ALERTS OUT</div>
                   {/* NEW: CTA aligned left */}
                   <div className="phase-cta-wrap">
                     <Button href="/stage-1" size="md" className="phase-cta">
@@ -2404,51 +2328,38 @@ export default function Page() {
 
       <SectionDivider />
 
-      <motion.section ref={statsRef as any} className="space-y-7">
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.25 }}
-          className="space-y-7"
-        >
-          <motion.div variants={statsStagger}>
-            <SectionHeading
-              eyebrow="Performance"
-              title="Speed And Transparency"
-              subtitle="Beta metrics - directional only."
-            />
-          </motion.div>
-          <motion.div variants={statsGroup} className="grid gap-5 md:grid-cols-3 md:gap-4">
-            <StatCard
-              label="Median alert time"
-              value={120}
-              suffix="ms"
-              variants={statsStagger}
-            />
-            <StatCard
-              label="Pairs watched"
-              value={100}
-              suffix="+"
-              variants={statsStagger}
-            />
-            <StatCard
-              label="Uptime"
-              value={99.9}
-              decimals={1}
-              suffix="%"
-              variants={statsStagger}
-            />
-          </motion.div>
-          <motion.div variants={statsStagger} className="flex justify-center">
-            <Button
-              href="/pricing#plans"
-              size="md"
-              className="min-w-[150px] !rounded-[6px] !bg-[linear-gradient(135deg,rgb(var(--gold3)_/_0.95),rgb(var(--gold)_/_0.85))] !border-[rgb(var(--gold3)_/_0.9)] !shadow-[0_6px_16px_rgb(var(--gold3)/0.4)] hover:!shadow-[0_10px_24px_rgb(var(--gold3)/0.5)] !before:opacity-0 !after:opacity-0"
-            >
-              GO ALPHA
-            </Button>
-          </motion.div>
-        </motion.div>
+      <motion.section {...revealProps} aria-labelledby="alpha-numbers-title" className="space-y-7">
+        <div className="mx-auto max-w-3xl space-y-3 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.23em] text-gold">SYSTEM AT A GLANCE</p>
+          <h2 id="alpha-numbers-title" className="font-display text-[28px] font-semibold tracking-[-0.025em] text-silver sm:text-[38px]">
+            Alpha. <span className="text-gold">By the numbers.</span>
+          </h2>
+          <p className="mx-auto max-w-2xl text-[13px] leading-[1.85] text-muted sm:text-sm">
+            Six distinct alert lanes, three interactive system stages and two planned blockchain expansions.
+            These are system and roadmap counts, not latency, uptime or trading-performance claims.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+          {[
+            { value: 6, label: "ALPHA LANES", detail: "Six distinct scanner identities" },
+            { value: 3, label: "SYSTEM STAGES", detail: "Interactive workflow walkthrough" },
+            { value: 2, label: "FUTURE CHAINS", detail: "BSC + ETH · planned, not live" },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-[15px] border border-[#32343a] bg-[#131417] p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-7">
+              <div className="flex min-h-[50px] items-center justify-center">
+                <RollingNumber
+                  value={stat.value}
+                  durationMs={1650}
+                  staggerMs={70}
+                  cycles={1}
+                  className="font-display text-[42px] font-semibold tracking-[-0.035em] text-[#f0f0f2] sm:text-[48px]"
+                />
+              </div>
+              <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.20em] text-[#e7bc67]">{stat.label}</div>
+              <p className="mt-2 text-[12px] leading-[1.65] text-[#b7b9c2]">{stat.detail}</p>
+            </div>
+          ))}
+        </div>
       </motion.section>
 
       <SectionDivider />
