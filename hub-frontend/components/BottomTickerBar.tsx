@@ -57,7 +57,7 @@ function Chip({
   return (
     <div
       className={[
-        "relative flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[11px] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm",
+        "relative flex shrink-0 items-center gap-1 rounded-lg border px-1.5 py-1 text-[10px] min-[380px]:px-2 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm",
         "bg-surface/70 backdrop-blur border-stroke/60",
         flash === "up" ? "tick-flash-up" : "",
         flash === "down" ? "tick-flash-down" : "",
@@ -104,16 +104,12 @@ export default function BottomTickerBar({
 
   const timerRef = useRef<number | null>(null);
   const inFlightRef = useRef<boolean>(false);
-  const fearGreedTimerRef = useRef<number | null>(null);
-  const fearGreedInFlightRef = useRef<boolean>(false);
+  const previousPricesRef = useRef<PriceState>({ BTC: null, ETH: null, SOL: null });
   const pathname = usePathname();
-  const hideBar = pathname.startsWith("/stage-") || pathname === "/dashboard";
-  const shouldFetch =
-    !hideBar &&
-    (pathname === "/" ||
-      pathname.startsWith("/pricing") ||
-      pathname.startsWith("/waitlist") ||
-      pathname.startsWith("/pay"));
+  const hideBar = pathname.startsWith("/stage-") || pathname.startsWith("/dashboard");
+  const shouldFetch = !hideBar;
+  const marketPage = pathname === "/" || pathname.startsWith("/pricing") || pathname.startsWith("/waitlist") || pathname.startsWith("/pay");
+  const pollIntervalMs = marketPage ? refreshMs : Math.max(refreshMs, 30000);
 
   const url = useMemo(() => "/api/market", []);
 
@@ -122,18 +118,22 @@ export default function BottomTickerBar({
     inFlightRef.current = true;
 
     try {
-      const res = await fetch(url, { cache: "no-store" });
+      if (document.hidden) return;
+      const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(6500) });
+      if (!res.ok) throw new Error("market_unavailable");
       const j = await res.json();
+      const price = (value: unknown): number | null => typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
 
       const next: PriceState = {
-        BTC: j?.prices?.BTC ?? null,
-        ETH: j?.prices?.ETH ?? null,
-        SOL: j?.prices?.SOL ?? null,
+        BTC: price(j?.prices?.BTC),
+        ETH: price(j?.prices?.ETH),
+        SOL: price(j?.prices?.SOL),
       };
       const fg = j?.fearGreed ?? null;
 
+      const previous = previousPricesRef.current;
       (["BTC", "ETH", "SOL"] as Sym[]).forEach((sym) => {
-        const d = computeDir(prices[sym], next[sym]);
+        const d = computeDir(previous[sym], next[sym]);
         if (d !== "flat") {
           setFlash((p) => ({ ...p, [sym]: d }));
           setTimeout(() => {
@@ -143,13 +143,14 @@ export default function BottomTickerBar({
       });
 
       setDirs({
-        BTC: computeDir(prices.BTC, next.BTC),
-        ETH: computeDir(prices.ETH, next.ETH),
-        SOL: computeDir(prices.SOL, next.SOL),
+        BTC: computeDir(previous.BTC, next.BTC),
+        ETH: computeDir(previous.ETH, next.ETH),
+        SOL: computeDir(previous.SOL, next.SOL),
       });
 
+      previousPricesRef.current = next;
       setPrices(next);
-      if (fg != null) {
+      if (typeof fg === "number" && Number.isFinite(fg) && fg >= 0 && fg <= 100) {
         setFearGreedValue(fg);
         setFearGreed(mapFearGreed(fg));
       }
@@ -166,16 +167,12 @@ export default function BottomTickerBar({
       return;
     }
     fetchPrices();
-    timerRef.current = window.setInterval(fetchPrices, refreshMs);
+    timerRef.current = window.setInterval(fetchPrices, pollIntervalMs);
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshMs, shouldFetch]);
-
-  useEffect(() => {
-    if (fearGreedTimerRef.current) window.clearInterval(fearGreedTimerRef.current);
-  }, []);
+  }, [pollIntervalMs, shouldFetch]);
 
   const fearGreedClass = [
     "fear-greed-box",
@@ -198,7 +195,7 @@ export default function BottomTickerBar({
 
       <div className="relative flex items-center justify-center px-2 py-2 bg-bg/75 backdrop-blur sm:px-4">
         {/* CENTERED TICKERS */}
-        <div className="flex items-center gap-1.5 whitespace-nowrap md:gap-3">
+        <div className="flex max-w-full min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap px-0.5 min-[380px]:gap-1.5 md:gap-3">
           <Chip symbol="BTC" price={prices.BTC} dir={dirs.BTC} flash={flash.BTC} />
           <Chip symbol="ETH" price={prices.ETH} dir={dirs.ETH} flash={flash.ETH} />
           <Chip symbol="SOL" price={prices.SOL} dir={dirs.SOL} flash={flash.SOL} />
@@ -206,13 +203,13 @@ export default function BottomTickerBar({
 
         {/* LEFT FEAR/GREED */}
         {showFearGreed ? (
-          <div className="absolute left-2 flex items-center gap-2 sm:left-4">
+          <div className="absolute left-2 hidden items-center gap-2 sm:left-4 sm:flex">
             <div className={fearGreedClass}>{fearGreed.label}</div>
           </div>
         ) : null}
 
         {/* RIGHT SOCIAL ICONS */}
-        <div className="absolute right-2 flex items-center gap-2 sm:right-4">
+        <div className="absolute right-2 hidden items-center gap-2 sm:right-4 sm:flex">
           <a
             href={telegramUrl}
             target="_blank"

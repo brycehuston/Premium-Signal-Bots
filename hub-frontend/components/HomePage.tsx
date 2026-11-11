@@ -473,7 +473,7 @@ function SectionDivider({ showDust = true }: { showDust?: boolean }) {
   const sweepGlow = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 1, 0.4]);
 
   return (
-    <div ref={dividerRef} aria-hidden className="relative flex items-center justify-center py-12 md:py-20">
+    <div ref={dividerRef} aria-hidden className="relative flex items-center justify-center overflow-x-clip py-12 md:py-20">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-stroke/70 to-transparent" />
       {showDust ? (
         <>
@@ -795,7 +795,7 @@ function HeroAlertReel(){
           <span className="w-6 shrink-0 font-display text-[15px] font-bold tabular-nums text-[#bda078]">{String(index+1).padStart(2,"0")}</span>
           <span className="hidden h-9 w-px shrink-0 bg-[#45464a] sm:block" aria-hidden="true"/>
           <div className="min-w-[90px] flex-1">
-            <strong className="block truncate font-display text-[15px] font-semibold text-[#f0f2f4]">{item?"$"+item.symbol:"AWAITING DATA"}</strong>
+            <strong className="block truncate font-display text-[15px] font-semibold text-[#f0f2f4]">{item?"$"+item.symbol:"PENDING"}</strong>
             <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-[.12em]" style={{color:item?MOVER_LANES[item.lane]:"#9298a2"}}>{item?.lane??"VERIFICATION PENDING"}</span>
           </div>
           <div className="min-w-[160px] flex-[2] text-[10px] leading-5 text-[#b8bec8]">
@@ -1334,7 +1334,7 @@ export default function Page() {
   };
 
   return (
-    <div className="alpha-home-headings relative flex flex-col gap-8 md:gap-10">
+    <div className="alpha-home-headings relative flex flex-col overflow-x-clip gap-8 md:gap-10">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute -top-36 left-10 h-[26rem] w-[26rem] rounded-full bg-gold/10 blur-[140px]"

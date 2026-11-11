@@ -9,7 +9,7 @@ const DESCRIPTION =
   "Choose your lane for Solana alerts. Private Telegram delivery, manual verification, and USDC on Solana payments.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: "Pricing",
   description: DESCRIPTION,
   alternates: {
     canonical: `${SITE_URL}/pricing`,

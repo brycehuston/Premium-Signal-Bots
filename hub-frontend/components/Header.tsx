@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,6 +18,9 @@ export default function Header({ brand: _brand }: { brand: string }) {
   const pathname = usePathname();
   const { session, loading } = useSupabase();
   const signedIn = !loading && Boolean(session);
+  useEffect(() => setMenuOpen(false), [pathname]);
+  const telegramUrl = process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/alphaalerts";
+  const xUrl = process.env.NEXT_PUBLIC_X_URL || "https://x.com/alphaalerts";
 
   const navLink = "rounded-md px-3 py-2 text-small text-muted transition-colors hover:bg-surface2/60 hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold";
   return (
@@ -58,7 +61,11 @@ export default function Header({ brand: _brand }: { brand: string }) {
             onClick={()=>setMenuOpen(false)}>{label}</Link>)}
           <Link href="/dashboard" className={navLink} data-no-link-style onClick={()=>setMenuOpen(false)}>Dashboard</Link>
           {!signedIn&&<Link href="/login" className={navLink} data-no-link-style onClick={()=>setMenuOpen(false)}>Login</Link>}
-          <Link href="/pricing#plans" className={navLink+" font-bold text-gold"} data-no-link-style onClick={()=>setMenuOpen(false)}>GO ALPHA</Link>
+          <Link href="/pricing#plans" className={navLink+" font-bold !text-gold"} data-no-link-style onClick={()=>setMenuOpen(false)}>GO ALPHA</Link>
+          <div className="mt-2 flex flex-wrap items-center gap-4 border-t border-stroke/60 pt-3 text-small">
+            <a href={telegramUrl} data-no-link-style target="_blank" rel="noopener noreferrer" className="rounded-md px-3 py-2 text-muted transition-colors hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold">Telegram</a>
+            <a href={xUrl} data-no-link-style target="_blank" rel="noopener noreferrer" className="rounded-md px-3 py-2 text-muted transition-colors hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold">X / Twitter</a>
+          </div>
         </div>
       </nav>
     </header>
