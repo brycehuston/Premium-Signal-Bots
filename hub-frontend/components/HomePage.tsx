@@ -6,7 +6,6 @@ import { animate, motion, useReducedMotion, useScroll, useTransform } from "fram
 import type { Variants } from "framer-motion";
 import type { Easing } from "motion-utils";
 import { Webhook } from "lucide-react";
-import ProductRoadmapSection from "./ProductRoadmapSection";
 import HeroChart from "@/components/HeroChart";
 import { Badge, Button, Card, CardBody, Pill, SectionHeading } from "@/components/ui";
 
@@ -869,37 +868,64 @@ const EASE_OUT: Easing = "easeOut";
 const ROADMAP_ITEMS: RoadmapItem[] = [
   {
     step: 1,
-    title: "Stage 1 ⚡ Alpha Alerts VPS",
+    title: "Stage 1 ⚡ Solana AlphaAlerts",
     tag: "LIVE",
     bullets: [
-      "Production Alpha Alerts bot infrastructure on the VPS",
-      "On-chain monitoring, alert classification and Telegram delivery",
-      "Scanner telemetry and verified delivery records are separate data sources",
+      "Alpha Early Alerts (ultra-early Solana pools + tokens)",
+      "Alpha Trend Alerts (momentum + continuation setups)",
+      "Alpha Runner Alerts (second-leg + follow-through moves)",
+      "Telegram alerts with one-tap links (Dex, chart, explorer)",
+      "Safety checks + scoring + \"why skipped\" reasons",
     ],
-    footer: "Production infrastructure. Status and performance claims require measured evidence.",
-    cta: { label: "VIEW STAGE 1", href: "/stage-1" },
+    footer: "Weekly tuning based on real results (less spam, higher quality)",
   },
   {
     step: 2,
-    title: "Stage 2 ◉ Python Scanner Bots",
-    tag: "IN BUILD",
+    title: "Stage 2 🤖 ALPHA-X Auto Trader",
+    tag: "NEXT",
     bullets: [
-      "Six specialized scanner lanes: Early, Genesis, Trend, Strict, Reclaim and Runner",
-      "Distinct lane identities, scoring context and risk signals",
-      "A visual explanation of the six-lane workflow; not a live scanner monitor",
+      "Auto entries on high-probability setups",
+      "Risk sizing so trades stay controlled",
+      "Layered take-profits (TP1 / TP2 / TP3)",
+      "Stop loss + trailing stop options",
+      "Break-even + runner management",
+      "Moon bag option (optional runner position with trailing stop)",
+      "Full trade logs + performance stats",
     ],
-    cta: { label: "VIEW STAGE 2", href: "/stage-2" },
   },
   {
     step: 3,
-    title: "Stage 3 ◇ Forwarder Bot",
+    title: "Stage 3 🌐 Multi-Chain Alerts",
     tag: "IN BUILD",
     bullets: [
-      "Visualizes routing from the central forwarder to six Alpha lanes",
-      "Genesis and Reclaim flank the animated forwarding core",
-      "Animated packets are illustrative, not a live Telegram delivery counter",
+      "BSC alerts (extra scam and trap filters)",
+      "ETH alerts (liquidity + momentum focused)",
+      "Same tiers, same scoring, same clean Telegram delivery",
+      "Unified dashboard for all chains",
     ],
-    cta: { label: "VIEW STAGE 3", href: "/stage-3" },
+  },
+  {
+    step: 4,
+    title: "Stage 4 ALPHA Access Token",
+    tag: "PLANNED",
+    bullets: [
+      "Pay for subscriptions with $ALPHA (optional)",
+      "Discounts for paying with $ALPHA",
+      "Staking perks (beta access, extra features, priority drops)",
+      "Community votes on roadmap priorities",
+    ],
+    disclaimer: "Real Utility Token. Built for Access and Features.",
+  },
+  {
+    step: 5,
+    title: "Stage 5 🧭 Pro Dashboard + Self-Serve Billing",
+    tag: "PLANNED",
+    bullets: [
+      "Self-serve checkout (no more manual payments)",
+      "Alert history + search + saved filters",
+      "Performance reports (hit rate, drawdown, best horizons)",
+      "Webhook delivery (TradingView, Discord, your own bots)",
+    ],
   },
 ];
 
@@ -978,7 +1004,7 @@ const RoadmapSection = memo(function RoadmapSection() {
 
   return (
     <section
-      id="system-walkthrough"
+      id="roadmap"
       className="relative overflow-hidden rounded-card border border-stroke/70 bg-surface/70 p-6 shadow-soft md:p-10"
     >
       <div
@@ -986,12 +1012,12 @@ const RoadmapSection = memo(function RoadmapSection() {
         className="pointer-events-none absolute -top-24 left-1/2 h-52 w-[520px] -translate-x-1/2 rounded-full bg-gold/12 blur-[110px]"
       />
       <div className="relative">
-        <div className="text-[10px] font-bold uppercase tracking-[0.23em] text-gold">SYSTEM WALKTHROUGH / THREE STAGES</div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.23em] text-gold">Release Plan</div>
         <div className="mt-4 grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-end">
           <div className="space-y-3">
             <h2 className="font-display text-h2 font-semibold tracking-tight text-silver">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold drop-shadow-[0_18px_50px_rgb(var(--gold)/0.25)]">
-                Inside the Alpha pipeline
+                Roadmap
               </span>
             </h2>
             <div className="h-px w-24 bg-gradient-to-r from-gold/80 via-gold/40 to-transparent" />
@@ -1002,8 +1028,10 @@ const RoadmapSection = memo(function RoadmapSection() {
               className="absolute left-0 top-2 hidden h-10 w-px bg-gradient-to-b from-gold/70 via-gold/30 to-transparent md:block"
             />
             <p className="text-body text-muted leading-relaxed">
-              Three interactive illustrations follow the journey from on-chain sources to scanning and Telegram routing.{" "}
-              <span className="text-silver">The scenes explain the architecture, not live delivery telemetry.</span>
+              We ship in stages. Each stage makes alerts{" "}
+              <span className="text-silver">cleaner</span>,{" "}
+              <span className="text-silver">faster</span>, and{" "}
+              <span className="text-silver">easier to use</span>.
             </p>
           </div>
         </div>
@@ -1029,6 +1057,8 @@ const RoadmapSection = memo(function RoadmapSection() {
             const hasMore = extraBullets.length > 0;
             const isExpanded = !!expanded[item.step];
             const extraId = `roadmap-extra-${item.step}`;
+            const isStageFour = item.step === 4;
+            const stageFourTitle = "ALPHA Access Token";
 
             return (
               <div
@@ -1104,9 +1134,16 @@ const RoadmapSection = memo(function RoadmapSection() {
                         <span className="text-eyebrow uppercase tracking-[0.35em] text-gold/70">
                           {phaseLabel}
                         </span>
-                        <h3 className="font-display text-title-lg md:text-h3 font-semibold text-silver leading-snug break-words">
+                        <h3 className="font-display text-title-lg md:text-h3 font-semibold tracking-[-0.025em] text-[#f0f0f2] leading-snug break-words">
                           <span className="block max-w-full text-transparent bg-clip-text bg-gradient-to-r from-silver-strong via-silver to-gold drop-shadow-[0_12px_30px_rgb(var(--gold)/0.35)]">
-                            {titleRest}
+                            {isStageFour ? (
+                              <span className="inline-flex items-center gap-2">
+                                <span className="stage4-emoji">🜂</span>
+                                <span>{stageFourTitle}</span>
+                              </span>
+                            ) : (
+                              titleRest
+                            )}
                           </span>
                         </h3>
                       </div>
@@ -1120,7 +1157,7 @@ const RoadmapSection = memo(function RoadmapSection() {
 
                     <div className="mt-4 h-px w-full bg-gradient-to-r from-stroke/70 via-stroke/40 to-transparent" />
 
-                    <ul className="mt-4 space-y-3 text-small text-muted">
+                    <ul className="mt-4 space-y-3 text-[13px] leading-[1.7] text-[#b9bbc3]">
                       {previewBullets.map((bullet) => (
                         <li key={bullet} className="flex min-w-0 gap-3">
                           <span className="mt-2 h-1.5 w-1.5 rounded-full bg-gold/80 shadow-[0_0_10px_rgb(var(--gold)/0.6)]" />
@@ -2320,10 +2357,6 @@ export default function Page() {
 
       <motion.div {...revealProps}>
         <RoadmapSection />
-      </motion.div>
-
-      <motion.div {...revealProps}>
-        <ProductRoadmapSection />
       </motion.div>
 
       <motion.section

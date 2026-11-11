@@ -1061,22 +1061,25 @@
     }
 
     /* Stage 2: premium metallic scanner composition. Retain six original canvases. */
-    :root { --panelTitleTop: 16px; --botsTopGap: 8px; --botsBottomGap: 102px; --panelGap: clamp(10px, 1vw, 16px); }
-    .clusterWrap { min-height:0; justify-content:stretch; }
+    :root { --panelTitleTop: 17px; --botsTopGap: 18px; --botsBottomGap: 102px; --panelGap: clamp(14px, 1.4vw, 22px); }
+    .clusterWrap { min-height:0; justify-content:center; }
     .cluster { height:100%; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); }
+    @media (min-width:981px) {
+      .cluster {width:100%;max-width:1470px;max-height:560px;margin-inline:auto;}
+    }
     .panel {
       height:auto; min-height:0;
-      border:1px solid rgba(196,204,213,.30);
-      border-radius:clamp(14px,1.35vw,22px);
+      border:1px solid rgba(112,123,137,.26);
+      border-radius:clamp(13px,1.15vw,18px);
       background:
-        radial-gradient(ellipse 66% 70% at 50% 54%,rgba(27,34,43,.23) 0%,rgba(9,11,15,.01) 76%),
+        radial-gradient(ellipse 66% 70% at 50% 54%,rgba(30,35,42,.16) 0%,rgba(9,11,15,.01) 76%),
         linear-gradient(155deg,#101216 0%,#08090d 65%,#0e1115 100%);
-      box-shadow:inset 0 1px 0 rgba(245,247,255,.075),0 10px 26px rgba(0,0,0,.21);
+      box-shadow:inset 0 1px 0 rgba(177,188,201,.045),0 10px 26px rgba(0,0,0,.20);
     }
     .panel::before {
       content:""; position:absolute; inset:2px; pointer-events:none; border-radius:inherit;
-      background:radial-gradient(ellipse 30% 56% at 50% 53%,color-mix(in srgb,var(--lane-color) 8%,transparent),transparent 95%);
-      opacity:.68; mix-blend-mode:screen; z-index:0;
+      background:radial-gradient(ellipse 30% 56% at 50% 53%,color-mix(in srgb,var(--lane-color) 4%,transparent),transparent 95%);
+      opacity:.50; mix-blend-mode:screen; z-index:0;
     }
     .panelHead { top:var(--panelTitleTop); }
     .panelTitle {
@@ -1084,16 +1087,16 @@
       align-items:center; line-height:1.35; padding:0 16px;
     }
     .panelTitle::before,.panelTitle::after {
-      content:""; display:block; flex:1 1 auto; max-width:94px; height:1px;
-      background:linear-gradient(90deg,transparent,rgba(196,205,213,.30));
+      content:""; display:block; flex:1 1 auto; max-width:62px; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(129,140,151,.19));
     }
     .panelTitle::after { transform:rotate(180deg); }
     .panelTitle .alpha { color:#f2f3f6; }
     .panelTitle .name { text-shadow:0 0 15px color-mix(in srgb,var(--lane-color) 24%,transparent); }
     .panel::after {
       content:""; position:absolute; z-index:3; top:0; left:29%; right:29%; height:1px;
-      border-radius:999px; opacity:.42; background:var(--lane-color); pointer-events:none;
-      box-shadow:0 0 8px var(--lane-color);
+      border-radius:999px; opacity:.20; background:var(--lane-color); pointer-events:none;
+      box-shadow:none;
     }
     .panel[data-bot="EARLY"] { --lane-color:#F0C76A; }
     .panel[data-bot="EARLY"] .panelTitle .name { color:#F0C76A; }
@@ -1111,8 +1114,8 @@
       .frame { display: flex; flex-direction: column; }
       .header { flex: 0 0 auto; min-height: 145px; padding-top: 82px; }
       .clusterWrap { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 7px 106px; }
-      .cluster { height: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; gap: 9px; }
-      .panel { height: clamp(184px, 23vh, 235px); min-height: 184px; }
+      .cluster { height: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; gap: 12px; }
+      .panel { height: clamp(170px, 21vh, 222px); min-height: 170px; }
       .routerDock { bottom: 13px; }
       .panelTitle { font-size: 11px; }
     }
@@ -1127,8 +1130,8 @@
       .master .btn { width: 35px; height: 35px; }
       .master .sfxBtn { width: 45px; }
       .clusterWrap { flex: 1 1 auto; max-height: none; height: auto; padding: 7px 4px 91px; overflow-y: auto; }
-      .cluster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
-      .panel { height: clamp(165px, 23svh, 195px); min-height: 165px; border-radius: 13px; }
+      .cluster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .panel { height: clamp(155px, 21svh, 186px); min-height: 155px; border-radius: 12px; }
       .panelHead { top: 14px; }
       .panelTitle { font-size: 10px; letter-spacing: .09em; gap: 4px; }
       .routerDock { bottom: 12px; }
@@ -1727,8 +1730,8 @@
           ringRadiusMul: IS_MOBILE ? 1.94 : 2.43, // distinct exterior particle orbit
           coreA: accentRGB,
           coreB: accent2RGB,
-          radarFanDeg: 76,
-          radarFanAlpha: 0.64,
+          radarFanDeg: 44,
+          radarFanAlpha: 0.24,
           dotSpawnPerSec: profile.dotSpawnPerSec,
           maxDots: 3,
           dotSize: 2.6,
@@ -1737,9 +1740,9 @@
         };
 
         this.CFG = {
-          sparkSpeed: 0.012,
+          sparkSpeed: 0.009,
           ringThickness: 0.25,
-          ringBrightness: Math.min(profile.ringBrightness * 1.08, 1.48),
+          ringBrightness: Math.min(profile.ringBrightness * 1.00, 1.30),
           sparks: 155, // fewer, brighter particles to lower frame cost
           bgStars: 55,
           dprMax: DPR_CAP,
@@ -1756,10 +1759,10 @@
           zapSegs: 28,
           zapJitter: 5,
 
-          // Radar sweep pacing
-          sweepDur: 0.9,
-          interPause: 0.32,
-          longPause: 5.0
+          // One controlled sweep every twelve seconds per lane.
+          sweepDur: 1.55,
+          interPause: 0,
+          longPause: 10.45
         };
         if (IS_MOBILE) {
           this.KNOBS.maxDots = 2;
@@ -1802,16 +1805,17 @@
           GENESIS: -10, STRICT: -10, RECLAIM: -10
         };
         this.ringYOffset = ringYOffsetByBot[botName] ?? 0;
-        const cadence = this.CFG.sweepDur + this.CFG.interPause;
+        // Six non-overlapping windows: one lane is illuminated at a time.
+        // Each scanner keeps its own orbit and lane identity between sweeps.
         const scanOffsetByBot = {
           EARLY: 0,
-          TREND: cadence,
-          RUNNER: cadence * 2,
-          GENESIS: cadence * 0.5,
-          STRICT: cadence * 1.5,
-          RECLAIM: cadence * 2.5
+          GENESIS: 2,
+          TREND: 4,
+          STRICT: 6,
+          RECLAIM: 8,
+          RUNNER: 10
         };
-        this.scanOffsetSec = scanOffsetByBot[botName] ?? 0;
+        this.scanOffsetSec = performance.now() / 1000 + (scanOffsetByBot[botName] ?? 0);
         this.resize();
       }
 
@@ -1942,60 +1946,33 @@
         ctx.restore();
       }
 
-      getSweepAngle(nowSec) {
-        const start = -Math.PI / 2;
-        const sweepDur = this.CFG.sweepDur;
-        const interPause = this.CFG.interPause;
-        const longPause = this.CFG.longPause;
-        const cycle = (sweepDur * 2) + interPause + longPause;
+      // Return null outside this lane's assigned 1.55 s window.
+      // No residual illuminated wedge should remain during the idle interval.
+      getSweepPhase(nowSec) {
+        if (PREFERS_REDUCED) return null;
+        const cycle = 12;
         const t = ((nowSec - this.scanOffsetSec) % cycle + cycle) % cycle;
+        if (t >= this.CFG.sweepDur) return null;
+        const u = t / this.CFG.sweepDur;
+        return u * u * (3 - 2 * u);
+      }
 
-        if (t < sweepDur) {
-          const u = t / sweepDur;
-          const ease = u * u * (3 - 2 * u);
-          return start + (Math.PI * 2) * ease;
-        }
-        if (t < sweepDur + interPause) {
-          return start;
-        }
-        if (t < sweepDur + interPause + sweepDur) {
-          const t2 = t - (sweepDur + interPause);
-          const u = t2 / sweepDur;
-          const ease = u * u * (3 - 2 * u);
-          return start + (Math.PI * 2) * ease;
-        }
-        return start;
+      getSweepAngle(nowSec) {
+        const phase = this.getSweepPhase(nowSec);
+        return -Math.PI / 2 + (phase === null ? 0 : phase) * Math.PI * 2;
       }
 
       getSweepAlpha(nowSec) {
-        const sweepDur = this.CFG.sweepDur;
-        const interPause = this.CFG.interPause;
-        const longPause = this.CFG.longPause;
-        const cycle = (sweepDur * 2) + interPause + longPause;
-        const t = ((nowSec - this.scanOffsetSec) % cycle + cycle) % cycle;
-
-        if (t < sweepDur) {
-          const u = t / sweepDur;
-          const ease = u * u * (3 - 2 * u);
-          return 0.85 + (0.55 * ease);
-        }
-        if (t < sweepDur + interPause) {
-          return 0.7;
-        }
-        if (t < sweepDur + interPause + sweepDur) {
-          const t2 = t - (sweepDur + interPause);
-          const u = t2 / sweepDur;
-          const ease = u * u * (3 - 2 * u);
-          return 0.85 + (0.55 * ease);
-        }
-        const restT = (t - (sweepDur * 2) - interPause) / longPause;
-        return 0.35 + (0.35 * (1 - Math.min(1, restT)));
+        const phase = this.getSweepPhase(nowSec);
+        if (phase === null) return 0;
+        return 0.48 + 0.22 * Math.sin(Math.PI * phase);
       }
 
       drawRadarFan(cx, cy, coreR, nowSec) {
         const ctx = this.ctx;
         const ang = this.getSweepAngle(nowSec);
         const alphaMul = this.getSweepAlpha(nowSec);
+        if (alphaMul <= 0) return;
         const arc = (this.KNOBS.radarFanDeg * Math.PI) / 180;
 
         const radarR = coreR * this.CFG.radarRadiusMul;
@@ -2029,10 +2006,10 @@
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(cx + Math.cos(a1) * radarR * .95, cy + Math.sin(a1) * radarR * .95);
-        ctx.lineWidth = 1.6;
-        ctx.strokeStyle = rgba(this.KNOBS.coreB, .72 * alphaMul);
-        ctx.shadowColor = rgba(this.KNOBS.coreA, .7);
-        ctx.shadowBlur = 8;
+        ctx.lineWidth = 1.05;
+        ctx.strokeStyle = rgba(this.KNOBS.coreB, .32 * alphaMul);
+        ctx.shadowColor = rgba(this.KNOBS.coreA, .28);
+        ctx.shadowBlur = 3;
         ctx.stroke();
 
         ctx.restore();
@@ -2108,6 +2085,7 @@
           }
         }
 
+        if (this.getSweepAlpha(nowSec) <= 0) return;
         const ang = this.getSweepAngle(nowSec);
         const arc = (this.KNOBS.radarFanDeg * Math.PI) / 180;
 
