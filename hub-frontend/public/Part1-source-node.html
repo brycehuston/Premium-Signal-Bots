@@ -980,20 +980,25 @@
 
         const isNarrow = W < 520;
         const isTiny = W < 380;
-        CFG.tagFont = isTiny
-          ? "800 8px Sora, ui-sans-serif, system-ui"
-          : isNarrow
-            ? "800 9px Sora, ui-sans-serif, system-ui"
-            : "900 16px Sora, ui-sans-serif, system-ui";
-        CFG.tagPadX = isTiny ? 12 : isNarrow ? 14 : 52;
-        CFG.tagHeight = isTiny ? 24 : isNarrow ? 26 : 46;
-        CFG.bottomFont = isTiny
+        const isCompact = H < 520;
+        CFG.tagFont = isCompact
+          ? "800 10px Sora, ui-sans-serif, system-ui"
+          : isTiny
+            ? "800 8px Sora, ui-sans-serif, system-ui"
+            : isNarrow
+              ? "800 9px Sora, ui-sans-serif, system-ui"
+              : "900 16px Sora, ui-sans-serif, system-ui";
+        CFG.tagPadX = isCompact ? 12 : isTiny ? 12 : isNarrow ? 14 : 52;
+        CFG.tagHeight = isCompact ? 27 : isTiny ? 24 : isNarrow ? 26 : 46;
+        CFG.bottomFont = isCompact
           ? "800 13px Sora, ui-sans-serif, system-ui"
-          : isNarrow
-            ? "800 14px Sora, ui-sans-serif, system-ui"
-            : "900 18px Sora, ui-sans-serif, system-ui";
-        CFG.bottomPadX = isTiny ? 26 : isNarrow ? 32 : 46;
-        CFG.bottomHeight = isTiny ? 34 : isNarrow ? 36 : 44;
+          : isTiny
+            ? "800 13px Sora, ui-sans-serif, system-ui"
+            : isNarrow
+              ? "800 14px Sora, ui-sans-serif, system-ui"
+              : "900 18px Sora, ui-sans-serif, system-ui";
+        CFG.bottomPadX = isCompact ? 22 : isTiny ? 26 : isNarrow ? 32 : 46;
+        CFG.bottomHeight = isCompact ? 33 : isTiny ? 34 : isNarrow ? 36 : 44;
 
         canvas.width = Math.floor(W * DPR);
         canvas.height = Math.floor(H * DPR);
