@@ -506,6 +506,10 @@
         min-height: 44px;
       }
     }
+    /* Touch users need visible wayfinding, not an undocumented triple click. */
+    .mobileNextHint { display:none; position:absolute; z-index:9; left:50%; bottom:calc(55px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); max-width:90vw; white-space:nowrap; color:#e7bc67; border:1px solid rgba(231,188,103,.36); background:rgba(9,9,11,.85); border-radius:999px; padding:9px 13px; font:700 10px/1.4 "Sora",ui-sans-serif,system-ui,sans-serif; letter-spacing:.11em; pointer-events:none; text-align:center; }
+    @media (hover:none), (pointer:coarse) { .mobileNextHint {display:block;} }
+    #cv:focus-visible {outline:2px solid #e7bc67;outline-offset:-4px;}
   </style>
 </head>
 
@@ -523,7 +527,8 @@
       <div class="mobileHeroTitle" aria-hidden="true">
         <span>MARKET</span><span class="titleGold">DATA</span><span>SOURCES</span>
       </div>
-      <div class="sphereHint" id="sphereHint">TRIPPLE CLICK</div>
+      <div class="sphereHint" id="sphereHint">CLICK TO CONTINUE</div>
+      <div class="mobileNextHint" aria-hidden="true">TAP THE GOLD CORE TO CONTINUE</div>
       <canvas id="cv"></canvas>
     </div>
   </div>
@@ -580,6 +585,11 @@
         gold: [248, 214, 120],
         goldDeep: [216, 168, 80],
       };
+
+      // Core-only champagne gold, from the approved Alpha design system.
+      // Source inputs, tags, stage backgrounds and pulse timing remain untouched.
+      const CORE_ORB_GOLD = [231, 188, 103];
+      const CORE_ORB_GOLD_SHADE = [143, 106, 52];
 
       /* ============================================================
          CALM RHYTHM (packet spawns)
@@ -1090,32 +1100,18 @@
         pointer.inside = false;
       }, { passive: true });
 
-      // ✅ TRIPLE TAP → PORTAL DIVE
-      // NOTE: We use lastCore (idle sphere) so the click always feels consistent.
-      let tapCount = 0;
-      let lastTapMs = 0;
-      const tripleTapWindowMs = 700;
-
-      canvas.addEventListener("pointerdown", (e) => {
+      // One deliberate click or tap on the visible core advances to Stage 2.
+      canvas.tabIndex = 0;
+      canvas.setAttribute("role","button");
+      canvas.setAttribute("aria-label","Activate the data core to continue to Stage 2");
+      canvas.addEventListener("pointerdown",(e)=>{
         updateFrameRect();
-        const p = toLocal(e.clientX, e.clientY);
-
-        const dx = p.x - lastCore.x;
-        const dy = p.y - lastCore.y;
-
-        if ((dx * dx + dy * dy) <= (lastCore.r * lastCore.r)) {
-          const now = performance.now();
-          if (now - lastTapMs > tripleTapWindowMs) {
-            tapCount = 0;
-          }
-          tapCount += 1;
-          lastTapMs = now;
-          if (tapCount >= 3) {
-            tapCount = 0;
-            startDive();
-          }
-        }
-      }, { passive: true });
+        const p=toLocal(e.clientX,e.clientY),dx=p.x-lastCore.x,dy=p.y-lastCore.y;
+        if(dx*dx+dy*dy<=lastCore.r*lastCore.r)startDive();
+      },{passive:true});
+      canvas.addEventListener("keydown",(event)=>{
+        if(event.key==="Enter"||event.key===" "){event.preventDefault();startDive();}
+      });
 
       /* ============================================================
          Pills
@@ -1466,9 +1462,9 @@
       }
 
       function mixedCoreMetal() {
-        const r = COLORS.bronze[0] * coreMix.bronze + COLORS.silver[0] * coreMix.silver + COLORS.gold[0] * coreMix.gold;
-        const g = COLORS.bronze[1] * coreMix.bronze + COLORS.silver[1] * coreMix.silver + COLORS.gold[1] * coreMix.gold;
-        const b = COLORS.bronze[2] * coreMix.bronze + COLORS.silver[2] * coreMix.silver + COLORS.gold[2] * coreMix.gold;
+        const r = COLORS.bronze[0] * coreMix.bronze + COLORS.silver[0] * coreMix.silver + CORE_ORB_GOLD[0] * coreMix.gold;
+        const g = COLORS.bronze[1] * coreMix.bronze + COLORS.silver[1] * coreMix.silver + CORE_ORB_GOLD[1] * coreMix.gold;
+        const b = COLORS.bronze[2] * coreMix.bronze + COLORS.silver[2] * coreMix.silver + CORE_ORB_GOLD[2] * coreMix.gold;
         return [Math.round(r), Math.round(g), Math.round(b)];
       }
 
@@ -1593,7 +1589,7 @@
         const grd = g.createRadialGradient(cx, cy, 0, cx, cy, r1);
 
         if (mode === "metal") {
-          const rgb2 = (rgb[0] === COLORS.gold[0] && rgb[1] === COLORS.gold[1] && rgb[2] === COLORS.gold[2] && COLORS.goldDeep) ? COLORS.goldDeep : rgb;
+          const rgb2 = CORE_ORB_GOLD_SHADE;
           grd.addColorStop(0.00, `rgba(255,255,255,0.92)`);
           grd.addColorStop(0.08, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.95)`);
           grd.addColorStop(0.24, `rgba(${rgb2[0]},${rgb2[1]},${rgb2[2]},0.52)`);
@@ -1615,7 +1611,7 @@
       }
 
       function buildSprites() {
-        spriteGold = makeSprite(COLORS.gold, CFG.coreGlowSpriteSizePx, "metal");
+        spriteGold = makeSprite(CORE_ORB_GOLD, CFG.coreGlowSpriteSizePx, "metal");
         spriteWhite = makeSprite(COLORS.white, CFG.coreGlowSpriteSizePx, "white");
       }
 

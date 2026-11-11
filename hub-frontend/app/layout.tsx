@@ -20,7 +20,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://alphaalerts.dev";
 
 // Optional but nice: tell mobile browsers your theme color
 export const viewport: Viewport = {
-  themeColor: "#060606",
+  themeColor: "#09090b",
 };
 
 export const metadata: Metadata = {
