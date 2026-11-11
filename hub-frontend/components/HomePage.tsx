@@ -3,6 +3,7 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { animate, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import type { Variants } from "framer-motion";
 import type { Easing } from "motion-utils";
 import { Webhook } from "lucide-react";
 import HeroChart from "@/components/HeroChart";
@@ -1715,7 +1716,7 @@ export default function Page() {
               <div className="phase-grid">
                 <div className="phase-left">
                   <div className="phase-hero-line">Signal Pipeline</div>
-                  <div className="phase-support-line">ON-CHAIN IN • FILTER SCORE • ALERTS OUT</div>
+                  <div className="phase-support-line">ON-CHAIN DATA • LANE FILTERS • ALERTS OUT</div>
                   {/* NEW: CTA aligned left */}
                   <div className="phase-cta-wrap">
                     <Button href="/stage-1" size="md" className="phase-cta">

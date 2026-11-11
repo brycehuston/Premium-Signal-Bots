@@ -1031,13 +1031,16 @@
       }
 
       .routerLabel {
-        font-size: 7px;
-        letter-spacing: 0.16em;
+        font-size: 9px;
+        letter-spacing: 0.12em;
         padding: 2px 5px;
       }
 
       .routerHint {
-        display: none;
+        display: block;
+        top: -23px;
+        color: #e7bc67;
+        font-size: 9px;
       }
 
       .routerBtn::after {
@@ -1198,7 +1201,7 @@
       <!-- Telegram Bot pinned to bottom -->
       <div class="routerDock" id="routerDock">
         <button class="routerBtn" id="routerBtn" title="Continue to Forwarder routing" aria-label="Continue to Forwarder routing">
-          <div class="routerHint">TRIPLE CLICK</div>
+          <div class="routerHint">CLICK TO CONTINUE</div>
           <svg class="routerIcon" viewBox="0 0 24 24" fill="none">
             <path d="M21 3L10.2 13.8" stroke="rgba(248,216,112,0.95)" stroke-width="1.8" stroke-linecap="round" />
             <path d="M21 3L14.6 21L10.2 13.8L3 9.4L21 3Z" stroke="rgba(245,252,255,0.85)" stroke-width="1.5"
@@ -1554,22 +1557,11 @@
     window.addEventListener("resize", () => setTimeout(resizePortal, 0));
     resizePortal();
 
-    let routerClickTimes = [];
-    routerBtn.addEventListener("pointerdown", (e) => {
-      if (!NAV.enabled) return;
-      if (openFX.active) return;
-
-      // One tap on touch devices; preserve the original triple-click easter egg on desktop.
-      if (IS_COARSE) { triggerPortalOpen(); return; }
-      const now = performance.now();
-      routerClickTimes.push(now);
-      routerClickTimes = routerClickTimes.filter(t => (now - t) <= NAV.tripleMs);
-
-      if (routerClickTimes.length >= 3) {
-        routerClickTimes = [];
-        triggerPortalOpen();
-      }
-    }, { passive: true });
+    // Single deliberate click/tap on the router advances consistently.
+    routerBtn.addEventListener("pointerdown",()=>{
+      if(!NAV.enabled||openFX.active)return;
+      triggerPortalOpen();
+    },{passive:true});
     routerBtn.addEventListener("keydown", (event) => {
       if (!NAV.enabled || openFX.active) return;
       if (event.key === "Enter" || event.key === " ") {
