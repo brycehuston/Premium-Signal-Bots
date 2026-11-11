@@ -1759,10 +1759,8 @@
           zapSegs: 28,
           zapJitter: 5,
 
-          // One controlled sweep every twelve seconds per lane.
-          sweepDur: 1.55,
-          interPause: 0,
-          longPause: 10.45
+          // One 1.55 s sweep per lane, three seconds apart (18 s cycle).
+          sweepDur: 1.55
         };
         if (IS_MOBILE) {
           this.KNOBS.maxDots = 2;
@@ -1809,11 +1807,11 @@
         // Each scanner keeps its own orbit and lane identity between sweeps.
         const scanOffsetByBot = {
           EARLY: 0,
-          GENESIS: 2,
-          TREND: 4,
-          STRICT: 6,
-          RECLAIM: 8,
-          RUNNER: 10
+          GENESIS: 3,
+          TREND: 6,
+          STRICT: 9,
+          RECLAIM: 12,
+          RUNNER: 15
         };
         this.scanOffsetSec = performance.now() / 1000 + (scanOffsetByBot[botName] ?? 0);
         this.resize();
@@ -1950,7 +1948,7 @@
       // No residual illuminated wedge should remain during the idle interval.
       getSweepPhase(nowSec) {
         if (PREFERS_REDUCED) return null;
-        const cycle = 12;
+        const cycle = 18;
         const t = ((nowSec - this.scanOffsetSec) % cycle + cycle) % cycle;
         if (t >= this.CFG.sweepDur) return null;
         const u = t / this.CFG.sweepDur;
