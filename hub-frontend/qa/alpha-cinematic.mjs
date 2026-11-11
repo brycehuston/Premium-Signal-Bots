@@ -98,6 +98,9 @@ for (const {w,h} of [{w:390,h:844},{w:844,h:390}]) {
     await core.focus();
     await page.keyboard.press("Enter");
     await page.waitForURL("**/stage-2",{timeout:14000});
+    // Next development indicator overlaps the bottom-left forwarding button on phones.
+    // It is absent in production and must not intercept this production-equivalent tap.
+    await page.addStyleTag({content:"nextjs-portal{display:none!important}"});
     const router=page.frameLocator("iframe").locator("#routerBtn");
     await router.waitFor({timeout:18000});
     if(w<500) await router.tap({timeout:12000,noWaitAfter:true});
