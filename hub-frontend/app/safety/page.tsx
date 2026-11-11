@@ -30,7 +30,7 @@ const SAFETY_FAQ = [
 ];
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: "Safety Guide",
   description: DESCRIPTION,
   alternates: {
     canonical: `${SITE_URL}/safety`,
