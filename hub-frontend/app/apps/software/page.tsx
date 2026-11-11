@@ -5,8 +5,8 @@ import SoftwareShowcase from "./SoftwareShowcase";
 import styles from "../apps.module.css";
 
 export const metadata: Metadata = {
-  title: "FRUXLABS SOFTWARE — Alpha Grind",
-  description: "Explore genuine Windows screenshots and practical benefits of Alpha Focus, Alpha Vibe and Alpha Notes, the Alpha Grind productivity suite.",
+  title: "Alpha Software Collection — Alpha Grind & Upcoming Apps",
+  description: "Explore Alpha Grind Windows applications and the evolving FruxLabs roadmap of creative, productivity, system and AI-powered tools.",
   alternates: { canonical: "/apps/software" },
   openGraph: {
     title: "FRUXLABS SOFTWARE | Alpha Grind",
