@@ -45,16 +45,43 @@ function validate(v:any) {
  s.daily.reduce((n:number,d:any)=>n+d.alerts,0)!==s.summary.events_7d)return false;
  return true;
 }
+
+// Public marketing endpoint uses bot-delivered calls, not a claim of public-channel delivery.
+function validPublic(report:any,now:number) {
+ if(!report||report.state!=="verified"||!["24h","historical"].includes(report.window)||
+ report.telegram_delivery_confirmed!==true||report.observed_peaks_corroborated!==true||
+ report.method!=="BOT_DELIVERY_AND_REPEATED_DEXSCREENER_PAIR_SNAPSHOTS"||
+ !Array.isArray(report.movers)||report.movers.length!==3)return false;
+ const ref=Date.parse(report.reference_time_utc),asof=Date.parse(report.as_of_utc);
+ if(!Number.isFinite(ref)||!Number.isFinite(asof)||ref>now||now-ref>90*86400_000||
+ Math.abs(now-asof)>15*60_000 || (report.window==="historical"&&now-ref<24*3600_000))return false;
+ const seen=new Set<string>();
+ for(const m of report.movers){
+  if(!m||typeof m.id!=="string"||!/^[a-f0-9]{24}$/.test(m.id)||seen.has(m.id)||
+   typeof m.symbol!=="string"||!/^[a-zA-Z0-9._-]{1,28}$/.test(m.symbol)||
+   !lanes.has(m.lane)||typeof m.called_at_utc!=="string")return false;
+  seen.add(m.id);
+  const called=Date.parse(m.called_at_utc);
+  if(!Number.isFinite(called)||called>now-30*60_000||called>ref||
+   (report.window==="24h"&&called<now-24*3600_000)||
+   (report.window==="historical"&&called<ref-24*3600_000))return false;
+  if(![m.first_mc,m.peak_mc,m.multiple].every((x:unknown)=>typeof x==="number"&&Number.isFinite(x))||
+   m.first_mc<=0||m.peak_mc<m.first_mc||m.peak_mc>1e13||m.multiple<1||
+   Math.abs(m.multiple-m.peak_mc/m.first_mc)>Math.max(0.015,m.multiple*0.005))return false;
+ }
+ return true;
+}
+
 async function ingest(req:Request) {
  const text=await req.text();if(text.length>350_000)return reply({state:"too_large"},413);
  let e:any,v:any;try{e=JSON.parse(text);if(typeof e.signed_body!=="string"||typeof e.signature!=="string")return reply({state:"invalid"},400);
  if(!(await verify(e.signed_body,e.signature)))return reply({state:"unauthorized"},403);
- v=JSON.parse(e.signed_body);if(!validate(v))return reply({state:"invalid_dataset"},422);
+ v=JSON.parse(e.signed_body);if(!validate(v)|| (v.public_report!==undefined&&!validPublic(v.public_report,Date.now())))return reply({state:"invalid_dataset"},422);
  }catch{return reply({state:"invalid"},400);}
  const last=await db("alpha_intelligence_snapshot?select=captured_at&id=eq.1&limit=1");
  if(!last.ok)return reply({state:"storage_unavailable"},503);
  const prev=await last.json();if(prev.length&&Date.parse(prev[0].captured_at)>=Date.parse(v.as_of_utc))return reply({state:"stale_replay"},409);
- const row={id:1,captured_at:v.as_of_utc,producer_sha256:v.producer_sha256,owner_dataset:v.owner.dataset,subscriber_report:v.subscriber,quality:v.quality,received_at:new Date().toISOString()};
+ const row={id:1,captured_at:v.as_of_utc,producer_sha256:v.producer_sha256,owner_dataset:v.owner.dataset,subscriber_report:v.subscriber,public_movers:v.public_report??null,quality:v.quality,received_at:new Date().toISOString()};
  const r=await db("alpha_intelligence_snapshot?on_conflict=id",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify(row)});
  return r.ok?reply({state:"accepted",accepted:true,as_of_utc:v.as_of_utc}):reply({state:"storage_unavailable"},503);
 }
@@ -82,7 +109,14 @@ Deno.serve(async req=>{
  try{
   if(view==="ingest"&&req.method==="PUT")return await ingest(req);
   if(req.method==="GET"&&(view==="owner"||view==="subscriber"))return await read(req,view);
-  if(req.method==="GET"&&view==="public")return reply({state:"unavailable",window:"24h",movers:[],delivery_independently_verified:false,outcomes_verified:false});
+  if(req.method==="GET"&&view==="public"){
+   const snapshot=await db("alpha_intelligence_snapshot?select=captured_at,public_movers&id=eq.1&limit=1");
+   if(!snapshot.ok)return reply({state:"unavailable",window:"24h",movers:[]},503);
+   const records=await snapshot.json();
+   if(!records.length||Date.now()-Date.parse(records[0].captured_at)>30*60_000)return reply({state:"unavailable",window:"24h",movers:[]});
+   const data=records[0].public_movers;
+   return validPublic(data,Date.now())?reply(data):reply({state:"unavailable",window:"24h",movers:[]});
+  }
   return reply({state:"not_found"},404);
  }catch{return reply({state:"unavailable"},503);}
 });
