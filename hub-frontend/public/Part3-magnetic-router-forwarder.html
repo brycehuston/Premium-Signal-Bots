@@ -1680,6 +1680,26 @@
       transform-origin: 50% 50%;
       transition: transform var(--portalDiveMs) cubic-bezier(.18, .85, .2, 1);
     }
+    /* Final viewport containment for canvas and routed lane pills. */
+    .stage,.frame { box-sizing:border-box; }
+    @media (max-width:430px) {
+      .stage {padding:0;}
+      .frame {width:100%;max-width:100%;height:100dvh;max-height:100dvh;border:0;border-radius:0;}
+    }
+    /* Phone landscape / short desktop: show all six routes without overlay collisions. */
+    @media (max-height:500px) and (min-width:601px) {
+      .stage {padding:0;}
+      .frame {width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0;}
+      .badgeStack {position:absolute;top:7px;left:10px;right:auto;width:auto;max-width:235px;gap:0;}
+      .brandWrap {padding:5px 9px;max-width:100%;}
+      .brandMark {font-size:9px;letter-spacing:.14em;}
+      .phaseTag {padding:3px 7px;font-size:9px;}
+      .workflowNote {display:none;}
+      .forwarderLabel {font-size:11px;letter-spacing:.14em;transform:translate(-50%,calc(-50% - (var(--u,38px) * 3.2)));}
+      .goAlphaWrap {bottom:8px;}
+      .goAlphaBtn {padding:8px 13px;min-height:34px;font-size:9px;letter-spacing:.10em;border-radius:9px;}
+    }
+
   </style>
 </head>
 
@@ -2281,7 +2301,7 @@
             const minSide = Math.min(W, H);
 
             // cube size tuned for voxel core
-            const cubeUnit = clamp(minSide * 0.038, 26, 64);  // ✅ slightly bigger cube (premium presence)
+            const cubeUnit = (W >= 601 && H < 500) ? clamp(minSide * 0.045, 21, 28) : clamp(minSide * 0.038, 26, 64);
             const gap = clamp(Math.round(cubeUnit * 0.07), 2, 5);
 
             // cluster half-size = (1.5u + gap) around center
@@ -2313,6 +2333,14 @@
             if (mobileMQ.matches) {
               CFG.pillW = W < 360 ? 90 : 104;
               CFG.pillFont = W < 360 ? 10 : 11;
+            } else if (W >= 601 && H < 500) {
+              CFG.pillW = 118;
+              CFG.pillH = 32;
+              CFG.pillFont = 11;
+            } else {
+              CFG.pillW = 138;
+              CFG.pillH = 42;
+              CFG.pillFont = 14;
             }
 
             canvas.width = Math.floor(W * DPR);
@@ -2369,17 +2397,20 @@
             // instead of the cube. Symmetric rows around a displaced cube
             // cannot look balanced, regardless of how equal their gaps are.
             // Keep the legacy compact/mobile geometry until its separate QA.
-            const symmetric = window.innerWidth > 820 && W >= 760 && H >= 520;
-            let ry = symmetric ? H * 0.50 : centerY + H * CFG.forwarderOffsetY;
-            let outY = symmetric ? ry + H * 0.30 : centerY + H * CFG.outOffsetY;
-            let sy = centerY + H * CFG.sourceOffsetY;
+            const compactLandscape = W >= 601 && H < 500;
+            const symmetric = !compactLandscape && window.innerWidth > 820 && W >= 760 && H >= 520;
+            let ry = compactLandscape ? H * 0.52 : symmetric ? H * 0.50 : centerY + H * CFG.forwarderOffsetY;
+            let outY = compactLandscape ? H * 0.74 : symmetric ? ry + H * 0.30 : centerY + H * CFG.outOffsetY;
+            let sy = compactLandscape ? H * 0.14 : centerY + H * CFG.sourceOffsetY;
 
             const topSafe = cubeHalf + 80;
             const bottomSafe = 70;
 
-            outY = clamp(outY, ry + cubeHalf + 150, H - bottomSafe);
-            ry = clamp(ry, topSafe, outY - cubeHalf - (H < 680 && !mobileMQ.matches ? 105 : 160));
-            sy = clamp(sy, 45, ry - cubeHalf - 140);
+            if (!compactLandscape) {
+              outY = clamp(outY, ry + cubeHalf + 150, H - bottomSafe);
+              ry = clamp(ry, topSafe, outY - cubeHalf - (H < 680 && !mobileMQ.matches ? 105 : 160));
+              sy = clamp(sy, 45, ry - cubeHalf - 140);
+            }
 
             const sx = W * CFG.sourceX;
             const rx = W * CFG.forwarderX;
@@ -2395,7 +2426,12 @@
             const middleRightX = Math.min(W - CFG.pillW / 2 - edgeGap, laneRightX + middleAccentOffset);
 
             let pillTopY, middlePillY, pillBottomY;
-            if (symmetric) {
+            if (compactLandscape) {
+              // Three distinct rows that fit above the compact CTA, not behind the badge.
+              pillTopY = H * 0.32;
+              middlePillY = H * 0.52;
+              pillBottomY = H * 0.78;
+            } else if (symmetric) {
               // The CUBE is the geometric center of all six lane exits.
               // Top and bottom are equally distant from the middle row.
               // Reserve space for the badge and the centered bottom CTA.
@@ -2747,7 +2783,7 @@
             // text
             ctx.shadowBlur = 0;
             ctx.fillStyle = "rgba(255,255,255,0.92)";
-            ctx.font = `700 ${CFG.pillFont}px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+            ctx.font = `700 ${CFG.pillFont}px Sora, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(text, w / 2, h / 2 + 0.5);
