@@ -51,7 +51,7 @@ function Heartbeat(){
   </div>
   <Panel>
    <div className="flex flex-wrap items-center justify-between gap-4">
-    <div><p className="text-[10px] font-bold tracking-[.23em] text-[#d9b674]">HEARTBEAT / VERIFIED PUBLIC FEED</p><h2 className="mt-2 font-display text-2xl font-semibold">Top 3 recorded alerts</h2></div>
+    <div><p className="text-[10px] font-bold tracking-[.23em] text-[#d9b674]">PUBLIC FEED / RECENT VERIFIED ALERTS</p><h2 className="mt-2 font-display text-2xl font-semibold">Three recent recorded alerts</h2></div>
     <span className="rounded-full border border-[#786745] bg-[#221e18] px-3 py-1.5 text-[10px] font-bold tracking-[.08em] text-[#eac689]">{historical?"DATED ARCHIVE · NOT LIVE":ready?"SIGNED · "+(feed.period==="7d"?"7D":"24H"):feed.state==="loading"?"CONNECTING":feed.state==="empty"?"NO ELIGIBLE ALERTS":"FEED UNAVAILABLE"}</span>
    </div>
    <p className="mt-3 max-w-3xl text-[13px] leading-7 text-[#acb2bb]">Automatically refreshed every minute. Signed public records only, delayed by at least 30 minutes and listed by event time. Dated archives are explicitly historical, not live. No private Telegram messages or inferred trade returns.</p>
@@ -80,7 +80,7 @@ export default function Dashboard(){
   </header>
   <Heartbeat/>
   <div className="grid gap-4 lg:grid-cols-2">
-   <Panel><p className="text-[10px] font-bold tracking-[.22em] text-[#d9b675]">PRIVATE HISTORICAL INTELLIGENCE</p><h2 className="mt-3 font-display text-xl font-semibold">Verified history connection pending.</h2><p className="mt-3 text-[13px] leading-7 text-[#b1b6bf]">Full subscriber history requires verified Telegram delivery provenance, public/private separation and entitlement validation. Not yet connected. This public-feed preview is not private history.</p><span className="mt-5 inline-flex rounded-full border border-[#61533c] px-3 py-1 text-[10px] font-bold text-[#e6c58e]">NOT YET AVAILABLE</span></Panel>
+   <Panel><p className="text-[10px] font-bold tracking-[.22em] text-[#d9b675]">PRIVATE HISTORICAL INTELLIGENCE</p><h2 className="mt-3 font-display text-xl font-semibold">Verified history connection pending.</h2><p className="mt-3 text-[13px] leading-7 text-[#b1b6bf]">Full subscriber history requires verified Telegram delivery provenance, public/private separation and entitlement validation. Not yet connected. This recency feed is neither the heartbeat Top Movers leaderboard nor private history.</p><span className="mt-5 inline-flex rounded-full border border-[#61533c] px-3 py-1 text-[10px] font-bold text-[#e6c58e]">NOT YET AVAILABLE</span></Panel>
    <Panel><p className="text-[10px] font-bold tracking-[.22em] text-[#d9b675]">OPTIONAL RESEARCH TOOLS</p><h2 className="mt-3 font-display text-xl font-semibold">Legacy V4 archive viewer</h2><p className="mt-3 text-[13px] leading-7 text-[#b1b6bf]">Your previous local research analyzer remains available without changing or deleting saved browser archives. File import is optional and stays entirely on your device.</p><Link href="/dashboard/legacy" className="mt-5 inline-flex rounded-lg border border-[#786344] bg-[#d6b472]/10 px-4 py-3 text-xs font-bold text-[#f0d39e]">OPEN LEGACY VIEWER</Link></Panel>
   </div>
  </main>;
