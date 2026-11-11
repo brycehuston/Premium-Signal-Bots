@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import StaticHtmlPage from "../_components/StaticHtmlPage";
+import Stage2Frame from "./Stage2Frame";
 
 const BRAND = process.env.NEXT_PUBLIC_BRAND ?? "AlphaAlerts";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -17,5 +17,5 @@ export const metadata: Metadata = {
 };
 
 export default function Stage2Page() {
-  return <StaticHtmlPage src="/Part2-python-scanner-bots.html" phaseId="stage-2" />;
+  return <Stage2Frame />;
 }

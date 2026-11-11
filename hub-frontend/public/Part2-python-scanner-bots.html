@@ -9,7 +9,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
   <style>
     /* ============================================================
@@ -1031,13 +1031,16 @@
       }
 
       .routerLabel {
-        font-size: 7px;
-        letter-spacing: 0.16em;
+        font-size: 9px;
+        letter-spacing: 0.12em;
         padding: 2px 5px;
       }
 
       .routerHint {
-        display: none;
+        display: block;
+        top: -23px;
+        color: #e7bc67;
+        font-size: 9px;
       }
 
       .routerBtn::after {
@@ -1057,57 +1060,598 @@
       }
     }
 
-    /* Six real Alpha lanes — two deliberate rows, restrained semantic colors. */
-    :root { --panelTitleTop: 18px; --botsTopGap: 8px; --botsBottomGap: 92px; --panelGap: 10px; }
-    .clusterWrap { min-height: 0; justify-content: stretch; }
-    .cluster { height: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
-    .panel { height: auto; min-height: 0; }
-    .panelTitle { font-size: clamp(10px, 1.12vw, 14px); letter-spacing: .16em; gap: 6px; }
-    .panel[data-bot="GENESIS"] .panelTitle .name { color: #A78BFA; }
-    .panel[data-bot="STRICT"] .panelTitle .name { color: #D97777; }
-    .panel[data-bot="RECLAIM"] .panelTitle .name { color: #4BB8D1; }
-    .panel[data-bot="EARLY"] { border-color: rgba(163,206,100,.16); }
-    .panel[data-bot="GENESIS"] { border-color: rgba(167,139,250,.17); }
-    .panel[data-bot="TREND"] { border-color: rgba(205,215,226,.13); }
-    .panel[data-bot="STRICT"] { border-color: rgba(217,119,119,.17); }
-    .panel[data-bot="RECLAIM"] { border-color: rgba(75,184,209,.17); }
-    .panel[data-bot="RUNNER"] { border-color: rgba(216,184,121,.18); }
-    .panel::after { content:""; position:absolute; z-index:3; top:0; left:18%; right:18%; height:2px; border-radius:999px; opacity:.55; background:var(--lane-color); pointer-events:none; }
-    .panel[data-bot="EARLY"] { --lane-color:#A3CE64; }
-    .panel[data-bot="GENESIS"] { --lane-color:#A78BFA; }
-    .panel[data-bot="TREND"] { --lane-color:#CDD7E2; }
-    .panel[data-bot="STRICT"] { --lane-color:#D97777; }
-    .panel[data-bot="RECLAIM"] { --lane-color:#4BB8D1; }
-    .panel[data-bot="RUNNER"] { --lane-color:#D8B879; }
-    @media (max-width: 980px) {
-      .frame { display: flex; flex-direction: column; }
-      .header { flex: 0 0 auto; min-height: 145px; padding-top: 82px; }
-      .clusterWrap { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 7px 106px; }
-      .cluster { height: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; gap: 9px; }
-      .panel { height: clamp(184px, 23vh, 235px); min-height: 184px; }
-      .routerDock { bottom: 13px; }
-      .panelTitle { font-size: 11px; }
+    /* ALPHA COMMAND CENTER v1 — self-contained optical refinement.
+       Preserves six original canvas engines and functional Stage 3 routing. */
+    :root {
+      --command-gold:#dfbb78;
+      --command-white:#edf0f3;
+      --command-muted:#a1aab4;
+      --command-steel:#606b77;
+      --command-line:rgba(112,125,138,.26);
+      --panelTitleTop:16px;
+      --panelGap:18px;
+      --routerSize:58px;
+      --headerHeight:114px;
     }
-    @media (max-width: 430px) {
-      .stage { padding: 0; }
-      .frame { width: 100vw; height: 100dvh; padding: 7px; border-radius: 0; }
-      .badgeStack { flex: 0 0 auto; }
-      .header { flex: 0 0 auto; height: auto; min-height: 0; padding: 7px 5px 7px; gap: 7px; }
-      .header::after { display: none; }
-      .title { font-size: 17px; }
-      .master { gap: 5px; }
-      .master .btn { width: 35px; height: 35px; }
-      .master .sfxBtn { width: 45px; }
-      .clusterWrap { flex: 1 1 auto; max-height: none; height: auto; padding: 7px 4px 91px; overflow-y: auto; }
-      .cluster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
-      .panel { height: clamp(165px, 23svh, 195px); min-height: 165px; border-radius: 13px; }
-      .panelHead { top: 14px; }
-      .panelTitle { font-size: 10px; letter-spacing: .09em; gap: 4px; }
-      .routerDock { bottom: 12px; }
+    .stage {
+      padding:clamp(9px,1.5vw,20px);
+      background:radial-gradient(ellipse 88% 90% at 50% 48%,#10141b 0%,#07090d 56%,#030407 100%);
     }
-    @media (prefers-reduced-motion: reduce) {
-      .panel, .routerBtn { transition: none !important; }
-      .routerBtn::after { animation: none !important; }
+    .frame {
+      width:min(1500px,calc(100vw - 36px));
+      height:min(846px,calc(100dvh - 34px));
+      padding:0;
+      border:1px solid rgba(112,124,137,.31);
+      border-radius:19px;
+      background:
+        radial-gradient(ellipse 65% 52% at 50% 33%,rgba(30,37,45,.23),transparent 83%),
+        linear-gradient(145deg,#0e1116 0%,#090b0f 58%,#0c0f13 100%);
+      box-shadow:0 28px 72px rgba(0,0,0,.44),inset 0 1px 0 rgba(207,220,231,.07);
+      isolation:isolate;
+    }
+    .frame::after {
+      background:linear-gradient(140deg,rgba(190,202,215,.025),transparent 32%,transparent 74%,rgba(164,179,192,.021));
+      opacity:.6;
+    }
+    .frame::before {
+      content:"";
+      position:absolute;
+      top:0;left:7%;right:7%;height:1px;
+      z-index:13;pointer-events:none;
+      background:linear-gradient(90deg,transparent,#f2d4a2 44%,#d7af67 60%,transparent);
+      transform-origin:center;
+      animation:commandIgnition 1.55s cubic-bezier(.2,.8,.2,1) 1 both;
+    }
+    @keyframes commandIgnition {
+      0%{opacity:0;transform:scaleX(.04)}
+      42%{opacity:.75;transform:scaleX(.48)}
+      100%{opacity:0;transform:scaleX(1)}
+    }
+    .badgeStack {
+      position:absolute;
+      top:23px;left:29px;
+      display:flex;flex-direction:column;
+      gap:11px;width:max-content;max-width:235px;
+      z-index:9;
+    }
+    .brandMark {
+      width:max-content;max-width:100%;
+      padding:0;border:0;border-radius:0;
+      background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;
+      gap:9px;
+    }
+    .brandText {font-size:10px;font-weight:800;letter-spacing:.23em;color:#cbd0d7}
+    .brandSep {opacity:.44}
+    .phaseTag {
+      color:#e8c789;background:rgba(217,180,112,.075);
+      border:1px solid rgba(210,174,105,.29);border-radius:5px;
+      padding:4px 7px;letter-spacing:.13em;font-size:9px;font-weight:700;
+      box-shadow:none;
+    }
+    .workflowNote {
+      padding:0;margin:0;max-width:220px;
+      border:0;border-radius:0;background:transparent;
+      backdrop-filter:none;-webkit-backdrop-filter:none;
+    }
+    .workflowTitle {font-size:9px;letter-spacing:.19em;font-weight:700;color:#b8a079}
+    .workflowText {margin:5px 0 0;font-size:9px;line-height:1.6;letter-spacing:.025em;color:#87909b;white-space:normal}
+    .header {
+      z-index:7;height:var(--headerHeight);
+      padding:23px 27px 0;
+      gap:0;align-items:flex-start;justify-content:flex-end;
+    }
+    .header::after {
+      bottom:0;left:25px;right:25px;height:1px;
+      background:linear-gradient(90deg,rgba(123,134,144,.22),rgba(162,171,179,.13),rgba(123,134,144,.22));
+      opacity:1;
+    }
+    .titleBlock {
+      position:absolute;top:24px;left:50%;
+      transform:translateX(-50%);width:min(650px,50%);
+    }
+    .title {
+      display:flex;gap:10px;align-items:center;justify-content:center;
+      font-size:clamp(23px,2.55vw,34px);font-weight:800;
+      letter-spacing:.11em;line-height:1.2;
+      text-shadow:none;
+    }
+    .title .py {color:#f1f2f4}
+    .title .scan {color:#e4bf7b}
+    .title .bots {color:#aeb8c4;opacity:1}
+    .titleMeta {
+      margin-top:8px;
+      font-size:9px;letter-spacing:.21em;font-weight:650;line-height:1.4;
+      color:#8f98a3;text-align:center;white-space:nowrap;
+    }
+    .master {gap:7px}
+    .master .pill,.master .btn {
+      border:1px solid rgba(119,130,142,.22);
+      border-radius:7px;background:rgba(17,20,26,.75);
+      box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+    }
+    .master .pill {font-size:10px;letter-spacing:.1em;padding:10px 11px;color:#b7bdc4}
+    .master .btn {width:35px;height:35px;color:#b2b9c2;font-size:13px}
+    .master .sfxBtn {width:48px;font-size:10px;letter-spacing:.11em}
+    .master .btn:hover,.master .btn:focus-visible {border-color:rgba(218,179,109,.55);color:#e4c18c;background:#171b21}
+    .commandRail {
+      position:absolute;z-index:7;top:122px;left:28px;right:28px;
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      min-height:37px;padding:0 2px;
+      border-bottom:1px solid rgba(104,114,127,.17);
+      pointer-events:none;
+    }
+    .railSide,.railCenter {
+      display:flex;align-items:center;gap:10px;
+      color:#909aa6;font-size:9px;font-weight:700;letter-spacing:.14em;
+      white-space:nowrap;
+    }
+    .railSide em {font-style:normal;color:#c5cbd3}
+    .railSide:last-child {justify-content:flex-end}
+    .railIndex {color:#d6b376;font-weight:800}
+    .railCenter {color:#a8b1bb;letter-spacing:.15em}
+    .railCenter::before {
+      content:"";display:block;width:5px;height:5px;
+      border-radius:100%;background:#d5b271;box-shadow:0 0 0 3px rgba(213,178,113,.10);
+    }
+    .clusterWrap {
+      position:relative;z-index:2;
+      height:calc(100% - var(--headerHeight));
+      min-height:0;padding:66px clamp(18px,2vw,32px) 143px;
+      display:flex;flex-direction:column;justify-content:center;
+      overflow:hidden;
+    }
+    .cluster {
+      width:100%;height:100%;max-width:1360px;max-height:505px;
+      margin:0 auto;
+      display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-rows:repeat(2,minmax(0,1fr));
+      gap:var(--panelGap);align-items:stretch;
+    }
+    .panel {
+      min-height:0;height:auto;
+      position:relative;border-radius:14px;
+      border:1px solid rgba(110,125,139,.27);
+      background:linear-gradient(147deg,#151a20 0%,#0c0f14 49%,#11151b 100%);
+      box-shadow:inset 0 1px 0 rgba(190,204,217,.049),0 10px 22px rgba(0,0,0,.18);
+      overflow:hidden;
+      animation:moduleWake .58s cubic-bezier(.2,.8,.2,1) both;
+      animation-delay:calc(var(--lane-order) * 72ms);
+      transition:border-color .27s ease,background-color .27s ease;
+      contain:paint;
+    }
+    @keyframes moduleWake {
+      0%{opacity:.55;transform:translateY(5px)}
+      100%{opacity:1;transform:translateY(0)}
+    }
+    .panel::before {
+      content:"";position:absolute;inset:1px;z-index:1;pointer-events:none;
+      border-radius:inherit;mix-blend-mode:normal;opacity:.75;
+      background:radial-gradient(ellipse 45% 55% at 50% 52%,color-mix(in srgb,var(--lane-color) 5%,transparent),transparent 83%);
+    }
+    .panel::after {
+      content:"";z-index:5;position:absolute;top:0;left:19px;right:auto;
+      width:27px;height:1px;opacity:.55;background:var(--lane-color);
+      box-shadow:none;pointer-events:none;
+    }
+    .panel.is-scanning {
+      border-color:rgba(151,166,181,.43);
+      background:linear-gradient(147deg,#181e25 0%,#0e1217 49%,#11161b 100%);
+    }
+    .panel.is-scanning::after{opacity:.85;width:43px}
+    .panelHead {
+      position:absolute;top:15px;left:17px;right:16px;z-index:8;
+      display:flex;align-items:flex-start;justify-content:space-between;
+      gap:12px;padding:0;width:auto;text-align:left;
+    }
+    .panelIdentity {display:flex;flex-direction:column;min-width:0;gap:5px;align-items:flex-start}
+    .panelEyebrow {
+      color:#8e97a3;font-size:8px;font-weight:750;letter-spacing:.18em;
+      line-height:1.3;white-space:nowrap;
+    }
+    .panelTitle {
+      display:flex;align-items:baseline;justify-content:flex-start;
+      gap:6px;margin:0;padding:0;
+      font-size:clamp(11px,1.08vw,15px);
+      letter-spacing:.105em;line-height:1.2;font-weight:800;
+      text-shadow:none;
+    }
+    .panelTitle::before,.panelTitle::after{display:none}
+    .panelTitle .alpha {color:#edf0f3}
+    .panelTitle .name {color:var(--lane-color)!important;text-shadow:none}
+    .panelState {
+      display:flex;align-items:center;justify-content:flex-end;gap:6px;
+      flex:0 0 auto;color:#737e8b;font-size:9px;letter-spacing:.12em;
+      font-weight:750;line-height:1.5;
+    }
+    .panelLed {
+      display:block;width:5px;height:5px;flex:0 0 auto;border-radius:100%;
+      background:#54606c;transition:background .25s ease,box-shadow .25s ease;
+    }
+    .panel.is-scanning .panelLed {
+      background:var(--lane-color);box-shadow:0 0 7px color-mix(in srgb,var(--lane-color) 45%,transparent);
+    }
+    .panel.is-scanning .panelState {color:#c9d2db}
+    .panelBody {position:absolute;inset:0;padding-top:0}
+    .panelFooter {
+      position:absolute;z-index:8;bottom:13px;left:17px;right:17px;
+      display:flex;align-items:center;justify-content:space-between;
+      padding-top:9px;border-top:1px solid rgba(108,120,133,.18);
+      color:#808b97;font-size:9px;line-height:1.35;
+      font-weight:700;letter-spacing:.12em;pointer-events:none;
+    }
+    .panelFooter strong {font:inherit;color:#b4bec8}
+    .panelFooter .signalTicks {color:var(--lane-color);letter-spacing:.20em;opacity:.63}
+    .panel.is-scanning .panelFooter .signalTicks{opacity:.92}
+    .signalPath {
+      position:absolute;z-index:6;
+      left:50%;bottom:116px;transform:translateX(-50%);
+      width:min(720px,70%);height:27px;
+      display:flex;align-items:center;justify-content:center;gap:15px;
+      pointer-events:none;
+      color:#818d99;font-size:9px;font-weight:750;letter-spacing:.16em;
+    }
+    .signalPath .pathLine {
+      display:block;height:1px;min-width:35px;flex:1;
+      background:linear-gradient(90deg,transparent,rgba(128,142,157,.27));
+    }
+    .signalPath .pathLine.reversed{transform:rotate(180deg)}
+    .signalPath .pathNode {
+      width:7px;height:7px;border:1px solid rgba(213,176,109,.57);
+      border-radius:100%;background:#15171a;flex:none;
+    }
+    .signalPath .pathPulse {
+      display:block;position:absolute;left:calc(50% - 3px);top:calc(50% - 3px);
+      width:6px;height:6px;border-radius:50%;background:#d5b16f;
+      opacity:0;box-shadow:0 0 8px rgba(215,178,112,.24);
+    }
+    .signalPath.is-active .pathPulse{animation:routeTrace 1.55s ease-in-out both}
+    @keyframes routeTrace {
+      0%{opacity:0;transform:translateX(-85px)}
+      23%{opacity:.65}
+      77%{opacity:.65}
+      100%{opacity:0;transform:translateX(85px)}
+    }
+    .routerDock {
+      position:absolute;z-index:10;
+      left:50%;bottom:23px;right:auto;top:auto;
+      transform:translateX(-50%);
+      width:max-content;min-width:310px;
+      border:1px solid rgba(125,138,150,.34);
+      border-radius:14px;background:linear-gradient(135deg,#1b2026 0%,#11161c 100%);
+      box-shadow:inset 0 1px 0 rgba(204,216,225,.075),0 10px 28px rgba(0,0,0,.23);
+      display:flex;flex-direction:row;align-items:center;justify-content:center;
+      gap:15px;padding:9px 20px 9px 10px;
+    }
+    .routerBtn {
+      flex:0 0 auto;width:var(--routerSize);height:var(--routerSize);
+      border:1px solid rgba(213,177,112,.42);border-radius:11px;
+      background:linear-gradient(145deg,rgba(207,173,112,.15),rgba(11,13,17,.32));
+      box-shadow:inset 0 1px 0 rgba(255,230,179,.10);
+    }
+    .routerBtn::before{inset:3px;border-radius:8px;border-color:rgba(203,169,108,.14);background:transparent;opacity:1}
+    .routerBtn:hover,.routerBtn:focus-visible {
+      transform:translateY(-1px);border-color:#e4c28a;
+      box-shadow:0 0 0 2px rgba(227,188,113,.13),inset 0 1px 0 rgba(255,230,179,.12);
+    }
+    .routerIcon {width:26px;height:26px;filter:none}
+    .routerBtn .routerHint {display:none}
+    .routerLabel {
+      min-width:0;display:flex;flex-direction:column;align-items:flex-start;
+      padding:0;border:0;border-radius:0;background:none;
+      backdrop-filter:none;-webkit-backdrop-filter:none;
+      gap:4px;white-space:normal;text-align:left;
+    }
+    .routerLabel .outIndex{color:#d9ba83;font-size:9px;font-weight:800;letter-spacing:.16em}
+    .routerLabel strong{color:#f0f2f4;font-size:12px;font-weight:800;letter-spacing:.10em}
+    .routerLabel small{color:#9ca7b3;font-size:9px;font-weight:650;letter-spacing:.12em}
+    #overlay {z-index:5}
+    @media (min-width:981px) and (max-height:740px) {
+      .clusterWrap{padding-top:57px;padding-bottom:137px}
+      .cluster{gap:13px}
+      .panelHead{top:10px}
+      .panelFooter{bottom:8px}
+      .signalPath{bottom:109px}
+      .routerDock{bottom:13px}
+    }
+    @media (max-width:980px) {
+      .stage {padding:9px}
+      .frame {
+        display:flex;flex-direction:column;
+        width:calc(100vw - 18px);height:calc(100dvh - 18px);
+        padding:14px;border-radius:15px;
+      }
+      .badgeStack {
+        position:relative;top:auto;left:auto;right:auto;
+        flex:0 0 auto;display:flex;align-items:center;flex-direction:row;
+        gap:9px;width:100%;max-width:100%;margin:0 0 4px;
+      }
+      .brandMark {padding:0;gap:8px;justify-content:flex-start}
+      .workflowNote {flex:1;text-align:right;max-width:none}
+      .workflowTitle{font-size:8px}
+      .workflowText{display:none}
+      .header {
+        flex:0 0 auto;height:auto;min-height:0;
+        padding:12px 0 9px;
+        display:flex;flex-direction:column;align-items:center;gap:11px;
+      }
+      .header::after{display:none}
+      .titleBlock{position:static;transform:none;width:100%}
+      .title{font-size:clamp(21px,3vw,28px);gap:8px;letter-spacing:.09em;white-space:normal;flex-wrap:wrap}
+      .titleMeta{margin-top:5px;white-space:normal;font-size:9px}
+      .master{justify-content:center;gap:7px}
+      .master .btn{width:34px;height:34px}
+      .master .sfxBtn{width:48px}
+      .commandRail {
+        position:relative;top:auto;left:auto;right:auto;
+        flex:0 0 auto;min-height:31px;gap:10px;padding:3px 0 8px;
+        border-top:1px solid rgba(104,114,127,.17);
+      }
+      .railSide{font-size:8px;letter-spacing:.07em}
+      .railCenter{font-size:8px;letter-spacing:.09em}
+      .clusterWrap {
+        flex:1 1 auto;height:auto;min-height:0;max-height:none;
+        overflow-y:auto;overscroll-behavior:contain;
+        padding:14px 3px 114px;justify-content:flex-start;
+      }
+      .cluster {
+        height:auto;max-height:none;max-width:740px;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        grid-template-rows:none;gap:12px;
+      }
+      .panel {height:clamp(188px,23vh,242px);min-height:188px}
+      .panelTitle{font-size:13px}
+      .signalPath {
+        left:50%;bottom:102px;width:min(620px,85%);
+        font-size:8px;gap:12px;
+      }
+      .routerDock{bottom:14px;min-width:0}
+    }
+    @media (max-width:560px) {
+      .stage{padding:0}
+      .frame{
+        width:100vw;height:100dvh;padding:11px 11px 0;
+        border:0;border-radius:0;
+      }
+      .badgeStack{margin-bottom:4px}
+      .brandText{font-size:9px;letter-spacing:.16em}
+      .phaseTag{font-size:8px;padding:3px 5px}
+      .workflowTitle{font-size:8px;letter-spacing:.08em}
+      .header{padding:12px 0 9px;gap:9px}
+      .title{font-size:clamp(17px,4.65vw,23px);gap:7px;letter-spacing:.07em;line-height:1.2}
+      .titleMeta{font-size:8px;letter-spacing:.08em}
+      .master .pill{font-size:9px;padding:8px}
+      .master .btn{width:31px;height:31px;font-size:11px}
+      .master .sfxBtn{width:44px;font-size:9px}
+      .commandRail{padding:4px 2px 8px;justify-content:center;min-height:26px}
+      .railSide{display:none}
+      .railCenter{font-size:9px}
+      .clusterWrap{padding:12px 0 120px;overflow-y:auto}
+      .cluster{gap:10px}
+      .panel{height:clamp(172px,22svh,191px);min-height:172px;border-radius:12px}
+      .panelHead{top:12px;left:11px;right:10px;gap:6px}
+      .panelEyebrow{display:none}
+      .panelTitle{font-size:clamp(10px,2.85vw,13px);letter-spacing:.055em;gap:4px}
+      .panelState{font-size:8px;letter-spacing:.025em}
+      .panelStateText{display:none}
+      .panelLed{width:6px;height:6px}
+      .panelFooter{left:11px;right:11px;bottom:10px;font-size:8px;padding-top:6px;letter-spacing:.05em}
+      .panelFooter .signalTicks{font-size:9px}
+      .signalPath{display:none}
+      .signalPath .pathLine{min-width:15px}
+      .routerDock{
+        left:50%;right:auto;top:auto;bottom:12px;
+        width:calc(100% - 24px);
+        min-width:0;padding:9px 11px;gap:11px;border-radius:12px;
+        justify-content:flex-start;
+      }
+      .routerBtn{width:48px;height:48px;border-radius:9px}
+      .routerBtn::before{border-radius:7px}
+      .routerIcon{width:23px;height:23px}
+      .routerLabel strong{font-size:11px}
+      .routerLabel small{font-size:8px}
+      .routerLabel .outIndex{font-size:8px}
+    }
+    @media (max-width:360px) {
+      .title{font-size:16px}
+      .badgeStack{gap:3px}
+      .brandText{font-size:8px}
+      .phaseTag{font-size:7px}
+      .panel{height:163px;min-height:163px}
+      .panelTitle{font-size:10px}
+    }
+    @media (prefers-reduced-motion:reduce) {
+      .frame::before,.panel,.signalPath .pathPulse{animation:none!important;transition:none!important}
+      .routerBtn::after{animation:none!important}
+    }
+
+
+    /* ALPHA COMMAND CENTER v2 — readability, breathing room, and optical contrast.
+       The v1 surface was over-muted and the duplicate microcopy crowded the artwork.
+       Keep the existing six canvas instruments, sequence and Stage 3 navigation. */
+    :root {--panelGap:clamp(20px,2.1vw,30px);--headerHeight:108px}
+    .stage {background:radial-gradient(ellipse 74% 84% at 50% 42%,#171b20 0%,#0b0d11 50%,#050608 100%)}
+    .frame {
+      width:min(1450px,calc(100vw - 36px));
+      height:min(830px,calc(100dvh - 38px));
+      background:
+        radial-gradient(ellipse 78% 69% at 50% 39%,rgba(117,132,146,.115),transparent 67%),
+        linear-gradient(143deg,#14171c 0%,#0d1014 52%,#111419 100%);
+      border-color:rgba(150,164,177,.34);
+      box-shadow:0 30px 85px rgba(0,0,0,.48),inset 0 1px 0 rgba(222,230,237,.095);
+    }
+    .frame::after {
+      background:radial-gradient(ellipse 56% 28% at 50% 8%,rgba(216,177,107,.075),transparent 82%);
+      opacity:1;
+    }
+    .badgeStack {top:24px;left:29px;max-width:none}
+    .workflowNote {display:none}
+    .brandText {color:#e0e4e9}
+    .brandMark {gap:11px}
+    .phaseTag {border-color:rgba(236,192,116,.42);color:#f3cc8d}
+    .header {height:108px;padding:22px 28px 0}
+    .header::after {bottom:3px;left:29px;right:29px;opacity:.62}
+    .titleBlock {top:22px;width:min(660px,52%)}
+    .title {
+      font-size:clamp(24px,2.85vw,38px);
+      letter-spacing:.085em;
+      font-weight:800;gap:10px;
+      text-shadow:0 2px 15px rgba(0,0,0,.36);
+    }
+    .title .py {color:#f5f6f7}
+    .title .scan {color:#f0c981;text-shadow:0 0 18px rgba(223,181,108,.14)}
+    .title .bots {color:#d8dee5}
+    .titleMeta {display:none}
+    .controlMenu {position:absolute;right:27px;top:22px;z-index:24}
+    .controlMenu summary {
+      list-style:none;cursor:pointer;user-select:none;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      height:33px;padding:0 12px;
+      border:1px solid rgba(149,161,174,.31);
+      border-radius:7px;background:rgba(27,31,38,.86);
+      color:#c9d0d8;font:700 10px/1 "Sora",ui-sans-serif,system-ui;
+      letter-spacing:.115em;
+      transition:background .2s,border-color .2s;
+    }
+    .controlMenu summary::-webkit-details-marker {display:none}
+    .controlMenu summary::marker {content:""}
+    .controlMenu summary:hover,.controlMenu summary:focus-visible {
+      border-color:rgba(230,191,125,.75);background:#24282f;outline-offset:3px;
+    }
+    .controlMenu summary span {color:#efc987;font-size:16px;line-height:1;transform:translateY(-2px)}
+    .controlMenu[open] summary span {transform:rotate(180deg) translateY(2px)}
+    .controlMenu .master {
+      position:absolute;top:43px;right:0;
+      display:flex;align-items:center;gap:7px;
+      width:max-content;padding:10px;
+      border:1px solid rgba(160,171,184,.35);border-radius:10px;
+      background:#191e24;box-shadow:0 16px 42px rgba(0,0,0,.48);
+    }
+    .controlMenu .master .pill {background:#11161b;color:#e5e8ec}
+    .controlMenu .master .btn {border-color:rgba(166,180,191,.3);background:#10151a}
+    .commandRail {
+      top:106px;left:50%;right:auto;transform:translateX(-50%);
+      width:max-content;max-width:90%;min-height:32px;
+      padding:0;border:0;justify-content:center;pointer-events:none;
+    }
+    .railSide {display:none}
+    .railCenter {
+      color:#c4ccd4;font-size:10px;font-weight:700;
+      letter-spacing:.14em;line-height:1.6;white-space:normal;text-align:center;
+    }
+    .railCenter::before {background:#e2b66c;box-shadow:0 0 0 3px rgba(223,177,101,.15)}
+    .clusterWrap {
+      height:calc(100% - 108px);
+      padding:56px clamp(32px,3.3vw,54px) 108px;
+      overflow:hidden;justify-content:center;
+    }
+    .cluster {
+      max-width:1220px;max-height:500px;
+      gap:var(--panelGap);
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-rows:repeat(2,minmax(0,1fr));
+    }
+    .panel {
+      border:1px solid rgba(158,176,191,.33);
+      border-radius:16px;
+      background:
+        radial-gradient(ellipse 65% 63% at 50% 48%,rgba(90,107,124,.22),transparent 74%),
+        linear-gradient(148deg,#20252c 0%,#13171c 56%,#1b2027 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(220,229,237,.11),
+        inset 0 -1px 0 rgba(2,5,9,.45),
+        0 10px 25px rgba(0,0,0,.22);
+      animation-duration:.44s;
+      contain:paint;
+    }
+    .panel::before {
+      opacity:1;
+      background:radial-gradient(ellipse 39% 57% at 50% 53%,color-mix(in srgb,var(--lane-color) 13%,transparent),transparent 84%);
+    }
+    .panel::after {left:21px;width:46px;opacity:.88;height:2px;background:var(--lane-color);border-radius:999px}
+    .panel.is-scanning {
+      border-color:color-mix(in srgb,var(--lane-color) 43%,rgba(164,183,199,.43));
+      background:
+        radial-gradient(ellipse 64% 60% at 50% 50%,color-mix(in srgb,var(--lane-color) 12%,transparent),transparent 74%),
+        linear-gradient(148deg,#232a31,#161b21 56%,#1d232a);
+    }
+    .panel.is-scanning::after {width:64px}
+    .panelHead {top:19px;left:20px;right:19px;gap:9px}
+    .panelIdentity {gap:0}
+    .panelEyebrow,.panelFooter,.panelStateText {display:none}
+    .panelTitle {font-size:clamp(13px,1.25vw,17px);letter-spacing:.12em;gap:8px;white-space:nowrap}
+    .panelTitle .alpha {color:#f1f3f6}
+    .panelTitle .name {text-shadow:0 0 12px color-mix(in srgb,var(--lane-color) 14%,transparent)}
+    .panelState {padding:4px 0}
+    .panelLed {
+      background:var(--lane-color);opacity:.74;width:6px;height:6px;
+      box-shadow:0 0 9px color-mix(in srgb,var(--lane-color) 29%,transparent);
+    }
+    .panel.is-scanning .panelLed {opacity:1;box-shadow:0 0 10px color-mix(in srgb,var(--lane-color) 58%,transparent)}
+    .signalPath {display:none}
+    .routerDock {
+      bottom:22px;min-width:280px;
+      padding:9px 22px 9px 10px;gap:14px;
+      border-color:rgba(209,177,122,.47);
+      background:linear-gradient(135deg,#252a30,#171c22 90%);
+      box-shadow:inset 0 1px 0 rgba(246,222,178,.105),0 10px 25px rgba(0,0,0,.23);
+    }
+    .routerDock::before {
+      content:"";position:absolute;bottom:100%;left:50%;width:1px;height:18px;
+      background:linear-gradient(0deg,rgba(233,192,123,.65),transparent);
+      pointer-events:none;
+    }
+    .routerBtn {border-color:rgba(236,194,124,.55);background:linear-gradient(140deg,rgba(238,194,118,.22),rgba(16,20,25,.6))}
+    .routerLabel .outIndex {display:none}
+    .routerLabel strong {font-size:13px;letter-spacing:.10em;color:#f2f3f5}
+    .routerLabel small {font-size:9px;color:#c7cbd0}
+    @media (max-height:760px) and (min-width:981px) {
+      .frame {height:calc(100dvh - 20px)}
+      .clusterWrap {padding-top:45px;padding-bottom:104px}
+      .cluster {gap:18px}
+      .routerDock {bottom:14px}
+    }
+    @media (max-width:980px) {
+      :root {--panelGap:17px}
+      .stage {padding:9px}
+      .frame {width:calc(100vw - 18px);height:calc(100dvh - 18px);padding:14px}
+      .badgeStack {position:relative;top:auto;left:auto;max-width:100%;width:auto;margin:0 0 8px}
+      .header {position:relative;height:auto;min-height:0;padding:14px 0 10px}
+      .titleBlock {position:static;transform:none;width:100%}
+      .title {font-size:clamp(22px,3vw,30px);letter-spacing:.08em}
+      .controlMenu {position:absolute;top:15px;right:15px}
+      .commandRail {position:relative;top:auto;left:auto;transform:none;width:100%;margin:0 auto;min-height:28px}
+      .clusterWrap {flex:1 1 auto;height:auto;max-height:none;padding:12px 12px 118px;overflow-y:auto;justify-content:flex-start}
+      .cluster {height:auto;max-height:none;max-width:750px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;gap:17px}
+      .panel {height:clamp(207px,24vh,264px);min-height:207px}
+      .panelTitle {font-size:14px}
+      .routerDock {bottom:14px}
+    }
+    @media (max-width:560px) {
+      .stage{padding:0}
+      .frame {height:100dvh;width:100vw;padding:10px 11px 0;border:0;border-radius:0}
+      .badgeStack {margin:2px 0 9px}
+      .brandText{font-size:9px}
+      .controlMenu {position:fixed;top:10px;right:10px;z-index:50}
+      .controlMenu summary {height:31px;padding:0 9px;font-size:9px;background:#20252b}
+      .controlMenu .master {max-width:calc(100vw - 22px);flex-wrap:wrap;justify-content:center}
+      .header {padding:13px 0 8px}
+      .title {font-size:clamp(20px,5.5vw,25px);gap:6px;letter-spacing:.055em}
+      .commandRail {min-height:26px}
+      .railCenter{font-size:9px;letter-spacing:.07em}
+      .clusterWrap {padding:12px 3px 109px;overflow-y:auto}
+      .cluster {gap:12px}
+      .panel {height:clamp(185px,22svh,210px);min-height:185px;border-radius:12px}
+      .panelHead {top:14px;left:12px;right:12px}
+      .panelTitle {font-size:clamp(11px,2.85vw,13px);letter-spacing:.045em;gap:4px}
+      .panelLed {width:5px;height:5px}
+      .routerDock {bottom:12px;min-width:0;width:calc(100% - 24px);padding:8px 12px;gap:12px}
+      .routerBtn{width:48px;height:48px}
+      .routerLabel strong{font-size:11px}
+      .routerLabel small{font-size:8px}
+      .routerDock::before {display:none}
+    }
+    @media(prefers-reduced-motion:reduce) {
+      .panel,.routerDock {animation:none!important;transition:none!important}
     }
 
   </style>
@@ -1120,67 +1664,126 @@
         <div class="brandMark"><span class="brandText">ALPHA ALERTS</span><span class="brandSep">•</span><span
             class="phaseTag">STAGE 2</span></div>
         <div class="workflowNote">
-          <div class="workflowTitle">SYSTEM WORKFLOW</div>
-          <p class="workflowText">SIX SPECIALIZED ALPHA LANES · ILLUSTRATIVE FLOW.</p>
+          <div class="workflowTitle">INTELLIGENCE ARCHITECTURE</div>
+          <p class="workflowText">ILLUSTRATIVE SCANNER → ROUTER FLOW</p>
         </div>
       </div>
       <div class="header">
         <div class="titleBlock">
           <div class="title">
-            <span class="py">PYTHON</span>
-            <span class="scan">SCANNER</span>
-            <span class="bots">BOTS</span>
+            <span class="py">ALPHA</span>
+            <span class="scan">COMMAND</span>
+            <span class="bots">CENTER</span>
           </div>
+          <div class="titleMeta">SIX SCANNER LANES · ONE SIGNAL PATH</div>
         </div>
 
-        <div class="master">
-          <div class="pill" id="masterReadout">MASTER 0.00</div>
-          <button class="btn" id="masterUp" title="Tilt all up">▲</button>
-          <button class="btn" id="masterDown" title="Tilt all down">▼</button>
-          <button class="btn sfxBtn" id="sfxToggle" title="Toggle sound effects">SFX</button>
-        </div>
+        <details class="controlMenu">
+          <summary aria-label="Show scanner controls">CONTROLS <span aria-hidden="true">⌄</span></summary>
+          <div class="master">
+            <div class="pill" id="masterReadout">TILT 0.00</div>
+            <button class="btn" id="masterUp" title="Tilt all up" aria-label="Tilt scanner grid up">▲</button>
+            <button class="btn" id="masterDown" title="Tilt all down" aria-label="Tilt scanner grid down">▼</button>
+            <button class="btn sfxBtn" id="sfxToggle" title="Toggle sound effects">SFX</button>
+          </div>
+        </details>
       </div>
 
+      <div class="commandRail" aria-label="Illustrative scanner topology">
+        <span class="railSide"><span class="railIndex">01 /</span> SOURCE <em>ON-CHAIN FEEDS</em></span>
+        <span class="railCenter" id="commandLiveReadout">SEQUENTIAL SCAN · DEMONSTRATION</span>
+        <span class="railSide"><span class="railIndex">02 /</span> OUTPUT <em>TELEGRAM ROUTING</em></span>
+      </div>
       <div class="clusterWrap">
         <div class="cluster">
-          <div class="panel" data-bot="EARLY">
-            <div class="panelHead"><div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">EARLY</span></div></div>
+          <div class="panel" data-bot="EARLY" style="--lane-order:0">
+            <div class="panelHead">
+              <div class="panelIdentity">
+                <span class="panelEyebrow">LANE 01 / 06</span>
+                <div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">EARLY</span></div>
+              </div>
+              <div class="panelState"><i class="panelLed" aria-hidden="true"></i><span class="panelStateText">STANDBY</span></div>
+            </div>
             <div class="panelBody" id="coreEarly"><canvas class="reactor"></canvas></div>
+            <div class="panelFooter"><strong>SCAN MODULE 01</strong><span class="signalTicks" aria-hidden="true">▰ ▰ ▱</span></div>
           </div>
-          <div class="panel" data-bot="GENESIS">
-            <div class="panelHead"><div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">GENESIS</span></div></div>
+          <div class="panel" data-bot="GENESIS" style="--lane-order:1">
+            <div class="panelHead">
+              <div class="panelIdentity">
+                <span class="panelEyebrow">LANE 02 / 06</span>
+                <div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">GENESIS</span></div>
+              </div>
+              <div class="panelState"><i class="panelLed" aria-hidden="true"></i><span class="panelStateText">STANDBY</span></div>
+            </div>
             <div class="panelBody" id="coreGenesis"><canvas class="reactor"></canvas></div>
+            <div class="panelFooter"><strong>SCAN MODULE 02</strong><span class="signalTicks" aria-hidden="true">▰ ▰ ▱</span></div>
           </div>
-          <div class="panel" data-bot="TREND">
-            <div class="panelHead"><div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">TREND</span></div></div>
+          <div class="panel" data-bot="TREND" style="--lane-order:2">
+            <div class="panelHead">
+              <div class="panelIdentity">
+                <span class="panelEyebrow">LANE 03 / 06</span>
+                <div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">TREND</span></div>
+              </div>
+              <div class="panelState"><i class="panelLed" aria-hidden="true"></i><span class="panelStateText">STANDBY</span></div>
+            </div>
             <div class="panelBody" id="coreTrend"><canvas class="reactor"></canvas></div>
+            <div class="panelFooter"><strong>SCAN MODULE 03</strong><span class="signalTicks" aria-hidden="true">▰ ▰ ▱</span></div>
           </div>
-          <div class="panel" data-bot="STRICT">
-            <div class="panelHead"><div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">STRICT</span></div></div>
+          <div class="panel" data-bot="STRICT" style="--lane-order:3">
+            <div class="panelHead">
+              <div class="panelIdentity">
+                <span class="panelEyebrow">LANE 04 / 06</span>
+                <div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">STRICT</span></div>
+              </div>
+              <div class="panelState"><i class="panelLed" aria-hidden="true"></i><span class="panelStateText">STANDBY</span></div>
+            </div>
             <div class="panelBody" id="coreStrict"><canvas class="reactor"></canvas></div>
+            <div class="panelFooter"><strong>SCAN MODULE 04</strong><span class="signalTicks" aria-hidden="true">▰ ▰ ▱</span></div>
           </div>
-          <div class="panel" data-bot="RECLAIM">
-            <div class="panelHead"><div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">RECLAIM</span></div></div>
+          <div class="panel" data-bot="RECLAIM" style="--lane-order:4">
+            <div class="panelHead">
+              <div class="panelIdentity">
+                <span class="panelEyebrow">LANE 05 / 06</span>
+                <div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">RECLAIM</span></div>
+              </div>
+              <div class="panelState"><i class="panelLed" aria-hidden="true"></i><span class="panelStateText">STANDBY</span></div>
+            </div>
             <div class="panelBody" id="coreReclaim"><canvas class="reactor"></canvas></div>
+            <div class="panelFooter"><strong>SCAN MODULE 05</strong><span class="signalTicks" aria-hidden="true">▰ ▰ ▱</span></div>
           </div>
-          <div class="panel" data-bot="RUNNER">
-            <div class="panelHead"><div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">RUNNER</span></div></div>
+          <div class="panel" data-bot="RUNNER" style="--lane-order:5">
+            <div class="panelHead">
+              <div class="panelIdentity">
+                <span class="panelEyebrow">LANE 06 / 06</span>
+                <div class="panelTitle"><span class="alpha">ALPHA</span><span class="name">RUNNER</span></div>
+              </div>
+              <div class="panelState"><i class="panelLed" aria-hidden="true"></i><span class="panelStateText">STANDBY</span></div>
+            </div>
             <div class="panelBody" id="coreRunner"><canvas class="reactor"></canvas></div>
+            <div class="panelFooter"><strong>SCAN MODULE 06</strong><span class="signalTicks" aria-hidden="true">▰ ▰ ▱</span></div>
           </div>
         </div>
       </div>
 
-      <!-- Telegram Bot pinned to bottom -->
+      <div class="signalPath" id="signalPath" aria-hidden="true">
+        <span>SCANNER GRID</span><i class="pathLine"></i><i class="pathNode"></i><i class="pathLine reversed"></i><span>ROUTING CORE</span>
+        <i class="pathPulse"></i>
+      </div>
+      <!-- Stage 2 output: existing Telegram router and portal trigger preserved. -->
       <div class="routerDock" id="routerDock">
         <button class="routerBtn" id="routerBtn" title="Continue to Forwarder routing" aria-label="Continue to Forwarder routing">
-          <div class="routerHint">TRIPLE CLICK</div>
+          <div class="routerHint">OPEN STAGE 3</div>
           <svg class="routerIcon" viewBox="0 0 24 24" fill="none">
             <path d="M21 3L10.2 13.8" stroke="rgba(248,216,112,0.95)" stroke-width="1.8" stroke-linecap="round" />
             <path d="M21 3L14.6 21L10.2 13.8L3 9.4L21 3Z" stroke="rgba(245,252,255,0.85)" stroke-width="1.5"
               stroke-linejoin="round" />
           </svg>
         </button>
-        <div class="routerLabel">TELEGRAM BOT</div>
+        <div class="routerLabel">
+          <span class="outIndex">03 / ROUTED OUTPUT</span>
+          <strong>TELEGRAM FORWARDER</strong>
+          <small>ACTIVATE TO VIEW STAGE 3</small>
+        </div>
       </div>
 
       <canvas id="overlay"></canvas>
@@ -1210,7 +1813,7 @@
     const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 430px)").matches;
     const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
     const MOBILE_PORTAL = IS_MOBILE || IS_COARSE_POINTER || (window.matchMedia && window.matchMedia("(max-width: 820px)").matches);
-    const ORBIT_SPEED = IS_MOBILE ? 2.6 : 1.6;
+    const ORBIT_SPEED = IS_MOBILE ? 1.1 : 1.35;
     if (IS_MOBILE) {
       OFFSETS.EARLY = 0.30;
       OFFSETS.TREND = OFFSETS.EARLY;
@@ -1259,7 +1862,7 @@
 
     const masterReadout = document.getElementById("masterReadout");
     function updateMasterReadout() {
-      masterReadout.textContent = `MASTER ${MASTER.baseTilt.toFixed(2)}`;
+      masterReadout.textContent = `TILT ${MASTER.baseTilt.toFixed(2)}`;
     }
 
     document.getElementById("masterUp").addEventListener("click", () => {
@@ -1509,7 +2112,7 @@
     const frameEl = document.getElementById("frame");
     const IS_COARSE = window.matchMedia && window.matchMedia("(max-width: 820px), (pointer: coarse)").matches;
     const PREFERS_REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const DPR_CAP = PREFERS_REDUCED ? 1.2 : (IS_COARSE ? 1.35 : 1.75);
+    const DPR_CAP = PREFERS_REDUCED ? 1 : (IS_COARSE ? 1.2 : 1.35);
     const fadeOutEl = document.getElementById("fadeOut");
     const portalCanvas = document.getElementById("portalFx");
     const portalCtx = portalCanvas.getContext("2d", { alpha: true, desynchronized: true });
@@ -1529,22 +2132,11 @@
     window.addEventListener("resize", () => setTimeout(resizePortal, 0));
     resizePortal();
 
-    let routerClickTimes = [];
-    routerBtn.addEventListener("pointerdown", (e) => {
-      if (!NAV.enabled) return;
-      if (openFX.active) return;
-
-      // One tap on touch devices; preserve the original triple-click easter egg on desktop.
-      if (IS_COARSE) { triggerPortalOpen(); return; }
-      const now = performance.now();
-      routerClickTimes.push(now);
-      routerClickTimes = routerClickTimes.filter(t => (now - t) <= NAV.tripleMs);
-
-      if (routerClickTimes.length >= 3) {
-        routerClickTimes = [];
-        triggerPortalOpen();
-      }
-    }, { passive: true });
+    // Single deliberate click/tap on the router advances consistently.
+    routerBtn.addEventListener("pointerdown",()=>{
+      if(!NAV.enabled||openFX.active)return;
+      triggerPortalOpen();
+    },{passive:true});
     routerBtn.addEventListener("keydown", (event) => {
       if (!NAV.enabled || openFX.active) return;
       if (event.key === "Enter" || event.key === " ") {
@@ -1695,6 +2287,9 @@
 
     const WHITE = [255, 255, 255];
 
+       // Coordinated boot: static shell is immediate; sequential scans begin
+    // only after the initial command-bay activation has completed.
+    const SCAN_BOOT_AT = performance.now() / 1000 + 1.8;
     class ReactorCore {
       constructor(rootEl, botName, accentRGB, accent2RGB, overlayDispatchFn) {
         this.root = rootEl;
@@ -1706,12 +2301,12 @@
         this.onDispatch = overlayDispatchFn;
 
         this.KNOBS = {
-          coreSizeMul: 0.165,
-          ringRadiusMul: 1.36,
+          coreSizeMul: 0.270,   // near-full metallic scanner, rather than a tiny center glow
+          ringRadiusMul: IS_MOBILE ? 1.94 : 2.43, // distinct exterior particle orbit
           coreA: accentRGB,
           coreB: accent2RGB,
-          radarFanDeg: 76,
-          radarFanAlpha: 0.12,
+          radarFanDeg: 44,
+          radarFanAlpha: 0.24,
           dotSpawnPerSec: profile.dotSpawnPerSec,
           maxDots: 3,
           dotSize: 2.6,
@@ -1720,13 +2315,13 @@
         };
 
         this.CFG = {
-          sparkSpeed: 0.012,
-          ringThickness: 0.30,
-          ringBrightness: profile.ringBrightness,
-          sparks: 270,
-          bgStars: 55,
+          sparkSpeed: 0.009,
+          ringThickness: 0.25,
+          ringBrightness: Math.min(profile.ringBrightness * 1.00, 1.30),
+          sparks: 60, // cached sprite ring with bounded frame cost
+          bgStars: 24,
           dprMax: DPR_CAP,
-          radarRadiusMul: 0.78,
+          radarRadiusMul: 0.84,
           gridAlpha: 0.105,
           gridRings: 4,
           gridSpokes: 8,
@@ -1739,16 +2334,14 @@
           zapSegs: 28,
           zapJitter: 5,
 
-          // Radar sweep pacing
-          sweepDur: 0.9,
-          interPause: 0.32,
-          longPause: 5.0
+          // One 1.55 s sweep per lane, three seconds apart (18 s cycle).
+          sweepDur: 1.55
         };
         if (IS_MOBILE) {
           this.KNOBS.maxDots = 2;
           this.KNOBS.dotAlpha = 0.8;
-          this.CFG.sparks = 160;
-          this.CFG.bgStars = 30;
+          this.CFG.sparks = 34;
+          this.CFG.bgStars = 16;
           this.CFG.zapSegs = 20;
           this.CFG.zapJitter = 4;
           this.CFG.vignette = 0.4;
@@ -1785,16 +2378,17 @@
           GENESIS: -10, STRICT: -10, RECLAIM: -10
         };
         this.ringYOffset = ringYOffsetByBot[botName] ?? 0;
-        const cadence = this.CFG.sweepDur + this.CFG.interPause;
+        // Six non-overlapping windows: one lane is illuminated at a time.
+        // Each scanner keeps its own orbit and lane identity between sweeps.
         const scanOffsetByBot = {
           EARLY: 0,
-          TREND: cadence,
-          RUNNER: cadence * 2,
-          GENESIS: cadence * 0.5,
-          STRICT: cadence * 1.5,
-          RECLAIM: cadence * 2.5
+          GENESIS: 3,
+          TREND: 6,
+          STRICT: 9,
+          RECLAIM: 12,
+          RUNNER: 15
         };
-        this.scanOffsetSec = scanOffsetByBot[botName] ?? 0;
+        this.scanOffsetSec = SCAN_BOOT_AT + (scanOffsetByBot[botName] ?? 0);
         this.resize();
       }
 
@@ -1812,11 +2406,18 @@
         const dpr = Math.max(1, Math.min(this.CFG.dprMax, window.devicePixelRatio || 1));
         this.DPR = dpr;
 
-        this.W = Math.max(1, Math.floor(r.width));
-        this.H = Math.max(1, Math.floor(r.height));
-
-        this.canvas.width = Math.floor(this.W * dpr);
-        this.canvas.height = Math.floor(this.H * dpr);
+        const w = Math.max(1, Math.floor(r.width));
+        const h = Math.max(1, Math.floor(r.height));
+        const pw = Math.max(1, Math.floor(w * dpr));
+        const ph = Math.max(1, Math.floor(h * dpr));
+        // Resize may be fired repeatedly by the mobile browser chrome.
+        if (this.W === w && this.H === h &&
+            this.canvas.width === pw && this.canvas.height === ph &&
+            this.metalBezel && this.sparkSprite) return;
+        this.W = w;
+        this.H = h;
+        this.canvas.width = pw;
+        this.canvas.height = ph;
         this.canvas.style.width = this.W + "px";
         this.canvas.style.height = this.H + "px";
 
@@ -1824,6 +2425,8 @@
 
         this.initStars();
         this.initSparks();
+        this.buildMetalBezel();
+        this.buildSparkSprite();
       }
 
       project3D(x, y, z, cx, cy) {
@@ -1924,60 +2527,33 @@
         ctx.restore();
       }
 
-      getSweepAngle(nowSec) {
-        const start = -Math.PI / 2;
-        const sweepDur = this.CFG.sweepDur;
-        const interPause = this.CFG.interPause;
-        const longPause = this.CFG.longPause;
-        const cycle = (sweepDur * 2) + interPause + longPause;
+      // Return null outside this lane's assigned 1.55 s window.
+      // No residual illuminated wedge should remain during the idle interval.
+      getSweepPhase(nowSec) {
+        if (PREFERS_REDUCED || nowSec < this.scanOffsetSec) return null;
+        const cycle = 18;
         const t = ((nowSec - this.scanOffsetSec) % cycle + cycle) % cycle;
+        if (t >= this.CFG.sweepDur) return null;
+        const u = t / this.CFG.sweepDur;
+        return u * u * (3 - 2 * u);
+      }
 
-        if (t < sweepDur) {
-          const u = t / sweepDur;
-          const ease = u * u * (3 - 2 * u);
-          return start + (Math.PI * 2) * ease;
-        }
-        if (t < sweepDur + interPause) {
-          return start;
-        }
-        if (t < sweepDur + interPause + sweepDur) {
-          const t2 = t - (sweepDur + interPause);
-          const u = t2 / sweepDur;
-          const ease = u * u * (3 - 2 * u);
-          return start + (Math.PI * 2) * ease;
-        }
-        return start;
+      getSweepAngle(nowSec) {
+        const phase = this.getSweepPhase(nowSec);
+        return -Math.PI / 2 + (phase === null ? 0 : phase) * Math.PI * 2;
       }
 
       getSweepAlpha(nowSec) {
-        const sweepDur = this.CFG.sweepDur;
-        const interPause = this.CFG.interPause;
-        const longPause = this.CFG.longPause;
-        const cycle = (sweepDur * 2) + interPause + longPause;
-        const t = ((nowSec - this.scanOffsetSec) % cycle + cycle) % cycle;
-
-        if (t < sweepDur) {
-          const u = t / sweepDur;
-          const ease = u * u * (3 - 2 * u);
-          return 0.85 + (0.55 * ease);
-        }
-        if (t < sweepDur + interPause) {
-          return 0.7;
-        }
-        if (t < sweepDur + interPause + sweepDur) {
-          const t2 = t - (sweepDur + interPause);
-          const u = t2 / sweepDur;
-          const ease = u * u * (3 - 2 * u);
-          return 0.85 + (0.55 * ease);
-        }
-        const restT = (t - (sweepDur * 2) - interPause) / longPause;
-        return 0.35 + (0.35 * (1 - Math.min(1, restT)));
+        const phase = this.getSweepPhase(nowSec);
+        if (phase === null) return 0;
+        return 0.48 + 0.22 * Math.sin(Math.PI * phase);
       }
 
       drawRadarFan(cx, cy, coreR, nowSec) {
         const ctx = this.ctx;
         const ang = this.getSweepAngle(nowSec);
         const alphaMul = this.getSweepAlpha(nowSec);
+        if (alphaMul <= 0) return;
         const arc = (this.KNOBS.radarFanDeg * Math.PI) / 180;
 
         const radarR = coreR * this.CFG.radarRadiusMul;
@@ -1990,7 +2566,7 @@
         const g = ctx.createRadialGradient(cx, cy, rIn, cx, cy, rOut);
         g.addColorStop(0.00, rgba(this.KNOBS.coreA, 0.00));
         g.addColorStop(0.22, rgba(this.KNOBS.coreA, this.KNOBS.radarFanAlpha * alphaMul));
-        g.addColorStop(0.92, rgba(this.KNOBS.coreB, this.KNOBS.radarFanAlpha * 0.38 * alphaMul));
+        g.addColorStop(0.92, rgba(this.KNOBS.coreB, this.KNOBS.radarFanAlpha * 0.60 * alphaMul));
         g.addColorStop(1.00, "rgba(0,0,0,0)");
 
         ctx.save();
@@ -2007,6 +2583,15 @@
         ctx.arc(cx, cy, rIn, a1, a0, true);
         ctx.closePath();
         ctx.fill();
+        // Leading edge stays crisp while the underlying scanner rotates.
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a1) * radarR * .95, cy + Math.sin(a1) * radarR * .95);
+        ctx.lineWidth = 1.05;
+        ctx.strokeStyle = rgba(this.KNOBS.coreB, .32 * alphaMul);
+        ctx.shadowColor = rgba(this.KNOBS.coreA, .28);
+        ctx.shadowBlur = 3;
+        ctx.stroke();
 
         ctx.restore();
       }
@@ -2081,6 +2666,7 @@
           }
         }
 
+        if (this.getSweepAlpha(nowSec) <= 0) return;
         const ang = this.getSweepAngle(nowSec);
         const arc = (this.KNOBS.radarFanDeg * Math.PI) / 180;
 
@@ -2503,6 +3089,23 @@
         }
       }
 
+      // Cached once per resize; reuse for all projected orbit particles.
+      buildSparkSprite() {
+        const sprite = document.createElement("canvas");
+        sprite.width = 48;
+        sprite.height = 48;
+        const g = sprite.getContext("2d");
+        if (!g) { this.sparkSprite = null; return; }
+        const fill = g.createRadialGradient(24, 24, 0, 24, 24, 23);
+        fill.addColorStop(0, "rgba(255,252,247,.96)");
+        fill.addColorStop(.18, rgba(this.KNOBS.coreB, .90));
+        fill.addColorStop(.53, rgba(this.KNOBS.coreA, .30));
+        fill.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = fill;
+        g.fillRect(0, 0, 48, 48);
+        this.sparkSprite = sprite;
+      }
+
       drawRing(cx, cy, baseR, t) {
         const ctx = this.ctx;
         const ringR = baseR * this.KNOBS.ringRadiusMul;
@@ -2510,7 +3113,7 @@
 
         const list = [];
         for (const s of this.sparks) {
-          s.a += s.sp;
+          if (!PREFERS_REDUCED) s.a += s.sp;
 
           const y = Math.sin(s.wob + t * 0.9) * (baseR * this.CFG.ringThickness);
           const a = this.getSparkAngle(s);
@@ -2528,26 +3131,141 @@
 
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
-
         for (const d of list) {
-          const glow = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.size * 4.6);
-          glow.addColorStop(0.0, rgba(this.KNOBS.coreB, d.a * 0.58));
-          glow.addColorStop(0.7, rgba(this.KNOBS.coreB, d.a * 0.16));
-          glow.addColorStop(1.0, "rgba(0,0,0,0)");
-          ctx.fillStyle = glow;
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, d.size * 1.05, 0, Math.PI * 2);
-          ctx.fill();
+          if (!Number.isFinite(d.x) || !Number.isFinite(d.y)) continue;
+          const radius = Math.max(3, d.size * 3.0);
+          ctx.globalAlpha = clamp(d.a, .12, .95);
+          if (this.sparkSprite) {
+            ctx.drawImage(this.sparkSprite, d.x - radius, d.y - radius, radius * 2, radius * 2);
+          } else {
+            ctx.fillStyle = rgba(this.KNOBS.coreB, .7);
+            ctx.fillRect(d.x - 1, d.y - 1, 2, 2);
+          }
+        }
+        ctx.restore();
+      }
 
-          ctx.globalCompositeOperation = "screen";
-          ctx.fillStyle = `rgba(255,252,244,${clamp(d.a * 1.10, 0, 1)})`;
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, Math.max(1.1, d.size * 0.58), 0, Math.PI * 2);
-          ctx.fill();
+      // Build the reflective metal ring ONCE per resize, not every animation frame.
+      // The center stays transparent so the existing radar sweep remains live.
+      buildMetalBezel() {
+        const radius = Math.min(this.W, this.H) * 0.308;
+        const pad = Math.max(12, radius * 0.22);
+        const side = Math.ceil((radius + pad) * 2);
+        const dpr = Math.min(this.DPR, 1.8);
+        const plate = document.createElement("canvas");
+        plate.width = Math.ceil(side * dpr);
+        plate.height = Math.ceil(side * dpr);
+        const g = plate.getContext("2d");
+        if (!g) { this.metalBezel = null; return; }
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        g.translate(side / 2, side / 2);
+        const ring = (r, w, paint) => {
+          g.beginPath();
+          g.arc(0, 0, r, 0, Math.PI * 2);
+          g.lineWidth = w;
+          g.strokeStyle = paint;
+          g.stroke();
+        };
 
-          ctx.globalCompositeOperation = "lighter";
+        // Deep inner and outer shadows establish actual thickness.
+        g.shadowBlur = 15;
+        g.shadowColor = "rgba(0,0,0,.86)";
+        ring(radius - 0.5, radius * .16, "#11151c");
+        g.shadowBlur = 0;
+
+        const chrome = g.createLinearGradient(-radius, -radius, radius, radius);
+        chrome.addColorStop(0, "#a3b1bf");
+        chrome.addColorStop(.13, "#47545f");
+        chrome.addColorStop(.28, "#161b22");
+        chrome.addColorStop(.42, "#b0beca");
+        chrome.addColorStop(.59, "#222d36");
+        chrome.addColorStop(.76, "#c0cad4");
+        chrome.addColorStop(.90, "#38424d");
+        chrome.addColorStop(1, "#91a1af");
+        ring(radius * .946, radius * .137, chrome);
+        ring(radius * 1.020, 1.0, "rgba(179,193,204,.32)");
+        ring(radius * .866, 1.8, "rgba(5,8,12,.95)");
+        ring(radius * .843, 1.0, "rgba(211,221,229,.45)");
+        ring(radius * .788, 4.0, "rgba(3,8,13,.94)");
+        ring(radius * .763, 1.3, "rgba(190,203,215,.29)");
+
+        // Brushed steel microstripes and individual instrument ticks.
+        for (let i = 0; i < 84; i++) {
+          const a = (i / 84) * Math.PI * 2;
+          const major = i % 7 === 0;
+          const r1 = radius * (major ? .800 : .808);
+          const r2 = radius * (major ? .831 : .818);
+          g.beginPath();
+          g.moveTo(Math.cos(a) * r1, Math.sin(a) * r1);
+          g.lineTo(Math.cos(a) * r2, Math.sin(a) * r2);
+          g.lineWidth = major ? 1.0 : .55;
+          g.strokeStyle = major ? "rgba(233,242,248,.45)" : "rgba(202,221,232,.18)";
+          g.stroke();
         }
 
+        // Chrome catches light in deliberate arcs; never a full neon outline.
+        g.save();
+        g.shadowColor = "rgba(206,216,225,.16)";
+        g.shadowBlur = 4;
+        g.strokeStyle = "rgba(171,186,198,.50)";
+        g.lineWidth = 1.5;
+        g.beginPath(); g.arc(0,0,radius * .980,Math.PI*1.10,Math.PI*1.63);g.stroke();
+        g.strokeStyle = "rgba(160,178,190,.30)";
+        g.lineWidth = 1.5;
+        g.beginPath(); g.arc(0,0,radius*.903,-.34,1.12);g.stroke();
+        g.restore();
+
+        // A restrained lane-colored secondary dial embedded inside steel.
+        g.shadowColor = rgba(this.KNOBS.coreA, .30);
+        g.shadowBlur = 4;
+        ring(radius * .738, 1.1, rgba(this.KNOBS.coreA, .67));
+        g.shadowBlur = 0;
+        ring(radius * .728, .75, "rgba(207,220,229,.25)");
+
+        this.metalBezel = plate;
+        this.metalBezelSide = side;
+      }
+
+      drawMetalBezel(cx, cy) {
+        if (!this.metalBezel) return;
+        const half = this.metalBezelSide / 2;
+        this.ctx.drawImage(this.metalBezel, cx - half, cy - half, this.metalBezelSide, this.metalBezelSide);
+      }
+
+      // Dark map/globe relief below the scanner beam; presentation only.
+      drawGlobeRelief(cx, cy, coreR) {
+        const ctx = this.ctx;
+        const radius = coreR * .89;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.lineWidth = .65;
+        ctx.strokeStyle = "rgba(174,202,216,.075)";
+        for (let k = -2; k <= 2; k++) {
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, radius * (1 - Math.abs(k) * .27), radius, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.ellipse(cx,cy + k * radius*.29,radius,Math.max(2,radius*.10 + (2-Math.abs(k))*radius*.10),0,0,Math.PI*2);
+          ctx.stroke();
+        }
+        const shapes = [
+          [[-.75,-.45],[-.50,-.63],[-.31,-.49],[-.36,-.22],[-.13,-.17],[-.37,.05],[-.31,.24],[-.49,.16],[-.54,-.12],[-.74,-.16]],
+          [[-.29,.18],[-.08,.28],[-.02,.59],[-.17,.84],[-.33,.65],[-.40,.40]],
+          [[.12,-.55],[.40,-.65],[.80,-.44],[.71,-.19],[.43,-.09],[.34,.15],[.12,.05],[-.06,-.19]],
+          [[.14,.03],[.36,.24],[.30,.67],[.10,.79],[.04,.47]],
+          [[.58,.60],[.80,.69],[.76,.81],[.53,.76]]
+        ];
+        ctx.fillStyle = "rgba(152,176,188,.09)";
+        ctx.strokeStyle = "rgba(186,204,214,.075)";
+        ctx.lineWidth = .6;
+        for (const points of shapes) {
+          ctx.beginPath();
+          points.forEach(([x,y],i)=>{if(i===0)ctx.moveTo(cx+x*radius,cy+y*radius);else ctx.lineTo(cx+x*radius,cy+y*radius);});
+          ctx.closePath();
+          ctx.fill();ctx.stroke();
+        }
         ctx.restore();
       }
 
@@ -2557,7 +3275,7 @@
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
         const bloom = ctx.createRadialGradient(cx, cy, coreR * 0.12, cx, cy, coreR * 2.9);
-        bloom.addColorStop(0.0, rgba(this.KNOBS.coreA, 0.20));
+        bloom.addColorStop(0.0, rgba(this.KNOBS.coreA, 0.16));
         bloom.addColorStop(0.35, rgba(this.KNOBS.coreB, 0.10));
         bloom.addColorStop(1.0, "rgba(0,0,0,0)");
         ctx.fillStyle = bloom;
@@ -2568,8 +3286,8 @@
         const lx = cx - coreR * 0.35;
         const ly = cy - coreR * 0.40;
         const base = ctx.createRadialGradient(lx, ly, coreR * 0.15, cx, cy, coreR * 1.25);
-        base.addColorStop(0.0, rgba(this.KNOBS.coreB, 0.42));
-        base.addColorStop(0.40, rgba(this.KNOBS.coreA, 0.30));
+        base.addColorStop(0.0, rgba(this.KNOBS.coreB, 0.19));
+        base.addColorStop(0.40, rgba(this.KNOBS.coreA, 0.12));
         base.addColorStop(0.85, "rgba(0,0,0,0.58)");
         base.addColorStop(1.0, "rgba(0,0,0,0.78)");
         ctx.globalCompositeOperation = "source-over";
@@ -2581,15 +3299,15 @@
         ctx.globalCompositeOperation = "lighter";
         const nucR = coreR * 0.20;
         const nucleus = ctx.createRadialGradient(cx - nucR * 0.25, cy - nucR * 0.25, 0, cx, cy, nucR * 1.25);
-        nucleus.addColorStop(0.0, "rgba(255,255,255,0.75)");
-        nucleus.addColorStop(0.35, rgba(this.KNOBS.coreA, 0.58));
+        nucleus.addColorStop(0.0, "rgba(255,255,255,0.34)");
+        nucleus.addColorStop(0.35, rgba(this.KNOBS.coreA, 0.36));
         nucleus.addColorStop(1.0, "rgba(0,0,0,0)");
         ctx.fillStyle = nucleus;
         ctx.beginPath();
         ctx.arc(cx, cy, nucR * (1.0 + pulse * 0.10), 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = rgba(this.KNOBS.coreA, 0.52);
+        ctx.strokeStyle = rgba(this.KNOBS.coreA, 0.28);
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(cx, cy, coreR * 0.98, 0, Math.PI * 2);
@@ -2649,9 +3367,14 @@
         const baseR = Math.min(this.W, this.H) * 0.19;
 
         this.drawStars();
+        // Physical dial and globe are laid down first: radar and scan effects
+        // remain visible ON TOP, with the cached chrome frame added last.
+        const pulse = PREFERS_REDUCED ? 0.35 : (Math.sin(this.frameT * 0.03) + 1) * 0.5;
+        this.drawCoreSphere(cx, cy, coreR, pulse);
+        this.drawGlobeRelief(cx, cy, coreR);
         this.drawRadarGrid(cx, cy, radarR);
 
-        this.spawnClock += dt;
+        if (!PREFERS_REDUCED) this.spawnClock += dt;
         const spawnInterval = 1 / Math.max(0.001, this.KNOBS.dotSpawnPerSec);
         if (this.dots.length >= this.KNOBS.maxDots) {
           this.spawnClock = Math.min(this.spawnClock, spawnInterval);
@@ -2696,16 +3419,16 @@
           this.capturedOrbs.length = 0;
         }
 
-        const pulse = (Math.sin(this.frameT * 0.03) + 1) * 0.5;
-        this.drawCoreSphere(cx, cy, coreR, pulse);
-
+        // All rotating radar physics are unchanged. The bezel is a visual
+        // overlay only; it never intercepts scan, zap or packet events.
+        this.drawMetalBezel(cx, cy);
         this.drawGlass(cx, cy, Math.min(this.W, this.H) * 0.46);
 
-        this.frameT++;
+        if (!PREFERS_REDUCED) this.frameT++;
       }
     }
 
-    class PacketOverlay {
+ class PacketOverlay {
       constructor(canvas, frameEl, routerEl) {
         this.canvas = canvas;
         this.frame = frameEl;
@@ -3218,12 +3941,12 @@
     }
 
     const LANES = [
-      {id:"EARLY",coreId:"coreEarly",color:[163,206,100],highlight:[224,243,180]},
-      {id:"GENESIS",coreId:"coreGenesis",color:[167,139,250],highlight:[226,214,255]},
-      {id:"TREND",coreId:"coreTrend",color:[205,215,226],highlight:[246,249,252]},
-      {id:"STRICT",coreId:"coreStrict",color:[217,119,119],highlight:[255,212,212]},
-      {id:"RECLAIM",coreId:"coreReclaim",color:[75,184,209],highlight:[182,230,245]},
-      {id:"RUNNER",coreId:"coreRunner",color:[216,184,121],highlight:[255,232,180]}
+      {id:"EARLY",coreId:"coreEarly",color:[240,199,106],highlight:[255,233,164]},
+      {id:"GENESIS",coreId:"coreGenesis",color:[185,135,245],highlight:[239,208,255]},
+      {id:"TREND",coreId:"coreTrend",color:[142,213,243],highlight:[224,244,255]},
+      {id:"STRICT",coreId:"coreStrict",color:[244,121,125],highlight:[255,207,213]},
+      {id:"RECLAIM",coreId:"coreReclaim",color:[86,217,211],highlight:[197,255,247]},
+      {id:"RUNNER",coreId:"coreRunner",color:[237,184,97],highlight:[255,227,164]}
     ];
 
     const overlayCanvas = document.getElementById("overlay");
@@ -3233,9 +3956,15 @@
       document.getElementById(lane.coreId), lane.id, lane.color, lane.highlight,
       (bot, payload) => overlay.spawnPacketFromZap(bot, payload)
     ));
-    // Avoid rendering hidden mobile cards, and cap work to prevent six canvases from janking.
-    const visibleCores = new Set(cores);
+    // Determine initial visible panels before the first animation frame.
+    // IntersectionObserver keeps this set current after mobile/tablet scrolling.
     const clusterScroll = document.querySelector(".clusterWrap");
+    const scrollBounds = clusterScroll && clusterScroll.getBoundingClientRect();
+    const visibleCores = new Set(cores.filter(core => {
+      if (!scrollBounds || !("IntersectionObserver" in window)) return true;
+      const rect = core.root.getBoundingClientRect();
+      return rect.bottom >= scrollBounds.top - 48 && rect.top <= scrollBounds.bottom + 48;
+    }));
     if ("IntersectionObserver" in window && clusterScroll) {
       const observer = new IntersectionObserver(entries => {
         for (const entry of entries) {
@@ -3248,12 +3977,50 @@
       for (const core of cores) observer.observe(core.root);
     }
 
+    // DOM status changes only when the active sequential lane changes.
+    // No synthetic market prices, live event counts or fabricated traffic.
+    let currentActiveLane = "__uninitialized__";
+    const commandReadout = document.getElementById("commandLiveReadout");
+    const signalPath = document.getElementById("signalPath");
+    function syncIllustrativeState(nowMs) {
+      let next = null;
+      const seconds = nowMs / 1000;
+      for (const core of cores) {
+        if (core.getSweepPhase(seconds) !== null) { next = core.botName; break; }
+      }
+      if (next === currentActiveLane) return;
+      currentActiveLane = next;
+      for (const core of cores) {
+        const panel = core.root.closest(".panel");
+        if (!panel) continue;
+        const active = core.botName === next;
+        panel.classList.toggle("is-scanning", active);
+        const text = panel.querySelector(".panelStateText");
+        if (text) text.textContent = active ? "SCANNING" : "STANDBY";
+      }
+      if (commandReadout) commandReadout.textContent = next
+        ? next + " / SCANNING · DEMONSTRATION"
+        : "SEQUENTIAL SCAN · DEMONSTRATION";
+      if (signalPath) {
+        signalPath.classList.remove("is-active");
+        if (next) {
+          // Reflow only on a state change to re-arm one short routing trace.
+          void signalPath.offsetWidth;
+          signalPath.classList.add("is-active");
+        }
+      }
+    }
+
     function resizeAll() {
       for (const c of cores) c.resize();
       overlay.resize();
       resizePortal();
     }
-    window.addEventListener("resize", () => setTimeout(resizeAll, 0));
+    let resizeTimer = 0;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resizeAll, 140);
+    }, { passive: true });
     const clusterWrap = document.querySelector(".clusterWrap");
     if (clusterWrap) {
       clusterWrap.addEventListener("scroll", () => overlay.updateAnchors(), { passive: true });
@@ -3289,8 +4056,10 @@
         rafId = 0;
         return;
       }
-      if (!loop.lastDraw || nowMs - loop.lastDraw >= (IS_MOBILE ? 1000/24 : 1000/40)) {
+      // Small timestamp tolerance avoids irregular 30/20 fps cadence on 60 Hz screens.
+      if (!loop.lastDraw || nowMs - loop.lastDraw >= (PREFERS_REDUCED ? 1000 : (1000 / 30 - 2))) {
         loop.lastDraw = nowMs;
+        syncIllustrativeState(nowMs);
         for (const core of cores) {
           if (!visibleCores.has(core)) continue;
           try { core.draw(nowMs); } catch(e) { console.warn("Core draw error:", core.botName, e); }
