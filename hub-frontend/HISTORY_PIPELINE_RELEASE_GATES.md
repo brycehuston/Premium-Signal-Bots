@@ -8,7 +8,7 @@
 - Public Ed25519 state is stale (last signed November 7, 2026 08:01:57 UTC). The live publisher still needs authorized review of its source hash pin. This is a separate public-feed problem.
 - Current production VPS canonical alert CSV is **pre-Telegram**, not delivery proof. Upstream `alpha_trend_alerts.py` does capture `TelegramDeliveryResult` metadata and `delivery_status=DELIVERED` after a successful API response, but an event-keyed append-only receipt writer has not been independently verified in the current runtime.
 - User-supplied prior owner-audit: 2,088 canonical unique event IDs, 2,023 unique feature IDs, 2,020 overlaps, 1 duplicate feature ID, 1,584 outcomes, and 524 24h identity-matched candidates. **0 independently proven delivery receipts** in that audit.
-- Connected SentinelX identity `alpha-prod` returns Permission denied for the private telemetry paths and journal access. No sudo workaround or permission mutation has been attempted.
+- **New 2026-11-10 owner-authorized read-only sudo inspection succeeded.** Source ordering, active process start, exact event joins and 334 matched recent bot-delivered observations were verified, **without** proving public-channel destination; see [`docs/ALPHA_HISTORY_RUNTIME_AUDIT_20261110.md`](../docs/ALPHA_HISTORY_RUNTIME_AUDIT_20261110.md). No production mutations were performed.
 
 ## Included staging implementation
 
@@ -21,7 +21,7 @@
 
 ## Required proof before real backfill
 
-- Owner-approved, read-only access to the actual production producer source and relevant CSVs (or owner-executed aggregate-only auditor), to validate where post-send features are written.
+- **COMPLETED (current source):** Owner-authorized read-only production source/CSV audit verified current post-send feature writer ordering. Historical versions and public-channel identity remain unproven.
 - Establish a durable, event-keyed **direct Telegram API response** receipt record: event ID, mint, normalized lane, UTC timestamp, reviewed approved public chat identity, positive returned message ID, and success status. It must be written only after Telegram API confirmation, atomically/idempotently, and must not expose Elite channel messages. A candidate/features CSV is *not* automatically this proof.
 - Compare receipts to canonical/features by exact event ID, mint, lane and timestamp. Verify duplicates, missing data, timestamp normalization, and public/Elite separation. Review a random sample of actual message identifiers under owner access (never in public API output).
 - Prove observations/price-path event joins separately. Outcome `DONE` can provide an *observed maximum*, not an actual trade fill or realized P&L. Partial/pending outcomes remain unavailable.
