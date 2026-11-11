@@ -28,20 +28,21 @@ function Heartbeat(){
     const data=await response.json();
     const state:State=data.state==="verified"||data.state==="archived"||data.state==="empty"?data.state:"unavailable";
     const alerts=Array.isArray(data.alerts)?data.alerts.filter(validAlert).slice(0,3):[];
-    if(alive&&!request.signal.aborted)setFeed({state,alerts:state==="verified"?alerts:[],period:data.period==="24h"||data.period==="7d"?data.period:null,as_of_utc:data.as_of_utc});
+    if(alive&&!request.signal.aborted)setFeed({state,alerts:state==="verified"||state==="archived"?alerts:[],period:data.period==="24h"||data.period==="7d"?data.period:null,as_of_utc:data.as_of_utc});
    }catch{if(alive&&!request.signal.aborted)setFeed({state:"unavailable",alerts:[]})}
   }
   void poll();const interval=setInterval(()=>void poll(),60000);
   document.addEventListener("visibilitychange",poll);
   return()=>{alive=false;controller?.abort();clearInterval(interval);document.removeEventListener("visibilitychange",poll)};
  },[]);
- const ready=feed.state==="verified"&&feed.alerts.length>0;
+ const historical=feed.state==="archived"&&feed.alerts.length>0;
+ const ready=(feed.state==="verified"||historical)&&feed.alerts.length>0;
  return <div className="space-y-5">
   <div className="grid gap-4 sm:grid-cols-3">
    {[
-    ["PUBLIC ALERTS SHOWN",ready?String(feed.alerts.length):"—","Verified records, maximum three"],
+    ["PUBLIC ALERTS SHOWN",ready?String(feed.alerts.length):"—",historical?"Dated archive · not live":"Verified records, maximum three"],
     ["LANES REPRESENTED",ready?String(new Set(feed.alerts.map(a=>a.lane)).size):"—","Among displayed public alerts"],
-    ["LAST VERIFIED ALERT",ready?time(feed.alerts[0].timestamp_utc):"—","Recorded time, not trade execution"]
+    ["LAST RECORDED ALERT",ready?time(feed.alerts[0].timestamp_utc):"—",historical?"Historical reference time":"Recorded time, not trade execution"]
    ].map(([title,value,desc])=><Panel key={title}>
     <p className="text-[10px] font-bold tracking-[.16em] text-[#bec1c9]">{title}</p>
     <strong className="mt-3 block break-words font-display text-[clamp(1.3rem,2vw,2rem)] tracking-tight text-[#f1cb8c]">{value}</strong>
@@ -51,9 +52,9 @@ function Heartbeat(){
   <Panel>
    <div className="flex flex-wrap items-center justify-between gap-4">
     <div><p className="text-[10px] font-bold tracking-[.23em] text-[#d9b674]">HEARTBEAT / VERIFIED PUBLIC FEED</p><h2 className="mt-2 font-display text-2xl font-semibold">Top 3 recorded alerts</h2></div>
-    <span className="rounded-full border border-[#786745] bg-[#221e18] px-3 py-1.5 text-[10px] font-bold tracking-[.08em] text-[#eac689]">{ready?"SIGNED · "+(feed.period==="7d"?"7D":"24H"):feed.state==="loading"?"CONNECTING":feed.state==="archived"?"ARCHIVED · NOT LIVE":feed.state==="empty"?"NO ELIGIBLE ALERTS":"FEED UNAVAILABLE"}</span>
+    <span className="rounded-full border border-[#786745] bg-[#221e18] px-3 py-1.5 text-[10px] font-bold tracking-[.08em] text-[#eac689]">{historical?"DATED ARCHIVE · NOT LIVE":ready?"SIGNED · "+(feed.period==="7d"?"7D":"24H"):feed.state==="loading"?"CONNECTING":feed.state==="empty"?"NO ELIGIBLE ALERTS":"FEED UNAVAILABLE"}</span>
    </div>
-   <p className="mt-3 max-w-3xl text-[13px] leading-7 text-[#acb2bb]">Automatically refreshed every minute. Signed public alerts only, delayed by at least 30 minutes and listed by event time. No private Telegram messages or inferred trade returns.</p>
+   <p className="mt-3 max-w-3xl text-[13px] leading-7 text-[#acb2bb]">Automatically refreshed every minute. Signed public records only, delayed by at least 30 minutes and listed by event time. Dated archives are explicitly historical, not live. No private Telegram messages or inferred trade returns.</p>
    {ready?<div className="mt-6 grid gap-4 lg:grid-cols-3">{feed.alerts.map((a,i)=><article key={a.id} className="rounded-xl border border-[#373b44] bg-[#1b1e24] p-5">
     <div className="flex items-center justify-between"><span className="text-xs font-bold text-[#bfc4cc]">#{i+1}</span><span className="text-[10px] font-bold tracking-[.15em]" style={{color:palette[a.lane]}}>{a.lane}</span></div>
     <h3 className="mt-4 truncate font-display text-2xl font-semibold text-[#f1f3f5]">$ {a.symbol}</h3>
