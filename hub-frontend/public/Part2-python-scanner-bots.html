@@ -1482,10 +1482,10 @@
         <div class="titleBlock">
           <div class="title">
             <span class="py">ALPHA</span>
-            <span class="scan">SCANNER</span>
-            <span class="bots">GRID</span>
+            <span class="scan">COMMAND</span>
+            <span class="bots">CENTER</span>
           </div>
-          <div class="titleMeta">SIX SPECIALIZED LANES · ONE SIGNAL PATH</div>
+          <div class="titleMeta">SIX SCANNER LANES · ONE SIGNAL PATH</div>
         </div>
 
         <div class="master">
@@ -2920,7 +2920,7 @@
 
         const list = [];
         for (const s of this.sparks) {
-          s.a += s.sp;
+          if (!PREFERS_REDUCED) s.a += s.sp;
 
           const y = Math.sin(s.wob + t * 0.9) * (baseR * this.CFG.ringThickness);
           const a = this.getSparkAngle(s);
@@ -3176,12 +3176,12 @@
         this.drawStars();
         // Physical dial and globe are laid down first: radar and scan effects
         // remain visible ON TOP, with the cached chrome frame added last.
-        const pulse = (Math.sin(this.frameT * 0.03) + 1) * 0.5;
+        const pulse = PREFERS_REDUCED ? 0.35 : (Math.sin(this.frameT * 0.03) + 1) * 0.5;
         this.drawCoreSphere(cx, cy, coreR, pulse);
         this.drawGlobeRelief(cx, cy, coreR);
         this.drawRadarGrid(cx, cy, radarR);
 
-        this.spawnClock += dt;
+        if (!PREFERS_REDUCED) this.spawnClock += dt;
         const spawnInterval = 1 / Math.max(0.001, this.KNOBS.dotSpawnPerSec);
         if (this.dots.length >= this.KNOBS.maxDots) {
           this.spawnClock = Math.min(this.spawnClock, spawnInterval);
@@ -3231,7 +3231,7 @@
         this.drawMetalBezel(cx, cy);
         this.drawGlass(cx, cy, Math.min(this.W, this.H) * 0.46);
 
-        this.frameT++;
+        if (!PREFERS_REDUCED) this.frameT++;
       }
     }
 
@@ -3864,7 +3864,7 @@
         return;
       }
       // Small timestamp tolerance avoids irregular 30/20 fps cadence on 60 Hz screens.
-      if (!loop.lastDraw || nowMs - loop.lastDraw >= (1000 / 30 - 2)) {
+      if (!loop.lastDraw || nowMs - loop.lastDraw >= (PREFERS_REDUCED ? 1000 : (1000 / 30 - 2))) {
         loop.lastDraw = nowMs;
         syncIllustrativeState(nowMs);
         for (const core of cores) {
