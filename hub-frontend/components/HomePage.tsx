@@ -713,124 +713,103 @@ function formatAlertMoney(n: number | null): string {
   return "$" + (n >= 1_000_000 ? (n/1_000_000).toFixed(2) + "M" : n >= 1_000 ? (n/1_000).toFixed(1) + "K" : Math.round(n).toLocaleString("en-US"));
 }
 
-function HeroAlertReel() {
-  const [feed, setFeed] = useState<VerifiedDailyFeed>({state:"loading", alerts:[]});
-  useEffect(() => {
-    let mounted = true;
-    const controller = new AbortController();
-    async function refresh() {
-      if (document.hidden) return;
-      try {
-        const response = await fetch("/api/public/daily-top", { cache:"no-store",signal:controller.signal });
-        if (!response.ok) throw new Error("feed unavailable");
-        const data = await response.json();
-        if (mounted) setFeed({
-          state:data.state === "verified" || data.state === "archived" || data.state === "empty" ? data.state : "unavailable",
-          as_of_utc:data.as_of_utc,
-          reference_time_utc:data.reference_time_utc,
-          hour_alert:data.hour_alert&&typeof data.hour_alert==="object"?data.hour_alert:null,
-          period:data.period === "24h" || data.period === "7d" ? data.period : null,
-          public_delay_minutes:30,
-          alerts:Array.isArray(data.alerts) ? data.alerts.slice(0,3) : []
+type Mover24H = {
+  id:string;symbol:string;lane:string;
+  multiple:number;first_mc:number;peak_mc:number;
+  called_at_utc:string;
+};
+type MoverFeed24H = {
+  state:"loading"|"verified"|"historical"|"empty"|"unavailable";
+  window?:"24h"|"historical";
+  as_of_utc?:string;
+  reference_time_utc?:string;
+  movers:Mover24H[];
+};
+const MOVER_LANES:Record<string,string>={
+  EARLY:"#a3ce64",GENESIS:"#a78bfa",TREND:"#cdd7e2",
+  STRICT:"#d97777",RECLAIM:"#4bb8d1",RUNNER:"#d8b879"
+};
+function moverDate(iso:string){
+  const time=Date.parse(iso);
+  if(!Number.isFinite(time))return "DATE UNAVAILABLE";
+  return new Intl.DateTimeFormat("en-CA",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",timeZone:"America/Vancouver",timeZoneName:"short"}).format(time);
+}
+function moverMoney(value:number){
+  return "$"+Math.round(value).toLocaleString("en-US");
+}
+function HeroAlertReel(){
+  const [feed,setFeed]=useState<MoverFeed24H>({state:"loading",movers:[]});
+  useEffect(()=>{
+    let live=true,request:AbortController|null=null;
+    async function refresh(){
+      if(document.hidden)return;
+      request?.abort();
+      const controller=new AbortController();request=controller;
+      try{
+        const response=await fetch("/api/public/top-movers",{cache:"no-store",signal:controller.signal});
+        if(!response.ok)throw new Error("feed_unavailable");
+        const data=await response.json();
+        const movers:Mover24H[]=Array.isArray(data.movers)?
+          data.movers.filter((x:unknown):x is Mover24H=>{
+            if(!x||typeof x!=="object")return false;
+            const item=x as Partial<Mover24H>;
+            return typeof item.id==="string"&&typeof item.symbol==="string"&&typeof item.lane==="string"&&
+              Boolean(MOVER_LANES[item.lane])&&typeof item.multiple==="number"&&
+              Number.isFinite(item.multiple)&&item.multiple>=1&&typeof item.first_mc==="number"&&
+              item.first_mc>0&&typeof item.peak_mc==="number"&&item.peak_mc>=item.first_mc&&
+              typeof item.called_at_utc==="string"&&Number.isFinite(Date.parse(item.called_at_utc));
+          }).slice(0,3):[];
+        const ready=(data.state==="verified"||data.state==="historical")&&movers.length>0;
+        if(live&&!controller.signal.aborted)setFeed({
+          state:ready?(data.state==="historical"?"historical":"verified"):data.state==="empty"?"empty":"unavailable",
+          window:data.window==="historical"?"historical":"24h",
+          movers:ready?movers:[],
+          as_of_utc:typeof data.as_of_utc==="string"?data.as_of_utc:undefined,
+          reference_time_utc:typeof data.reference_time_utc==="string"?data.reference_time_utc:undefined
         });
-      } catch {
-        if (mounted && !controller.signal.aborted) setFeed({state:"unavailable",alerts:[]});
-      }
+      }catch{if(live&&!controller.signal.aborted)setFeed({state:"unavailable",movers:[]})}
     }
-    refresh();
-    const timer = window.setInterval(refresh,60000);
-    document.addEventListener("visibilitychange", refresh);
-    return () => {mounted=false;controller.abort();window.clearInterval(timer);document.removeEventListener("visibilitychange",refresh);};
-  }, []);
-
-  const archived = feed.state === "archived";
-  const available = (feed.state === "verified" || archived) && feed.alerts.length > 0;
-  const oneHour = available ? feed.hour_alert : null;
-  const distinctTokens = new Set(feed.alerts.map(a => a.symbol.toUpperCase())).size;
-  const distinctLanes = new Set(feed.alerts.map(a => a.lane)).size;
-  const outcomesMeasured = feed.alerts.filter(a => typeof a.observed_peak_pct === "number" && Number.isFinite(a.observed_peak_pct)).length;
-  const archiveAsOf = archived && feed.as_of_utc && Number.isFinite(Date.parse(feed.as_of_utc))
-    ? new Date(feed.as_of_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"}) : null;
-  return (
-    <section className="relative rounded-card border border-stroke/70 bg-surface/80 p-4 shadow-soft" aria-label="Alpha Alerts recorded market heartbeat">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.23em] text-muted">
-          <span className="h-1.5 w-1.5 rounded-full bg-gold/70" aria-hidden="true"/>
-          {"ALPHA ALERTS / MARKET HEARTBEAT"}
+    void refresh();const timer=window.setInterval(()=>void refresh(),60000);
+    document.addEventListener("visibilitychange",refresh);
+    return()=>{live=false;request?.abort();clearInterval(timer);document.removeEventListener("visibilitychange",refresh)};
+  },[]);
+  const ready=feed.state==="verified"||feed.state==="historical";
+  return <section aria-label="Alpha Alerts top movers" className="rounded-[15px] border border-[#4a4540]/75 bg-[#111318] px-4 py-4 shadow-[inset_0_1px_0_rgba(246,211,154,.045)] sm:px-5 sm:py-5">
+    <header className="flex flex-wrap items-center justify-between gap-2.5">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] border border-[#8d734c]/50 bg-[#e4bd75]/10 text-[16px] text-[#efc985]" aria-hidden="true">↗</span>
+        <div className="min-w-0">
+          <p className="text-[9px] font-bold uppercase tracking-[.22em] text-[#d4ac6b]">ALPHA ALERTS / HEARTBEAT</p>
+          <h2 className="mt-0.5 font-display text-[16px] font-semibold tracking-[-.02em] text-[#f2f3f5] sm:text-lg">Top 3 Movers <span className="text-[#d6b37d]">· {feed.state==="historical"?"LAST VERIFIED":"24H"}</span></h2>
         </div>
-        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.10em] ${available && !archived?"border-emerald-400/30 text-emerald-300":archived?"border-amber-300/40 text-amber-200":"border-stroke/60 text-muted"}`}>
-          {archived?"DATED HISTORICAL ARCHIVE":available?feed.period==="7d"?"RECORDED · 7D":"RECORDED · 24H":feed.state==="loading"?"CHECKING DATA":feed.state==="empty"?"AWAITING VERIFIED ALERTS":"FEED UNAVAILABLE"}
-        </span>
       </div>
-      <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
-        {archived ? `Dated entries from a signed public archive${archiveAsOf ? " · " + archiveAsOf : ""}. Individual delivery evidence is not independently reconciled. Historical, not live.` : `${feed.period === "7d" ? "Delayed public alerts from the past seven days." : "Delayed public alerts recorded during the past 24 hours."} Signed delivery records only; minimum 30-minute delay. Ranked by event time, not by score.`}
-      </p>
-      {available ? (
-        <div className="mt-4 space-y-2.5">
-          <div className="grid grid-cols-2 gap-2" aria-label="One-hour highlight and three recent alerts">
-            <div className="rounded-lg border border-stroke/60 bg-bg/45 p-3">
-              <div className="text-[9px] font-semibold tracking-wide text-muted">{archived?"LAST RECORDED 24H":feed.period==="7d"?"7D FALLBACK":"ROLLING 24H"}</div>
-              <strong className="mt-1 block text-lg tabular-nums text-silver">{feed.alerts.length} RECENT ALERTS</strong>
-            </div>
-            <div className="rounded-lg border border-stroke/60 bg-bg/45 p-3">
-              <div className="text-[9px] font-semibold tracking-wide text-muted">{archived?"LAST RECORDED HOUR":"LAST 1 HOUR"}</div>
-              <strong className="mt-1 block truncate text-xs text-[#e7bc67]">{oneHour?"$"+oneHour.symbol+" · "+oneHour.lane:"NO ELIGIBLE ALERT"}</strong>
-            </div>
+      <span className="rounded-full border border-[#45464d] px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.09em] text-[#b7bbc3]">
+        {feed.state==="historical"?"HISTORICAL":feed.state==="verified"?"OBSERVED PEAKS":feed.state==="loading"?"VERIFYING":"AWAITING VERIFIED RESULTS"}
+      </span>
+    </header>
+    {feed.state==="historical"&&feed.reference_time_utc&&
+      <p className="mt-2 text-[10px] text-[#aeb5c0]">Latest available verified ranking · {moverDate(feed.reference_time_utc)}</p>}
+    <div className="mt-3 flex flex-col gap-2">
+      {(ready?feed.movers:[null,null,null]).map((item,index)=>(
+        <div key={item?.id??index} className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-[10px] border border-[#343940] bg-[#1a1d23] px-3.5 py-3 sm:flex-nowrap">
+          <span className="w-6 shrink-0 font-display text-[15px] font-bold tabular-nums text-[#bda078]">{String(index+1).padStart(2,"0")}</span>
+          <span className="hidden h-9 w-px shrink-0 bg-[#45464a] sm:block" aria-hidden="true"/>
+          <div className="min-w-[90px] flex-1">
+            <strong className="block truncate font-display text-[15px] font-semibold text-[#f0f2f4]">{item?"$"+item.symbol:"AWAITING DATA"}</strong>
+            <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-[.12em]" style={{color:item?MOVER_LANES[item.lane]:"#9298a2"}}>{item?.lane??"VERIFICATION PENDING"}</span>
           </div>
-          {oneHour && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#aa8a51]/35 bg-[#aa8a51]/[0.045] px-3 py-2">
-            <span className="text-[10px] font-semibold tracking-wide text-[#e7bc67]">1H HIGHLIGHT · {oneHour.lane} / {"$"+oneHour.symbol}</span>
-            <span className="text-[10px] tabular-nums text-muted">RECORDED MC {formatAlertMoney(oneHour.alert_mc)} · {new Date(oneHour.timestamp_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"})}</span>
-          </div>}
-          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{archived?"THREE MOST RECENT · DATED HISTORICAL RECORDS":feed.period==="7d"?"THREE MOST RECENT · 7D":"THREE MOST RECENT · 24H"}</div>
-          <div className="grid grid-cols-3 gap-2 border-y border-stroke/50 py-3" aria-label="Actual alerts displayed in this panel">
-            <div><strong className="block text-lg font-bold tabular-nums text-silver">{feed.alerts.length}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Alerts shown</span></div>
-            <div><strong className="block text-lg font-bold tabular-nums text-silver">{distinctTokens}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Distinct tokens</span></div>
-            <div><strong className="block text-lg font-bold tabular-nums text-silver">{distinctLanes}</strong><span className="text-[9px] uppercase tracking-wide text-muted">Lanes shown</span></div>
+          <div className="min-w-[160px] flex-[2] text-[10px] leading-5 text-[#b8bec8]">
+            <div>CALLED · <span className="text-[#e0e3e7]">{item?moverDate(item.called_at_utc):"—"}</span></div>
+            <div>MC · <span className="text-[#e0e3e7]">{item?moverMoney(item.first_mc):"—"}</span> <span className="px-1 text-[#d7b67c]">→</span> PEAK · <span className="text-[#e0e3e7]">{item?moverMoney(item.peak_mc):"—"}</span></div>
           </div>
-          {feed.alerts.map((item, index) => {
-            const tone = LANE_PALETTE[item.lane] ?? LANE_PALETTE.TREND;
-            const clock = new Date(item.timestamp_utc).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
-            const candidatePeak = item.observed_peak_pct;
-            const verifiedPeak = typeof candidatePeak === "number" && Number.isFinite(candidatePeak) && candidatePeak >= -100 && candidatePeak <= 100000 ? candidatePeak : null;
-            const hasPeak = verifiedPeak !== null;
-            const peakMultiple = hasPeak ? 1 + verifiedPeak / 100 : 0;
-            return (
-              <article key={item.id} className="rounded-xl border border-stroke/70 bg-bg/45 px-3 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold tabular-nums text-muted">#{index+1}</span>
-                    <span className={`h-2 w-2 rounded-full ${tone.dot}`} style={{boxShadow:`0 0 0 3px ${tone.accent}1c`}} aria-hidden="true"/>
-                    <span className={`text-[11px] font-bold tracking-[0.2em] ${tone.text}`}>{item.lane}</span>
-                    <strong className="text-sm text-silver">${item.symbol}</strong>
-                  </div>
-                  <span className="text-[10px] tabular-nums text-muted">RECORDED {clock}</span>
-                </div>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  <span className="rounded-full border border-[#72a5cf]/35 bg-[#72a5cf]/[0.07] px-2 py-1 text-[10px] text-[#a8cce7]">MC {formatAlertMoney(item.alert_mc)}</span>
-                  <span className="rounded-full border border-[#b28ad0]/35 bg-[#b28ad0]/[0.07] px-2 py-1 text-[10px] text-[#d1b0e5]">LIQ {formatAlertMoney(item.liquidity_usd)}</span>
-                  {item.m5_tx != null && <span className="rounded-full border border-[#69bd91]/35 bg-[#69bd91]/[0.07] px-2 py-1 text-[10px] text-[#a0dabb]">5M TX {item.m5_tx.toLocaleString("en-US")}</span>}
-                  {hasPeak && <span title="Highest price observed after this alert, based on monitored market data. Not a realized return or guaranteed profit." className={`rounded-full border px-2 py-1 text-[10px] font-medium tabular-nums ${verifiedPeak >= 0 ? "border-[#69bd91]/35 bg-[#69bd91]/[0.07] text-[#a0dabb]" : "border-[#d97777]/35 bg-[#d97777]/[0.07] text-[#e3a0a0]"}`}>
-                    {verifiedPeak >= 0 ? "↗" : "↘"} {peakMultiple.toFixed(2)}× · {verifiedPeak >= 0 ? "+" : ""}{verifiedPeak.toFixed(1)}% <span className="opacity-70">peak</span>
-                  </span>}
-                  <span className="ml-auto text-[10px] tabular-nums text-muted">{clock}</span>
-                </div>
-              </article>
-            );
-          })}
+          <strong className="ml-auto shrink-0 font-display text-[23px] font-semibold tabular-nums text-[#e8c48a]">{item?item.multiple.toFixed(2)+"×":"—"}</strong>
         </div>
-      ) : (
-        <div className="mt-4 rounded-xl border border-stroke/60 bg-bg/40 px-4 py-8 text-center">
-          <div className="text-sm font-semibold text-silver">{feed.state==="loading"?"Checking verified alerts…":feed.state==="empty"?"No verified published alerts in the last 7 days":"Verified feed temporarily unavailable"}</div>
-          <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
-            Only signed records with proven Telegram delivery may appear here. Scanner candidates and modeled wins are never substituted.
-          </p>
-        </div>
-      )}
-      <p className="mt-3 text-[10px] leading-relaxed text-muted/70">
-        Market cap and liquidity are the values captured with each alert, not realized exits. {outcomesMeasured === 0 && available ? "Verified post-alert outcomes are not available for these records. " : ""}Do not interpret a recorded alert as a profitable trade.{archived ? " This is a dated signed archive while delivery-proof reconciliation is pending." : ""}
-      </p>
-    </section>
-  );
+      ))}
+    </div>
+    <p className="mt-3 text-[10px] leading-[1.6] text-[#9ca4ae]">
+      {ready?"Distinct bot-delivered Alpha calls ranked by corroborated observed peak market-cap multiples. Historical results are explicitly dated; multiples are not realized trading returns.":"No corroborated mover-and-peak records are available yet. An older ranking will appear here when a verified historical snapshot is connected."}
+    </p>
+  </section>;
 }
 
 type StepItemProps = {
