@@ -12,13 +12,16 @@ CREATE TABLE IF NOT EXISTS public.alpha_history_events (
   alert_mc numeric(20,4) CHECK (alert_mc IS NULL OR alert_mc > 0),
   liquidity_usd numeric(20,4) CHECK (liquidity_usd IS NULL OR liquidity_usd > 0),
   m5_tx integer CHECK (m5_tx IS NULL OR m5_tx >= 0),
-  proof_kind text NOT NULL CHECK (proof_kind = 'DIRECT_TELEGRAM_API_RECEIPT'),
+  proof_kind text NOT NULL CHECK (proof_kind IN ('DIRECT_TELEGRAM_API_RECEIPT','POST_SEND_RUNTIME_CORRELATION')),
   source_sha256 varchar(64) NOT NULL CHECK (source_sha256 ~ '^[a-f0-9]{64}$'),
   outcome_status varchar(24) NOT NULL DEFAULT 'UNAVAILABLE'
     CHECK(outcome_status IN ('UNAVAILABLE','PENDING','EXPIRED_PARTIAL_DATA','OBSERVED_PEAK')),
   observed_max_multiple numeric(20,4)
     CHECK(observed_max_multiple IS NULL OR observed_max_multiple > 0),
-  approved_for_history boolean NOT NULL DEFAULT false CHECK(approved_for_history),
+  approved_for_history boolean NOT NULL DEFAULT false,
+  CONSTRAINT history_approved_requires_attested_delivery CHECK (
+    NOT approved_for_history OR proof_kind = 'DIRECT_TELEGRAM_API_RECEIPT'
+  ),
   imported_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT history_peak_requires_verified_outcome CHECK (
     observed_max_multiple IS NULL OR outcome_status = 'OBSERVED_PEAK'
