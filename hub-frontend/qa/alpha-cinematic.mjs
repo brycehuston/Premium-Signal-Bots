@@ -14,7 +14,12 @@ for(const {w,h} of sizes)for(const stage of [1,2,3]){
    const original=CanvasRenderingContext2D.prototype.fillText;
    CanvasRenderingContext2D.prototype.fillText=function(t,x,y,...rest){
      const str=String(t).trim();
-     if(str && window.__alphaCanvasTexts.length<5000)window.__alphaCanvasTexts.push({text:str,x:Math.round(x),y:Math.round(y),font:this.font});
+     if(str && window.__alphaCanvasTexts.length<5000){
+       const m=this.getTransform();
+       const scaleX=this.canvas.clientWidth ? this.canvas.clientWidth/Math.max(1,this.canvas.width) : 1;
+       const scaleY=this.canvas.clientHeight ? this.canvas.clientHeight/Math.max(1,this.canvas.height) : 1;
+       window.__alphaCanvasTexts.push({text:str,x:Math.round(x),y:Math.round(y),absX:Math.round((m.a*x+m.c*y+m.e)*scaleX),absY:Math.round((m.b*x+m.d*y+m.f)*scaleY),font:this.font});
+     }
      return original.call(this,t,x,y,...rest);
    };
  });
@@ -37,6 +42,7 @@ for(const {w,h} of sizes)for(const stage of [1,2,3]){
     const words=(window.__alphaCanvasTexts||[]).slice(-1400);
     const target=["EARLY","GENESIS","TREND","STRICT","RECLAIM","RUNNER"];
     const laneText=words.filter(x=>target.some(t=>x.text.toUpperCase().includes(t))).slice(-60);
+    const sourceLabels=words.filter(x=>["DEXSCREENER","OHLCV / CHART DATA","RPC / MEMPOOL","VPS CORE"].includes(x.text)).slice(-48);
     const canvasPixels=(()=>{
       if(!canvas)return null;
       try{
@@ -67,7 +73,7 @@ for(const {w,h} of sizes)for(const stage of [1,2,3]){
       header:rect(document.querySelector(".header")),wrap:rect(wrap),wrapScroll:wrap?{h:wrap.scrollHeight,ch:wrap.clientHeight}:null,
       panels:laneNames,
       core:rect(overlay),go:rect(go),router:rect(router), 
-      canvasLaneLabels:laneText,canvasTextCount:words.length,
+      canvasLaneLabels:laneText,sourceLabels,canvasTextCount:words.length,
       jsErrors:[],
     };
   });
@@ -83,6 +89,40 @@ for(const {w,h} of sizes)for(const stage of [1,2,3]){
 }
 await browser.close();
 await writeFile(path.join(dir,"stage-results.json"),JSON.stringify({base,checks,errors},null,2));
-const summary=checks.map(c=>({stage:c.stage,w:c.width,h:c.height,http:c.http,error:c.error,frame:c.frame,canvas:c.canvas,coverage:c.canvasPixels?.covered,panels:c.panels?.map(x=>x.lane),scroll:c.wrapScroll,last:c.lastPanelScroll,labels:c.canvasLaneLabels?.map(x=>x.text).filter((x,i,a)=>a.indexOf(x)===i)}));
-console.log(JSON.stringify({tests:checks.length,errors,summary},null,2));
-if(checks.length!==sizes.length*3||checks.some(x=>x.error||x.http!==200)||errors.length)process.exitCode=1;
+const failures=[];
+const allLanes=["EARLY","GENESIS","TREND","STRICT","RECLAIM","RUNNER"];
+for(const c of checks){
+ if(c.error||c.http!==200){failures.push({stage:c.stage,width:c.width,error:c.error||("HTTP "+c.http)});continue;}
+ if(c.frame && (c.frame.x< -2 || c.frame.right>c.width+2 || c.frame.y< -2 || c.frame.bottom>c.height+2)){
+   failures.push({stage:c.stage,width:c.width,error:"frame beyond viewport",rect:c.frame});
+ }
+ if(c.stage===1){
+   const names=new Set((c.sourceLabels||[]).map(x=>x.text));
+   if(!["DEXSCREENER","OHLCV / CHART DATA","RPC / MEMPOOL","VPS CORE"].every(x=>names.has(x)))
+     failures.push({stage:1,width:c.width,error:"source labels missing"});
+   if(c.height<500 && c.width>600){
+     const unique=Object.values(Object.fromEntries((c.sourceLabels||[]).map(x=>[x.text,x])));
+     const sources=unique.filter(x=>x.text!=="VPS CORE").sort((a,b)=>a.absX-b.absX);
+     if(sources.length!==3 || sources.some((x,i)=>i>0&&x.absX-sources[i-1].absX<110))
+       failures.push({stage:1,width:c.width,error:"compact sources too close",positions:sources});
+   }
+ }
+ if(c.stage===2){
+   if(c.panels?.length!==6 || !allLanes.every(n=>c.panels.some(x=>x.lane===n)))
+     failures.push({stage:2,width:c.width,error:"scanner lane missing"});
+   if(c.width<=430 && !c.lastPanelScroll?.visible)
+     failures.push({stage:2,width:c.width,error:"last scanner not reachable"});
+ }
+ if(c.stage===3){
+   const labels=c.canvasLaneLabels||[];
+   for(const name of allLanes){
+     const hit=labels.filter(x=>x.text.toUpperCase()===name).at(-1);
+     if(!hit)failures.push({stage:3,width:c.width,error:"canvas route absent: "+name});
+     else if(c.canvas && (hit.absX<42||hit.absX>c.canvas.w-42||hit.absY<22||hit.absY>c.canvas.h-22))
+       failures.push({stage:3,width:c.width,error:"canvas route clipped: "+name,x:hit.absX,y:hit.absY});
+   }
+ }
+}
+const summary=checks.map(c=>({stage:c.stage,w:c.width,h:c.height,http:c.http,error:c.error,frame:c.frame,canvas:c.canvas,coverage:c.canvasPixels?.covered,panels:c.panels?.map(x=>x.lane),scroll:c.wrapScroll,last:c.lastPanelScroll,labels:[...new Set(c.canvasLaneLabels?.map(x=>x.text)||[])],labelPositions:c.stage===3?Object.values(Object.fromEntries((c.canvasLaneLabels||[]).map(x=>[x.text,[x.absX,x.absY]]))):undefined,sourcePositions:c.stage===1?Object.values(Object.fromEntries((c.sourceLabels||[]).map(x=>[x.text,[x.absX,x.absY]]))):undefined}));
+console.log(JSON.stringify({tests:checks.length,failures,errors,summary},null,2));
+if(checks.length!==sizes.length*3||failures.length||errors.length)process.exitCode=1;
