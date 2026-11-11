@@ -1815,3 +1815,18 @@ a:not([data-no-link-style]) { @apply text-gold hover:text-gold2 transition-color
 
 /* Premium editorial headings: uppercase hierarchy; preserve mixed-case prose and controls. */
 .alpha-home-headings :is(h1, h2, h3) { text-transform: uppercase; }
+
+
+/* Marketing typography fidelity — shared by the new Apps collection,
+   other pages and all responsive widths. Existing individual sizes,
+   colors, weights and approved spacing take precedence. */
+main :where(h1,h2,h3) {
+  font-family:var(--font-display),ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-kerning:normal;
+  text-wrap:balance;
+}
+main :where(p,li) {overflow-wrap:break-word;}
+main :where(a,button,input,select,textarea):focus-visible {
+  outline:2px solid rgb(var(--gold));
+  outline-offset:3px;
+}

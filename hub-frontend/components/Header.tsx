@@ -29,7 +29,7 @@ export default function Header({ brand: _brand }: { brand: string }) {
         <div className="flex h-[70px] items-center justify-between gap-4">
           <Link href="/" aria-label="Alpha Alerts homepage" className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold" onClick={() => setMenuOpen(false)} data-no-link-style>
             <Image src="/alpha-lane-v4-logo.png" alt="" width={38} height={40} className="h-[39px] w-[38px] shrink-0 object-contain" unoptimized priority />
-            <span className="whitespace-nowrap text-[15px] font-bold tracking-[0.15em] text-metal-silver sm:text-[17px]">
+            <span className="font-display whitespace-nowrap text-[15px] font-bold tracking-[0.15em] text-metal-silver sm:text-[17px]">
               ALPHA <span className="text-gold">ALERTS</span>
             </span>
           </Link>
