@@ -1,0 +1,66 @@
+name: Alpha Site Responsive QA
+
+on:
+  pull_request:
+    paths:
+      - "hub-frontend/**"
+      - ".github/workflows/alpha-site-responsive-qa.yml"
+  push:
+    branches:
+      - "release/alpha-site-final-polish-20261111"
+    paths:
+      - "hub-frontend/**"
+      - ".github/workflows/alpha-site-responsive-qa.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-site-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  responsive-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    defaults:
+      run:
+        working-directory: hub-frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: hub-frontend/package-lock.json
+      - name: Install site and browser dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install chromium
+      - name: Start local site
+        run: |
+          (npm run dev -- --hostname 127.0.0.1 --port 3000 > /tmp/alpha-site-next.log 2>&1 &)
+          for n in $(seq 1 90); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:3000/; then exit 0; fi
+            sleep 2
+          done
+          tail -100 /tmp/alpha-site-next.log
+          exit 1
+        env:
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      - name: Verify 320-1440px layouts and navigation
+        run: node qa/alpha-site-visual.mjs
+        env:
+          BASE_URL: http://127.0.0.1:3000
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      - name: Store viewport screenshots and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-site-viewport-audit
+          path: hub-frontend/qa-screenshots/
+          if-no-files-found: warn
+          retention-days: 7
