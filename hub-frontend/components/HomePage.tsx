@@ -680,78 +680,101 @@ function FeatureRow({ active }: { active: boolean }) {
 
 type Mover24H = {
   id:string;symbol:string;lane:string;
-  multiple:number;first_mc:number;peak_mc:number;observed_at_utc:string;
+  multiple:number;first_mc:number;peak_mc:number;
+  called_at_utc:string;
 };
 type MoverFeed24H = {
-  state:"loading"|"verified"|"empty"|"unavailable";
+  state:"loading"|"verified"|"historical"|"empty"|"unavailable";
+  window?:"24h"|"historical";
   as_of_utc?:string;
+  reference_time_utc?:string;
   movers:Mover24H[];
 };
 const MOVER_LANES:Record<string,string>={
- EARLY:"#a3ce64",GENESIS:"#a78bfa",TREND:"#cdd7e2",
- STRICT:"#d97777",RECLAIM:"#4bb8d1",RUNNER:"#d8b879"
+  EARLY:"#a3ce64",GENESIS:"#a78bfa",TREND:"#cdd7e2",
+  STRICT:"#d97777",RECLAIM:"#4bb8d1",RUNNER:"#d8b879"
 };
+function moverDate(iso:string){
+  const time=Date.parse(iso);
+  if(!Number.isFinite(time))return "DATE UNAVAILABLE";
+  return new Intl.DateTimeFormat("en-CA",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",timeZone:"America/Vancouver",timeZoneName:"short"}).format(time);
+}
+function moverMoney(value:number){
+  return "$"+Math.round(value).toLocaleString("en-US");
+}
 function HeroAlertReel(){
- const [feed,setFeed]=useState<MoverFeed24H>({state:"loading",movers:[]});
- useEffect(()=>{
-  let live=true,request:AbortController|null=null;
-  async function refresh(){
-   if(document.hidden)return;
-   request?.abort();const controller=new AbortController();request=controller;
-   try{
-    const response=await fetch("/api/public/top-movers",{cache:"no-store",signal:controller.signal});
-    if(!response.ok)throw new Error("feed_unavailable");
-    const data=await response.json();
-    const movers:Array<Mover24H>=Array.isArray(data.movers)?
-      data.movers.filter((x:unknown):x is Mover24H=>{
-        if(!x||typeof x!=="object")return false;
-        const item=x as Partial<Mover24H>;
-        return typeof item.id==="string"&&typeof item.symbol==="string"&&typeof item.lane==="string"&&
-          Boolean(MOVER_LANES[item.lane])&&typeof item.multiple==="number"&&
-          Number.isFinite(item.multiple)&&item.multiple>=1&&typeof item.first_mc==="number"&&
-          item.first_mc>0&&typeof item.peak_mc==="number"&&item.peak_mc>=item.first_mc;
-      }).slice(0,3):[];
-    if(live&&!controller.signal.aborted)setFeed({
-      state:data.state==="verified"&&movers.length?"verified":data.state==="empty"?"empty":"unavailable",
-      movers:data.state==="verified"?movers:[],
-      as_of_utc:typeof data.as_of_utc==="string"?data.as_of_utc:undefined
-    });
-   }catch{if(live&&!controller.signal.aborted)setFeed({state:"unavailable",movers:[]})}
-  }
-  void refresh();const timer=window.setInterval(()=>void refresh(),60000);
-  document.addEventListener("visibilitychange",refresh);
-  return()=>{live=false;request?.abort();clearInterval(timer);document.removeEventListener("visibilitychange",refresh)};
- },[]);
- const verified=feed.state==="verified";
- return <section aria-label="Alpha Alerts 24 hour top movers" className="rounded-[15px] border border-[#4a4540]/75 bg-[#111318] px-4 py-4 shadow-[inset_0_1px_0_rgba(246,211,154,.045)] sm:px-5 sm:py-5">
-  <header className="flex flex-wrap items-center justify-between gap-2.5">
-   <div className="flex min-w-0 items-center gap-3">
-    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] border border-[#8d734c]/50 bg-[#e4bd75]/10 text-[16px] text-[#efc985]" aria-hidden="true">↗</span>
-    <div className="min-w-0"><p className="text-[9px] font-bold uppercase tracking-[.22em] text-[#d4ac6b]">ALPHA ALERTS / HEARTBEAT</p><h2 className="mt-0.5 font-display text-[16px] font-semibold tracking-[-.02em] text-[#f2f3f5] sm:text-lg">Top 3 Movers <span className="text-[#d6b37d]">· 24H</span></h2></div>
-   </div>
-   <span className="rounded-full border border-[#45464d] px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.09em] text-[#b7bbc3]">
-    {verified?"RECORDED PEAKS":feed.state==="loading"?"VERIFYING":"AWAITING VERIFIED RESULTS"}
-   </span>
-  </header>
-  <div className="mt-4 grid gap-2 sm:grid-cols-3">
-   {(verified?feed.movers:[null,null,null]).map((item,index)=>(
-    <div key={item?.id??index} className="flex min-w-0 items-center justify-between gap-3 rounded-[10px] border border-[#343940] bg-[#1a1d23] px-3.5 py-3">
-     <div className="flex min-w-0 items-center gap-3">
-      <span className="font-display text-[14px] font-bold tabular-nums text-[#bda078]">{String(index+1).padStart(2,"0")}</span>
-      <span className="h-7 w-px shrink-0 bg-[#45464a]" aria-hidden="true"/>
-      <div className="min-w-0">
-       <strong className="block truncate font-display text-[13px] font-semibold text-[#f0f2f4]">{item?"$"+item.symbol:"PENDING"}</strong>
-       <span className="mt-0.5 block text-[9px] uppercase tracking-[.12em]" style={{color:item?MOVER_LANES[item.lane]:"#9298a2"}}>{item?.lane??"DATA VERIFICATION"}</span>
+  const [feed,setFeed]=useState<MoverFeed24H>({state:"loading",movers:[]});
+  useEffect(()=>{
+    let live=true,request:AbortController|null=null;
+    async function refresh(){
+      if(document.hidden)return;
+      request?.abort();
+      const controller=new AbortController();request=controller;
+      try{
+        const response=await fetch("/api/public/top-movers",{cache:"no-store",signal:controller.signal});
+        if(!response.ok)throw new Error("feed_unavailable");
+        const data=await response.json();
+        const movers:Mover24H[]=Array.isArray(data.movers)?
+          data.movers.filter((x:unknown):x is Mover24H=>{
+            if(!x||typeof x!=="object")return false;
+            const item=x as Partial<Mover24H>;
+            return typeof item.id==="string"&&typeof item.symbol==="string"&&typeof item.lane==="string"&&
+              Boolean(MOVER_LANES[item.lane])&&typeof item.multiple==="number"&&
+              Number.isFinite(item.multiple)&&item.multiple>=1&&typeof item.first_mc==="number"&&
+              item.first_mc>0&&typeof item.peak_mc==="number"&&item.peak_mc>=item.first_mc&&
+              typeof item.called_at_utc==="string"&&Number.isFinite(Date.parse(item.called_at_utc));
+          }).slice(0,3):[];
+        const ready=(data.state==="verified"||data.state==="historical")&&movers.length>0;
+        if(live&&!controller.signal.aborted)setFeed({
+          state:ready?(data.state==="historical"?"historical":"verified"):data.state==="empty"?"empty":"unavailable",
+          window:data.window==="historical"?"historical":"24h",
+          movers:ready?movers:[],
+          as_of_utc:typeof data.as_of_utc==="string"?data.as_of_utc:undefined,
+          reference_time_utc:typeof data.reference_time_utc==="string"?data.reference_time_utc:undefined
+        });
+      }catch{if(live&&!controller.signal.aborted)setFeed({state:"unavailable",movers:[]})}
+    }
+    void refresh();const timer=window.setInterval(()=>void refresh(),60000);
+    document.addEventListener("visibilitychange",refresh);
+    return()=>{live=false;request?.abort();clearInterval(timer);document.removeEventListener("visibilitychange",refresh)};
+  },[]);
+  const ready=feed.state==="verified"||feed.state==="historical";
+  return <section aria-label="Alpha Alerts top movers" className="rounded-[15px] border border-[#4a4540]/75 bg-[#111318] px-4 py-4 shadow-[inset_0_1px_0_rgba(246,211,154,.045)] sm:px-5 sm:py-5">
+    <header className="flex flex-wrap items-center justify-between gap-2.5">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] border border-[#8d734c]/50 bg-[#e4bd75]/10 text-[16px] text-[#efc985]" aria-hidden="true">↗</span>
+        <div className="min-w-0">
+          <p className="text-[9px] font-bold uppercase tracking-[.22em] text-[#d4ac6b]">ALPHA ALERTS / HEARTBEAT</p>
+          <h2 className="mt-0.5 font-display text-[16px] font-semibold tracking-[-.02em] text-[#f2f3f5] sm:text-lg">Top 3 Movers <span className="text-[#d6b37d]">· {feed.state==="historical"?"LAST VERIFIED":"24H"}</span></h2>
+        </div>
       </div>
-     </div>
-     <strong className="shrink-0 font-display text-[20px] font-semibold tabular-nums text-[#e8c48a]">{item?item.multiple.toFixed(2)+"×":"—"}</strong>
+      <span className="rounded-full border border-[#45464d] px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.09em] text-[#b7bbc3]">
+        {feed.state==="historical"?"HISTORICAL":feed.state==="verified"?"OBSERVED PEAKS":feed.state==="loading"?"VERIFYING":"AWAITING VERIFIED RESULTS"}
+      </span>
+    </header>
+    {feed.state==="historical"&&feed.reference_time_utc&&
+      <p className="mt-2 text-[10px] text-[#aeb5c0]">Latest available verified ranking · {moverDate(feed.reference_time_utc)}</p>}
+    <div className="mt-3 flex flex-col gap-2">
+      {(ready?feed.movers:[null,null,null]).map((item,index)=>(
+        <div key={item?.id??index} className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-[10px] border border-[#343940] bg-[#1a1d23] px-3.5 py-3 sm:flex-nowrap">
+          <span className="w-6 shrink-0 font-display text-[15px] font-bold tabular-nums text-[#bda078]">{String(index+1).padStart(2,"0")}</span>
+          <span className="hidden h-9 w-px shrink-0 bg-[#45464a] sm:block" aria-hidden="true"/>
+          <div className="min-w-[90px] flex-1">
+            <strong className="block truncate font-display text-[15px] font-semibold text-[#f0f2f4]">{item?"$"+item.symbol:"AWAITING DATA"}</strong>
+            <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-[.12em]" style={{color:item?MOVER_LANES[item.lane]:"#9298a2"}}>{item?.lane??"VERIFICATION PENDING"}</span>
+          </div>
+          <div className="min-w-[160px] flex-[2] text-[10px] leading-5 text-[#b8bec8]">
+            <div>CALLED · <span className="text-[#e0e3e7]">{item?moverDate(item.called_at_utc):"—"}</span></div>
+            <div>MC · <span className="text-[#e0e3e7]">{item?moverMoney(item.first_mc):"—"}</span> <span className="px-1 text-[#d7b67c]">→</span> PEAK · <span className="text-[#e0e3e7]">{item?moverMoney(item.peak_mc):"—"}</span></div>
+          </div>
+          <strong className="ml-auto shrink-0 font-display text-[23px] font-semibold tabular-nums text-[#e8c48a]">{item?item.multiple.toFixed(2)+"×":"—"}</strong>
+        </div>
+      ))}
     </div>
-   ))}
-  </div>
-  <p className="mt-3 text-[10px] leading-[1.6] text-[#9ca4ae]">
-   {verified?"Highest verified observed peak multiples for distinct tokens first publicly alerted in the past 24 hours. Not realized trading returns.":"Verified 24-hour mover results are temporarily unavailable. No unconfirmed market-cap spikes or private alerts are substituted."}
-  </p>
- </section>;
+    <p className="mt-3 text-[10px] leading-[1.6] text-[#9ca4ae]">
+      {ready?"Distinct public alerts ranked by independently verified observed peak market-cap multiples. Historical results are explicitly dated; multiples are not realized trading returns.":"No independently verified mover-and-peak records are available yet. An older ranking will appear here when a verified historical snapshot is connected."}
+    </p>
+  </section>;
 }
 
 type StepItemProps = {
