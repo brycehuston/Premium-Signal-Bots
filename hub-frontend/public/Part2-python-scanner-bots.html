@@ -2337,7 +2337,7 @@
       // Return null outside this lane's assigned 1.55 s window.
       // No residual illuminated wedge should remain during the idle interval.
       getSweepPhase(nowSec) {
-        if (PREFERS_REDUCED) return null;
+        if (PREFERS_REDUCED || nowSec < this.scanOffsetSec) return null;
         const cycle = 18;
         const t = ((nowSec - this.scanOffsetSec) % cycle + cycle) % cycle;
         if (t >= this.CFG.sweepDur) return null;

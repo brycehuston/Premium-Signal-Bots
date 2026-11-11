@@ -15,7 +15,14 @@ type StaticHtmlPageProps = {
  */
 export default function StaticHtmlPage({ src, phaseId }: StaticHtmlPageProps) {
   return (
-    <div className="fixed inset-0 z-40 h-[100dvh] w-screen overflow-hidden bg-[#09090b]">
+    <div data-phase={phaseId} className="fixed inset-0 z-40 h-[100dvh] w-screen overflow-hidden bg-[#09090b]">
+      {phaseId === "stage-2" ? (
+        <style>{`@media (max-width:560px) {
+          [data-phase="stage-2"] > a {
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 105px) !important;
+          }
+        }`}</style>
+      ) : null}
       <iframe
         key={phaseId}
         title={`Alpha Alerts — ${phaseId} system visualization`}
