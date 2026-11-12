@@ -1,5 +1,5 @@
 // @ts-nocheck
-// Alpha History v0.1.0 — secure, bounded, delayed event-history API.
+// Alpha History v0.1.2 — secure, bounded, delayed event-history API.
 // Called only through Vercel's entitlement-checked server proxy.
 const ROOT=Deno.env.get("SUPABASE_URL")||"";
 const SECRET=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
@@ -29,12 +29,25 @@ Deno.serve(async(req:Request)=>{
  if(incoming!==tier)return respond({state:"forbidden"},403);
  const gateway=req.headers.get("x-alpha-gateway")||"";
  if(!/^[a-f0-9]{64}$/.test(gateway))return respond({state:"forbidden"},403);
- const offsetString=url.searchParams.get("offset")??"0";
+ const cursorRaw=url.searchParams.get("cursor");
  const limitString=url.searchParams.get("limit")??"50";
- if(!/^(0|[1-9][0-9]{0,5})$/.test(offsetString)||!/^(0|[1-9][0-9]{0,2})$/.test(limitString))
+ if(!/^[1-9][0-9]{0,2}$/.test(limitString)||Number(limitString)>100 ||
+   (cursorRaw!==null&&!/^[A-Za-z0-9_-]{8,512}$/.test(cursorRaw)))
   return respond({state:"invalid_pagination"},400);
- const offset=Number(offsetString),limit=Number(limitString);
- if(limit<1||limit>100||offset>100000)return respond({state:"invalid_pagination"},400);
+ const limit=Number(limitString);
+ let cursor:null|[string,string]=null;
+ if(cursorRaw!==null){
+  try{
+   const padded=cursorRaw.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(cursorRaw.length/4)*4,"=");
+   const value=JSON.parse(atob(padded));
+   if(!Array.isArray(value)||value.length!==2||typeof value[0]!=="string"||
+    typeof value[1]!=="string"||
+    !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|\\+00:00)$/.test(value[0])||
+    !Number.isFinite(Date.parse(value[0]))||!/^[A-Za-z0-9_-]{8,180}$/.test(value[1]))
+    return respond({state:"invalid_pagination"},400);
+   cursor=[value[0],value[1]];
+  }catch{return respond({state:"invalid_pagination"},400);}
+ }
  const bearer=req.headers.get("authorization")||"";
  if(!/^Bearer [A-Za-z0-9._~+\/=\-]{24,8192}$/.test(bearer))
   return respond({state:"unauthorized"},401);
@@ -54,22 +67,32 @@ Deno.serve(async(req:Request)=>{
   if(typeof user?.id!=="string"||!/^[0-9a-f-]{36}$/.test(user.id))
    return respond({state:"unauthorized"},401);
   const fields="event_id,event_at,symbol,mint,lane,alert_mc,liquidity_usd,m5_tx,proof_kind,outcome_status,observed_max_multiple,public_delivery_verified";
-  const query=new URLSearchParams();
-  query.set("select",fields);
-  query.set("approved_for_history","eq.true");
-  query.set("order","event_at.desc,event_id.desc");
-  query.set("limit",String(limit));query.set("offset",String(offset));
-  if(tier==="subscriber")
-   query.set("event_at","lt."+new Date(Date.now()-86400000).toISOString());
-  const response=await db("alpha_history_events?"+query.toString(),{"Prefer":"count=exact"});
-  if(!response.ok)return respond({state:"unavailable"},503);
-  const body=await response.json();
-  const match=/\/(\d+)$/.exec(response.headers.get("content-range")||"");
-  if(!Array.isArray(body)||body.length>limit||!match)return respond({state:"unavailable"},503);
+  const cutoff=tier==="subscriber"?new Date(Date.now()-86400000).toISOString():null;
+  const countQuery=new URLSearchParams({select:"event_id",approved_for_history:"eq.true",limit:"1"});
+  if(cutoff)countQuery.set("event_at","lt."+cutoff);
+  const counted=await db("alpha_history_events?"+countQuery.toString(),{"Prefer":"count=exact"});
+  if(!counted.ok)return respond({state:"unavailable"},503);
+  const match=/\/(\d+)$/.exec(counted.headers.get("content-range")||"");
+  if(!match)return respond({state:"unavailable"},503);
   const total=Number(match[1]);
   if(!Number.isSafeInteger(total))return respond({state:"unavailable"},503);
+  const query=new URLSearchParams({select:fields,approved_for_history:"eq.true",
+   order:"event_at.desc,event_id.desc",limit:String(limit+1)});
+  if(cutoff)query.set("event_at","lt."+cutoff);
+  if(cursor){
+   // Point-in-time seek: never OFFSET against an evolving history table.
+   query.set("or",`(event_at.lt.${cursor[0]},and(event_at.eq.${cursor[0]},event_id.lt.${cursor[1]}))`);
+  }
+  const response=await db("alpha_history_events?"+query.toString());
+  if(!response.ok)return respond({state:"unavailable"},503);
+  const body=await response.json();
+  if(!Array.isArray(body)||body.length>limit+1)return respond({state:"unavailable"},503);
+  const events=body.slice(0,limit),has_more=body.length>limit;
+  const last=events.at(-1);
+  const next_cursor=has_more&&last?
+   btoa(JSON.stringify([last.event_at,last.event_id])).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""):null;
   return respond({state:"ready",tier,delay_hours:tier==="subscriber"?24:0,
    proof_notice:"POST_SEND_RUNTIME_CORRELATION is not independently verified public Telegram delivery",
-   total,offset,limit,has_more:offset+body.length<total,events:body});
+   total,limit,has_more,next_cursor,events});
  }catch{return respond({state:"unavailable"},503);}
 });
