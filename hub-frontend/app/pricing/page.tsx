@@ -2,116 +2,11 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { PLANS, BUNDLE, PlanTone, ALPHA_LANES, ALPHA_COMPLETE } from "@/lib/plans";
+import { BUNDLE, PlanTone, ALPHA_LANES, ALPHA_COMPLETE } from "@/lib/plans";
 import AlphaLanePriceCard from "@/components/AlphaLanePriceCard";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
 import { track } from "@/lib/analytics";
-
-const UPCOMING_LANES = {
-  GENESIS: {
-    color: "#A78BFA", soft: "#a78bfa16",
-    tagline: "Early momentum formation",
-    summary: "Recognizing developing structure before the broader trend is established.",
-    highlights: [
-      "Early participation and acceleration context",
-      "Emerging structure and confirmation signals",
-      "Native scoring with clear lane identity",
-      "Telegram delivery within the Alpha signal system",
-    ],
-  },
-  STRICT: {
-    color: "#D97777", soft: "#d9777716",
-    tagline: "High-selectivity confirmation",
-    summary: "A more selective view of setup quality and market structure.",
-    highlights: [
-      "Additional qualification and safety gates",
-      "Structure and participation checks",
-      "Clearer separation of qualified setups",
-      "Distinct scoring context and alert designation",
-    ],
-  },
-  RECLAIM: {
-    color: "#4BB8D1", soft: "#4bb8d116",
-    tagline: "Recovery and renewed strength",
-    summary: "Tracking structure recovery when momentum starts to rebuild.",
-    highlights: [
-      "Reclaim and renewed-interest observations",
-      "Price structure and participation context",
-      "Repeat-alert and lane-transition awareness",
-      "Native risk and quality observations",
-    ],
-  },
-} as const;
-
-type UpcomingLaneName = keyof typeof UPCOMING_LANES;
-const LANE_CARD_ORDER = ["EARLY","GENESIS","TREND","STRICT","RECLAIM","RUNNER"] as const;
-
-function UpcomingLaneCard({ lane }: { lane: UpcomingLaneName }) {
-  const info = UPCOMING_LANES[lane];
-  return (
-    <div className="group relative min-w-0 rounded-card p-px transition-transform duration-200 hover:-translate-y-0.5"
-         style={{ background: `linear-gradient(153deg,${info.color}88,rgba(255,255,255,0.08) 42%,${info.color}26)` }}>
-      <Card className="relative h-full min-w-0 overflow-hidden !border-0 !bg-[#0e1115] transition-shadow duration-200 group-hover:!shadow-[0_24px_60px_-24px_rgba(0,0,0,0.65)]">
-        <div className="pointer-events-none absolute inset-0" aria-hidden
-             style={{ background:`radial-gradient(ellipse 100% 67% at 4% -12%,${info.color}20,transparent 69%)` }} />
-        <div className="pointer-events-none absolute left-7 right-7 top-0 h-px opacity-75" aria-hidden
-             style={{background:`linear-gradient(90deg,transparent,${info.color},transparent)`}} />
-        <CardBody className="relative flex h-full min-h-[440px] flex-col gap-5 !p-6 sm:!p-7">
-          <div className="flex items-center justify-between gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border"
-                  style={{borderColor:`${info.color}65`, backgroundColor:info.soft,color:info.color}}>
-              <svg viewBox="0 0 28 28" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
-                {lane==="GENESIS"?(
-                  <><path d="M14 2 24 14 14 26 4 14Z"/><path d="M14 8 19 14 14 20 9 14Z"/><path d="M14 2v6m0 12v6"/></>
-                ):lane==="STRICT"?(
-                  <><path d="M14 2 24 6v8c0 7-4 10-10 12C8 24 4 21 4 14V6Z"/><path d="m9 14 3 3 7-7"/></>
-                ):(
-                  <><path d="M23 12a9 9 0 1 0 .5 5"/><path d="m19 8 4 4 3-4"/><path d="m9 17 4-5 3 2 4-5"/></>
-                )}
-              </svg>
-            </span>
-            <span className="rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em]"
-                  style={{borderColor:`${info.color}50`,color:info.color,backgroundColor:info.soft}}>
-              LANE PREVIEW
-            </span>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-display text-[22px] font-semibold tracking-tight text-silver sm:text-[24px]">
-              ALPHA <span style={{color:info.color}}>{lane}</span> ALERTS
-            </h3>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{color:info.color}}>
-              {info.tagline}
-            </p>
-            <p className="text-[13px] leading-relaxed text-muted">{info.summary}</p>
-          </div>
-          <div className="h-px w-full opacity-60" style={{background:`linear-gradient(90deg,${info.color}80,transparent)`}} aria-hidden />
-          <div className="space-y-1">
-            <div className="font-display text-[24px] font-semibold tracking-tight text-silver">PRICING TBA</div>
-            <p className="text-[11px] leading-relaxed text-muted">Separate subscription pricing has not been announced.</p>
-          </div>
-          <ul className="space-y-3 text-[12px] leading-relaxed text-muted" aria-label={`Alpha ${lane} capabilities`}>
-            {info.highlights.map(item => (
-              <li className="flex items-start gap-3" key={item}>
-                <svg viewBox="0 0 20 20" className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke={info.color} strokeWidth="2" strokeLinecap="round" aria-hidden>
-                  <path d="m4 10 4 4 8-9" />
-                </svg>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-auto pt-3">
-            <div className="flex min-h-11 items-center justify-center rounded-[7px] border bg-[#161a20] px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-silver/75"
-                 style={{borderColor:`${info.color}47`}} aria-label={`Alpha ${lane} not available for purchase`}>
-              Not available yet
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-    </div>
-  );
-}
 
 function Check({ tone }: { tone: PlanTone }) {
   const colorClass =
@@ -359,25 +254,6 @@ export default function PricingPage() {
         {bundleTitle.slice(bundleKeyIndex + bundleKey.length)}
       </>
     );
-
-  // We want the cadence to be EARLY -> TREND -> RUNNER always
-  const cadenceMap: Record<string, 1 | 2 | 3> = {
-    "alpha-early-alerts": 1,
-    "alpha-trend-alerts": 2,
-    "alpha-runner-alerts": 3,
-  };
-
-  const orderedPlans = useMemo(() => {
-    const planOrder: Record<string, number> = {
-      "alpha-trend-alerts": 0,
-      "alpha-runner-alerts": 1,
-      "alpha-early-alerts": 2,
-    };
-
-    return [...PLANS].sort(
-      (a, b) => (planOrder[a.slug] ?? 99) - (planOrder[b.slug] ?? 99)
-    );
-  }, []);
 
   useEffect(() => {
     track("pricing_view");
