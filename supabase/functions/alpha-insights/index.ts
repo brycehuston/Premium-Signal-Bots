@@ -97,7 +97,7 @@ async function read(req:Request,view:"owner"|"subscriber") {
  if(!user.ok)return reply({state:"unauthorized"},401);
  const identity=await user.json();const id=identity?.id;
  if(typeof id!=="string"||!/^[0-9a-f-]{36}$/.test(id))return reply({state:"unauthorized"},401);
- const decision=await authorizePrivateTier(view,{id,email:typeof identity?.email==="string"?identity.email:null},bearer,db,fetch,Deno.env.get("ALPHA_MEMBERSHIP_API_BASE")||"");
+ const decision=await authorizePrivateTier(view,{id,email:typeof identity?.email==="string"?identity.email:null},bearer,db,fetch,Deno.env.get("ALPHA_MEMBERSHIP_API_BASE")||"https://premium-signal-bots.onrender.com");
  if(decision!=="allowed")return reply({state:decision},decision==="forbidden"?403:503);
  const state=await db("alpha_intelligence_snapshot?select=captured_at,owner_dataset,subscriber_report&id=eq.1&limit=1");
  if(!state.ok)return reply({state:"unavailable"},503);
