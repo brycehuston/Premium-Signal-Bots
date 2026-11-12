@@ -39,7 +39,7 @@ for(const width of [390,1440]) {
  }]);
  const page=await context.newPage();
  const errs=[];page.on("pageerror",e=>errs.push(e.message));
- let apiCalls=0;
+ let apiCalls=0;let allowLive=width!==390;
  await page.route("https://test.supabase.co/**",async route=>{
    const url=route.request().url();
    if(url.includes("/auth/v1/user")){
@@ -53,7 +53,7 @@ for(const width of [390,1440]) {
  });
  await page.route("**/api/intelligence/data",async route=>{
    apiCalls++;
-   if(apiCalls===1&&width===390){
+   if(!allowLive){
      await route.fulfill({status:503,headers:jsonHeaders,body:JSON.stringify({state:"unavailable"})});
    }else{
      await route.fulfill({status:200,headers:jsonHeaders,body:JSON.stringify(snapshot)});
@@ -64,6 +64,7 @@ for(const width of [390,1440]) {
   if(response?.status()!==200)throw new Error("dashboard HTTP "+response?.status());
   if(width===390){
     await page.getByText("FEED UNAVAILABLE",{exact:true}).waitFor({timeout:12000});
+    allowLive=true;
     await page.getByRole("button",{name:"RETRY LIVE CONNECTION"}).click();
   }
   await page.getByText("AUTO SYNC ACTIVE",{exact:true}).waitFor({timeout:16000});
@@ -73,7 +74,7 @@ for(const width of [390,1440]) {
   const archive=page.getByText("OLDER ARCHIVE · OPTIONAL",{exact:true});
   if(!(await archive.isVisible()))throw new Error("optional archive drawer missing");
   if(await page.getByRole("button",{name:"IMPORT HISTORICAL FILE"}).isVisible())throw new Error("archive upload unexpectedly prominent");
-  const pageText=await page.locator("main").innerText();
+  const pageText=await page.locator("#overview").innerText();
   if(!pageText.includes("not independently verified Telegram deliveries")&&!pageText.includes("not verified deliveries"))throw new Error("missing research qualification");
   if(!pageText.includes("NOT IN CURRENT SNAPSHOT"))throw new Error("missing unavailable-data disclosure");
   if(errs.length)throw new Error("page errors: "+errs.join("; "));
