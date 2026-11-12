@@ -41,7 +41,7 @@ try{
     expires:Math.floor(Date.now()/1000)+3600,httpOnly:false,secure:false,sameSite:"Lax"}]);
    const page=await context.newPage();
    const errors=[];
-   let started=false,startCalls=0,readCalls=0;
+   let started=false,startCalls=0,readCalls=0,previewStatusCalls=0;
    page.on("pageerror",e=>errors.push(e.message));
    await page.route("https://test.supabase.co/**",async route=>{
     const url=route.request().url();
@@ -64,6 +64,7 @@ try{
         strict:0,reclaim:2,runner:1}]}:{state:"expired"})});
    });
    await page.route("**/api/intelligence/preview",async route=>{
+    if(route.request().method()==="GET")previewStatusCalls++;
     if(route.request().method()==="POST"){
      startCalls++;
      if(scenario.activate&&!started)started=true;
@@ -103,6 +104,11 @@ try{
      assert.equal(await page.getByText("Verified subscription access",{exact:true}).count(),1,
       "only one lane may be shown as entitled");
      await page.getByRole("link",{name:"OPEN AUTHORIZED INTELLIGENCE"}).waitFor();
+     await page.getByText(/INTELLIGENCE ACCESS VERIFIED/).waitFor();
+     assert.equal(await page.getByText(/Your one-time preview has expired/).count(),0,
+      "verified subscribers must not see expired free-trial messaging");
+     assert.equal(previewStatusCalls,0,
+      "verified paid members should never depend on the free preview service");
      assert.equal(startCalls,0);
     }else if(scenario.name==="inactive"){
      await page.getByText("Inactive subscription",{exact:true}).waitFor();

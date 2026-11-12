@@ -21,3 +21,11 @@ and fails closed if not configured. Existing owner component/CSS unchanged.
 - CI covers these states at phone and desktop widths using synthetic
   Supabase and /me fixtures. This does not replace real account QA,
   staged database migration, or production acceptance.
+
+## Verified paid-member UX distinction
+- Verified owner/subscriber Alpha Command bypasses the free-preview status
+  service, does not show misleading expired-trial messaging, and links to the
+  separately authorized member intelligence route. The preview service
+  remains independently available to signed-in free/inactive accounts.
+- Browser QA asserts a subscriber does not make preview-status requests;
+  this is synthetic verification, not a substitute for real membership QA.
