@@ -52,7 +52,8 @@ for (const width of widths) {
         radius:style.borderTopLeftRadius,paddingTop:parseFloat(style.paddingTop),paddingBottom:parseFloat(style.paddingBottom),
         paddingLeft:parseFloat(style.paddingLeft),statTopBorder:statStyle.borderTopWidth,statBackground:statStyle.backgroundColor,
         cardStyles:computedCardStyles,
-        symbolWidths:cards.map(card=>{const el=card.querySelector("[data-alpha-mover-symbol]");return {client:el?.clientWidth??0,scroll:el?.scrollWidth??0,text:el?.textContent??""};})};
+        symbolWidths:cards.map(card=>{const el=card.querySelector("[data-alpha-mover-symbol]");return {client:el?.clientWidth??0,scroll:el?.scrollWidth??0,text:el?.textContent??""};}),
+        multipleTextRects:cards.map(card=>{const el=card.querySelector("strong");const range=document.createRange();range.selectNodeContents(el);const r=range.getBoundingClientRect();return {left:r.left,right:r.right,content:el?.textContent??""};})};
     });
 
     assert.equal(layout.viewport,width,"Viewport width mismatch");
@@ -78,6 +79,8 @@ for (const width of widths) {
     assert(layout.cardStyles.every(x=>x.border==="1px"&&x.shadow!=="none"),"Card distinction or underglow lost");
     assert(layout.symbolWidths.every(x=>x.client>0 && x.scroll<=x.client+1),
       "A normal-length token is truncated: "+JSON.stringify(layout.symbolWidths));
+    assert(layout.multipleTextRects.every((text,index)=>text.left>=layout.cards[index].left+1&&text.right<=layout.cards[index].right-1),
+      "A peak multiplier extends beyond its card: "+JSON.stringify({text:layout.multipleTextRects,cards:layout.cards}));
     if(width >= 1024){
       assert(layout.eyebrow && Math.abs(layout.title.top-layout.eyebrow.top) <= 48,
         "Right header misaligned relative to left hero");
