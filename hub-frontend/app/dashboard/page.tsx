@@ -19,7 +19,7 @@ export default function AlphaCommand(){
  const [lane,setLane]=useState<"all"|"early"|"genesis"|"trend"|"strict"|"reclaim"|"runner">("all");
  const [selected,setSelected]=useState("");
  const [time,setTime]=useState(0);
- const [profile,setProfile]=useState<{plan?:string;is_active?:boolean;entitlements?:string[]}|null>(null);
+ const [profile,setProfile]=useState<{plan?:string|null;is_active?:boolean|null;entitlements?:string[]}|null>(null);
  const [profileState,setProfileState]=useState<"loading"|"ready"|"unavailable">("loading");
  const request=useCallback(async(path:string,method="GET")=>{
   if(!token)throw Error("not_authenticated");
@@ -51,7 +51,7 @@ export default function AlphaCommand(){
   const c=new AbortController();
   fetch(url.replace(/\/$/,"")+"/me",{headers:{Authorization:"Bearer "+token},cache:"no-store",signal:c.signal})
    .then(async r=>{if(!r.ok)throw Error("membership_unavailable");return r.json()})
-   .then(x=>{if(!c.signal.aborted){setProfile(x&&typeof x.plan==="string"?x:null);setProfileState(x&&typeof x.plan==="string"?"ready":"unavailable")}})
+   .then(x=>{if(!c.signal.aborted){const valid=x&&typeof x==="object"&&typeof x.is_active==="boolean"&&(typeof x.plan==="string"||x.plan==null);setProfile(valid?x:null);setProfileState(valid?"ready":"unavailable")}})
    .catch(()=>{if(!c.signal.aborted)setProfileState("unavailable")});
   return()=>c.abort();
  },[token,loading,check]);
@@ -80,7 +80,8 @@ export default function AlphaCommand(){
  const entitled=verified&&profileState==="ready"&&Array.isArray(profile?.entitlements)
   ?profile.entitlements.map(e=>signalKeys[e]).filter((e):e is string=>typeof e==="string")
   :[];
- const status=access==="owner"?"Owner":verified?"Active subscriber":access==="unavailable"||profileState==="unavailable"?"Status unavailable":profile?.is_active===false?"Inactive / no active plan":"Membership not confirmed";
+ const free=access==="none"&&profileState==="ready"&&profile?.is_active===false&&(!profile.plan||profile.plan.toLowerCase()==="free");
+ const status=access==="owner"?"Owner":verified?"Active subscriber":access==="unavailable"||profileState==="unavailable"?"Status unavailable":free?"Free account":profile?.is_active===false?"Inactive subscription":"Membership not confirmed";
  const filtered=daily.map(d=>({date:d.date,value:lane==="all"?d.alerts:d[lane]}));
  const peak=Math.max(1,...filtered.map(d=>d.value));
  return <main className="mx-auto max-w-[1152px] space-y-6 py-8 text-[#eeeff1] sm:py-11">
@@ -89,7 +90,7 @@ export default function AlphaCommand(){
    <h1 className="mt-5 font-display text-[clamp(30px,5vw,52px)] font-semibold tracking-[-.045em]">ALPHA <span className="text-[#e7bc67]">COMMAND</span></h1>
    <p className="mt-2 break-all text-[13px] text-[#bac0ca]">{session.user.email||"Verified signed-in account"}</p>
    <div className="mt-7 grid gap-3 sm:grid-cols-3">
-    {[["MEMBERSHIP",status],["CURRENT PLAN",verified&&profile?.plan?profile.plan.replace(/-/g," ").toUpperCase():"Not verified"],["INTELLIGENCE",access==="owner"?"Owner access":access==="subscriber"?"24h+ delayed aggregate":access==="unavailable"?"Access check unavailable":"Preview or membership required"]].map(([label,value])=><div key={label} className="rounded-[11px] border border-[#34363a] bg-[#15171a] p-4"><p className="text-[10px] font-semibold tracking-[.17em] text-[#a7abb3]">{label}</p><p className="mt-2 text-[14px] font-semibold leading-6 text-[#f0e8d9]">{value}</p></div>)}
+    {[["MEMBERSHIP",status],["CURRENT PLAN",free?"FREE":verified&&profile?.plan?profile.plan.replace(/-/g," ").toUpperCase():"Not verified"],["INTELLIGENCE",access==="owner"?"Owner access":access==="subscriber"?"24h+ delayed aggregate":access==="unavailable"?"Access check unavailable":"Preview or membership required"]].map(([label,value])=><div key={label} className="rounded-[11px] border border-[#34363a] bg-[#15171a] p-4"><p className="text-[10px] font-semibold tracking-[.17em] text-[#a7abb3]">{label}</p><p className="mt-2 text-[14px] font-semibold leading-6 text-[#f0e8d9]">{value}</p></div>)}
    </div>
   </header>
   <section className="rounded-[13px] border border-[#34363b] bg-[#121418] p-5 sm:p-7">
