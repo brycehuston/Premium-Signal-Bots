@@ -12,6 +12,7 @@ type RollingNumberProps = {
   durationMs?: number;
   cycles?: number;
   staggerMs?: number;
+  startDelayMs?: number;
   ease?: string;
 };
 
@@ -24,11 +25,12 @@ export default function RollingNumber({
   durationMs = 6000,
   cycles = 1,
   staggerMs = 34,
+  startDelayMs = 0,
   ease = "cubic-bezier(0.22, 1, 0.36, 1)",
 }: RollingNumberProps) {
   const rootRef = useRef<HTMLSpanElement | null>(null);
   const [inView, setInView] = useState(false);
-  const [hasPlayed, setHasPlayed] = useState(false);
+  const hasPlayedRef = useRef(false);
   const [isRolling, setIsRolling] = useState(false);
   const [prefersReduced, setPrefersReduced] = useState(false);
 
@@ -86,17 +88,16 @@ export default function RollingNumber({
   );
   const digitsCount = digitIndexes.length;
 
-  const digitPositionFromRight = useMemo(() => {
+  // Mechanical rolling proceeds left-to-right, not least-significant digit first.
+  const digitPositionFromLeft = useMemo(() => {
     const map = new Map<number, number>();
-    digitIndexes.forEach((idx, i) => {
-      map.set(idx, digitsCount - 1 - i);
-    });
+    digitIndexes.forEach((idx, i) => map.set(idx, i));
     return map;
-  }, [digitIndexes, digitsCount]);
+  }, [digitIndexes]);
 
   useEffect(() => {
-    if (!inView || hasPlayed) return;
-    setHasPlayed(true);
+    if (!inView || hasPlayedRef.current) return;
+    hasPlayedRef.current = true;
 
     if (prefersReduced) {
       setIsRolling(false);
@@ -104,10 +105,10 @@ export default function RollingNumber({
     }
 
     setIsRolling(true);
-    const totalMs = durationMs + Math.max(0, digitsCount - 1) * staggerMs;
+    const totalMs = durationMs + Math.max(0, startDelayMs) + Math.max(0, digitsCount - 1) * staggerMs;
     const timer = window.setTimeout(() => setIsRolling(false), totalMs);
     return () => window.clearTimeout(timer);
-  }, [inView, hasPlayed, prefersReduced, durationMs, staggerMs, digitsCount]);
+  }, [inView, prefersReduced, durationMs, startDelayMs, staggerMs, digitsCount]);
 
   const stackDigits = useMemo(() => {
     const total = (cycles + 1) * 10;
@@ -143,8 +144,8 @@ export default function RollingNumber({
         }
 
         const digit = Number(char);
-        const positionFromRight = digitPositionFromRight.get(index) ?? 0;
-        const delayMs = positionFromRight * staggerMs;
+        const positionFromLeft = digitPositionFromLeft.get(index) ?? 0;
+        const delayMs = Math.max(0,startDelayMs) + positionFromLeft * staggerMs;
         const translate = (cycles * 10 + digit) * 1;
         const shouldShowFinal = prefersReduced || inView;
         const transform = shouldShowFinal ? `translate3d(0, -${translate}em, 0)` : "translate3d(0, 0, 0)";
@@ -160,6 +161,7 @@ export default function RollingNumber({
             style={{ width: "1ch", height: "1em", lineHeight: "1em" }}
           >
             <span
+              data-roll-column
               className="block tabular-nums"
               style={{
                 transform,
