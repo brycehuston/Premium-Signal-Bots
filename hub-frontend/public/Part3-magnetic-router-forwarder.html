@@ -1449,9 +1449,9 @@
         display: flex;
         justify-content: center;
         gap: 6px;
-        font-size: 24px;
+        font-size: clamp(19px, 5.4vw, 24px);
         font-weight: 900;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.10em;
         line-height: 1.1;
         text-transform: uppercase;
         text-align: center;
@@ -2399,7 +2399,7 @@
               const bottomClearance = Math.max(155, H * 0.18);
               const available = Math.max(0, H - topClearance - bottomClearance);
               const rowGap = Math.max(CFG.pillH + 18, Math.min(126, available * 0.29));
-              const ry = clamp(H * 0.51, topClearance + rowGap, H - bottomClearance - rowGap);
+              const ry = clamp(H * (H >= 850 ? 0.475 : 0.51), topClearance + rowGap, H - bottomClearance - rowGap);
               const leftX = CFG.pillW / 2 + 9, rightX = W - leftX;
               const topY = ry - rowGap, bottomY = ry + rowGap;
               const sy = Math.max(28, topY - CFG.pillH / 2 - 28);
