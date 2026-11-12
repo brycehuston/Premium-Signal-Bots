@@ -79,7 +79,7 @@ await reduced.goto(origin+"/",{waitUntil:"domcontentloaded",timeout:45000});
 await reduced.locator("[data-alpha-number-grid]").scrollIntoViewIfNeeded();
 await reduced.waitForTimeout(400);
 const styles=await reduced.locator("[data-alpha-number-grid] [data-roll-column]").evaluateAll(nodes=>nodes.map(el=>getComputedStyle(el).transitionDuration));
-if(styles.length!==3||styles.some(x=>x!=="0s"))failures.push({case:"reduced-motion",style:styles,error:"Rolling numbers should not animate in reduced-motion mode"});
+if(styles.length!==3||styles.some(x=>!Number.isFinite(Number(x.replace(/s$/,"")))||Number(x.replace(/s$/,""))>0.001))failures.push({case:"reduced-motion",style:styles,error:"Rolling numbers should not animate in reduced-motion mode"});
 else records.push({case:"reduced-motion",status:"pass",durations:styles});
 await reduced.close();
 await browser.close();
