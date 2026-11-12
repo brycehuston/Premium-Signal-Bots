@@ -1,0 +1,25 @@
+name: Alpha Edge Production Security Smoke
+
+on:
+  push:
+    branches:
+      - security/alpha-edge-tier-authorization-20261112
+    paths:
+      - "supabase/security/qa/alpha-live-edge-smoke.mjs"
+      - ".github/workflows/alpha-edge-production-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  edge-readonly-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Probe live owner deny, subscriber deny, public endpoints
+        run: node supabase/security/qa/alpha-live-edge-smoke.mjs
