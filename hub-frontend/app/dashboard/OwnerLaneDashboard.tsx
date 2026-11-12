@@ -63,6 +63,9 @@ export default function LaneIntelligenceDashboard(){
  const archiveVersion=useRef(0);
  const remotelyLoaded=useRef(false);
  const [serverAsOf,setServerAsOf]=useState<string|null>(null);
+ const [liveState,setLiveState]=useState<"connecting"|"current"|"reconnecting"|"unavailable">("connecting");
+ const [liveIssue,setLiveIssue]=useState("");
+ const [retryKey,setRetryKey]=useState(0);
 
  useEffect(()=>{
   const version=++archiveVersion.current;
@@ -85,8 +88,8 @@ export default function LaneIntelligenceDashboard(){
   return ()=>{archiveVersion.current++};
  },[accountId]);
 
- // Server-side authorization is repeated by the API and Supabase Edge Function.
- // The archived browser file remains a local-only fallback. It is never uploaded.
+ // Authenticated owner data is supplied automatically by the VPS/Supabase pipeline.
+ // IndexedDB and manual imports remain optional historical fallbacks, never uploaded.
  useEffect(()=>{
   const token=session?.access_token;
   if(!token)return;
@@ -99,21 +102,46 @@ export default function LaneIntelligenceDashboard(){
       headers:{Authorization:"Bearer "+token},
       cache:"no-store",signal:controller.signal
     });
-    if(!response.ok)return;
+    if(!alive||controller.signal.aborted)return;
+    if(!response.ok){
+     setLiveState(remotelyLoaded.current?"reconnecting":"unavailable");
+     setLiveIssue(response.status===503
+      ?"The private snapshot service is temporarily unavailable. No manual upload is required."
+      :response.status===401||response.status===403
+       ?"Your owner session needs to be refreshed. Sign out and sign back in with the approved owner account."
+       :"Could not retrieve the owner feed. Try refreshing the connection.");
+     return;
+    }
     const report=await response.json();
-    if(!alive||controller.signal.aborted||report.tier!=="owner"||report.state!=="ready"||!validArchive(report.dataset))return;
+    if(!alive||controller.signal.aborted)return;
+    if(report.tier!=="owner"||report.state!=="ready"||!validArchive(report.dataset)){
+     setLiveState(remotelyLoaded.current?"reconnecting":"unavailable");
+     setLiveIssue("The production snapshot did not pass validation. Existing data is unchanged.");
+     return;
+    }
+    const firstConnection=!remotelyLoaded.current;
     remotelyLoaded.current=true;
     const v=report.dataset as Archive;
     setData(v);setImportName("OWNER / AUTOMATIC VPS AGGREGATES");
-    setStart(v.summary.start);setEnd(v.summary.end);setRange("7D");setStoredOnDevice(false);
+    if(firstConnection){
+     const from=new Date(v.summary.end+"T12:00:00Z");
+     from.setUTCDate(from.getUTCDate()-6);
+     setStart(from.toISOString().slice(0,10)<v.summary.start?v.summary.start:from.toISOString().slice(0,10));
+     setEnd(v.summary.end);setRange("7D");
+    }
+    setStoredOnDevice(false);
     setServerAsOf(typeof report.as_of_utc==="string"?report.as_of_utc:null);
-    setError("");setLocalCheck(false);
-   }catch{/* Keep current, validated chart data if a refresh fails. */}
+    setLiveIssue("");setLiveState("current");setError("");setLocalCheck(false);
+   }catch{
+    if(!alive||controller.signal.aborted)return;
+    setLiveState(remotelyLoaded.current?"reconnecting":"unavailable");
+    setLiveIssue("Connection interrupted. The dashboard will retry automatically every five minutes.");
+   }
   }
   void refresh();const timer=window.setInterval(()=>void refresh(),5*60_000);
   document.addEventListener("visibilitychange",refresh);
   return()=>{alive=false;request?.abort();clearInterval(timer);document.removeEventListener("visibilitychange",refresh)};
- },[session?.access_token]);
+ },[session?.access_token,retryKey]);
 
  async function saveCurrentArchive(){
   if(!accountId||!data)return;
@@ -170,7 +198,7 @@ export default function LaneIntelligenceDashboard(){
  const totals=useMemo(()=>Object.fromEntries(LANES.map(l=>[l,days.reduce((s,d)=>s+n(d[l]),0)])) as Record<Lane,number>,[days]);
  const eventTotal=days.reduce((s,d)=>s+n(d.all_alerts),0);
  const firstTotal=days.reduce((s,d)=>s+n(d.first_mints),0);
- const pulseKnown=hours.filter(h=>h.pulse_mode&&h.pulse_mode!=="UNKNOWN").length;
+ const pulseKnown=hours.filter(h=>h.pulse_mode&&!["UNKNOWN","UNAVAILABLE"].includes(h.pulse_mode.toUpperCase())).length;
  const maxDaily=Math.max(1,...days.map(d=>n(d.all_alerts)));
  const maxLane=Math.max(1,...LANES.map(l=>totals[l]));
  const firstRows=useMemo(()=>{
@@ -221,23 +249,33 @@ export default function LaneIntelligenceDashboard(){
     </div>
    </div>
    <main className="ai-main" id="overview">
-    <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Telegram alert distribution, first appearances, transitions and market context. Historical observations only.</p></div><div className="ai-badge">{localCheck?"CHECKING LOCAL ARCHIVE":data?"ARCHIVE LOADED":"NO ARCHIVE LOADED"}</div></div>
+    <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Private scanner activity from your VPS. New verified aggregate snapshots are checked every five minutes; counts are observations, not confirmed Telegram deliveries.</p></div><div className="ai-badge">{serverAsOf?(liveState==="current"?"AUTO SYNC ACTIVE":"RECONNECTING"):liveState==="unavailable"?"FEED UNAVAILABLE":data?"LOCAL HISTORY":"CONNECTING TO VPS"}</div></div>
     <div className="ai-import">
-     <div><strong>OWNER ANALYTICS SOURCE</strong><p>{data?`Loaded locally: ${importName} · ${data.summary.start} to ${data.summary.end}`:"Your owner-only current records are being synchronized. Historical archive import remains optional."}</p></div>
+     <div><strong>{serverAsOf?"PRODUCTION VPS · AUTOMATIC SYNC":"PRIVATE OWNER DATA SOURCE"}</strong><p>{serverAsOf
+      ?`Connected · ${data?.summary.start??"—"} to ${data?.summary.end??"—"} · refreshes every five minutes. No uploads required.`
+      :data?`Showing optional local history · ${data.summary.start} to ${data.summary.end}. Automatic VPS connection remains the primary source.`
+       :"Connecting to the existing production snapshot. You do not need to upload an archive."}</p></div>
      <div className="ai-import-actions">
-      {data&&<button type="button" className="ai-save-button" onClick={()=>void(storedOnDevice?forgetCurrentArchive():saveCurrentArchive())} disabled={storageBusy||localCheck} title="The archive stays on this browser only; it is never uploaded.">
-       {storageBusy?"UPDATING…":storedOnDevice?"REMOVE SAVED COPY":"SAVE ON THIS DEVICE"}
-      </button>}
-      <button type="button" className="ai-button" onClick={()=>archiveFileRef.current?.click()}>OPTIONAL ARCHIVE IMPORT</button>
+      {liveState!=="current"&&<button type="button" className="ai-button" onClick={()=>{setLiveState("connecting");setLiveIssue("");setRetryKey(x=>x+1)}}>RETRY LIVE CONNECTION</button>}
+      <details className="max-w-full">
+       <summary className="cursor-pointer rounded-lg border border-[#51535a] px-3 py-2 text-[10px] font-bold tracking-[.12em] text-[#c5ad83]">OLDER ARCHIVE · OPTIONAL</summary>
+       <div className="mt-3 flex flex-wrap items-center gap-2">
+        {data&&!serverAsOf&&<button type="button" className="ai-save-button" onClick={()=>void(storedOnDevice?forgetCurrentArchive():saveCurrentArchive())} disabled={storageBusy||localCheck} title="The archive stays on this browser only; it is never uploaded.">
+         {storageBusy?"UPDATING…":storedOnDevice?"REMOVE SAVED COPY":"SAVE ON THIS DEVICE"}
+        </button>}
+        <button type="button" className="ai-button" onClick={()=>archiveFileRef.current?.click()}>IMPORT HISTORICAL FILE</button>
+       </div>
+      </details>
       <input ref={archiveFileRef} type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} hidden tabIndex={-1}/>
      </div>
     </div>
-    {serverAsOf&&<div role="status" className="ai-local-note">PRIVATE OWNER FEED · AUTOMATIC 5-MINUTE CHECKS · SNAPSHOT {new Date(serverAsOf).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"})}. Counts are scanner-recorded, not verified deliveries or P&amp;L.</div>}
+    {serverAsOf&&<div role="status" className="ai-local-note">PRIVATE OWNER FEED · {liveState==="current"?"CONNECTED":"RECONNECTING"} · LATEST SNAPSHOT {new Date(serverAsOf).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"})}. Counts are scanner-recorded, not verified deliveries or P&amp;L.</div>}
+    {liveIssue&&<p className="ai-local-note" role="status">{liveIssue}</p>}
     {error&&<p className="ai-error" role="alert">{error}</p>}
-    {data&&<p className="ai-local-note" role="status">
-     {storedOnDevice?"Saved privately to this browser. This archive will reload automatically for this signed-in account on this device.":"Archive is in memory only. Select SAVE ON THIS DEVICE to reload it automatically on future visits."} No data is uploaded.
+    {data&&!serverAsOf&&<p className="ai-local-note" role="status">
+     {storedOnDevice?"Showing a historical archive saved privately on this browser.":"Showing a local historical archive in memory only."} The production feed will replace it when the connection is restored. No local archive is uploaded.
     </p>}
-    {localCheck?<div className="ai-empty ai-empty-loading" role="status"><span>◈</span><h2>CHECKING THIS DEVICE</h2><p>Looking for your previously saved private V4 archive…</p></div>:!data?<div className="ai-empty"><span>◈</span><h2>YOUR HISTORICAL INTELLIGENCE WORKSPACE</h2><p>Your private owner analytics source is connecting. If it is unavailable, you may open a previously saved archive. Manual import remains optional.</p><Link href="/dashboard/account" className="ai-link">Account & current bot controls</Link></div>:<>
+    {localCheck&&!data&&liveState==="connecting"?<div className="ai-empty ai-empty-loading" role="status"><span>◈</span><h2>CONNECTING TO YOUR VPS</h2><p>Loading private scanner observations from the server. No archive upload is required.</p></div>:!data?<div className="ai-empty"><span>◈</span><h2>{liveState==="unavailable"?"PRODUCTION FEED TEMPORARILY UNAVAILABLE":"CONNECTING TO PRODUCTION DATA"}</h2><p>The private snapshot service normally updates every five minutes. Your dashboard will reconnect automatically; historical archive import is optional.</p><button type="button" className="ai-button" onClick={()=>{setLiveState("connecting");setLiveIssue("");setRetryKey(x=>x+1)}}>RETRY CONNECTION</button></div>:<>
      <div className="ai-filter"><span>HISTORICAL PERIOD · PACIFIC TIME</span><div className="ai-date"><label>FROM <input aria-label="Start date" type="date" value={start} min={data.summary.start} max={data.summary.end} onChange={e=>{setStart(e.target.value);setRange("ALL")}}/></label><label>TO <input aria-label="End date" type="date" value={end} min={data.summary.start} max={data.summary.end} onChange={e=>{setEnd(e.target.value);setRange("ALL")}}/></label></div><div className="ai-range">{(["7D","30D","ALL"] as const).map(r=><button className={range===r?"active":""} onClick={()=>selectRange(r)} key={r}>{r}</button>)}</div></div>
      <div className="ai-kpis">
       {[[ "ALERT EVENTS",eventTotal,"Repeats included"],["FIRST MINTS",firstTotal,"First appearances"],["OBSERVED HOURS",hours.length,"Hourly observations"],["PULSE KNOWN",pulseKnown,"Hours with matched state"]].map(([label,value,desc])=><div className="ai-metric" key={label}><span>{label}</span><strong>{fmt(Number(value))}</strong><small>{desc}</small></div>)}
@@ -260,14 +298,14 @@ export default function LaneIntelligenceDashboard(){
      <div className="ai-research-title" id="composition"><h2>DEEP RESEARCH / LANE INTELLIGENCE</h2><p>HISTORICAL + CURRENT · READ-ONLY OBSERVATIONS</p></div>
      <div className="ai-middle">
       <Panel title="DAILY LANE COMPOSITION" detail="REPEATED EVENTS INCLUDED"><div className="ai-composition">{daysSorted.map(d=><div className="ai-composition-row" key={d.date_pt}><span>{d.date_pt.slice(5)}</span><div className="ai-stack">{LANES.map(l=><i key={l} title={`${l}: ${n(d[l])}`} style={{width:`${n(d.all_alerts)?100*n(d[l])/n(d.all_alerts):0}%`,background:COLORS[l]}}/>)}</div><strong>{fmt(n(d.all_alerts))}</strong></div>)}</div></Panel>
-      <Panel id="transitions" title="LANE TRANSITIONS" detail="FULL ARCHIVE" className="ai-transition-panel"><Bars max={Math.max(1,...data.transitions.map(t=>n(t.event_n)))} rows={[...data.transitions].sort((a,b)=>n(b.event_n)-n(a.event_n)).slice(0,12).map(t=>({label:`${t.from_lane} → ${t.to_lane}`,value:n(t.event_n),color:"#c7a56c"}))}/><p className="ai-note">Sequences are observed alert transitions, not independent executable returns.</p></Panel>
+      <Panel id="transitions" title="LANE TRANSITIONS" detail={serverAsOf&&!data.transitions.length?"NOT IN CURRENT SNAPSHOT":"HISTORICAL TRANSITIONS"} className="ai-transition-panel">{serverAsOf&&!data.transitions.length&&<p className="ai-note">Lane-to-lane transitions are not included in the current aggregate feed. This is missing coverage, not zero transitions.</p>}<Bars max={Math.max(1,...data.transitions.map(t=>n(t.event_n)))} rows={[...data.transitions].sort((a,b)=>n(b.event_n)-n(a.event_n)).slice(0,12).map(t=>({label:`${t.from_lane} → ${t.to_lane}`,value:n(t.event_n),color:"#c7a56c"}))}/><p className="ai-note">Sequences are observed alert transitions, not independent executable returns.</p></Panel>
      </div>
      <Panel id="heatmap" title="SESSION ACTIVITY / HEATMAP" detail="PACIFIC TIME" className="ai-heat" ><div className="ai-heat-controls"><label>LANE <select value={hourLane} onChange={e=>setHourLane(e.target.value)}><option value="ALL">ALL LANES</option>{LANES.map(l=><option key={l}>{l}</option>)}</select></label><label>MEASURE <select value={hourMode} onChange={e=>setHourMode(e.target.value)}><option>ALL MESSAGES</option><option>FIRST APPEARANCES</option></select></label></div><div className="ai-heat-scroll"><div className="ai-heat-grid"><div className="ai-heat-label">DAY</div>{Array.from({length:24},(_,h)=><span className="ai-heat-label" key={h}>{String(h).padStart(2,"0")}</span>)}{heat.map((row,i)=><div className="ai-heat-row" key={i}><span className="ai-heat-label">{["SUN","MON","TUE","WED","THU","FRI","SAT"][i]}</span>{row.map((v,h)=><div className="ai-heat-cell" key={h} style={{background:v?`rgba(105,174,226,${Math.max(.11,v/heatMax*.87)})`:"#15191d"}} title={`${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][i]} ${h}:00 PT: ${v.toFixed(2)} per observed hour`}>{v?v.toFixed(v<10?1:0):""}</div>)}</div>)}</div></div><p className="ai-note">Session gates and deployment changes can distort quiet-hour patterns. Empty cells are not zero-market-activity evidence.</p></Panel>
      <div className="ai-middle">
-      <Panel title="PULSE / CONDITIONS" detail="FULL ARCHIVE REGIME GROUPS"><div className="ai-table-wrap"><table><thead><tr><th>REGIME</th><th>HOURS</th><th>EARLY/H</th><th>RECLAIM/H</th><th>RUNNER/H</th></tr></thead><tbody>{data.regimes.map(r=><tr key={r.mode}><td>{r.mode}</td><td>{fmt(r.hours)}</td><td>{r.early_per_hour.toFixed(2)}</td><td>{r.reclaim_per_hour.toFixed(2)}</td><td>{r.runner_per_hour.toFixed(2)}</td></tr>)}</tbody></table></div></Panel>
-      <Panel title="RESEARCH INTEGRITY" detail="CRITICAL QUALIFICATIONS"><p className="ai-integrity">The October 18 v1.08 release notes document qualified-alert suppression during THIN / NEUTRAL sessions. Apparent quiet periods may reflect the session gate, not underlying market activity.</p><p className="ai-note">First-in-export may not mean first-in-public. Elite Telegram links are private. No live quotes, P&amp;L, or predictive backtest claims are implied.</p></Panel>
+      <Panel title="PULSE / CONDITIONS" detail={serverAsOf&&!data.regimes.length?"NOT IN CURRENT SNAPSHOT":"HISTORICAL REGIMES"}>{serverAsOf&&!data.regimes.length&&<p className="ai-note">Regime telemetry has not been joined to these scanner observations. No regime conclusions are implied.</p>}<div className="ai-table-wrap"><table><thead><tr><th>REGIME</th><th>HOURS</th><th>EARLY/H</th><th>RECLAIM/H</th><th>RUNNER/H</th></tr></thead><tbody>{data.regimes.map(r=><tr key={r.mode}><td>{r.mode}</td><td>{fmt(r.hours)}</td><td>{r.early_per_hour.toFixed(2)}</td><td>{r.reclaim_per_hour.toFixed(2)}</td><td>{r.runner_per_hour.toFixed(2)}</td></tr>)}</tbody></table></div></Panel>
+      <Panel title="RESEARCH INTEGRITY" detail="CRITICAL QUALIFICATIONS"><p className="ai-integrity">{serverAsOf?"Current VPS snapshots count recorded scanner/post-send observations; they are not independently verified Telegram deliveries. Token-level lookup, regime matching, and lane transition research are not yet included.":"The October 18 v1.08 release notes document qualified-alert suppression during THIN / NEUTRAL sessions. Apparent quiet periods may reflect the session gate, not underlying market activity."}</p><p className="ai-note">First-in-export may not mean first-in-public. Elite Telegram links are private. No live quotes, P&amp;L, or predictive backtest claims are implied.</p></Panel>
      </div>
-     <Panel id="lookup" title="FIRST-ALERT LOOKUP" detail={`${fmt(firstRows.length)} MATCHES`} className="ai-lookup" ><div className="ai-lookup-controls"><input aria-label="Search token or mint" placeholder="Search ticker or mint address…" value={search} onChange={e=>{setSearch(e.target.value);setExpanded(false)}}/><select value={lookupLane} aria-label="Filter lane" onChange={e=>{setLookupLane(e.target.value);setExpanded(false)}}><option value="ALL">ALL LANES</option>{LANES.map(l=><option key={l}>{l}</option>)}</select></div><div className="ai-table-wrap"><table><thead><tr><th>FIRST SEEN (PT)</th><th>TOKEN</th><th>LANE</th><th>FIRST MC</th><th>MESSAGES</th><th>SOURCE</th></tr></thead><tbody>{selectedRows.map(r=><tr key={r.mint}><td>{r.date}</td><td><div className="ai-token">{r.symbol}</div><small className="ai-mint">{r.mint.slice(0,7)}…{r.mint.slice(-5)}</small></td><td><span className="ai-lane-chip" style={{color:COLORS[r.lane as Lane]||"#bbc3c6"}}>{r.lane}</span></td><td>{formatMoney(r.mc)}</td><td>{r.alerts}</td><td>{trustedTelegram(r.url)?<a target="_blank" rel="noopener noreferrer" href={trustedTelegram(r.url)!}>VIEW ↗</a>:"—"}</td></tr>)}</tbody></table>{!selectedRows.length&&<div className="ai-nodata">No results match your filters.</div>}</div>{firstRows.length>100&&!expanded&&<button className="ai-more" onClick={()=>setExpanded(true)}>SHOW ALL {fmt(firstRows.length)} RESULTS</button>}</Panel>
+     <Panel id="lookup" title="FIRST-ALERT LOOKUP" detail={serverAsOf&&!data.first.length?"TOKEN DETAIL NOT IN AGGREGATES":`${fmt(firstRows.length)} MATCHES`} className="ai-lookup" >{serverAsOf&&!data.first.length&&<p className="ai-note">The automatic feed currently contains daily/hourly totals, not individual token records. This does not mean there were no tokens or alerts.</p>}<div className="ai-lookup-controls"><input aria-label="Search token or mint" placeholder="Search ticker or mint address…" value={search} onChange={e=>{setSearch(e.target.value);setExpanded(false)}}/><select value={lookupLane} aria-label="Filter lane" onChange={e=>{setLookupLane(e.target.value);setExpanded(false)}}><option value="ALL">ALL LANES</option>{LANES.map(l=><option key={l}>{l}</option>)}</select></div><div className="ai-table-wrap"><table><thead><tr><th>FIRST SEEN (PT)</th><th>TOKEN</th><th>LANE</th><th>FIRST MC</th><th>MESSAGES</th><th>SOURCE</th></tr></thead><tbody>{selectedRows.map(r=><tr key={r.mint}><td>{r.date}</td><td><div className="ai-token">{r.symbol}</div><small className="ai-mint">{r.mint.slice(0,7)}…{r.mint.slice(-5)}</small></td><td><span className="ai-lane-chip" style={{color:COLORS[r.lane as Lane]||"#bbc3c6"}}>{r.lane}</span></td><td>{formatMoney(r.mc)}</td><td>{r.alerts}</td><td>{trustedTelegram(r.url)?<a target="_blank" rel="noopener noreferrer" href={trustedTelegram(r.url)!}>VIEW ↗</a>:"—"}</td></tr>)}</tbody></table>{!selectedRows.length&&<div className="ai-nodata">No results match your filters.</div>}</div>{firstRows.length>100&&!expanded&&<button className="ai-more" onClick={()=>setExpanded(true)}>SHOW ALL {fmt(firstRows.length)} RESULTS</button>}</Panel>
     </>}
     <footer className="ai-footer"><span>© FRUXLABS / ALPHA ALERTS · HISTORICAL RESEARCH</span><span>OWNER ACCESS · SCANNER OBSERVATIONS ≠ VERIFIED DELIVERIES · NO FINANCIAL ADVICE</span></footer>
    </main>
