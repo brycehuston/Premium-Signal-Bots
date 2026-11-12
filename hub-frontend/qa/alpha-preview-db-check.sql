@@ -13,6 +13,13 @@ insert into auth.users values
  ('11111111-1111-1111-1111-111111111111'),
  ('22222222-2222-2222-2222-222222222222');
 insert into public.alpha_v4_archive values(1,'{"daily":[{"date_pt":"2025-01-01","all_alerts":12,"first_mints":5,"EARLY":3,"GENESIS":2,"TREND":2,"STRICT":1,"RECLAIM":2,"RUNNER":2},{"date_pt":"2099-01-01","all_alerts":9000,"EARLY":9000}],"first":[{"mint":"SECRET_PRIVATE_TOKEN_ID"}]}'::jsonb);
+-- Recent daily activity is PT-dated; it must not enter a 24h+ preview.
+update public.alpha_v4_archive
+set dataset=jsonb_set(dataset,'{daily}',(dataset->'daily') ||
+ jsonb_build_array(jsonb_build_object(
+  'date_pt',((clock_timestamp() at time zone 'America/Vancouver')::date-1)::text,
+  'all_alerts',777777,'EARLY',777777
+ )));
 \i supabase/migrations/20261112_alpha_lane_preview.sql
 do $$
 begin
@@ -41,7 +48,7 @@ begin
  if d->>'state'<>'active' or jsonb_array_length(d->'daily')<>1 then
   raise exception 'unexpected preview result %',d;
  end if;
- if d::text like '%SECRET_PRIVATE_TOKEN_ID%' or d::text like '%9000%' then
+ if d::text like '%SECRET_PRIVATE_TOKEN_ID%' or d::text like '%9000%' or d::text like '%777777%' then
   raise exception 'private or recent archive data leaked';
  end if;
  if (d->'daily'->0->>'alerts')::integer<>12 then

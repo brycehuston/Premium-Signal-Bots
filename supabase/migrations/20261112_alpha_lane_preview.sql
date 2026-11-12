@@ -56,7 +56,7 @@ begin
    select item from public.alpha_v4_archive a,
     lateral jsonb_array_elements(coalesce(a.dataset->'daily','[]'::jsonb)) item
    where a.id=1 and (item->>'date_pt') ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-    and (item->>'date_pt')::date <= (clock_timestamp() at time zone 'UTC')::date - 2
+    and (item->>'date_pt')::date <= (clock_timestamp() at time zone 'America/Vancouver')::date - 2
    order by item->>'date_pt' desc limit 14
  ) r;
  return jsonb_build_object('state','active','delay_hours_min',24,'daily',records,'expires_at',expiry);
