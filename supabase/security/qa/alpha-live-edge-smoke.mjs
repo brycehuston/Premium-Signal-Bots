@@ -53,6 +53,12 @@ await probe("site-access-route-anonymous", SITE + "/api/intelligence/access", [4
 await probe("site-top-movers-public", SITE + "/api/public/top-movers", [200], {}, body => {
   assert(Array.isArray(body.movers), "Public movers list must be an array");
 });
+await probe("membership-service-health", "https://premium-signal-bots.onrender.com/health", [200], {}, body => {
+  assert.equal(body.status,"ok");
+});
+await probe("membership-service-anonymous", "https://premium-signal-bots.onrender.com/me", [401,403], {}, body => {
+  assert(body.detail !== undefined || body.state !== "ready", "Unauthenticated /me must be denied");
+});
 
 console.log(JSON.stringify({ run: "alpha-edge-production-smoke", results }, null, 2));
 if (results.some(row => !row.pass)) process.exitCode = 1;
