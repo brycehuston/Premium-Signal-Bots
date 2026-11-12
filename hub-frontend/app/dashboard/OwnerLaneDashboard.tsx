@@ -123,7 +123,12 @@ export default function LaneIntelligenceDashboard(){
     remotelyLoaded.current=true;
     const v=report.dataset as Archive;
     setData(v);setImportName("OWNER / AUTOMATIC VPS AGGREGATES");
-    if(firstConnection){setStart(v.summary.start);setEnd(v.summary.end);setRange("7D");}
+    if(firstConnection){
+     const from=new Date(v.summary.end+"T12:00:00Z");
+     from.setUTCDate(from.getUTCDate()-6);
+     setStart(from.toISOString().slice(0,10)<v.summary.start?v.summary.start:from.toISOString().slice(0,10));
+     setEnd(v.summary.end);setRange("7D");
+    }
     setStoredOnDevice(false);
     setServerAsOf(typeof report.as_of_utc==="string"?report.as_of_utc:null);
     setLiveIssue("");setLiveState("current");setError("");setLocalCheck(false);
