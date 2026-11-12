@@ -1,7 +1,8 @@
+import { authorizePrivateTier } from "./tier-auth.ts";
 // Private Alpha Alerts intelligence gateway; pubic view intentionally fail-closed.
 const URL_=Deno.env.get("SUPABASE_URL")||"", KEY=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
 const PUB="f1c11839ae78d92f8dcd0b228aff18120423d8ff6199f0a2e247f2d8057027e0";
-const SHA="6dfd39df0db8a64cf15a5e4806a99edbd6d474538f581845aee54d93514631af";
+const SHA="8bcde2636e21a3c31ad9ee83ec300261038a49f957e6593e22af2b6516018c9c";
 const JSON_HEADERS={"Content-Type":"application/json","Cache-Control":"private, no-store, max-age=0","X-Content-Type-Options":"nosniff"};
 const reply=(v:unknown,status=200)=>new Response(JSON.stringify(v),{status,headers:JSON_HEADERS});
 const bytes=(s:string)=>Uint8Array.from(s.match(/.{2}/g)??[],x=>parseInt(x,16));
@@ -85,7 +86,7 @@ async function ingest(req:Request) {
  const r=await db("alpha_intelligence_snapshot?on_conflict=id",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify(row)});
  return r.ok?reply({state:"accepted",accepted:true,as_of_utc:v.as_of_utc}):reply({state:"storage_unavailable"},503);
 }
-async function read(req:Request,view:string) {
+async function read(req:Request,view:"owner"|"subscriber") {
  const credential=req.headers.get("x-alpha-gateway")||"";
  if(!/^[0-9a-f]{64}$/.test(credential))return reply({state:"forbidden"},403);
  const auth=await db("alpha_intelligence_gateway?select=token_sha256&id=eq.1&limit=1");if(!auth.ok)return reply({state:"unavailable"},503);
@@ -94,7 +95,10 @@ async function read(req:Request,view:string) {
  if(!/^Bearer [A-Za-z0-9._~+\/=-]{24,8192}$/.test(bearer)||req.headers.get("x-alpha-tier")!==view)return reply({state:"forbidden"},403);
  const user=await fetch(URL_+"/auth/v1/user",{headers:{apikey:KEY,Authorization:bearer},cache:"no-store",redirect:"error",signal:AbortSignal.timeout(5500)});
  if(!user.ok)return reply({state:"unauthorized"},401);
- const id=(await user.json()).id;if(typeof id!=="string"||!/^[0-9a-f-]{36}$/.test(id))return reply({state:"unauthorized"},401);
+ const identity=await user.json();const id=identity?.id;
+ if(typeof id!=="string"||!/^[0-9a-f-]{36}$/.test(id))return reply({state:"unauthorized"},401);
+ const decision=await authorizePrivateTier(view,{id,email:typeof identity?.email==="string"?identity.email:null},bearer,db,fetch,Deno.env.get("ALPHA_MEMBERSHIP_API_BASE")||"");
+ if(decision!=="allowed")return reply({state:decision},decision==="forbidden"?403:503);
  const state=await db("alpha_intelligence_snapshot?select=captured_at,owner_dataset,subscriber_report&id=eq.1&limit=1");
  if(!state.ok)return reply({state:"unavailable"},503);
  const records=await state.json();if(!records.length)return reply({state:"unavailable"},503);
