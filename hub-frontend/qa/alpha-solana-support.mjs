@@ -16,7 +16,10 @@ try{
    assert.equal(response?.status(),200);
    const toggle=page.getByRole("button",{name:/SUPPORT WITH SOL OR USDC/i});
    await toggle.waitFor({timeout:15000});
+   // Wait for React event handlers after server-rendered HTML becomes visible.
+   await page.waitForTimeout(1000);
    await toggle.click();
+   await page.waitForFunction(() => document.querySelector('[aria-controls="crypto-support-details"]')?.getAttribute("aria-expanded")==="true",{timeout:5000});
    const detail=page.locator("#crypto-support-details");
    await detail.getByText(address,{exact:true}).waitFor();
    const usdc=detail.getByRole("button",{name:"USDC",exact:true});

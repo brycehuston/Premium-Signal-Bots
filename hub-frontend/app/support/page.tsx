@@ -18,7 +18,7 @@ const STRIPE_URLS: Record<Amount, string> = {
 const STRIPE_CUSTOM_URL = process.env.NEXT_PUBLIC_SUPPORT_STRIPE_CUSTOM_URL ?? "";
 // Public Solana receiving address supplied for native SOL and Solana-network USDC.
 // The existing crypto feature flag prevents unintended payment activation.
-const SOLANA_ADDRESS = (process.env.NEXT_PUBLIC_SUPPORT_SOLANA_ADDRESS ?? "EmZrEA6awqWqo5pzbwX3ZRpyE9sNT42LZ6LBvU6bM4M5").trim();
+const SOLANA_ADDRESS = (process.env.NEXT_PUBLIC_SUPPORT_SOLANA_ADDRESS?.trim() || "EmZrEA6awqWqo5pzbwX3ZRpyE9sNT42LZ6LBvU6bM4M5");
 const AMOUNTS: readonly { value: Amount; name: string }[] = [
   { value: 3, name: "A SIP" },
   { value: 5, name: "A BEER" },
