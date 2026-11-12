@@ -59,8 +59,8 @@ begin
   raise exception 'cross-account preview row created';
  end if;
  update public.alpha_lane_flow_previews
- set started_at=clock_timestamp()-interval '11 minutes',
-     expires_at=clock_timestamp()-interval '1 minute'
+ set started_at=expired.ts,expires_at=expired.ts+interval '10 minutes'
+ from (select clock_timestamp()-interval '11 minutes' as ts) expired
  where user_id='11111111-1111-1111-1111-111111111111';
 end $$;
 set role authenticated;
