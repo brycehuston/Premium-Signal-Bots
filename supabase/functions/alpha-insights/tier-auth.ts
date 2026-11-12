@@ -14,8 +14,9 @@ function memberOrigin(raw: string): string | null {
     const url = new URL(raw);
     // This is trusted deployment configuration, never an incoming request URL.
     if (url.protocol !== "https:" || !url.hostname || url.username || url.password ||
-        url.pathname !== "/" || url.search || url.hash) return null;
-    return url.origin;
+        url.search || url.hash) return null;
+    // Match the Next.js membership base: optional trusted path prefix + /me.
+    return url.origin + (url.pathname === "/" ? "" : url.pathname.replace(/\/$/, ""));
   } catch { return null; }
 }
 
