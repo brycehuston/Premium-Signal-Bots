@@ -1,0 +1,37 @@
+name: Alpha Preview Database Security QA
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20261112_alpha_lane_preview.sql"
+      - "hub-frontend/qa/alpha-preview-db-check.sql"
+      - ".github/workflows/alpha-preview-security-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview-sql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+      - name: Verify RLS, atomic one-time activation, expiry and aggregate-only boundary
+        env:
+          PGURL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+        run: psql "$PGURL" -v ON_ERROR_STOP=1 -f hub-frontend/qa/alpha-preview-db-check.sql
