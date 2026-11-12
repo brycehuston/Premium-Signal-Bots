@@ -37,8 +37,13 @@ test('subscriber status 401/403 forbidden, 5xx/timeout unavailable',async()=>{
  assert.equal(await run('subscriber',member,db,async()=>json({},503)),'unavailable');
  assert.equal(await run('subscriber',member,db,async()=>{throw Error('offline')}),'unavailable');
 });
+test('trusted membership API path prefix is honored',async()=>{
+ assert.equal(await run('subscriber',member,db,async(url)=>{
+  assert.equal(url,origin+'/api/v1/me');return json(profile);
+ },origin+'/api/v1'),'allowed');
+});
 test('malformed/missing configured backend URL fails closed',async()=>{
- for(const base of ['', 'http://membership.example.test','https://membership.example.test/redirect', 'https://a@example.test', 'not a url']) {
+ for(const base of ['', 'http://membership.example.test','https://a@example.test', 'not a url']) {
   assert.equal(await run('subscriber',member,db,backend,base),'unavailable');
  }
 });
