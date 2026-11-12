@@ -14,8 +14,15 @@ for (const width of widths) {
     const errors = [];
     page.on("pageerror", e=>errors.push(e.message));
     try {
+      await page.route("https://test.supabase.co/**",async request=>{
+        if(request.request().url().includes("/auth/v1/user"))await request.fulfill({status:401,contentType:"application/json",body:'{"message":"not authenticated"}'});
+        else await request.fulfill({status:200,contentType:"application/json",body:'{}'});
+      });
       const response = await page.goto(origin+route,{waitUntil:"domcontentloaded",timeout:30000});
       await page.evaluate(async()=>{await document.fonts.ready});
+      if(route==="/login")await page.getByRole("heading",{name:"Sign in",exact:true}).waitFor({state:"visible",timeout:15000});
+      if(route==="/dashboard")await page.getByRole("heading",{name:"SIGN IN REQUIRED",exact:true}).waitFor({state:"visible",timeout:15000});
+      if(route==="/")await page.locator("h1").first().waitFor({state:"visible",timeout:15000});
       if(route==="/pricing"){
         await page.locator("#plans").scrollIntoViewIfNeeded({timeout:12000});
         await page.waitForFunction(()=>{const node=document.querySelector("#plans > :first-child");return !!node&&node.getBoundingClientRect().width>100},{timeout:12000});
@@ -24,7 +31,7 @@ for (const width of widths) {
         const mover=page.locator("[data-alpha-mover-symbol]").first();
         if(await mover.count())await mover.scrollIntoViewIfNeeded({timeout:12000});
       }
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(route==="/"?1600:450);
       const metrics = await page.evaluate(()=>{
         const rect = node=>{if(!node)return null;const r=node.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height),right:Math.round(r.right)}};
         const cards = Array.from(document.querySelector("#plans")?.children||[]).slice(0,6);
