@@ -66,6 +66,10 @@ jobs:
         run: node qa/alpha-hero-rhythm.mjs
       - name: Verify cohesive Top 3 frame, spacing, readable cards and responsive layouts
         run: node qa/alpha-top3-panel.mjs
+      - name: Verify approved pricing cards, Alpha-X statuses and account auth gate at eight widths
+        run: node qa/alpha-levelup-acceptance.mjs
+        env:
+          BASE_URL: http://127.0.0.1:3000
       - name: Store viewport screenshots and results
         if: always()
         uses: actions/upload-artifact@v4
