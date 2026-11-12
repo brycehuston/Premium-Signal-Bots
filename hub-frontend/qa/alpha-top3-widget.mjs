@@ -21,7 +21,7 @@ try {
     const response=await page.goto(origin+"/",{waitUntil:"domcontentloaded",timeout:45000});
     assert.equal(response.status(),200);
     const widget=page.locator('section[aria-label="Alpha Alerts top movers"]');
-    await widget.getByText("2.43×",{exact:true}).waitFor({timeout:12000});
+    await widget.locator('div[aria-label="Ranked market-cap movers"] > button').first().getByText("2.43×",{exact:true}).waitFor({timeout:12000});
     await widget.scrollIntoViewIfNeeded();
     const cards=widget.locator('div[aria-label="Ranked market-cap movers"] > button');
     assert.equal(await cards.count(),3);
@@ -62,7 +62,7 @@ try {
     if(state==="historical"){
       await widget.getByText("Latest verified ranking",{exact:true}).waitFor({timeout:12000});
       assert((await widget.innerText()).includes("As of"),"Historical date is not disclosed");
-      await widget.getByText("2.43×",{exact:true}).waitFor({timeout:3000});
+      await widget.locator('div[aria-label="Ranked market-cap movers"] > button').first().getByText("2.43×",{exact:true}).waitFor({timeout:3000});
     }else{
       await widget.getByText("Observed market-cap peaks",{exact:true}).waitFor({timeout:12000});
       assert(!(await widget.innerText()).includes("2.43×"),"Fake gain displayed on outage");
