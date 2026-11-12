@@ -25,7 +25,7 @@ function parseMover(raw:unknown,now:number):Mover|null{
 export async function GET(){
   const now=Date.now();
   const unavailable={state:"unavailable",window:"24h",as_of_utc:new Date(now).toISOString(),
-    movers:[],note:"Awaiting verified public alert outcomes; historical fallback requires independently verified records."};
+    movers:[],note:"Awaiting corroborated bot-delivered call and observed peak records."};
   const origin=process.env.NEXT_PUBLIC_SUPABASE_URL;
   if(!origin||!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(origin))
     return NextResponse.json(unavailable,{headers});
@@ -38,7 +38,7 @@ export async function GET(){
     // A historical result must be a verified, dated prior ranking, never silently labelled "24H".
     const historical=value?.window==="historical"&&value?.state==="verified";
     const current=value?.window==="24h"&&value?.state==="verified";
-    if((!historical&&!current)||value.delivery_independently_verified!==true||value.outcomes_verified!==true)
+    if((!historical&&!current)||value.telegram_delivery_confirmed!==true||value.observed_peaks_corroborated!==true)
       return NextResponse.json(unavailable,{headers});
     const reference=Date.parse(String(value.reference_time_utc??value.as_of_utc??""));
     if(!Number.isFinite(reference)||reference>now||now-reference>MAX_HISTORY_AGE_MS||
@@ -49,7 +49,7 @@ export async function GET(){
       .filter((item:Mover)=>current?now-Date.parse(item.called_at_utc)<=24*60*60*1000:
         Date.parse(item.called_at_utc)<=reference)
       .sort((a:Mover,b:Mover)=>b.multiple-a.multiple||b.peak_mc-a.peak_mc)
-      .filter((item:Mover)=>{const tokenKey=item.symbol.toLowerCase();if(distinct.has(tokenKey))return false;distinct.add(tokenKey);return true})
+      .filter((item:Mover)=>{const tokenKey=item.id;if(distinct.has(tokenKey))return false;distinct.add(tokenKey);return true})
       .slice(0,3);
     if(!movers.length)return NextResponse.json({...unavailable,state:"empty"}, {headers});
     return NextResponse.json({state:historical?"historical":"verified",
