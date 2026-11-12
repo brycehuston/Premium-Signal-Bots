@@ -17,6 +17,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion
 import { Badge, Button, Card, CardBody, SectionHeading } from "@/components/ui";
 import { api } from "@/lib/api";
 import { track } from "@/lib/analytics";
+import HistoryDashboardHome from "@/components/HistoryDashboardHome";
 
 /* ---------- Types ---------- */
 type SignalKey = "alpha_early" | "alpha_trend" | "alpha_runner";
@@ -363,7 +364,7 @@ export default function Dashboard() {
   }, [activeSignal, me]);
 
   if (loading) return <div className="text-muted">Loading...</div>;
-  if (!me) return <div className="text-red-400">Not Authorized</div>;
+  if (!me) return session ? <HistoryDashboardHome standalone /> : <div className="text-red-400">Sign in required. <a href="/login" className="text-gold">Log in</a></div>;
 
   // entitlement/tier logic
   const entSet = new Set<SignalKey>(me.entitlements ?? []);
@@ -379,6 +380,7 @@ export default function Dashboard() {
   return (
     <div className="relative -mt-6 space-y-6 md:-mt-8 md:space-y-8">
       <h1 className="sr-only">Dashboard</h1>
+      <HistoryDashboardHome />
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-24 right-6 h-64 w-64 rounded-full bg-gold/12 blur-[140px]" />
         <div className="absolute top-[35%] -left-10 h-64 w-64 rounded-full bg-silver/10 blur-[150px]" />
