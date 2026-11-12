@@ -68,6 +68,11 @@ for(const width of [390,1440]) {
     await page.getByRole("button",{name:"RETRY LIVE SYNC"}).click();
   }
   await page.getByText("AUTO SYNC ACTIVE",{exact:true}).waitFor({timeout:16000});
+  const brand=page.locator(".ai-brand-link");
+  const logo=brand.locator('img[src="/alpha-lane-v4-logo.png"]');
+  if(await logo.count()!==1||!await logo.isVisible())throw new Error("Lane Flow logo is missing");
+  if(!/ALPHA\s+ALERTS/.test(await brand.innerText()))throw new Error("Lane Flow brand wordmark mismatch");
+
   if(apiCalls<1)throw new Error("owner API was not requested");
   const snapshotVisible=await page.getByText("LIVE DATA CONNECTED",{exact:true}).isVisible();
   if(!snapshotVisible)throw new Error("verified owner live data status missing");
