@@ -63,14 +63,14 @@ for(const width of [390,1440]) {
   const response=await page.goto(origin+"/dashboard/intelligence",{waitUntil:"domcontentloaded",timeout:25000});
   if(response?.status()!==200)throw new Error("dashboard HTTP "+response?.status());
   if(width===390){
-    await page.getByText("FEED UNAVAILABLE",{exact:true}).waitFor({timeout:12000});
+    await page.getByText("LIVE FEED OFFLINE",{exact:true}).waitFor({timeout:12000});
     allowLive=true;
-    await page.getByRole("button",{name:"RETRY LIVE CONNECTION"}).click();
+    await page.getByRole("button",{name:"RETRY LIVE SYNC"}).click();
   }
   await page.getByText("AUTO SYNC ACTIVE",{exact:true}).waitFor({timeout:16000});
   if(apiCalls<1)throw new Error("owner API was not requested");
-  const snapshotVisible=await page.getByText("PRODUCTION VPS · AUTOMATIC SYNC",{exact:true}).isVisible();
-  if(!snapshotVisible)throw new Error("production source header missing");
+  const snapshotVisible=await page.getByText("LIVE DATA CONNECTED",{exact:true}).isVisible();
+  if(!snapshotVisible)throw new Error("verified owner live data status missing");
   const archive=page.getByText("OLDER ARCHIVE · OPTIONAL",{exact:true});
   if(!(await archive.isVisible()))throw new Error("optional archive drawer missing");
   if(await page.getByRole("button",{name:"IMPORT HISTORICAL FILE"}).isVisible())throw new Error("archive upload unexpectedly prominent");
