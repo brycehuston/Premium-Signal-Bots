@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSupabase } from "@/components/SupabaseProvider";
 import "./intelligence.css";
 import { forgetLaneArchive, readSavedLaneArchive, saveLaneArchive } from "./localArchive";
@@ -290,8 +291,11 @@ export default function LaneIntelligenceDashboard(){
    <div className="ai-top">
     <div className="ai-top-inner">
      <Link href="/" className="ai-brand-link" aria-label="Alpha Alerts homepage">
-      <div className="ai-wordmark">ALPHA <span>ALERTS</span></div>
-      <div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div>
+      <Image src="/alpha-lane-v4-logo.png" alt="" width={38} height={40} className="ai-brand-logo" unoptimized priority />
+      <span className="ai-brand-copy">
+       <span className="ai-wordmark">ALPHA <span>ALERTS</span></span>
+       <span className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</span>
+      </span>
      </Link>
      <nav className="ai-top-actions" aria-label="Owner account">
       <span className="ai-historical">OWNER</span>

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import {useCallback,useEffect,useState} from "react";
 import {useSupabase} from "@/components/SupabaseProvider";
 import {ALPHA_LANES} from "@/lib/plans";
@@ -86,7 +87,12 @@ export default function AlphaCommand(){
  const peak=Math.max(1,...filtered.map(d=>d.value));
  return <main className="mx-auto max-w-[1152px] space-y-6 py-8 text-[#eeeff1] sm:py-11">
   <header className="rounded-[16px] border border-[#4b4235] bg-[linear-gradient(145deg,#1b1b1b,#101115_65%)] p-5 sm:p-8">
-   <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] font-bold tracking-[.26em] text-[#e7bc67]">ALPHA ALERTS / ACCOUNT</p><button type="button" onClick={()=>void signOut()} className="min-h-11 rounded-lg border border-[#424348] px-4 text-xs text-[#c4c7cc] hover:border-[#e7bc67]">SIGN OUT</button></div>
+   <div className="flex flex-wrap items-center justify-between gap-3">
+    <Link href="/" aria-label="Alpha Alerts homepage" className="inline-flex min-w-0 items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e7bc67]">
+     <Image src="/alpha-lane-v4-logo.png" alt="" width={38} height={40} className="h-[39px] w-[38px] shrink-0 object-contain" unoptimized priority />
+     <span className="font-display whitespace-nowrap text-[15px] font-bold tracking-[.15em] text-[#e1e3e6] sm:text-[17px]">ALPHA <span className="text-[#e7bc67]">ALERTS</span></span>
+    </Link>
+    <button type="button" onClick={()=>void signOut()} className="min-h-11 rounded-lg border border-[#424348] px-4 text-xs text-[#c4c7cc] hover:border-[#e7bc67]">SIGN OUT</button></div>
    <h1 className="mt-5 font-display text-[clamp(30px,5vw,52px)] font-semibold tracking-[-.045em]">ALPHA <span className="text-[#e7bc67]">COMMAND</span></h1>
    <p className="mt-2 break-all text-[13px] text-[#bac0ca]">{session.user.email||"Verified signed-in account"}</p>
    <div className="mt-7 grid gap-3 sm:grid-cols-3">
