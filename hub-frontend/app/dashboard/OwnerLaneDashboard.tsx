@@ -39,6 +39,24 @@ function validArchive(data:unknown):data is Archive {
  v.regimes.every(x=>typeof x.mode==="string"&&count(x.hours)&&count(x.early_per_hour)&&count(x.reclaim_per_hour)&&count(x.runner_per_hour))&&
  v.transitions.every(x=>typeof x.from_lane==="string"&&typeof x.to_lane==="string"&&count(x.event_n));
 }
+function combinePrivateHistory(base:Archive|null,live:Archive|null):Archive|null{
+ if(!base)return live;if(!live)return base;
+ const dates=new Set(base.daily.map(d=>d.date_pt));
+ const firstMints=new Set(base.first.map(f=>f.mint));
+ return {
+  daily:[...base.daily,...live.daily.filter(d=>!dates.has(d.date_pt))].sort((a,b)=>a.date_pt.localeCompare(b.date_pt)),
+  hourly:[...base.hourly,...live.hourly.filter(h=>!dates.has(h.date_pt))].sort((a,b)=>a.date_pt.localeCompare(b.date_pt)||a.clock_hour_pt-b.clock_hour_pt),
+  first:[...base.first,...live.first.filter(f=>!firstMints.has(f.mint))],
+  regimes:base.regimes,transitions:base.transitions,
+  summary:{start:base.summary.start<live.summary.start?base.summary.start:live.summary.start,
+    end:base.summary.end>live.summary.end?base.summary.end,
+    messages:base.summary.messages+live.summary.messages,
+    lane:base.summary.lane+live.summary.lane,
+    mint:base.summary.mint+live.summary.mint,
+    heartbeat:base.summary.heartbeat+live.summary.heartbeat,
+    pulse:base.summary.pulse+live.summary.pulse}
+ };
+}
 function Panel({title,detail,children,className="",id}:{title:string;detail?:string;children:React.ReactNode;className?:string;id?:string}){
  return <section id={id} className={"ai-panel "+className}><div className="ai-panel-head"><h2>{title}</h2>{detail&&<span>{detail}</span>}</div>{children}</section>;
 }
@@ -62,6 +80,11 @@ export default function LaneIntelligenceDashboard(){
  const accountId=session?.user?.id;
  const archiveVersion=useRef(0);
  const remotelyLoaded=useRef(false);
+ const archiveBaselineRef=useRef<Archive|null>(null);
+ const liveDatasetRef=useRef<Archive|null>(null);
+ const [historyLoaded,setHistoryLoaded]=useState(false);
+ const [historyIssue,setHistoryIssue]=useState("");
+ const [historyRetry,setHistoryRetry]=useState(0);
  const [serverAsOf,setServerAsOf]=useState<string|null>(null);
  const [liveState,setLiveState]=useState<"connecting"|"current"|"reconnecting"|"unavailable">("connecting");
  const [liveIssue,setLiveIssue]=useState("");
@@ -74,7 +97,7 @@ export default function LaneIntelligenceDashboard(){
   setLocalCheck(true);
   void readSavedLaneArchive(accountId).then(saved=>{
    if(version!==archiveVersion.current)return;
-   if(saved && validArchive(saved.archive)&&!remotelyLoaded.current){
+   if(saved && validArchive(saved.archive)&&!remotelyLoaded.current&&!archiveBaselineRef.current){
     const archive=saved.archive;
     setData(archive);setImportName(saved.name);
     setStart(archive.summary.start);setEnd(archive.summary.end);setRange("ALL");
@@ -87,6 +110,33 @@ export default function LaneIntelligenceDashboard(){
   }).finally(()=>{if(version===archiveVersion.current)setLocalCheck(false)});
   return ()=>{archiveVersion.current++};
  },[accountId]);
+
+ // Automatically retrieve historical V4 records from owner-only private storage.
+ useEffect(()=>{
+  const token=session?.access_token;
+  if(!token){archiveBaselineRef.current=null;setHistoryLoaded(false);return;}
+  let alive=true;const controller=new AbortController();
+  void (async()=>{
+   try{
+    const response=await fetch("/api/intelligence/archive",{headers:{Authorization:"Bearer "+token},cache:"no-store",signal:controller.signal});
+    if(!response.ok)throw new Error("history_fetch_failed");
+    const report=await response.json();
+    if(!alive||controller.signal.aborted)return;
+    if(report.state!=="ready"||report.tier!=="owner"||!validArchive(report.dataset))throw new Error("invalid_history");
+    archiveBaselineRef.current=report.dataset as Archive;
+    setHistoryLoaded(true);setHistoryIssue("");
+    const merged=combinePrivateHistory(archiveBaselineRef.current,liveDatasetRef.current);
+    if(merged){
+     setData(merged);setImportName("V4 PRIVATE HISTORY + AUTOMATIC VPS DATA");
+     if(!liveDatasetRef.current){setStart(merged.summary.start);setEnd(merged.summary.end);setRange("ALL");}
+    }
+    setLocalCheck(false);
+   }catch{
+    if(alive&&!controller.signal.aborted)setHistoryIssue("Private V4 history is temporarily unavailable. Live scanner data can continue loading.");
+   }
+  })();
+  return()=>{alive=false;controller.abort()};
+ },[session?.access_token,historyRetry]);
 
  // Authenticated owner data is supplied automatically by the VPS/Supabase pipeline.
  // IndexedDB and manual imports remain optional historical fallbacks, never uploaded.
@@ -122,7 +172,9 @@ export default function LaneIntelligenceDashboard(){
     const firstConnection=!remotelyLoaded.current;
     remotelyLoaded.current=true;
     const v=report.dataset as Archive;
-    setData(v);setImportName("OWNER / AUTOMATIC VPS AGGREGATES");
+    liveDatasetRef.current=v;
+    setData(combinePrivateHistory(archiveBaselineRef.current,v));
+    setImportName(archiveBaselineRef.current?"V4 HISTORY + AUTOMATIC VPS AGGREGATES":"OWNER / AUTOMATIC VPS AGGREGATES");
     if(firstConnection){
      const from=new Date(v.summary.end+"T12:00:00Z");
      from.setUTCDate(from.getUTCDate()-6);
@@ -245,19 +297,19 @@ export default function LaneIntelligenceDashboard(){
    <div className="ai-top">
     <div className="ai-top-inner">
      <div><div className="ai-wordmark">ALPHA <span>ALERTS</span></div><div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div></div>
-     <div className="ai-top-actions"><span className="ai-historical">{serverAsOf?"OWNER · CURRENT SCANNER LOG":"HISTORICAL · LOCAL ARCHIVE"}</span><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></div>
+     <div className="ai-top-actions"><span className="ai-historical">{serverAsOf?(historyLoaded?"OWNER · HISTORICAL + LIVE":"OWNER · CURRENT SCANNER LOG"):historyLoaded?"OWNER · PRIVATE V4 HISTORY":"HISTORICAL · LOCAL ARCHIVE"}</span><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></div>
     </div>
    </div>
    <main className="ai-main" id="overview">
-    <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Private scanner activity from your VPS. New verified aggregate snapshots are checked every five minutes; counts are observations, not confirmed Telegram deliveries.</p></div><div className="ai-badge">{serverAsOf?(liveState==="current"?"AUTO SYNC ACTIVE":"RECONNECTING"):liveState==="unavailable"?"FEED UNAVAILABLE":data?"LOCAL HISTORY":"CONNECTING TO VPS"}</div></div>
+    <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Private scanner activity from your VPS. New verified aggregate snapshots are checked every five minutes; counts are observations, not confirmed Telegram deliveries.</p></div><div className="ai-badge">{serverAsOf?(liveState==="current"?"AUTO SYNC ACTIVE":"RECONNECTING"):historyLoaded?"HISTORY CONNECTED":liveState==="unavailable"?"FEED UNAVAILABLE":data?"LOCAL HISTORY":"CONNECTING TO VPS"}</div></div>
     <div className="ai-import">
-     <div><strong>{serverAsOf?"PRODUCTION VPS · AUTOMATIC SYNC":"PRIVATE OWNER DATA SOURCE"}</strong><p>{serverAsOf
+     <div><strong>{historyLoaded?"V4 HISTORY STORED PRIVATELY · VPS AUTO SYNC":serverAsOf?"PRODUCTION VPS · AUTOMATIC SYNC":"CONNECTING TO YOUR PRIVATE HISTORY"}</strong><p>{serverAsOf
       ?`Connected · ${data?.summary.start??"—"} to ${data?.summary.end??"—"} · refreshes every five minutes. No uploads required.`
       :data?`Showing optional local history · ${data.summary.start} to ${data.summary.end}. Automatic VPS connection remains the primary source.`
        :"Connecting to the existing production snapshot. You do not need to upload an archive."}</p></div>
      <div className="ai-import-actions">
       {liveState!=="current"&&<button type="button" className="ai-button" onClick={()=>{setLiveState("connecting");setLiveIssue("");setRetryKey(x=>x+1)}}>RETRY LIVE CONNECTION</button>}
-      <details className="max-w-full">
+      {!historyLoaded&&liveState==="unavailable"&&<details className="max-w-full">
        <summary className="cursor-pointer rounded-lg border border-[#51535a] px-3 py-2 text-[10px] font-bold tracking-[.12em] text-[#c5ad83]">OLDER ARCHIVE · OPTIONAL</summary>
        <div className="mt-3 flex flex-wrap items-center gap-2">
         {data&&!serverAsOf&&<button type="button" className="ai-save-button" onClick={()=>void(storedOnDevice?forgetCurrentArchive():saveCurrentArchive())} disabled={storageBusy||localCheck} title="The archive stays on this browser only; it is never uploaded.">
@@ -265,14 +317,15 @@ export default function LaneIntelligenceDashboard(){
         </button>}
         <button type="button" className="ai-button" onClick={()=>archiveFileRef.current?.click()}>IMPORT HISTORICAL FILE</button>
        </div>
-      </details>
+      </details>}
       <input ref={archiveFileRef} type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} hidden tabIndex={-1}/>
      </div>
     </div>
     {serverAsOf&&<div role="status" className="ai-local-note">PRIVATE OWNER FEED · {liveState==="current"?"CONNECTED":"RECONNECTING"} · LATEST SNAPSHOT {new Date(serverAsOf).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"})}. Counts are scanner-recorded, not verified deliveries or P&amp;L.</div>}
     {liveIssue&&<p className="ai-local-note" role="status">{liveIssue}</p>}
+    {historyIssue&&<p className="ai-local-note" role="status">{historyIssue} <button type="button" className="ai-text-button" onClick={()=>setHistoryRetry(x=>x+1)}>RETRY HISTORY</button></p>}
     {error&&<p className="ai-error" role="alert">{error}</p>}
-    {data&&!serverAsOf&&<p className="ai-local-note" role="status">
+    {data&&!serverAsOf&&!historyLoaded&&<p className="ai-local-note" role="status">
      {storedOnDevice?"Showing a historical archive saved privately on this browser.":"Showing a local historical archive in memory only."} The production feed will replace it when the connection is restored. No local archive is uploaded.
     </p>}
     {localCheck&&!data&&liveState==="connecting"?<div className="ai-empty ai-empty-loading" role="status"><span>◈</span><h2>CONNECTING TO YOUR VPS</h2><p>Loading private scanner observations from the server. No archive upload is required.</p></div>:!data?<div className="ai-empty"><span>◈</span><h2>{liveState==="unavailable"?"PRODUCTION FEED TEMPORARILY UNAVAILABLE":"CONNECTING TO PRODUCTION DATA"}</h2><p>The private snapshot service normally updates every five minutes. Your dashboard will reconnect automatically; historical archive import is optional.</p><button type="button" className="ai-button" onClick={()=>{setLiveState("connecting");setLiveIssue("");setRetryKey(x=>x+1)}}>RETRY CONNECTION</button></div>:<>
