@@ -286,29 +286,43 @@ export default function LaneIntelligenceDashboard(){
  if(authLoading)return <div className="ai-status">Checking your session…</div>;
  if(!session)return <div className="ai-status"><h1>SIGN IN REQUIRED</h1><p>Lane Flow Intelligence is a signed-in workspace.</p><Link href="/login" className="ai-button">SIGN IN</Link></div>;
  return <div className="ai-shell">
-  <aside className="ai-rail" aria-label="Lane intelligence navigation">
-   <Link href="/" className="ai-rail-mark" title="Alpha Alerts home"><span className="font-display text-2xl font-bold text-[#e3be7b]" aria-label="Alpha Alerts">A</span></Link>
-   <a href="#overview" title="Overview">◫</a><a href="#composition" title="Lane composition">▥</a>
-   <a href="#transitions" title="Transitions">⇄</a><a href="#heatmap" title="Heatmap">▦</a>
-   <a href="#lookup" title="First-alert lookup">⌕</a>
-   <Link href="/dashboard/account" className="ai-rail-account" title="Account & bot controls">⚙</Link>
-  </aside>
   <div className="ai-workspace">
    <div className="ai-top">
     <div className="ai-top-inner">
-     <div><div className="ai-wordmark">ALPHA <span>ALERTS</span></div><div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div></div>
-     <div className="ai-top-actions"><span className="ai-historical">{serverAsOf?(historyLoaded?"OWNER · HISTORICAL + LIVE":"OWNER · CURRENT SCANNER LOG"):historyLoaded?"OWNER · PRIVATE V4 HISTORY":"HISTORICAL · LOCAL ARCHIVE"}</span><Link href="/dashboard/account" className="ai-link">ACCOUNT</Link><button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button></div>
+     <Link href="/" className="ai-brand-link" aria-label="Alpha Alerts homepage">
+      <div className="ai-wordmark">ALPHA <span>ALERTS</span></div>
+      <div className="ai-overline">FRUXLABS / RESEARCH INTELLIGENCE</div>
+     </Link>
+     <nav className="ai-top-actions" aria-label="Owner account">
+      <span className="ai-historical">OWNER</span>
+      <span aria-hidden="true" className="ai-top-separator">·</span>
+      <Link href="/dashboard/account" className="ai-link">ACCOUNT</Link>
+      <span aria-hidden="true" className="ai-top-separator">·</span>
+      <button onClick={()=>void signOut()} className="ai-text-button">SIGN OUT</button>
+     </nav>
     </div>
    </div>
    <main className="ai-main" id="overview">
-    <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Private scanner activity from your VPS. New verified aggregate snapshots are checked every five minutes; counts are observations, not confirmed Telegram deliveries.</p></div><div className="ai-badge">{serverAsOf?(liveState==="current"?"AUTO SYNC ACTIVE":"RECONNECTING"):historyLoaded?"HISTORY CONNECTED":liveState==="unavailable"?"FEED UNAVAILABLE":data?"LOCAL HISTORY":"CONNECTING TO VPS"}</div></div>
+    <div className="ai-title-row">
+     <div>
+      <div className="ai-kicker">ALPHA / LANE ANALYTICS</div>
+      <h1>LANE FLOW INTELLIGENCE</h1>
+      <p>Private scanner activity, refreshed automatically.</p>
+     </div>
+     <div className="ai-badge" role="status" title={serverAsOf?"Latest scanner snapshot: "+new Date(serverAsOf).toLocaleString("en-CA",{timeZone:"America/Vancouver"}):"Waiting for a scanner snapshot"}>
+      {liveState==="current"?"AUTO SYNC ACTIVE":liveState==="reconnecting"?"RECONNECTING":historyLoaded?"HISTORY CONNECTED":liveState==="unavailable"?"LIVE FEED OFFLINE":"CONNECTING"}
+     </div>
+    </div>
     <div className="ai-import">
-     <div><strong>{historyLoaded?"V4 HISTORY STORED PRIVATELY · VPS AUTO SYNC":serverAsOf?"PRODUCTION VPS · AUTOMATIC SYNC":"CONNECTING TO YOUR PRIVATE HISTORY"}</strong><p>{serverAsOf
-      ?`Private history ${historyLoaded?"loaded":"connecting"} · data through ${data?.summary.end??"—"} · refreshes every five minutes. No uploads required.`
-      :data?`Historical data ${data.summary.start} to ${data.summary.end} loaded. The live feed will reconnect automatically.`
-       :"Connecting to the existing production snapshot. You do not need to upload an archive."}</p></div>
+     <div>
+      <strong>{historyLoaded?"PRIVATE HISTORY LOADED":serverAsOf?"LIVE DATA CONNECTED":"CONNECTING TO PRIVATE HISTORY"}</strong>
+      <p>{historyLoaded
+       ?`History through ${archiveBaselineRef.current?.summary.end??"—"} · ${liveState==="current"?"live sync active":"live sync reconnecting"}.`
+       :serverAsOf?"Live scanner data connected. Private history loads automatically."
+        :"Your historical data loads automatically."}</p>
+     </div>
      <div className="ai-import-actions">
-      {liveState!=="current"&&<button type="button" className="ai-button" onClick={()=>{setLiveState("connecting");setLiveIssue("");setRetryKey(x=>x+1)}}>RETRY LIVE CONNECTION</button>}
+      {liveState!=="current"&&<button type="button" className="ai-button" onClick={()=>{setLiveState("connecting");setLiveIssue("");setRetryKey(x=>x+1)}}>RETRY LIVE SYNC</button>}
       {!historyLoaded&&liveState==="unavailable"&&<details className="max-w-full">
        <summary className="cursor-pointer rounded-lg border border-[#51535a] px-3 py-2 text-[10px] font-bold tracking-[.12em] text-[#c5ad83]">OLDER ARCHIVE · OPTIONAL</summary>
        <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -321,7 +335,6 @@ export default function LaneIntelligenceDashboard(){
       <input ref={archiveFileRef} type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} hidden tabIndex={-1}/>
      </div>
     </div>
-    {serverAsOf&&<div role="status" className="ai-local-note">PRIVATE OWNER FEED · {liveState==="current"?"CONNECTED":"RECONNECTING"} · LATEST SNAPSHOT {new Date(serverAsOf).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"})}. Counts are scanner-recorded, not verified deliveries or P&amp;L.</div>}
     {liveIssue&&<p className="ai-local-note" role="status">{liveIssue}</p>}
     {historyIssue&&<p className="ai-local-note" role="status">{historyIssue} <button type="button" className="ai-text-button" onClick={()=>setHistoryRetry(x=>x+1)}>RETRY HISTORY</button></p>}
     {error&&<p className="ai-error" role="alert">{error}</p>}
