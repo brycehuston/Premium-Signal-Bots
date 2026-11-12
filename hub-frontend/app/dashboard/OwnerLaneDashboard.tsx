@@ -49,7 +49,7 @@ function combinePrivateHistory(base:Archive|null,live:Archive|null):Archive|null
   first:[...base.first,...live.first.filter(f=>!firstMints.has(f.mint))],
   regimes:base.regimes,transitions:base.transitions,
   summary:{start:base.summary.start<live.summary.start?base.summary.start:live.summary.start,
-    end:base.summary.end>live.summary.end?base.summary.end,
+    end:base.summary.end>live.summary.end?base.summary.end:live.summary.end,
     messages:base.summary.messages+live.summary.messages,
     lane:base.summary.lane+live.summary.lane,
     mint:base.summary.mint+live.summary.mint,
