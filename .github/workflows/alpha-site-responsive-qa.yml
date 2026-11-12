@@ -60,6 +60,8 @@ jobs:
           NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
       - name: Verify private owner auto-sync with synthetic data and no archive upload
         run: node qa/alpha-owner-autosync.mjs
+      - name: Verify compact Top 3 cards and actual data states at phone and desktop sizes
+        run: node qa/alpha-top3-widget.mjs
       - name: Store viewport screenshots and results
         if: always()
         uses: actions/upload-artifact@v4

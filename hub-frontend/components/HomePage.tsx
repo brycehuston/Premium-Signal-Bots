@@ -774,40 +774,70 @@ function HeroAlertReel(){
     return()=>{live=false;request?.abort();clearInterval(timer);document.removeEventListener("visibilitychange",refresh)};
   },[]);
   const ready=feed.state==="verified"||feed.state==="historical";
-  return <section aria-label="Alpha Alerts top movers" className="rounded-[15px] border border-[#4a4540]/75 bg-[#111318] px-4 py-4 shadow-[inset_0_1px_0_rgba(246,211,154,.045)] sm:px-5 sm:py-5">
-    <header className="flex flex-wrap items-center justify-between gap-2.5">
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] border border-[#8d734c]/50 bg-[#e4bd75]/10 text-[16px] text-[#efc985]" aria-hidden="true">↗</span>
-        <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[.22em] text-[#d4ac6b]">ALPHA ALERTS / HEARTBEAT</p>
-          <h2 className="mt-0.5 font-display text-[16px] font-semibold tracking-[-.02em] text-[#f2f3f5] sm:text-lg">Top 3 Movers <span className="text-[#d6b37d]">· {feed.state==="historical"?"LAST VERIFIED":"24H"}</span></h2>
-        </div>
-      </div>
-      <span className="rounded-full border border-[#45464d] px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.09em] text-[#b7bbc3]">
-        {feed.state==="historical"?"HISTORICAL":feed.state==="verified"?"OBSERVED PEAKS":feed.state==="loading"?"VERIFYING":"AWAITING VERIFIED RESULTS"}
+  const [expandedId,setExpandedId]=useState<string|null>(null);
+  const selected=ready?feed.movers.find(mover=>mover.id===expandedId):undefined;
+  const average=ready&&feed.movers.length?feed.movers.reduce((total,mover)=>total+mover.multiple,0)/feed.movers.length:null;
+  const top=ready?Math.max(...feed.movers.map(mover=>mover.multiple)):null;
+  const cards=ready?Array.from({length:3},(_,index)=>feed.movers[index]??null):[null,null,null];
+  const palette=[
+    {accent:"#edbc72",rgb:"237,188,114",label:"#edbc72"},
+    {accent:"#38bff2",rgb:"56,191,242",label:"#54c9ef"},
+    {accent:"#b68bf9",rgb:"182,139,249",label:"#c6a2ff"}
+  ];
+  return <section aria-label="Alpha Alerts top movers" className="mx-auto w-full max-w-[590px] min-w-0 px-1 py-2 sm:px-2">
+    <header className="mb-4 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center">
+      <h2 className="font-display text-[13px] font-bold uppercase tracking-[.22em] text-[#eff0f3] sm:text-[14px]">Top 3 Movers</h2>
+      <span className="hidden h-3 w-px bg-[#434951] min-[380px]:block" aria-hidden="true"/>
+      <span className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#9fa8b4] sm:text-[10px]">
+        {feed.state==="historical"?"Latest verified ranking":feed.state==="verified"?"Last 24 hours":"Observed market-cap peaks"}
       </span>
     </header>
     {feed.state==="historical"&&feed.reference_time_utc&&
-      <p className="mt-2 text-[10px] text-[#aeb5c0]">Latest available verified ranking · {moverDate(feed.reference_time_utc)}</p>}
-    <div className="mt-3 flex flex-col gap-2">
-      {(ready?feed.movers:[null,null,null]).map((item,index)=>(
-        <div key={item?.id??index} className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-[10px] border border-[#343940] bg-[#1a1d23] px-3.5 py-3 sm:flex-nowrap">
-          <span className="w-6 shrink-0 font-display text-[15px] font-bold tabular-nums text-[#bda078]">{String(index+1).padStart(2,"0")}</span>
-          <span className="hidden h-9 w-px shrink-0 bg-[#45464a] sm:block" aria-hidden="true"/>
-          <div className="min-w-[90px] flex-1">
-            <strong className="block truncate font-display text-[15px] font-semibold text-[#f0f2f4]">{item?"$"+item.symbol:"PENDING"}</strong>
-            <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-[.12em]" style={{color:item?MOVER_LANES[item.lane]:"#9298a2"}}>{item?.lane??"VERIFICATION PENDING"}</span>
-          </div>
-          <div className="min-w-[160px] flex-[2] text-[10px] leading-5 text-[#b8bec8]">
-            <div>CALLED · <span className="text-[#e0e3e7]">{item?moverDate(item.called_at_utc):"—"}</span></div>
-            <div>MC · <span className="text-[#e0e3e7]">{item?moverMoney(item.first_mc):"—"}</span> <span className="px-1 text-[#d7b67c]">→</span> PEAK · <span className="text-[#e0e3e7]">{item?moverMoney(item.peak_mc):"—"}</span></div>
-          </div>
-          <strong className="ml-auto shrink-0 font-display text-[23px] font-semibold tabular-nums text-[#e8c48a]">{item?item.multiple.toFixed(2)+"×":"—"}</strong>
-        </div>
-      ))}
+      <p className="-mt-2 mb-3 text-center text-[10px] text-[#aeb5c1]">As of {moverDate(feed.reference_time_utc)}</p>}
+    <div className="grid grid-cols-3 gap-2.5 sm:gap-3" aria-label="Ranked market-cap movers">
+      {cards.map((item,index)=>{
+        const tone=palette[index];
+        return <button
+          key={item?.id??index}
+          type="button"
+          disabled={!item}
+          onClick={()=>item&&setExpandedId(prev=>prev===item.id?null:item.id)}
+          aria-expanded={item?expandedId===item.id:undefined}
+          aria-controls={item?"alpha-mover-expanded":undefined}
+          aria-label={item?String(index+1)+". "+item.symbol+", "+item.lane+", "+item.multiple.toFixed(2)+" times. Called "+moverDate(item.called_at_utc)+" at market cap "+moverMoney(item.first_mc)+", observed peak "+moverMoney(item.peak_mc)+". Select for details.":"Rank "+String(index+1)+": no verified mover"}
+          title={item?item.symbol+" · "+item.lane+"\nCalled: "+moverDate(item.called_at_utc)+"\nMarket cap: "+moverMoney(item.first_mc)+" → "+moverMoney(item.peak_mc)+"\nObserved peak: "+item.multiple.toFixed(2)+"×":undefined}
+          className="group relative flex min-h-[129px] min-w-0 flex-col items-center overflow-hidden rounded-[11px] border border-[#303b46] bg-gradient-to-b from-[#171e25] via-[#121921] to-[#10171e] px-1.5 pb-3 pt-3 text-center outline-none transition-[border-color,transform] duration-200 hover:border-[#65717c] focus-visible:border-[#e8bc77] focus-visible:ring-2 focus-visible:ring-[#e8bc77]/60 disabled:cursor-default disabled:hover:border-[#303b46] sm:min-h-[148px] sm:px-3 sm:pb-4 sm:pt-4 motion-safe:hover:-translate-y-0.5"
+          style={{boxShadow:"inset 0 -1px 0 rgba("+tone.rgb+",.48), 0 6px 18px -14px rgba("+tone.rgb+",.75)"}}>
+          <span className="absolute left-2 top-2.5 font-display text-[10px] font-bold tabular-nums text-[#c7cbd2] sm:left-3 sm:top-3 sm:text-[11px]" aria-hidden="true">{String(index+1).padStart(2,"0")}</span>
+          <span className="relative z-10 mt-1 block w-full max-w-full truncate px-3 font-display text-[10px] font-bold tracking-[-.03em] text-[#f0f1f3] min-[390px]:text-[11px] sm:mt-0.5 sm:text-[14px]">{item?"$"+item.symbol:"—"}</span>
+          <span className="relative z-10 mt-1 block w-full truncate font-display text-[8px] font-bold uppercase tracking-[.02em] sm:text-[10px]" style={{color:item?tone.label:"#949ba6"}}>{item?.lane??"PENDING"}</span>
+          <strong className="relative z-10 mt-auto block whitespace-nowrap font-display text-[clamp(21px,5.7vw,33px)] font-bold leading-none tracking-[-.045em] tabular-nums text-[#efc57e]">{item?item.multiple.toFixed(2)+"×":"—"}</strong>
+          <span className="pointer-events-none absolute bottom-[-14px] left-[9%] right-[9%] h-[39px] rounded-full blur-[10px]" style={{background:"radial-gradient(ellipse at center,rgba("+tone.rgb+",.43) 0%,rgba("+tone.rgb+",.08) 44%,transparent 73%)"}} aria-hidden="true"/>
+          <span className="pointer-events-none absolute bottom-0 left-[26%] right-[26%] h-px" style={{background:"linear-gradient(90deg,transparent,"+tone.accent+",transparent)"}} aria-hidden="true"/>
+        </button>;
+      })}
     </div>
-    <p className="mt-3 text-[10px] leading-[1.6] text-[#9ca4ae]">
-      {ready?"Distinct bot-delivered Alpha calls ranked by corroborated observed peak market-cap multiples. Historical results are explicitly dated; multiples are not realized trading returns.":"No corroborated mover-and-peak records are available yet. An older ranking will appear here when a verified historical snapshot is connected."}
+    {selected&&<div id="alpha-mover-expanded" className="mt-2.5 rounded-[9px] border border-[#303944] bg-[#121a21] px-3.5 py-3 text-[11px] leading-[1.75] text-[#c8d0d8]" role="status">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <span><strong className="text-[#edf0f3]">{"$"+selected.symbol}</strong> · Called {moverDate(selected.called_at_utc)}</span>
+        <span>Call MC <strong className="text-[#f0f1f3]">{moverMoney(selected.first_mc)}</strong><span className="mx-1.5 text-[#d4b47d]">→</span>Peak <strong className="text-[#f0f1f3]">{moverMoney(selected.peak_mc)}</strong></span>
+      </div>
+    </div>}
+    <div className="mt-4 grid grid-cols-3 divide-x divide-[#29333e] rounded-[11px] border border-[#29343e] bg-[#0d131a] px-1.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] sm:px-3 sm:py-3.5" aria-label="Top mover summary">
+      {[
+        {label:"RANKED",value:ready?String(feed.movers.length):"—",symbol:"◇"},
+        {label:"TOP MOVE",value:top!==null?top.toFixed(2)+"×":"—",symbol:"↗"},
+        {label:"AVG MOVE",value:average!==null?average.toFixed(2)+"×":"—",symbol:"⌁"}
+      ].map(stat=><div key={stat.label} className="flex min-w-0 items-center justify-center gap-2 px-1 sm:gap-3 sm:px-2">
+        <span className="hidden shrink-0 font-display text-[19px] font-semibold text-[#d6ab6d] sm:block" aria-hidden="true">{stat.symbol}</span>
+        <div className="min-w-0 text-center sm:text-left">
+          <div className="whitespace-nowrap text-[8px] font-semibold uppercase tracking-[.07em] text-[#a6afb9] sm:text-[9px]">{stat.label}</div>
+          <div className="mt-0.5 whitespace-nowrap font-display text-[16px] font-bold leading-none tabular-nums text-[#e9edf2] sm:text-[20px]">{stat.value}</div>
+        </div>
+      </div>)}
+    </div>
+    <p className="mt-2.5 text-center text-[9px] leading-4 text-[#9ba6b2]">
+      {ready?"Observed market-cap peaks, not realized trading returns. Select a mover for call details.":"No corroborated mover records are available. The latest verified historical ranking will appear when available."}
     </p>
   </section>;
 }
