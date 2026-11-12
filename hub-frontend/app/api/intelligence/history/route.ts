@@ -8,9 +8,9 @@ export async function GET(request:NextRequest){
  if(access.level!=="owner"&&access.level!=="subscriber")
   return NextResponse.json({state:access.level},{status:access.status,headers});
  const u=new URL(request.url);
- const os=u.searchParams.get("offset")??"0",ls=u.searchParams.get("limit")??"50";
- if(!/^(0|[1-9][0-9]{0,5})$/.test(os)||!/^(0|[1-9][0-9]{0,2})$/.test(ls)
-  ||Number(os)>100000||Number(ls)<1||Number(ls)>100)
+ const cursor=u.searchParams.get("cursor"),ls=u.searchParams.get("limit")??"50";
+ if(!/^[1-9][0-9]{0,2}$/.test(ls)||Number(ls)>100||
+   (cursor!==null&&!/^[A-Za-z0-9_-]{8,512}$/.test(cursor)))
   return NextResponse.json({state:"invalid_pagination"},{status:400,headers});
  const origin=process.env.NEXT_PUBLIC_SUPABASE_URL??"";
  const anon=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY??"";
@@ -19,7 +19,8 @@ export async function GET(request:NextRequest){
   return NextResponse.json({state:"unavailable"},{status:503,headers});
  try {
   const url=new URL(origin+"/functions/v1/alpha-history");
-  url.searchParams.set("view",access.level);url.searchParams.set("offset",os);url.searchParams.set("limit",ls);
+  url.searchParams.set("view",access.level);url.searchParams.set("limit",ls);
+  if(cursor!==null)url.searchParams.set("cursor",cursor);
   const response=await fetch(url,{headers:{Authorization:"Bearer "+access.token,apikey:anon,
    "x-alpha-gateway":gateway,"x-alpha-tier":access.level,Accept:"application/json"},
    redirect:"error",cache:"no-store",signal:AbortSignal.timeout(9500)});
@@ -29,7 +30,8 @@ export async function GET(request:NextRequest){
   if(data?.state!=="ready"||data?.tier!==access.level||
    data?.delay_hours!==(access.level==="subscriber"?24:0)||
    !Number.isSafeInteger(data?.total)||!Array.isArray(data?.events)||
-   data.events.length>Number(ls)||data.offset!==Number(os))
+   data.events.length>Number(ls)||typeof data.has_more!=="boolean"||
+   (data.next_cursor!==null&&!/^[A-Za-z0-9_-]{8,512}$/.test(data.next_cursor)))
    return NextResponse.json({state:"unavailable"},{status:503,headers});
   return NextResponse.json(data,{headers});
  }catch{return NextResponse.json({state:"unavailable"},{status:503,headers});}
