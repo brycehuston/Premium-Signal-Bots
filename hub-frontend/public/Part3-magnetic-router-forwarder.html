@@ -2392,6 +2392,30 @@
 
           function getLayout() {
             const cubeHalf = currentCubeHalf;
+            // Independent phone geometry. Preserve existing tablet/desktop layout.
+            if (mobileMQ.matches) {
+              const rx = W * 0.5;
+              const topClearance = Math.max(156, H * 0.19);
+              const bottomClearance = Math.max(155, H * 0.18);
+              const available = Math.max(0, H - topClearance - bottomClearance);
+              const rowGap = Math.max(CFG.pillH + 18, Math.min(126, available * 0.29));
+              const ry = clamp(H * 0.51, topClearance + rowGap, H - bottomClearance - rowGap);
+              const leftX = CFG.pillW / 2 + 9, rightX = W - leftX;
+              const topY = ry - rowGap, bottomY = ry + rowGap;
+              const sy = Math.max(28, topY - CFG.pillH / 2 - 28);
+              return {
+                sx:rx,sy,rx,ry,outY:Math.min(H - 90,bottomY + CFG.pillH),
+                pillY:bottomY,topPillY:topY,
+                lanes:[
+                  {laneId:0,x:leftX,y:topY,row:"top",side:"left",label:"EARLY"},
+                  {laneId:1,x:rightX,y:topY,row:"top",side:"right",label:"TREND"},
+                  {laneId:2,x:rightX,y:bottomY,row:"bottom",side:"right",label:"RUNNER"},
+                  {laneId:3,x:leftX,y:ry,row:"middle",side:"left",label:"GENESIS"},
+                  {laneId:4,x:leftX,y:bottomY,row:"bottom",side:"left",label:"STRICT"},
+                  {laneId:5,x:rightX,y:ry,row:"middle",side:"right",label:"RECLAIM"}
+                ]
+              };
+            }
             const centerY = H * CFG.centerY;
             // The original bug: middle pills were aligned with the TITLE
             // instead of the cube. Symmetric rows around a displaced cube
