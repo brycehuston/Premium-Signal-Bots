@@ -103,7 +103,7 @@ export default function LaneIntelligenceDashboard(){
     setStart(archive.summary.start);setEnd(archive.summary.end);setRange("ALL");
     setStoredOnDevice(true);
    } else if(saved) {
-    setError("A saved archive exists but did not pass validation. Import the original V4 archive again.");
+    // Invalid local cache is ignored; server-side history remains authoritative.
    }
   }).catch(()=>{
    // Storage can be blocked by private browsing; manual import must still work.
@@ -128,7 +128,7 @@ export default function LaneIntelligenceDashboard(){
     const merged=combinePrivateHistory(archiveBaselineRef.current,liveDatasetRef.current);
     if(merged){
      setData(merged);setImportName("V4 PRIVATE HISTORY + AUTOMATIC VPS DATA");
-     if(!liveDatasetRef.current){setStart(merged.summary.start);setEnd(merged.summary.end);setRange("ALL");}
+     setStart(merged.summary.start);setEnd(merged.summary.end);setRange("ALL");
     }
     setLocalCheck(false);
    }catch{
@@ -175,7 +175,7 @@ export default function LaneIntelligenceDashboard(){
     liveDatasetRef.current=v;
     setData(combinePrivateHistory(archiveBaselineRef.current,v));
     setImportName(archiveBaselineRef.current?"V4 HISTORY + AUTOMATIC VPS AGGREGATES":"OWNER / AUTOMATIC VPS AGGREGATES");
-    if(firstConnection){
+    if(firstConnection&&!archiveBaselineRef.current){
      const from=new Date(v.summary.end+"T12:00:00Z");
      from.setUTCDate(from.getUTCDate()-6);
      setStart(from.toISOString().slice(0,10)<v.summary.start?v.summary.start:from.toISOString().slice(0,10));
@@ -304,8 +304,8 @@ export default function LaneIntelligenceDashboard(){
     <div className="ai-title-row"><div><div className="ai-kicker">ALPHA / LANE ANALYTICS</div><h1>LANE FLOW INTELLIGENCE</h1><p>Private scanner activity from your VPS. New verified aggregate snapshots are checked every five minutes; counts are observations, not confirmed Telegram deliveries.</p></div><div className="ai-badge">{serverAsOf?(liveState==="current"?"AUTO SYNC ACTIVE":"RECONNECTING"):historyLoaded?"HISTORY CONNECTED":liveState==="unavailable"?"FEED UNAVAILABLE":data?"LOCAL HISTORY":"CONNECTING TO VPS"}</div></div>
     <div className="ai-import">
      <div><strong>{historyLoaded?"V4 HISTORY STORED PRIVATELY · VPS AUTO SYNC":serverAsOf?"PRODUCTION VPS · AUTOMATIC SYNC":"CONNECTING TO YOUR PRIVATE HISTORY"}</strong><p>{serverAsOf
-      ?`Connected · ${data?.summary.start??"—"} to ${data?.summary.end??"—"} · refreshes every five minutes. No uploads required.`
-      :data?`Showing optional local history · ${data.summary.start} to ${data.summary.end}. Automatic VPS connection remains the primary source.`
+      ?`Private history ${historyLoaded?"loaded":"connecting"} · data through ${data?.summary.end??"—"} · refreshes every five minutes. No uploads required.`
+      :data?`Historical data ${data.summary.start} to ${data.summary.end} loaded. The live feed will reconnect automatically.`
        :"Connecting to the existing production snapshot. You do not need to upload an archive."}</p></div>
      <div className="ai-import-actions">
       {liveState!=="current"&&<button type="button" className="ai-button" onClick={()=>{setLiveState("connecting");setLiveIssue("");setRetryKey(x=>x+1)}}>RETRY LIVE CONNECTION</button>}
