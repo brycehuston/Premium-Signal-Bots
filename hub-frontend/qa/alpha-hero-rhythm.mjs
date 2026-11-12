@@ -15,7 +15,7 @@ const browser = await chromium.launch({headless:true});
 const records = [];
 const failures = [];
 for (const width of [320,390,768,1024,1324,1440]) {
- const page = await browser.newPage({viewport:{width,height:width<500?844:900},reducedMotion:"reduce",isMobile:width<500,hasTouch:width<500});
+ const page = await browser.newPage({viewport:{width,height:width<500?844:900},reducedMotion:width===1324?"no-preference":"reduce",isMobile:width<500,hasTouch:width<500});
  const jsErrors=[];
  page.on("pageerror",e=>jsErrors.push(e.message));
  await page.route("**/api/public/top-movers",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(data)}));
