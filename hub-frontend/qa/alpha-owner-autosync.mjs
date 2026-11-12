@@ -63,16 +63,16 @@ for(const width of [390,1440]) {
   const response=await page.goto(origin+"/dashboard",{waitUntil:"domcontentloaded",timeout:25000});
   if(response?.status()!==200)throw new Error("dashboard HTTP "+response?.status());
   if(width===390){
-    await page.getByText("FEED UNAVAILABLE",{exact:true}).waitFor({timeout:12000});
+    await page.getByText("PRODUCTION FEED TEMPORARILY UNAVAILABLE",{exact:true}).waitFor({timeout:12000});
+    // Manual import is an optional offline fallback, not the normal data path.
+    await page.getByText("OLDER ARCHIVE · OPTIONAL",{exact:true}).waitFor({timeout:4000});
     allowLive=true;
-    await page.getByRole("button",{name:"RETRY LIVE CONNECTION"}).click();
+    await page.getByRole("button",{name:"RETRY CONNECTION",exact:true}).click();
   }
   await page.getByText("AUTO SYNC ACTIVE",{exact:true}).waitFor({timeout:16000});
   if(apiCalls<1)throw new Error("owner API was not requested");
-  const snapshotVisible=await page.getByText("PRODUCTION VPS · AUTOMATIC SYNC",{exact:true}).isVisible();
-  if(!snapshotVisible)throw new Error("production source header missing");
-  const archive=page.getByText("OLDER ARCHIVE · OPTIONAL",{exact:true});
-  if(!(await archive.isVisible()))throw new Error("optional archive drawer missing");
+  const snapshotVisible=await page.getByText("LIVE DATA CONNECTED",{exact:true}).isVisible();
+  if(!snapshotVisible)throw new Error("live-data status missing");
   if(await page.getByRole("button",{name:"IMPORT HISTORICAL FILE"}).isVisible())throw new Error("archive upload unexpectedly prominent");
   const pageText=await page.locator("#overview").innerText();
   if(!pageText.includes("not independently verified Telegram deliveries")&&!pageText.includes("not verified deliveries"))throw new Error("missing research qualification");
