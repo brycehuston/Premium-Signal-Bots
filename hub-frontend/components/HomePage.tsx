@@ -784,7 +784,7 @@ function HeroAlertReel(){
     {accent:"#38bff2",rgb:"56,191,242",label:"#54c9ef",multiple:"#8bcce9"},
     {accent:"#b68bf9",rgb:"182,139,249",label:"#c6a2ff",multiple:"#c5a5ec"}
   ];
-  return <section aria-label="Alpha Alerts top movers" data-alpha-top3-frame className="mx-auto w-full max-w-[590px] min-w-0 px-1 py-2 sm:px-2">
+  return <section aria-label="Alpha Alerts top movers" data-alpha-top3-frame className="mx-auto w-full min-w-0 px-1 py-2 sm:px-2 md:flex md:h-[452px] md:flex-col md:px-0">
     <header className="mb-4 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center lg:mb-5">
       <h2 data-alpha-top3-heading className="font-display text-[13px] font-bold uppercase tracking-[.22em] text-[#eff0f3] sm:text-[14px]">Top 3 Movers</h2>
       <span className="hidden h-3 w-px bg-[#434951] min-[380px]:block" aria-hidden="true"/>
@@ -794,7 +794,7 @@ function HeroAlertReel(){
     </header>
     {feed.state==="historical"&&feed.reference_time_utc&&
       <p className="-mt-2 mb-3 text-center text-[10px] text-[#aeb5c1]">As of {moverDate(feed.reference_time_utc)}</p>}
-    <div className="grid grid-cols-3 gap-2.5 sm:gap-3" aria-label="Ranked market-cap movers">
+    <div className="grid grid-cols-3 gap-2.5 sm:gap-3 md:flex-1" aria-label="Ranked market-cap movers">
       {cards.map((item,index)=>{
         const tone=palette[index];
         return <button
@@ -1503,7 +1503,7 @@ export default function Page() {
                   pointerEvents: heroView === "reel" ? "auto" : "none",
                 }}
               >
-                <div className="w-full max-w-[640px]">
+                <div className="w-full">
                   <HeroAlertReel />
                 </div>
               </motion.div>

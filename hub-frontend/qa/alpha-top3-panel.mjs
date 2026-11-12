@@ -41,12 +41,15 @@ for (const width of widths) {
       const style=getComputedStyle(node);
       const statStyle=getComputedStyle(stats);
       const eyebrow=document.querySelector("[data-alpha-hero-eyebrow]");
+      const stage=document.querySelector("[data-alpha-hero-right] .relative.isolate");
+      const chart=stage?.firstElementChild?.firstElementChild;
       const computedCardStyles=cards.map(el=>{
         const st=getComputedStyle(el);
         return {border:st.borderTopWidth,background:st.backgroundImage,shadow:st.boxShadow,multipleColor:getComputedStyle(el.querySelector("strong")).color};
       });
       return {panel:area(node),title:area(title),cards:cards.map(area),stats:area(stats),note:area(note),
         eyebrow:eyebrow?area(eyebrow):null,
+        chart:chart?{width:chart.offsetWidth,height:chart.offsetHeight}:null,
         viewport:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,
         background:style.backgroundColor,borderColor:style.borderTopColor,borderWidth:style.borderTopWidth,
         radius:style.borderTopLeftRadius,paddingTop:parseFloat(style.paddingTop),paddingBottom:parseFloat(style.paddingBottom),
@@ -91,6 +94,11 @@ for (const width of widths) {
       "A normal-length token is truncated: "+JSON.stringify(layout.symbolWidths));
     assert(layout.multipleTextRects.every((text,index)=>text.left>=layout.cards[index].left+1&&text.right<=layout.cards[index].right-1),
       "A peak multiplier extends beyond its card: "+JSON.stringify({text:layout.multipleTextRects,cards:layout.cards}));
+    if(width >= 768){
+      assert(layout.chart,"BTC chart reference panel unavailable");
+      assert(Math.abs(layout.panel.width-layout.chart.width)<=2,"Top 3 width differs from BTC chart: "+JSON.stringify(layout));
+      assert(Math.abs(layout.panel.height-layout.chart.height)<=2,"Top 3 height differs from BTC chart: "+JSON.stringify(layout));
+    }
     if(width >= 1024){
       assert(layout.eyebrow && Math.abs(layout.title.top-layout.eyebrow.top) <= 48,
         "Right header misaligned relative to left hero");
@@ -118,7 +126,8 @@ for (const width of widths) {
       cardsToStats:Math.round(layout.stats.top-layout.cards[0].bottom),
       statsToNote:Math.round(layout.note.top-layout.stats.bottom),
       bottomPadding:Math.round(layout.panel.bottom-layout.note.bottom),
-      opticalAlignment:layout.eyebrow?Math.round(layout.title.top-layout.eyebrow.top):null});
+      opticalAlignment:layout.eyebrow?Math.round(layout.title.top-layout.eyebrow.top):null,
+      panelSize:{width:Math.round(layout.panel.width),height:Math.round(layout.panel.height)},btcChartSize:layout.chart});
   }catch(error){
     const failure={width,pass:false,error:String(error).slice(0,500)};
     failures.push(failure);results.push(failure);
