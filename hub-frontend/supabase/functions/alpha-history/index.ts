@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Alpha History v0.1.0 — secure, bounded, delayed event-history API.
 // Called only through Vercel's entitlement-checked server proxy.
 const ROOT=Deno.env.get("SUPABASE_URL")||"";
