@@ -43,7 +43,7 @@ for (const width of widths) {
       const eyebrow=document.querySelector("[data-alpha-hero-eyebrow]");
       const computedCardStyles=cards.map(el=>{
         const st=getComputedStyle(el);
-        return {border:st.borderTopWidth,background:st.backgroundImage,shadow:st.boxShadow};
+        return {border:st.borderTopWidth,background:st.backgroundImage,shadow:st.boxShadow,multipleColor:getComputedStyle(el.querySelector("strong")).color};
       });
       return {panel:area(node),title:area(title),cards:cards.map(area),stats:area(stats),note:area(note),
         eyebrow:eyebrow?area(eyebrow):null,
@@ -59,24 +59,34 @@ for (const width of widths) {
     assert.equal(layout.viewport,width,"Viewport width mismatch");
     assert(layout.scrollWidth <= width + 4,"Document horizontal overflow");
     assert(layout.panel.left >= -2 && layout.panel.right <= width + 2,"Top 3 parent escapes viewport");
-    assert.equal(layout.background,"rgb(14, 19, 25)","Parent charcoal tone drift");
-    assert.equal(layout.borderWidth,"1px","Parent boundary missing");
-    assert.equal(layout.statTopBorder,"1px","Stats integrated divider missing");
-    assert.equal(layout.statBackground,"rgba(0, 0, 0, 0)","Stats should not create another nested box");
+    assert.equal(layout.background,"rgba(0, 0, 0, 0)","Blue-tinted parent panel must be removed");
+    assert.equal(layout.borderWidth,"0px","Original open layout should not have an outer box");
+    assert.equal(layout.statTopBorder,"1px","Original separated statistics strip border missing");
+    assert.equal(layout.statBackground,"rgb(17, 18, 21)","Stats must use neutral charcoal");
     assert.equal(layout.cards.length,3,"Three ranked cards required");
     for(const card of layout.cards){
       assert(card.width >= 50,"Card too narrow");
       assert(card.left >= layout.panel.left && card.right <= layout.panel.right,"Card clipped by parent");
-      assert(card.height >= 155,"Card too short");
+      assert(card.height >= 140,"Card too short");
     }
     assert(layout.cards[0].right < layout.cards[1].left,"First and second card overlap");
     assert(layout.cards[1].right < layout.cards[2].left,"Second and third card overlap");
-    assert(layout.title.top-layout.panel.top >= 17,"Insufficient top padding");
-    assert(layout.cards[0].top-layout.title.bottom >= 18,"Heading crowded against cards");
-    assert(layout.stats.top-layout.cards[0].bottom >= 23,"Stats crowded against cards");
-    assert(layout.note.top-layout.stats.bottom >= 12,"Disclosure crowded against stats");
-    assert(layout.panel.bottom-layout.note.bottom >= 17,"Insufficient bottom padding");
+    assert(layout.title.top-layout.panel.top >= 7,"Insufficient top padding");
+    assert(layout.cards[0].top-layout.title.bottom >= 14,"Heading crowded against cards");
+    assert(layout.stats.top-layout.cards[0].bottom >= 18,"Stats crowded against cards");
+    assert(layout.note.top-layout.stats.bottom >= 10,"Disclosure crowded against stats");
+    assert(layout.panel.bottom-layout.note.bottom >= 6,"Insufficient bottom padding");
     assert(layout.cardStyles.every(x=>x.border==="1px"&&x.shadow!=="none"),"Card distinction or underglow lost");
+    assert.deepEqual(layout.cardStyles.map(x=>x.multipleColor),
+      ["rgb(233, 188, 117)","rgb(139, 204, 233)","rgb(197, 165, 236)"],
+      "Multipliers must correspond to gold, cyan and violet rank accents");
+    assert(layout.cardStyles.every(x=>{
+      const swatches=[...x.background.matchAll(/rgb\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/g)];
+      return swatches.length===3 && swatches.every(m=>{
+        const channels=m.slice(1).map(Number);
+        return Math.max(...channels)-Math.min(...channels)<=5;
+      });
+    }),"Card backgrounds are blue-tinted instead of neutral charcoal");
     assert(layout.symbolWidths.every(x=>x.client>0 && x.scroll<=x.client+1),
       "A normal-length token is truncated: "+JSON.stringify(layout.symbolWidths));
     assert(layout.multipleTextRects.every((text,index)=>text.left>=layout.cards[index].left+1&&text.right<=layout.cards[index].right-1),

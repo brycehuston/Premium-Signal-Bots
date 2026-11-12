@@ -45,7 +45,7 @@ for (const width of [320,390,768,1024,1324,1440]) {
   assert(geometry.summary.top-geometry.cards[0].bottom>=19,"Missing breathing room between cards and summary");
   if(width>=1024){
     assert(Math.abs(geometry.heading.top-geometry.eyebrow.top)<=48,"Top 3 header does not align with left hero eyebrow");
-    assert(geometry.cards[0].height>=175,"Desktop mover cards too short");
+    assert(geometry.cards[0].height>=168,"Desktop mover cards too short");
   }
   assert.deepEqual(jsErrors,[],"Browser page errors");
   await widget.screenshot({path:path.join(out,"hero-widget-"+width+".png"),animations:"disabled"});
