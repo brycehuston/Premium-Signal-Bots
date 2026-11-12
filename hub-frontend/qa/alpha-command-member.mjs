@@ -76,8 +76,9 @@ try{
     const response=await page.goto(base+"/dashboard",{waitUntil:"domcontentloaded",timeout:35000});
     assert.equal(response?.status(),200,"signed-in dashboard returned HTTP 200");
     await page.getByRole("heading",{name:"ALPHA COMMAND"}).waitFor({timeout:17000});
-    assert.equal(await page.getByRole("link",{name:"Alpha Alerts homepage"}).count(),1);
-    const logo=page.getByRole("link",{name:"Alpha Alerts homepage"}).locator("img");
+    const dashboardBrand=page.locator("main > header").getByRole("link",{name:"Alpha Alerts homepage"});
+    assert.equal(await dashboardBrand.count(),1,"dashboard uses the approved homepage brand");
+    const logo=dashboardBrand.locator("img");
     assert.equal(await logo.getAttribute("src"),"/alpha-lane-v4-logo.png");
     if(scenario.name==="free-preview"){
      await page.getByText("Free account",{exact:true}).waitFor();
