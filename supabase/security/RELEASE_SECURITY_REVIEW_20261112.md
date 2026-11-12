@@ -1,6 +1,6 @@
 # Alpha Alerts — P0 historical-event access boundary
 
-**Status:** PROPOSED / staged only. **No production database change has been executed.**
+**Status:** APPLIED to production on 2026-11-12; database privilege checks PASSED. Authenticated browser end-to-end acceptance remains UNKNOWN.
 
 ## Directly verified on 2026-11-12
 
@@ -52,3 +52,17 @@ This restores the previous over-broad read boundary, so prefer correcting any ve
 - Historical archive ends 2026-10-18; live aggregate history begins 2026-11-02.
 - Actual owner/subscriber browser acceptance and functional visual QA remain unverified.
 - The default `main` branch is 150 commits behind production commit `8e0f3f2f`; stage changes from the release baseline, not stale `main`.
+
+
+## Production execution report — 2026-11-12
+
+- **Execution:** Exact staged SQL applied to the connected Alpha Alerts production Supabase database (`ennbnofvmnkcuhftzlhr`). Database returned success.
+- **Post-change privileges:** `anon SELECT=false`, `authenticated SELECT=false`, `service_role SELECT=true`, `service_role INSERT=true`.
+- **RLS:** Remains enabled. Existing policy unchanged but cannot grant table access without the revoked SELECT privilege.
+- **Integrity:** All 3,303 historical rows retained; all 3,303 remain `approved_for_history`. No records modified.
+- **Security advisor:** Previous `pg_graphql_authenticated_table_exposed` warning for `alpha_history_events` disappeared on rerun. Other unrelated advisories remain.
+- **Publisher:** Live intelligence snapshot 3 minutes old at 2026-11-12 15:13 UTC; 3,892 event count; subscriber data still declares 24-hour delay.
+- **Recent observed API traffic:** Successful REST responses for `alpha_intelligence_snapshot`, `alpha_public_feed_ed25519_state`, and `alpha_public_feed_ed25519_config` after the change.
+- **Dependency evidence:** No PostgreSQL view, function or trigger dependencies; inspected production GitHub code did not directly query the table; observed Supabase REST/GraphQL access logs from November 8–12 showed zero event-table requests. Dormant/external clients cannot be disproven by available logs.
+- **Still unverified:** Live authenticated owner browser dashboard, subscriber account access / 24-hour delay under real credentials, public homepage E2E, direct HTTP 403 for authenticated client, production Edge Function entitlement hardening. Neither Edge Functions nor site deployments were changed.
+- **Rollback:** Do not restore `authenticated SELECT` unless a concrete regression is proven; prefer correcting the consumer to use authorized server routes.
