@@ -784,8 +784,8 @@ function HeroAlertReel(){
     {accent:"#38bff2",rgb:"56,191,242",label:"#54c9ef"},
     {accent:"#b68bf9",rgb:"182,139,249",label:"#c6a2ff"}
   ];
-  return <section aria-label="Alpha Alerts top movers" className="mx-auto w-full max-w-[590px] min-w-0 px-1 py-2 sm:px-2">
-    <header className="mb-5 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center lg:mb-6">
+  return <section aria-label="Alpha Alerts top movers" data-alpha-top3-frame className="mx-auto w-full max-w-[590px] min-w-0 rounded-[16px] border border-[#29333d] bg-[#0e1319] px-3.5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:rounded-[18px] sm:px-5 sm:py-6 lg:px-6">
+    <header className="mb-6 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center">
       <h2 data-alpha-top3-heading className="font-display text-[13px] font-bold uppercase tracking-[.22em] text-[#eff0f3] sm:text-[14px]">Top 3 Movers</h2>
       <span className="hidden h-3 w-px bg-[#434951] min-[380px]:block" aria-hidden="true"/>
       <span className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#9fa8b4] sm:text-[10px]">
@@ -806,12 +806,12 @@ function HeroAlertReel(){
           aria-controls={item?"alpha-mover-expanded":undefined}
           aria-label={item?String(index+1)+". "+item.symbol+", "+item.lane+", "+item.multiple.toFixed(2)+" times. Called "+moverDate(item.called_at_utc)+" at market cap "+moverMoney(item.first_mc)+", observed peak "+moverMoney(item.peak_mc)+". Select for details.":"Rank "+String(index+1)+": no verified mover"}
           title={item?item.symbol+" · "+item.lane+"\nCalled: "+moverDate(item.called_at_utc)+"\nMarket cap: "+moverMoney(item.first_mc)+" → "+moverMoney(item.peak_mc)+"\nObserved peak: "+item.multiple.toFixed(2)+"×":undefined}
-          className="group relative flex min-h-[155px] min-w-0 flex-col items-center overflow-hidden rounded-[11px] border border-[#303b46] bg-gradient-to-b from-[#171e25] via-[#121921] to-[#10171e] px-1.5 pb-3 pt-3 text-center outline-none transition-[border-color,transform] duration-200 hover:border-[#65717c] focus-visible:border-[#e8bc77] focus-visible:ring-2 focus-visible:ring-[#e8bc77]/60 disabled:cursor-default disabled:hover:border-[#303b46] sm:min-h-[178px] sm:px-3 sm:pb-4 sm:pt-4 lg:min-h-[194px] motion-safe:hover:-translate-y-0.5"
+          className="group relative flex min-h-[155px] min-w-0 flex-col items-center overflow-hidden rounded-[11px] border border-[#303b46] bg-gradient-to-b from-[#171e25] via-[#121921] to-[#10171e] px-1.5 pb-3 pt-3 text-center outline-none transition-[border-color,transform] duration-200 hover:border-[#65717c] focus-visible:border-[#e8bc77] focus-visible:ring-2 focus-visible:ring-[#e8bc77]/60 disabled:cursor-default disabled:hover:border-[#303b46] sm:min-h-[178px] sm:px-3 sm:pb-4 sm:pt-4 md:px-1 lg:min-h-[194px] lg:px-3 motion-safe:hover:-translate-y-0.5"
           style={{boxShadow:"inset 0 -1px 0 rgba("+tone.rgb+",.48), 0 6px 18px -14px rgba("+tone.rgb+",.75)"}}>
           <span className="absolute left-2 top-2.5 font-display text-[10px] font-bold tabular-nums text-[#c7cbd2] sm:left-3 sm:top-3 sm:text-[11px]" aria-hidden="true">{String(index+1).padStart(2,"0")}</span>
-          <span className="relative z-10 mt-1 block w-full max-w-full truncate px-3 font-display text-[10px] font-bold tracking-[-.03em] text-[#f0f1f3] min-[390px]:text-[11px] sm:mt-0.5 sm:text-[14px]">{item?"$"+item.symbol:"—"}</span>
+          <span data-alpha-mover-symbol className="relative z-10 mt-4 block w-full max-w-full truncate px-0.5 font-display text-[9px] font-bold tracking-[-.035em] text-[#f0f1f3] min-[360px]:text-[10px] min-[390px]:mt-5 min-[390px]:text-[11px] sm:mt-5 sm:px-1.5 sm:text-[11px] md:px-0 md:text-[10px] lg:px-1.5 lg:text-[14px]">{item?"$"+item.symbol:"—"}</span>
           <span className="relative z-10 mt-1 block w-full truncate font-display text-[8px] font-bold uppercase tracking-[.02em] sm:text-[10px]" style={{color:item?tone.label:"#949ba6"}}>{item?.lane??"PENDING"}</span>
-          <strong className="relative z-10 mt-auto block whitespace-nowrap font-display text-[clamp(21px,5.7vw,33px)] font-bold leading-none tracking-[-.045em] tabular-nums text-[#efc57e]">{item?item.multiple.toFixed(2)+"×":"—"}</strong>
+          <strong className="relative z-10 mt-auto block whitespace-nowrap font-display text-[21px] font-bold leading-none tracking-[-.045em] tabular-nums text-[#efc57e] min-[360px]:text-[24px] sm:text-[22px] lg:text-[clamp(24px,2.4vw,33px)]">{item?item.multiple.toFixed(2)+"×":"—"}</strong>
           <span className="pointer-events-none absolute bottom-[-14px] left-[9%] right-[9%] h-[39px] rounded-full blur-[10px]" style={{background:"radial-gradient(ellipse at center,rgba("+tone.rgb+",.43) 0%,rgba("+tone.rgb+",.08) 44%,transparent 73%)"}} aria-hidden="true"/>
           <span className="pointer-events-none absolute bottom-0 left-[26%] right-[26%] h-px" style={{background:"linear-gradient(90deg,transparent,"+tone.accent+",transparent)"}} aria-hidden="true"/>
         </button>;
@@ -823,7 +823,7 @@ function HeroAlertReel(){
         <span>Call MC <strong className="text-[#f0f1f3]">{moverMoney(selected.first_mc)}</strong><span className="mx-1.5 text-[#d4b47d]">→</span>Peak <strong className="text-[#f0f1f3]">{moverMoney(selected.peak_mc)}</strong></span>
       </div>
     </div>}
-    <div className="mt-6 grid grid-cols-3 divide-x divide-[#29333e] rounded-[11px] border border-[#29343e] bg-[#0d131a] px-1.5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] sm:mt-7 sm:px-3 sm:py-5" aria-label="Top mover summary">
+    <div className="mt-6 grid grid-cols-3 divide-x divide-[#29333e] border-t border-[#2b3540] px-1.5 pt-5 pb-0 sm:mt-7 sm:px-3 sm:pt-6" aria-label="Top mover summary">
       {[
         {label:"RANKED",value:ready?String(feed.movers.length):"—",symbol:"◇"},
         {label:"TOP MOVE",value:top!==null?top.toFixed(2)+"×":"—",symbol:"↗"},
@@ -832,7 +832,7 @@ function HeroAlertReel(){
         <span className="hidden shrink-0 font-display text-[19px] font-semibold text-[#d6ab6d] sm:block" aria-hidden="true">{stat.symbol}</span>
         <div className="min-w-0 text-center sm:text-left">
           <div className="whitespace-nowrap text-[8px] font-semibold uppercase tracking-[.07em] text-[#a6afb9] sm:text-[9px]">{stat.label}</div>
-          <div className="mt-0.5 whitespace-nowrap font-display text-[16px] font-bold leading-none tabular-nums text-[#e9edf2] sm:text-[20px]">{stat.value}</div>
+          <div className="mt-0.5 whitespace-nowrap font-display text-[16px] font-bold leading-none tabular-nums text-[#e9edf2] sm:text-[16px] lg:text-[20px]">{stat.value}</div>
         </div>
       </div>)}
     </div>
@@ -1429,7 +1429,7 @@ export default function Page() {
           <FeatureRow active={featuresInView} />
         </div>
 
-        <div data-alpha-hero-right className="md:col-span-6 md:pl-2 md:pt-8 lg:pt-10">
+        <div data-alpha-hero-right className="md:col-span-6 md:pl-2 md:pt-2 lg:pt-4">
           <div className="relative">
             <div className="relative z-20 mb-6 flex justify-center md:absolute md:-top-10 md:right-0 md:mb-0 md:justify-end">
               <div

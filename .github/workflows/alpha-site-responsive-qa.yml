@@ -64,6 +64,8 @@ jobs:
         run: node qa/alpha-top3-widget.mjs
       - name: Verify matched hero vertical rhythm and sequential rolling numbers
         run: node qa/alpha-hero-rhythm.mjs
+      - name: Verify cohesive Top 3 frame, spacing, readable cards and responsive layouts
+        run: node qa/alpha-top3-panel.mjs
       - name: Store viewport screenshots and results
         if: always()
         uses: actions/upload-artifact@v4
