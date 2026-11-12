@@ -2,24 +2,27 @@
 import {useEffect,useState} from "react";
 import {useSupabase} from "@/components/SupabaseProvider";
 type EventRow={event_id:string;event_at:string;symbol:string;mint:string;lane:string;alert_mc:number|null;proof_kind:string;public_delivery_verified:boolean};
-type Page={state:string;total?:number;offset?:number;limit?:number;events?:EventRow[];delay_hours?:number};
+type Page={state:string;total?:number;limit?:number;events?:EventRow[];delay_hours?:number;has_more?:boolean;next_cursor?:string|null};
 const PAGE_SIZE=50;
 const money=(n:number|null)=>n!=null&&Number(n)>0?"$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:0}):"—";
 export default function HistoryEventsPanel(){
  const {session}=useSupabase();
- const [offset,setOffset]=useState(0);
+ const [cursors,setCursors]=useState<(string|null)[]>([null]);
+ const [pageIndex,setPageIndex]=useState(0);
+ const cursor=cursors[pageIndex]??null;
  const [page,setPage]=useState<Page>({state:"loading"});
  useEffect(()=>{
   if(!session?.access_token){setPage({state:"unauthorized"});return;}
   const controller=new AbortController();
   setPage({state:"loading"});
-  fetch("/api/intelligence/history?offset="+offset+"&limit="+PAGE_SIZE,{
+  const query="/api/intelligence/history?limit="+PAGE_SIZE+(cursor?"&cursor="+encodeURIComponent(cursor):"");
+  fetch(query,{
    headers:{Authorization:"Bearer "+session.access_token},cache:"no-store",signal:controller.signal
   }).then(async r=>r.ok?await r.json():{state:"unavailable"})
    .then(data=>{if(!controller.signal.aborted)setPage(data)})
    .catch(()=>{if(!controller.signal.aborted)setPage({state:"unavailable"})});
   return()=>controller.abort();
- },[session?.access_token,offset]);
+ },[session?.access_token,cursor]);
  const ready=page.state==="ready"&&Array.isArray(page.events)&&Number.isSafeInteger(page.total);
  const total=ready?page.total??0:0, rows=ready?page.events??[]:[];
  return <section className="mx-auto max-w-6xl px-3 py-7 text-[#eff0f2] sm:px-5" aria-label="Historical alert events">
@@ -40,11 +43,15 @@ export default function HistoryEventsPanel(){
       <td className="text-[#aeb7c3]">{e.public_delivery_verified?"Verified delivery":"Post-send correlation"}</td>
      </tr>)}</tbody></table></div>
     <div className="mt-5 flex items-center justify-between gap-3">
-     <span className="text-xs tabular-nums text-[#aeb3bc]">{total?offset+1:0}–{Math.min(total,offset+rows.length)} of {total.toLocaleString("en-US")}</span>
+     <span className="text-xs tabular-nums text-[#aeb3bc]">{total?pageIndex*PAGE_SIZE+1:0}–{Math.min(total,pageIndex*PAGE_SIZE+rows.length)} of {total.toLocaleString("en-US")}</span>
      <div className="flex gap-2">
-      <button type="button" disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-PAGE_SIZE))}
+      <button type="button" disabled={pageIndex===0} onClick={()=>setPageIndex(i=>Math.max(0,i-1))}
        className="rounded-lg border border-[#514a3c] px-4 py-2 text-xs disabled:opacity-35">Previous</button>
-      <button type="button" disabled={offset+rows.length>=total} onClick={()=>setOffset(offset+PAGE_SIZE)}
+      <button type="button" disabled={!page.next_cursor||!page.has_more} onClick={()=>{
+       if(!page.next_cursor)return;
+       setCursors(previous=>[...previous.slice(0,pageIndex+1),page.next_cursor!]);
+       setPageIndex(pageIndex+1);
+      }}
        className="rounded-lg border border-[#514a3c] px-4 py-2 text-xs disabled:opacity-35">Next</button>
      </div>
     </div>
