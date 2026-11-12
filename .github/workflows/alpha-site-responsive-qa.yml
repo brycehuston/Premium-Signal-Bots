@@ -62,6 +62,8 @@ jobs:
         run: node qa/alpha-owner-autosync.mjs
       - name: Verify compact Top 3 cards and actual data states at phone and desktop sizes
         run: node qa/alpha-top3-widget.mjs
+      - name: Verify matched hero vertical rhythm and sequential rolling numbers
+        run: node qa/alpha-hero-rhythm.mjs
       - name: Store viewport screenshots and results
         if: always()
         uses: actions/upload-artifact@v4
