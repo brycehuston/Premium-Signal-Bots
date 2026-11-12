@@ -4,7 +4,7 @@ import path from "node:path";
 const base=process.env.BASE_URL||"http://127.0.0.1:3000";
 const dir=path.join(process.cwd(),"qa-cinematic-artifacts");
 await mkdir(dir,{recursive:true});
-const sizes=[{w:320,h:700},{w:390,h:844},{w:430,h:932},{w:768,h:1024},{w:844,h:390},{w:1440,h:900}];
+const sizes=[{w:320,h:700},{w:375,h:812},{w:390,h:844},{w:430,h:932},{w:768,h:1024},{w:844,h:390},{w:1024,h:900},{w:1280,h:900},{w:1440,h:900}];
 const browser=await chromium.launch({headless:true});
 const checks=[];const errors=[];
 for(const {w,h} of sizes)for(const stage of [1,2,3]){

@@ -7,7 +7,7 @@ import {ALPHA_LANES} from "@/lib/plans";
 type Access="loading"|"owner"|"subscriber"|"none"|"unavailable";
 type Preview="loading"|"eligible"|"active"|"expired"|"unavailable";
 type Day={date:string;alerts:number;first_mints:number;early:number;genesis:number;trend:number;strict:number;reclaim:number;runner:number};
-const laneEntitlements:Record<string,string[]>={"alpha-early-alerts":["EARLY"],"alpha-trend-alerts":["TREND"],"alpha-runner-alerts":["RUNNER"],"alpha-bundle":["EARLY","TREND","RUNNER"]};
+const signalKeys:Record<string,string>={alpha_early:"EARLY",alpha_genesis:"GENESIS",alpha_trend:"TREND",alpha_strict:"STRICT",alpha_reclaim:"RECLAIM",alpha_runner:"RUNNER"};
 export default function AlphaCommand(){
  const {session,loading,signOut}=useSupabase();
  const token=session?.access_token;
@@ -19,7 +19,7 @@ export default function AlphaCommand(){
  const [lane,setLane]=useState<"all"|"early"|"genesis"|"trend"|"strict"|"reclaim"|"runner">("all");
  const [selected,setSelected]=useState("");
  const [time,setTime]=useState(0);
- const [profile,setProfile]=useState<{plan?:string;is_active?:boolean}|null>(null);
+ const [profile,setProfile]=useState<{plan?:string;is_active?:boolean;entitlements?:string[]}|null>(null);
  const [profileState,setProfileState]=useState<"loading"|"ready"|"unavailable">("loading");
  const request=useCallback(async(path:string,method="GET")=>{
   if(!token)throw Error("not_authenticated");
@@ -51,7 +51,7 @@ export default function AlphaCommand(){
   const c=new AbortController();
   fetch(url.replace(/\/$/,"")+"/me",{headers:{Authorization:"Bearer "+token},cache:"no-store",signal:c.signal})
    .then(async r=>{if(!r.ok)throw Error("membership_unavailable");return r.json()})
-   .then(x=>{if(!c.signal.aborted){setProfile(x&&typeof x.plan==="string"?x:null);setProfileState("ready")}})
+   .then(x=>{if(!c.signal.aborted){setProfile(x&&typeof x.plan==="string"?x:null);setProfileState(x&&typeof x.plan==="string"?"ready":"unavailable")}})
    .catch(()=>{if(!c.signal.aborted)setProfileState("unavailable")});
   return()=>c.abort();
  },[token,loading,check]);
@@ -76,8 +76,10 @@ export default function AlphaCommand(){
  }
  if(loading)return <main role="status" className="mx-auto max-w-5xl p-8 text-[#c1c4c9]">Checking your account…</main>;
  if(!token)return <main className="mx-auto max-w-4xl px-5 py-16 text-center"><p className="text-[11px] tracking-[.28em] text-[#e7bc67]">ALPHA COMMAND</p><h1 className="mt-5 font-display text-3xl text-[#f3f0e9]">Your account, one place.</h1><p className="mt-4 text-[#b7bcc4]">Sign in to view your lanes, membership and intelligence access.</p><Link href="/login" className="mt-7 inline-flex min-h-11 items-center rounded-lg border border-[#b38d53] px-6 text-[#f0cb8e]">SIGN IN</Link></main>;
- const verified=profileState==="ready"&&profile?.is_active===true&&access==="subscriber";
- const entitled=verified&&profile?.plan?laneEntitlements[profile.plan]??[]:[];
+ const verified=access==="subscriber";
+ const entitled=verified&&profileState==="ready"&&Array.isArray(profile?.entitlements)
+  ?profile.entitlements.map(e=>signalKeys[e]).filter((e):e is string=>typeof e==="string")
+  :[];
  const status=access==="owner"?"Owner":verified?"Active subscriber":access==="unavailable"||profileState==="unavailable"?"Status unavailable":profile?.is_active===false?"Inactive / no active plan":"Membership not confirmed";
  const filtered=daily.map(d=>({date:d.date,value:lane==="all"?d.alerts:d[lane]}));
  const peak=Math.max(1,...filtered.map(d=>d.value));
