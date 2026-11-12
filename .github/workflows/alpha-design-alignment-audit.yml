@@ -1,0 +1,53 @@
+name: Alpha Design Alignment Read-Only Audit
+on:
+  push:
+    branches:
+      - design/alpha-command-product-lock-and-audit-20261112
+    paths:
+      - "hub-frontend/qa/alpha-design-alignment-audit.mjs"
+      - ".github/workflows/alpha-design-alignment-audit.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    defaults:
+      run:
+        working-directory: hub-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: hub-frontend/package-lock.json
+      - name: Install site and browser dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install chromium
+      - name: Start local site
+        run: |
+          (npm run dev -- --hostname 127.0.0.1 --port 3000 > /tmp/alpha-design-audit.log 2>&1 &)
+          for n in $(seq 1 90); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:3000/; then exit 0; fi
+            sleep 2
+          done
+          tail -100 /tmp/alpha-design-audit.log
+          exit 1
+        env:
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+          NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: test-public-anon-for-local-synthetic-qa
+      - name: Measure page geometry and capture screenshots
+        run: node qa/alpha-design-alignment-audit.mjs
+      - name: Upload visual audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-design-audit-evidence
+          path: hub-frontend/qa-screenshots/design-audit/
+          if-no-files-found: warn
+          retention-days: 7
