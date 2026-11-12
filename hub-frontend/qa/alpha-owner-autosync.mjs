@@ -60,7 +60,7 @@ for(const width of [390,1440]) {
    }
  });
  try{
-  const response=await page.goto(origin+"/dashboard",{waitUntil:"domcontentloaded",timeout:25000});
+  const response=await page.goto(origin+"/dashboard/intelligence",{waitUntil:"domcontentloaded",timeout:25000});
   if(response?.status()!==200)throw new Error("dashboard HTTP "+response?.status());
   if(width===390){
     await page.getByText("FEED UNAVAILABLE",{exact:true}).waitFor({timeout:12000});
