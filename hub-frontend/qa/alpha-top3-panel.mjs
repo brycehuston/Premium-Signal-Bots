@@ -51,7 +51,8 @@ for (const width of widths) {
         background:style.backgroundColor,borderColor:style.borderTopColor,borderWidth:style.borderTopWidth,
         radius:style.borderTopLeftRadius,paddingTop:parseFloat(style.paddingTop),paddingBottom:parseFloat(style.paddingBottom),
         paddingLeft:parseFloat(style.paddingLeft),statTopBorder:statStyle.borderTopWidth,statBackground:statStyle.backgroundColor,
-        cardStyles:computedCardStyles};
+        cardStyles:computedCardStyles,
+        symbolWidths:cards.map(card=>{const el=card.querySelector("[data-alpha-mover-symbol]");return {client:el?.clientWidth??0,scroll:el?.scrollWidth??0,text:el?.textContent??""};})};
     });
 
     assert.equal(layout.viewport,width,"Viewport width mismatch");
@@ -75,6 +76,8 @@ for (const width of widths) {
     assert(layout.note.top-layout.stats.bottom >= 12,"Disclosure crowded against stats");
     assert(layout.panel.bottom-layout.note.bottom >= 17,"Insufficient bottom padding");
     assert(layout.cardStyles.every(x=>x.border==="1px"&&x.shadow!=="none"),"Card distinction or underglow lost");
+    assert(layout.symbolWidths.every(x=>x.client>0 && x.scroll<=x.client+1),
+      "A normal-length token is truncated: "+JSON.stringify(layout.symbolWidths));
     if(width >= 1024){
       assert(layout.eyebrow && Math.abs(layout.title.top-layout.eyebrow.top) <= 48,
         "Right header misaligned relative to left hero");
@@ -83,6 +86,7 @@ for (const width of widths) {
     for(const value of ["RANKED","3","TOP MOVE","18.39×","AVG MOVE","11.72×"])
       assert(statsText.includes(value),"Missing derived summary: "+value);
 
+    await page.addStyleTag({content:"nextjs-portal{display:none!important}"});
     await panel.screenshot({path:path.join(artifactDir,"top3-panel-"+width+".png"),animations:"disabled"});
     if(width===390||width===1324){
       await page.screenshot({path:path.join(artifactDir,"top3-home-"+width+".png"),animations:"disabled"});
