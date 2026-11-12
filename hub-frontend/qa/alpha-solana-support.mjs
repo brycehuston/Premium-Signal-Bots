@@ -29,6 +29,24 @@ try{
    assert.equal(await sol.getAttribute("aria-pressed"),"true");
    assert.match(await detail.innerText(),/Solana network/i);
    assert.equal(await detail.locator("svg").count()>0,true,"QR present");
+   assert.equal(await detail.locator("code").innerText(),address,"visible wallet matches approved key");
+   await page.evaluate(() => { window.__alphaCopiedAddress="";
+     Object.defineProperty(navigator,"clipboard",{configurable:true,
+       value:{writeText:async text => {window.__alphaCopiedAddress=text;}}}); });
+   await detail.getByRole("button",{name:"COPY WALLET ADDRESS"}).click();
+   await detail.getByRole("button",{name:"ADDRESS COPIED"}).waitFor();
+   assert.equal(await page.evaluate(() => window.__alphaCopiedAddress),address,
+     "copy button must supply the approved Solana address");
+   await usdc.click();
+   assert.equal(await usdc.getAttribute("aria-pressed"),"true");
+   assert.equal(await detail.locator("code").innerText(),address,
+     "SOL and USDC must share the same Solana-network address");
+   await toggle.click();
+   assert.equal(await toggle.getAttribute("aria-expanded"),"false",
+     "wallet details must close on user action");
+   await toggle.click();
+   assert.equal(await toggle.getAttribute("aria-expanded"),"true",
+     "wallet details must reopen without losing the configured key");
    const bounds=await detail.getByText(address,{exact:true}).boundingBox();
    assert.ok(bounds&&bounds.width>0,"address displayed");
    await page.screenshot({path:path.join(folder,"support-"+width+".png"),animations:"disabled",fullPage:true});
