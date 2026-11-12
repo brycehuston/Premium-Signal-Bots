@@ -616,7 +616,7 @@ function FeatureRow({ active }: { active: boolean }) {
   }, [bellActive, heavyRing]);
 
   return (
-      <div className="mt-4 space-y-1.5">
+      <div className="mt-5 space-y-1.5 md:mt-6">
         {/* Pill sequence animation: keep layout stable and stagger each chip. */}
         <motion.div
           className="flex flex-wrap justify-center gap-3 md:flex-nowrap md:justify-start"
@@ -785,8 +785,8 @@ function HeroAlertReel(){
     {accent:"#b68bf9",rgb:"182,139,249",label:"#c6a2ff"}
   ];
   return <section aria-label="Alpha Alerts top movers" className="mx-auto w-full max-w-[590px] min-w-0 px-1 py-2 sm:px-2">
-    <header className="mb-4 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center">
-      <h2 className="font-display text-[13px] font-bold uppercase tracking-[.22em] text-[#eff0f3] sm:text-[14px]">Top 3 Movers</h2>
+    <header className="mb-5 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center lg:mb-6">
+      <h2 data-alpha-top3-heading className="font-display text-[13px] font-bold uppercase tracking-[.22em] text-[#eff0f3] sm:text-[14px]">Top 3 Movers</h2>
       <span className="hidden h-3 w-px bg-[#434951] min-[380px]:block" aria-hidden="true"/>
       <span className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#9fa8b4] sm:text-[10px]">
         {feed.state==="historical"?"Latest verified ranking":feed.state==="verified"?"Last 24 hours":"Observed market-cap peaks"}
@@ -806,7 +806,7 @@ function HeroAlertReel(){
           aria-controls={item?"alpha-mover-expanded":undefined}
           aria-label={item?String(index+1)+". "+item.symbol+", "+item.lane+", "+item.multiple.toFixed(2)+" times. Called "+moverDate(item.called_at_utc)+" at market cap "+moverMoney(item.first_mc)+", observed peak "+moverMoney(item.peak_mc)+". Select for details.":"Rank "+String(index+1)+": no verified mover"}
           title={item?item.symbol+" · "+item.lane+"\nCalled: "+moverDate(item.called_at_utc)+"\nMarket cap: "+moverMoney(item.first_mc)+" → "+moverMoney(item.peak_mc)+"\nObserved peak: "+item.multiple.toFixed(2)+"×":undefined}
-          className="group relative flex min-h-[129px] min-w-0 flex-col items-center overflow-hidden rounded-[11px] border border-[#303b46] bg-gradient-to-b from-[#171e25] via-[#121921] to-[#10171e] px-1.5 pb-3 pt-3 text-center outline-none transition-[border-color,transform] duration-200 hover:border-[#65717c] focus-visible:border-[#e8bc77] focus-visible:ring-2 focus-visible:ring-[#e8bc77]/60 disabled:cursor-default disabled:hover:border-[#303b46] sm:min-h-[148px] sm:px-3 sm:pb-4 sm:pt-4 motion-safe:hover:-translate-y-0.5"
+          className="group relative flex min-h-[155px] min-w-0 flex-col items-center overflow-hidden rounded-[11px] border border-[#303b46] bg-gradient-to-b from-[#171e25] via-[#121921] to-[#10171e] px-1.5 pb-3 pt-3 text-center outline-none transition-[border-color,transform] duration-200 hover:border-[#65717c] focus-visible:border-[#e8bc77] focus-visible:ring-2 focus-visible:ring-[#e8bc77]/60 disabled:cursor-default disabled:hover:border-[#303b46] sm:min-h-[178px] sm:px-3 sm:pb-4 sm:pt-4 lg:min-h-[194px] motion-safe:hover:-translate-y-0.5"
           style={{boxShadow:"inset 0 -1px 0 rgba("+tone.rgb+",.48), 0 6px 18px -14px rgba("+tone.rgb+",.75)"}}>
           <span className="absolute left-2 top-2.5 font-display text-[10px] font-bold tabular-nums text-[#c7cbd2] sm:left-3 sm:top-3 sm:text-[11px]" aria-hidden="true">{String(index+1).padStart(2,"0")}</span>
           <span className="relative z-10 mt-1 block w-full max-w-full truncate px-3 font-display text-[10px] font-bold tracking-[-.03em] text-[#f0f1f3] min-[390px]:text-[11px] sm:mt-0.5 sm:text-[14px]">{item?"$"+item.symbol:"—"}</span>
@@ -823,7 +823,7 @@ function HeroAlertReel(){
         <span>Call MC <strong className="text-[#f0f1f3]">{moverMoney(selected.first_mc)}</strong><span className="mx-1.5 text-[#d4b47d]">→</span>Peak <strong className="text-[#f0f1f3]">{moverMoney(selected.peak_mc)}</strong></span>
       </div>
     </div>}
-    <div className="mt-4 grid grid-cols-3 divide-x divide-[#29333e] rounded-[11px] border border-[#29343e] bg-[#0d131a] px-1.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] sm:px-3 sm:py-3.5" aria-label="Top mover summary">
+    <div className="mt-6 grid grid-cols-3 divide-x divide-[#29333e] rounded-[11px] border border-[#29343e] bg-[#0d131a] px-1.5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] sm:mt-7 sm:px-3 sm:py-5" aria-label="Top mover summary">
       {[
         {label:"RANKED",value:ready?String(feed.movers.length):"—",symbol:"◇"},
         {label:"TOP MOVE",value:top!==null?top.toFixed(2)+"×":"—",symbol:"↗"},
@@ -836,7 +836,7 @@ function HeroAlertReel(){
         </div>
       </div>)}
     </div>
-    <p className="mt-2.5 text-center text-[9px] leading-4 text-[#9ba6b2]">
+    <p className="mt-4 text-center text-[9px] leading-4 text-[#9ba6b2]">
       {ready?"Observed market-cap peaks, not realized trading returns. Select a mover for call details.":"No corroborated mover records are available. The latest verified historical ranking will appear when available."}
     </p>
   </section>;
@@ -1378,14 +1378,14 @@ export default function Page() {
 
       <motion.section
         {...revealProps}
-        className="grid grid-cols-1 items-start gap-10 md:grid-cols-12 md:gap-4"
+        className="grid grid-cols-1 items-start gap-10 md:grid-cols-12 md:gap-6 lg:gap-8"
       >
         <div
           ref={featuresScope as any}
           className="text-center md:col-span-6 md:pr-2 md:pt-8 lg:pt-10 md:text-left"
         >
-          <div className="space-y-5">
-            <div className="text-[0.8rem] uppercase tracking-[0.4em] text-muted/80 sm:text-eyebrow">
+          <div className="space-y-6 lg:space-y-7">
+            <div data-alpha-hero-eyebrow className="text-[0.8rem] uppercase tracking-[0.4em] text-muted/80 sm:text-eyebrow">
               AlphaAlerts
             </div>
             <h1 className="font-display text-silver leading-[1.12]">
@@ -1401,7 +1401,7 @@ export default function Page() {
             </p>
           </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:mt-8">
             <Button
               href="/pricing"
               size="lg"
@@ -1429,9 +1429,9 @@ export default function Page() {
           <FeatureRow active={featuresInView} />
         </div>
 
-        <div className="md:col-span-6 md:pl-2">
-          <div className="space-y-4 md:space-y-6">
-            <div className="flex justify-center md:justify-end">
+        <div data-alpha-hero-right className="md:col-span-6 md:pl-2 md:pt-8 lg:pt-10">
+          <div className="relative">
+            <div className="relative z-20 mb-6 flex justify-center md:absolute md:-top-10 md:right-0 md:mb-0 md:justify-end">
               <div
                 className="flex items-center gap-2 rounded-full border border-stroke/60 bg-surface/60 px-2 py-1"
                 role="tablist"
@@ -1472,7 +1472,7 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="relative isolate min-h-[400px] sm:min-h-[420px] md:min-h-[460px] overflow-hidden sm:overflow-visible">
+            <div className="relative isolate min-h-[430px] sm:min-h-[465px] md:min-h-[480px] overflow-hidden sm:overflow-visible">
               <motion.div
                 aria-hidden={heroView !== "chart"}
                 className="absolute inset-0"
@@ -1491,7 +1491,7 @@ export default function Page() {
               </motion.div>
               <motion.div
                 aria-hidden={heroView !== "reel"}
-                className="absolute inset-0 flex items-center justify-center"
+                className="absolute inset-0 flex items-start justify-center"
                 animate={
                   heroView === "reel"
                     ? { opacity: 1, scale: 1, filter: "blur(0px)" }
@@ -2348,18 +2348,19 @@ export default function Page() {
             These are system and roadmap counts, not latency, uptime or trading-performance claims.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+        <div data-alpha-number-grid className="grid gap-4 md:grid-cols-3 md:gap-5">
           {[
             { value: 6, label: "ALPHA LANES", detail: "Six distinct scanner identities" },
             { value: 3, label: "SYSTEM STAGES", detail: "Interactive workflow walkthrough" },
             { value: 2, label: "FUTURE CHAINS", detail: "BSC + ETH · planned, not live" },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-[15px] border border-[#32343a] bg-[#131417] p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-7">
+          ].map((stat,index) => (
+            <div data-alpha-number-order={index} key={stat.label} className="rounded-[15px] border border-[#32343a] bg-[#131417] p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-7">
               <div className="flex min-h-[50px] items-center justify-center">
                 <RollingNumber
                   value={stat.value}
-                  durationMs={1650}
+                  durationMs={1150}
                   staggerMs={70}
+                  startDelayMs={index*1350}
                   cycles={1}
                   className="font-display text-[42px] font-semibold tracking-[-0.035em] text-[#f0f0f2] sm:text-[48px]"
                 />
