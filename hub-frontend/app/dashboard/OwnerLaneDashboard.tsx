@@ -269,7 +269,7 @@ export default function LaneIntelligenceDashboard(){
       <input ref={archiveFileRef} type="file" accept=".html,.json,text/html,application/json" onChange={loadFile} hidden tabIndex={-1}/>
      </div>
     </div>
-    {serverAsOf&&<div role="status" className="ai-local-note">PRIVATE OWNER FEED · {liveState==="current"?"CONNECTED":"RECONNECTING"} · LATEST SNAPSHOT {new Date(serverAsOf).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"})} PT. Counts are scanner-recorded, not verified deliveries or P&amp;L.</div>}
+    {serverAsOf&&<div role="status" className="ai-local-note">PRIVATE OWNER FEED · {liveState==="current"?"CONNECTED":"RECONNECTING"} · LATEST SNAPSHOT {new Date(serverAsOf).toLocaleString("en-CA",{timeZone:"America/Vancouver",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"})}. Counts are scanner-recorded, not verified deliveries or P&amp;L.</div>}
     {liveIssue&&<p className="ai-local-note" role="status">{liveIssue}</p>}
     {error&&<p className="ai-error" role="alert">{error}</p>}
     {data&&!serverAsOf&&<p className="ai-local-note" role="status">
