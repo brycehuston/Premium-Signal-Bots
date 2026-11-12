@@ -40,7 +40,7 @@ try{
    await page.screenshot({path:path.join(dir,"pricing-"+width+".png"),animations:"disabled",fullPage:true});
    const unauth=await page.goto(base+"/dashboard",{waitUntil:"domcontentloaded",timeout:40000});
    assert.equal(unauth?.status(),200,"public auth-gate availability");
-   await page.getByRole("link",{name:"SIGN IN",exact:true}).waitFor({timeout:15000});
+   await page.locator("main").getByRole("link",{name:"SIGN IN",exact:true}).waitFor({timeout:15000});
    await page.screenshot({path:path.join(dir,"account-unauth-"+width+".png"),animations:"disabled"});
    results.push({width,offers:6,unauthGuard:true,dimensions,errors});
   }catch(e){failures.push({width,error:String(e).slice(0,900)})}finally{await page.close()}
