@@ -50,7 +50,7 @@ globalThis.fetch = async (input,init={}) => {
       public_movers:null,
     }]);
   }
-  if(url.origin === 'https://members.example.test' && url.pathname === '/me') {
+  if((url.origin === 'https://members.example.test' || url.origin === 'https://premium-signal-bots.onrender.com') && url.pathname === '/me') {
     assert.equal(init.headers.Authorization, 'Bearer '+keys.member);
     if(!memberOnline) throw Error('membership backend unavailable');
     return json({email:'member@example.test',role:'user',plan:'alpha-trend-alerts',is_active:memberActive});
@@ -95,9 +95,9 @@ test('inactive subscription and backend outage deny subscriber request',async()=
   assert.equal((await read('subscriber',keys.member)).status,503);
   memberOnline=true;
 });
-test('missing membership configuration fails closed',async()=>{
+test('unconfigured Edge env uses trusted production membership backend',async()=>{
   const old=env.ALPHA_MEMBERSHIP_API_BASE;env.ALPHA_MEMBERSHIP_API_BASE='';
-  assert.equal((await read('subscriber',keys.member)).status,503);
+  assert.equal((await read('subscriber',keys.member)).status,200);
   env.ALPHA_MEMBERSHIP_API_BASE=old;
 });
 test('missing private owner record fails closed',async()=>{
