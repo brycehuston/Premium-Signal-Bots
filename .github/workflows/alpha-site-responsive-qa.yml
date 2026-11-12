@@ -40,6 +40,10 @@ jobs:
           npm ci --no-audit --no-fund
           npm install --no-save --no-audit --no-fund playwright@1.56.1
           npx playwright install chromium
+      - name: Verify Edge private-tier authorization and TypeScript
+        run: |
+          node --experimental-strip-types --test qa/alpha-edge-tier-auth.test.mjs
+          npx tsc --pretty false --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM --strict --skipLibCheck ../supabase/functions/alpha-insights/tier-auth.ts
       - name: Start local site
         run: |
           (npm run dev -- --hostname 127.0.0.1 --port 3000 > /tmp/alpha-site-next.log 2>&1 &)
