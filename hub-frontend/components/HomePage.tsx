@@ -784,8 +784,8 @@ function HeroAlertReel(){
     {accent:"#38bff2",rgb:"56,191,242",label:"#54c9ef"},
     {accent:"#b68bf9",rgb:"182,139,249",label:"#c6a2ff"}
   ];
-  return <section aria-label="Alpha Alerts top movers" className="mx-auto w-full max-w-[590px] min-w-0 px-1 py-2 sm:px-2">
-    <header className="mb-5 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center lg:mb-6">
+  return <section aria-label="Alpha Alerts top movers" data-alpha-top3-frame className="mx-auto w-full max-w-[590px] min-w-0 rounded-[16px] border border-[#29333d] bg-[#0e1319] px-3.5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:rounded-[18px] sm:px-5 sm:py-6 lg:px-6">
+    <header className="mb-6 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center">
       <h2 data-alpha-top3-heading className="font-display text-[13px] font-bold uppercase tracking-[.22em] text-[#eff0f3] sm:text-[14px]">Top 3 Movers</h2>
       <span className="hidden h-3 w-px bg-[#434951] min-[380px]:block" aria-hidden="true"/>
       <span className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#9fa8b4] sm:text-[10px]">
@@ -823,7 +823,7 @@ function HeroAlertReel(){
         <span>Call MC <strong className="text-[#f0f1f3]">{moverMoney(selected.first_mc)}</strong><span className="mx-1.5 text-[#d4b47d]">→</span>Peak <strong className="text-[#f0f1f3]">{moverMoney(selected.peak_mc)}</strong></span>
       </div>
     </div>}
-    <div className="mt-6 grid grid-cols-3 divide-x divide-[#29333e] rounded-[11px] border border-[#29343e] bg-[#0d131a] px-1.5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] sm:mt-7 sm:px-3 sm:py-5" aria-label="Top mover summary">
+    <div className="mt-6 grid grid-cols-3 divide-x divide-[#29333e] border-t border-[#2b3540] px-1.5 pt-5 pb-0 sm:mt-7 sm:px-3 sm:pt-6" aria-label="Top mover summary">
       {[
         {label:"RANKED",value:ready?String(feed.movers.length):"—",symbol:"◇"},
         {label:"TOP MOVE",value:top!==null?top.toFixed(2)+"×":"—",symbol:"↗"},
@@ -1429,7 +1429,7 @@ export default function Page() {
           <FeatureRow active={featuresInView} />
         </div>
 
-        <div data-alpha-hero-right className="md:col-span-6 md:pl-2 md:pt-8 lg:pt-10">
+        <div data-alpha-hero-right className="md:col-span-6 md:pl-2 md:pt-2 lg:pt-4">
           <div className="relative">
             <div className="relative z-20 mb-6 flex justify-center md:absolute md:-top-10 md:right-0 md:mb-0 md:justify-end">
               <div
