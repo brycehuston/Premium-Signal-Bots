@@ -786,7 +786,7 @@ function HeroAlertReel(){
   ];
   return <section aria-label="Alpha Alerts top movers" className="mx-auto w-full max-w-[590px] min-w-0 px-1 py-2 sm:px-2">
     <header className="mb-5 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center lg:mb-6">
-      <h2 className="font-display text-[13px] font-bold uppercase tracking-[.22em] text-[#eff0f3] sm:text-[14px]">Top 3 Movers</h2>
+      <h2 data-alpha-top3-heading className="font-display text-[13px] font-bold uppercase tracking-[.22em] text-[#eff0f3] sm:text-[14px]">Top 3 Movers</h2>
       <span className="hidden h-3 w-px bg-[#434951] min-[380px]:block" aria-hidden="true"/>
       <span className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#9fa8b4] sm:text-[10px]">
         {feed.state==="historical"?"Latest verified ranking":feed.state==="verified"?"Last 24 hours":"Observed market-cap peaks"}
@@ -1385,7 +1385,7 @@ export default function Page() {
           className="text-center md:col-span-6 md:pr-2 md:pt-8 lg:pt-10 md:text-left"
         >
           <div className="space-y-6 lg:space-y-7">
-            <div className="text-[0.8rem] uppercase tracking-[0.4em] text-muted/80 sm:text-eyebrow">
+            <div data-alpha-hero-eyebrow className="text-[0.8rem] uppercase tracking-[0.4em] text-muted/80 sm:text-eyebrow">
               AlphaAlerts
             </div>
             <h1 className="font-display text-silver leading-[1.12]">
@@ -1429,7 +1429,7 @@ export default function Page() {
           <FeatureRow active={featuresInView} />
         </div>
 
-        <div className="md:col-span-6 md:pl-2 md:pt-8 lg:pt-10">
+        <div data-alpha-hero-right className="md:col-span-6 md:pl-2 md:pt-8 lg:pt-10">
           <div className="relative">
             <div className="relative z-20 mb-6 flex justify-center md:absolute md:-top-10 md:right-0 md:mb-0 md:justify-end">
               <div
@@ -2348,13 +2348,13 @@ export default function Page() {
             These are system and roadmap counts, not latency, uptime or trading-performance claims.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+        <div data-alpha-number-grid className="grid gap-4 md:grid-cols-3 md:gap-5">
           {[
             { value: 6, label: "ALPHA LANES", detail: "Six distinct scanner identities" },
             { value: 3, label: "SYSTEM STAGES", detail: "Interactive workflow walkthrough" },
             { value: 2, label: "FUTURE CHAINS", detail: "BSC + ETH · planned, not live" },
           ].map((stat,index) => (
-            <div key={stat.label} className="rounded-[15px] border border-[#32343a] bg-[#131417] p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-7">
+            <div data-alpha-number-order={index} key={stat.label} className="rounded-[15px] border border-[#32343a] bg-[#131417] p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-7">
               <div className="flex min-h-[50px] items-center justify-center">
                 <RollingNumber
                   value={stat.value}
