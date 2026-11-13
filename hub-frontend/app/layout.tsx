@@ -6,6 +6,7 @@ import { Manrope, Sora } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import React from "react";
+import Script from "next/script";
 import BottomTickerBar from "@/components/BottomTickerBar";
 import Header from "@/components/Header";
 import HideOnStandalone from "@/components/HideOnStandalone";
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${sans.variable} ${display.variable} overflow-x-hidden`}
       suppressHydrationWarning
     >
+      <head><Script src="https://telegram.org/js/telegram-web-app.js?65" strategy="beforeInteractive" /></head>
       <body className="min-h-screen bg-bg text-text antialiased font-sans overflow-x-hidden">
         <SupabaseProvider>
           {/* decorative bg layers */}
