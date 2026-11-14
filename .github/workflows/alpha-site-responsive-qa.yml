@@ -66,6 +66,10 @@ jobs:
         run: node qa/alpha-command-member.mjs
         env:
           BASE_URL: http://127.0.0.1:3000
+      - name: Verify Lane Flow entrance animations and reduced-motion accessibility
+        run: node qa/alpha-lane-motion.mjs
+        env:
+          BASE_URL: http://127.0.0.1:3000
       - name: Verify compact Top 3 cards and actual data states at phone and desktop sizes
         run: node qa/alpha-top3-widget.mjs
       - name: Verify matched hero vertical rhythm and sequential rolling numbers

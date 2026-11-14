@@ -61,8 +61,31 @@ function combinePrivateHistory(base:Archive|null,live:Archive|null):Archive|null
 function Panel({title,detail,children,className="",id}:{title:string;detail?:string;children:React.ReactNode;className?:string;id?:string}){
  return <section id={id} className={"ai-panel "+className}><div className="ai-panel-head"><h2>{title}</h2>{detail&&<span>{detail}</span>}</div>{children}</section>;
 }
+function RollingNumber({value}:{value:number}){
+ const [shown,setShown]=useState(value);
+ const previous=useRef<number|null>(null);
+ useEffect(()=>{
+  const from=previous.current;
+  previous.current=value;
+  const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduced||from===value){setShown(value);return}
+  const initial=from===null?0:from;
+  const duration=from===null?1050:650;
+  let frame=0;const start=performance.now();
+  setShown(initial);
+  const tick=(now:number)=>{
+   const progress=Math.min(1,Math.max(0,(now-start)/duration));
+   const eased=1-Math.pow(1-progress,4);
+   setShown(Math.round(initial+(value-initial)*eased));
+   if(progress<1)frame=requestAnimationFrame(tick);
+  };
+  frame=requestAnimationFrame(tick);
+  return()=>cancelAnimationFrame(frame);
+ },[value]);
+ return <>{fmt(shown)}</>;
+}
 function Bars({rows,max}:{rows:{label:string;value:number;color?:string}[];max:number}){
- return <div className="ai-bars">{rows.map(r=><div className="ai-bar" key={r.label}><span>{r.label}</span><div className="ai-track"><div style={{width:`${Math.max(0,Math.min(100,max?100*r.value/max:0))}%`,background:r.color||"#69aee2"}}/></div><strong>{fmt(r.value)}</strong></div>)}</div>;
+ return <div className="ai-bars">{rows.map((r,i)=><div className="ai-bar" key={r.label}><span>{r.label}</span><div className="ai-track"><div style={{width:`${Math.max(0,Math.min(100,max?100*r.value/max:0))}%`,background:r.color||"#69aee2",animationDelay:`${480+i*75}ms`}}/></div><strong>{fmt(r.value)}</strong></div>)}</div>;
 }
 export default function LaneIntelligenceDashboard(){
  const {session,loading:authLoading,signOut}=useSupabase();
@@ -286,7 +309,7 @@ export default function LaneIntelligenceDashboard(){
  }
  if(authLoading)return <div className="ai-status">Checking your session…</div>;
  if(!session)return <div className="ai-status"><h1>SIGN IN REQUIRED</h1><p>Lane Flow Intelligence is a signed-in workspace.</p><Link href="/login" className="ai-button">SIGN IN</Link></div>;
- return <div className="ai-shell">
+ return <div className="ai-shell ai-motion">
   <div className="ai-workspace">
    <div className="ai-top">
     <div className="ai-top-inner">
@@ -348,12 +371,12 @@ export default function LaneIntelligenceDashboard(){
     {localCheck&&!data&&liveState==="connecting"?<div className="ai-empty ai-empty-loading" role="status"><span>◈</span><h2>CONNECTING TO YOUR VPS</h2><p>Loading private scanner observations from the server. No archive upload is required.</p></div>:!data?<div className="ai-empty"><span>◈</span><h2>{liveState==="unavailable"?"PRODUCTION FEED TEMPORARILY UNAVAILABLE":"CONNECTING TO PRODUCTION DATA"}</h2><p>The private snapshot service normally updates every five minutes. Your dashboard will reconnect automatically; historical archive import is optional.</p><button type="button" className="ai-button" onClick={()=>{setLiveState("connecting");setLiveIssue("");setRetryKey(x=>x+1)}}>RETRY CONNECTION</button></div>:<>
      <div className="ai-filter"><span>HISTORICAL PERIOD · PACIFIC TIME</span><div className="ai-date"><label>FROM <input aria-label="Start date" type="date" value={start} min={data.summary.start} max={data.summary.end} onChange={e=>{setStart(e.target.value);setRange("ALL")}}/></label><label>TO <input aria-label="End date" type="date" value={end} min={data.summary.start} max={data.summary.end} onChange={e=>{setEnd(e.target.value);setRange("ALL")}}/></label></div><div className="ai-range">{(["7D","30D","ALL"] as const).map(r=><button className={range===r?"active":""} onClick={()=>selectRange(r)} key={r}>{r}</button>)}</div></div>
      <div className="ai-kpis">
-      {[[ "ALERT EVENTS",eventTotal,"Repeats included"],["FIRST MINTS",firstTotal,"First appearances"],["OBSERVED HOURS",hours.length,"Hourly observations"],["PULSE KNOWN",pulseKnown,"Hours with matched state"]].map(([label,value,desc])=><div className="ai-metric" key={label}><span>{label}</span><strong>{fmt(Number(value))}</strong><small>{desc}</small></div>)}
+      {[[ "ALERT EVENTS",eventTotal,"Repeats included"],["FIRST MINTS",firstTotal,"First appearances"],["OBSERVED HOURS",hours.length,"Hourly observations"],["PULSE KNOWN",pulseKnown,"Hours with matched state"]].map(([label,value,desc])=><div className="ai-metric" key={label}><span>{label}</span><strong aria-label={fmt(Number(value))}><RollingNumber value={Number(value)}/></strong><small>{desc}</small></div>)}
      </div>
      <div className="ai-hero-grid">
       <Panel title="LANE VOLUME / TREND" detail={`${days.length} SELECTED DAYS`} className="ai-chart-panel"><p className="ai-panel-desc">Recorded events (gold) versus first mint appearances (blue). Current scanner logs are not independently verified Telegram deliveries.</p>
        <div className="ai-volume" role="img" aria-label="Daily alert volume and first appearances">
-        {daysSorted.map((d,i)=><div className="ai-day-col" title={`${d.date_pt}: ${d.all_alerts} alerts; ${d.first_mints} first mints`} key={d.date_pt}><div className="ai-day-bars"><i style={{height:`${100*n(d.all_alerts)/maxDaily}%`,background:"#eabe76"}}/><i style={{height:`${100*n(d.first_mints)/maxDaily}%`,background:"#69aee2"}}/></div>{(i===0||i===daysSorted.length-1||i%Math.max(1,Math.ceil(daysSorted.length/7))===0)&&<span>{d.date_pt.slice(5)}</span>}</div>)}
+        {daysSorted.map((d,i)=><div className="ai-day-col" title={`${d.date_pt}: ${d.all_alerts} alerts; ${d.first_mints} first mints`} key={d.date_pt}><div className="ai-day-bars"><i style={{height:`${100*n(d.all_alerts)/maxDaily}%`,background:"#eabe76",animationDelay:`${580+Math.min(i,45)*20}ms`}}/><i style={{height:`${100*n(d.first_mints)/maxDaily}%`,background:"#69aee2",animationDelay:`${640+Math.min(i,45)*20}ms`}}/></div>{(i===0||i===daysSorted.length-1||i%Math.max(1,Math.ceil(daysSorted.length/7))===0)&&<span>{d.date_pt.slice(5)}</span>}</div>)}
        </div><div className="ai-legend"><span><i style={{background:"#eabe76"}}/>All alerts</span><span><i style={{background:"#69aee2"}}/>First appearances</span></div>
       </Panel>
       <div className="ai-side">
@@ -363,7 +386,7 @@ export default function LaneIntelligenceDashboard(){
      </div>
      <div className="ai-middle">
       <Panel title="RECENT FIRST ALERTS" detail="SELECTED PERIOD"><div className="ai-table-wrap"><table><thead><tr><th>FIRST SEEN (PT)</th><th>TOKEN</th><th>LANE</th><th>FIRST MC</th><th>MSGS</th><th>SOURCE</th></tr></thead><tbody>{firstRows.slice(0,8).map(r=><tr key={r.mint}><td>{r.date}</td><td className="ai-token">{r.symbol}</td><td><span className="ai-lane-chip" style={{color:COLORS[r.lane as Lane]||"#bbc3c6"}}>{r.lane}</span></td><td>{formatMoney(r.mc)}</td><td>{r.alerts}</td><td>{trustedTelegram(r.url)?<a target="_blank" rel="noopener noreferrer" href={trustedTelegram(r.url)!}>TELEGRAM</a>:"—"}</td></tr>)}</tbody></table>{!firstRows.length&&<div className="ai-nodata">No first alerts for this range.</div>}</div></Panel>
-      <Panel title="LANE SHARE" detail="OF SELECTED ALERT EVENTS"><div className="ai-share"><div className="ai-donut" style={{background:eventTotal?`conic-gradient(${LANES.map((l,i)=>{const before=LANES.slice(0,i).reduce((s,k)=>s+totals[k],0)/eventTotal*100;return `${COLORS[l]} ${before}% ${(before+totals[l]/eventTotal*100)}%`}).join(",")})`:"#313941"}}><div><strong>{fmt(eventTotal)}</strong><small>ALERTS</small></div></div><div className="ai-share-legend">{LANES.map(l=><div key={l}><i style={{background:COLORS[l]}}/><span>{l}</span><strong>{eventTotal?(totals[l]/eventTotal*100).toFixed(1):"0.0"}%</strong></div>)}</div></div></Panel>
+      <Panel title="LANE SHARE" detail="OF SELECTED ALERT EVENTS"><div className="ai-share"><div className="ai-donut"><div className="ai-donut-ring" aria-hidden="true" style={{background:eventTotal?`conic-gradient(${LANES.map((l,i)=>{const before=LANES.slice(0,i).reduce((s,k)=>s+totals[k],0)/eventTotal*100;return `${COLORS[l]} ${before}% ${(before+totals[l]/eventTotal*100)}%`}).join(",")})`:"#313941"}}/><div><strong>{fmt(eventTotal)}</strong><small>ALERTS</small></div></div><div className="ai-share-legend">{LANES.map(l=><div key={l}><i style={{background:COLORS[l]}}/><span>{l}</span><strong>{eventTotal?(totals[l]/eventTotal*100).toFixed(1):"0.0"}%</strong></div>)}</div></div></Panel>
      </div>
      <div className="ai-research-title" id="composition"><h2>DEEP RESEARCH / LANE INTELLIGENCE</h2><p>HISTORICAL + CURRENT · READ-ONLY OBSERVATIONS</p></div>
      <div className="ai-middle">

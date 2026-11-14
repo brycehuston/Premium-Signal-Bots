@@ -29,3 +29,11 @@ and fails closed if not configured. Existing owner component/CSS unchanged.
   remains independently available to signed-in free/inactive accounts.
 - Browser QA asserts a subscriber does not make preview-status requests;
   this is synthetic verification, not a substitute for real membership QA.
+
+## Original-design-only motion refinement — November 13, 2026
+- Preserve existing homepage brand, colors, typography, layout, panels and all data sources.
+- KPI count-up, cards rise/fade, volume columns grow, allocation/composition fills
+  animate left-to-right, and the existing segmented Lane Share ring reveals.
+- Animation changes do not fabricate values; prefers-reduced-motion disables all
+  effects, and live updates interpolate from prior values without layout changes.
+- No changes to owner access, database, trading logic, checkout or production.
