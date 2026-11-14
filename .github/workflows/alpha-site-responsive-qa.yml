@@ -53,6 +53,8 @@ jobs:
           NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
           NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: test-public-anon-for-local-synthetic-qa
+          NEXT_PUBLIC_API_BASE: https://alpha-synthetic-api.example.test
+          NEXT_PUBLIC_SUPPORT_CRYPTO_ENABLED: "true"
       - name: Verify 320-1440px layouts and navigation
         run: node qa/alpha-site-visual.mjs
         env:
@@ -60,12 +62,28 @@ jobs:
           NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
       - name: Verify private owner auto-sync with synthetic data and no archive upload
         run: node qa/alpha-owner-autosync.mjs
+      - name: Verify free preview, subscriber entitlements, expired access and outages on 390/1440px
+        run: node qa/alpha-command-member.mjs
+        env:
+          BASE_URL: http://127.0.0.1:3000
+      - name: Verify Lane Flow entrance animations and reduced-motion accessibility
+        run: node qa/alpha-lane-motion.mjs
+        env:
+          BASE_URL: http://127.0.0.1:3000
       - name: Verify compact Top 3 cards and actual data states at phone and desktop sizes
         run: node qa/alpha-top3-widget.mjs
       - name: Verify matched hero vertical rhythm and sequential rolling numbers
         run: node qa/alpha-hero-rhythm.mjs
       - name: Verify cohesive Top 3 frame, spacing, readable cards and responsive layouts
         run: node qa/alpha-top3-panel.mjs
+      - name: Verify approved pricing cards, Alpha-X statuses and account auth gate at eight widths
+        run: node qa/alpha-levelup-acceptance.mjs
+        env:
+          BASE_URL: http://127.0.0.1:3000
+      - name: Verify Solana support wallet and network selector with synthetic availability
+        run: node qa/alpha-solana-support.mjs
+        env:
+          BASE_URL: http://127.0.0.1:3000
       - name: Store viewport screenshots and results
         if: always()
         uses: actions/upload-artifact@v4

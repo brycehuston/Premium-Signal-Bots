@@ -1667,12 +1667,12 @@
       border-color:rgba(149,161,174,.36);
       background:
         radial-gradient(ellipse 67% 65% at 52% 46%,rgba(var(--lane-rgb),.105),transparent 76%),
-        linear-gradient(151deg,#22252b 0%,#14171d 56%,#1b2026 100%);
+        linear-gradient(151deg,#252a30 0%,#11151a 56%,#1a1e24 100%);
       box-shadow:inset 0 1px 0 rgba(225,229,235,.11),inset 0 -1px 0 rgba(0,0,0,.34),0 12px 28px rgba(0,0,0,.21);
     }
     .panel::before {
       opacity:1;
-      background:radial-gradient(ellipse 58% 62% at 50% 52%,rgba(var(--lane-rgb),.135),transparent 81%);
+      background:radial-gradient(ellipse 58% 62% at 50% 52%,rgba(var(--lane-rgb),.07),transparent 81%);
     }
     .panel::after { opacity:.95; box-shadow:0 0 10px rgba(var(--lane-rgb),.22); }
     .panel.is-scanning {
@@ -2340,7 +2340,7 @@
         this.onDispatch = overlayDispatchFn;
 
         this.KNOBS = {
-          coreSizeMul: 0.270,   // near-full metallic scanner, rather than a tiny center glow
+          coreSizeMul: 0.222,   // smaller scanner silhouette, balanced titanium orbit
           ringRadiusMul: IS_MOBILE ? 1.94 : 2.43, // distinct exterior particle orbit
           coreA: accentRGB,
           coreB: accent2RGB,
@@ -2356,7 +2356,7 @@
         this.CFG = {
           sparkSpeed: 0.009,
           ringThickness: 0.25,
-          ringBrightness: Math.min(profile.ringBrightness * 1.00, 1.30),
+          ringBrightness: Math.min(profile.ringBrightness * 1.12, 1.34),
           sparks: 60, // cached sprite ring with bounded frame cost
           bgStars: 24,
           dprMax: DPR_CAP,

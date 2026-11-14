@@ -41,7 +41,7 @@
 .ai-table-wrap td{font-size:10px;padding:11px 10px;border-bottom:1px solid #283139;white-space:nowrap;color:#d5dfe3}.ai-table-wrap tr:hover{background:#182025}.ai-table-wrap a{color:#e4b879!important}
 .ai-token{font-weight:800;color:#f3f6f5}.ai-mint{color:#83919a;font-size:9px}.ai-lane-chip{font-size:9px;font-weight:700;border:1px solid #46525a;padding:4px 6px;border-radius:5px}
 .ai-nodata{padding:30px;text-align:center;color:#9baab2}
-.ai-share{display:flex;gap:25px;align-items:center;padding:10px 0}.ai-donut{width:175px;aspect-ratio:1;border-radius:50%;flex:0 0 175px;display:grid;place-items:center;padding:21px}.ai-donut>div{background:#11171c;border:1px solid #2f3a43;border-radius:50%;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}.ai-donut strong{font-size:23px}.ai-donut small{color:#a5bac4;font-size:10px}
+.ai-share{display:flex;gap:25px;align-items:center;padding:10px 0}.ai-donut{width:175px;aspect-ratio:1;border-radius:50%;flex:0 0 175px;display:grid;place-items:center;padding:21px}.ai-donut>div:not(.ai-donut-ring){background:#11171c;border:1px solid #2f3a43;border-radius:50%;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}.ai-donut strong{font-size:23px}.ai-donut small{color:#a5bac4;font-size:10px}
 .ai-share-legend{flex:1;display:grid;gap:8px;min-width:100px}.ai-share-legend>div{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:10px}.ai-share-legend i{width:8px;height:8px;border-radius:50%}.ai-share-legend span{color:#aebac1}.ai-share-legend strong{font-variant-numeric:tabular-nums}
 .ai-research-title{display:flex;gap:10px;align-items:baseline;justify-content:space-between;margin:25px 0 12px;scroll-margin-top:30px}.ai-research-title h2{font-size:15px;letter-spacing:.11em;margin:0}.ai-research-title p{color:#a2aeb5;font-size:10px;letter-spacing:.08em}
 .ai-composition{max-height:370px;overflow:auto;display:grid;gap:9px}.ai-composition-row{display:grid;grid-template-columns:45px minmax(0,1fr) 45px;align-items:center;gap:10px;font-size:10px;color:#adb8bf}
@@ -91,10 +91,13 @@ body:has(.ai-shell) > .fixed.bottom-0{display:none!important}
 }
 .ai-top{background:#08090b;border-bottom-color:#272a2f;min-height:84px}
 .ai-top-inner{max-width:1320px;padding:0 clamp(20px,3vw,38px)}
-.ai-brand-link{display:block;color:inherit;text-decoration:none}
-.ai-brand-link:hover .ai-wordmark{color:#fff}
-.ai-wordmark{font-size:21px;letter-spacing:.18em;line-height:1.25}
-.ai-overline{font-size:9px;color:#8e939b}
+.ai-brand-link{display:inline-flex;min-width:0;align-items:center;gap:12px;color:inherit;text-decoration:none;border-radius:7px}
+.ai-brand-link:hover .ai-wordmark{color:#f3f3f4}
+.ai-brand-logo{display:block;width:38px;height:40px;flex:none;object-fit:contain}
+.ai-brand-copy{display:flex;min-width:0;flex-direction:column}
+.ai-wordmark{display:block;white-space:nowrap;font-family:var(--font-display),sans-serif;font-size:17px;font-weight:700;letter-spacing:.15em;line-height:1.35;color:#e1e3e6}
+.ai-wordmark span{color:#e7bc67}
+.ai-overline{display:block;margin-top:3px;font-size:9px;line-height:1.45;letter-spacing:.13em;color:#a6a9b0}
 .ai-top-actions{gap:14px;flex-wrap:nowrap;white-space:nowrap}
 .ai-historical{display:inline;color:#abb0b5;font-size:10px;letter-spacing:.1em}
 .ai-top-separator{font-size:12px;color:#5c6065}
@@ -136,7 +139,8 @@ body:has(.ai-shell) > .fixed.bottom-0{display:none!important}
  .ai-top-actions{gap:8px;flex-wrap:wrap;justify-content:flex-end}
  .ai-historical{display:inline}
  .ai-top-separator{font-size:10px}
- .ai-wordmark{font-size:18px}
+ .ai-wordmark{font-size:15px}
+ .ai-brand-logo{width:34px;height:36px}
  .ai-overline{font-size:8px}
  .ai-main{padding:22px 16px 38px}
  .ai-title-row{margin-bottom:18px;gap:12px}
@@ -151,4 +155,35 @@ body:has(.ai-shell) > .fixed.bottom-0{display:none!important}
  .ai-top-actions{width:100%;justify-content:flex-start}
  .ai-title-row h1{font-size:19px}
  .ai-main{padding-inline:13px}
+}
+
+/* Entrance animation only: approved geometry, palette and live data unchanged. */
+@keyframes ai-enter-rise{from{opacity:0;transform:translate3d(0,13px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes ai-enter-bars{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes ai-enter-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@property --ai-sweep-angle{syntax:"<angle>";inherits:false;initial-value:360deg}
+@keyframes ai-enter-ring{from{--ai-sweep-angle:0deg}to{--ai-sweep-angle:360deg}}
+.ai-donut{position:relative;background:#313941}
+.ai-donut-ring{position:absolute;inset:0;border-radius:inherit}
+.ai-donut>div:not(.ai-donut-ring){position:relative;z-index:1}
+.ai-motion .ai-title-row{animation:ai-enter-rise .55s cubic-bezier(.22,1,.36,1) both}
+.ai-motion .ai-import{animation:ai-enter-rise .55s .1s cubic-bezier(.22,1,.36,1) both}
+.ai-motion .ai-filter{animation:ai-enter-rise .55s .18s cubic-bezier(.22,1,.36,1) both}
+.ai-motion .ai-metric{animation:ai-enter-rise .62s cubic-bezier(.22,1,.36,1) both}
+.ai-motion .ai-metric:nth-child(1){animation-delay:.28s}
+.ai-motion .ai-metric:nth-child(2){animation-delay:.36s}
+.ai-motion .ai-metric:nth-child(3){animation-delay:.44s}
+.ai-motion .ai-metric:nth-child(4){animation-delay:.52s}
+.ai-motion .ai-chart-panel{animation:ai-enter-rise .65s .52s cubic-bezier(.22,1,.36,1) both}
+.ai-motion .ai-day-bars i{transform-origin:center bottom;animation:ai-enter-bars .83s cubic-bezier(.2,.78,.24,1) both;transition:height .5s cubic-bezier(.22,1,.36,1)}
+.ai-motion .ai-track>div{transform-origin:left center;animation:ai-enter-fill .82s cubic-bezier(.22,1,.36,1) both;transition:width .6s cubic-bezier(.22,1,.36,1)}
+.ai-motion .ai-share .ai-donut-ring{mask-image:conic-gradient(#000 0deg var(--ai-sweep-angle),transparent var(--ai-sweep-angle) 360deg);animation:ai-enter-ring 1.1s .52s cubic-bezier(.2,.78,.24,1) both}
+.ai-motion .ai-middle .ai-stack i{transform-origin:left center;animation:ai-enter-fill .65s cubic-bezier(.22,1,.36,1) both;transition:width .5s cubic-bezier(.22,1,.36,1)}
+@media(prefers-reduced-motion:reduce){
+ .ai-motion .ai-title-row,.ai-motion .ai-import,.ai-motion .ai-filter,.ai-motion .ai-metric,
+ .ai-motion .ai-chart-panel,.ai-motion .ai-day-bars i,.ai-motion .ai-track>div,
+ .ai-motion .ai-share .ai-donut-ring,.ai-motion .ai-middle .ai-stack i{
+  animation:none!important;transition:none!important;transform:none!important
+ }
+ .ai-motion .ai-share .ai-donut-ring{--ai-sweep-angle:360deg}
 }

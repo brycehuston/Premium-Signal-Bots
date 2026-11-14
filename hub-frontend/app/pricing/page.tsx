@@ -2,115 +2,11 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { PLANS, BUNDLE, PlanTone } from "@/lib/plans";
+import { BUNDLE, PlanTone, ALPHA_LANES, ALPHA_COMPLETE } from "@/lib/plans";
+import AlphaLanePriceCard from "@/components/AlphaLanePriceCard";
 import { Card, CardBody, Button, Pill } from "@/components/ui";
 import { track } from "@/lib/analytics";
-
-const UPCOMING_LANES = {
-  GENESIS: {
-    color: "#A78BFA", soft: "#a78bfa16",
-    tagline: "Early momentum formation",
-    summary: "Recognizing developing structure before the broader trend is established.",
-    highlights: [
-      "Early participation and acceleration context",
-      "Emerging structure and confirmation signals",
-      "Native scoring with clear lane identity",
-      "Telegram delivery within the Alpha signal system",
-    ],
-  },
-  STRICT: {
-    color: "#D97777", soft: "#d9777716",
-    tagline: "High-selectivity confirmation",
-    summary: "A more selective view of setup quality and market structure.",
-    highlights: [
-      "Additional qualification and safety gates",
-      "Structure and participation checks",
-      "Clearer separation of qualified setups",
-      "Distinct scoring context and alert designation",
-    ],
-  },
-  RECLAIM: {
-    color: "#4BB8D1", soft: "#4bb8d116",
-    tagline: "Recovery and renewed strength",
-    summary: "Tracking structure recovery when momentum starts to rebuild.",
-    highlights: [
-      "Reclaim and renewed-interest observations",
-      "Price structure and participation context",
-      "Repeat-alert and lane-transition awareness",
-      "Native risk and quality observations",
-    ],
-  },
-} as const;
-
-type UpcomingLaneName = keyof typeof UPCOMING_LANES;
-const LANE_CARD_ORDER = ["EARLY","GENESIS","TREND","STRICT","RECLAIM","RUNNER"] as const;
-
-function UpcomingLaneCard({ lane }: { lane: UpcomingLaneName }) {
-  const info = UPCOMING_LANES[lane];
-  return (
-    <div className="group relative min-w-0 rounded-card p-px transition-transform duration-200 hover:-translate-y-0.5"
-         style={{ background: `linear-gradient(153deg,${info.color}88,rgba(255,255,255,0.08) 42%,${info.color}26)` }}>
-      <Card className="relative h-full min-w-0 overflow-hidden !border-0 !bg-[#0e1115] transition-shadow duration-200 group-hover:!shadow-[0_24px_60px_-24px_rgba(0,0,0,0.65)]">
-        <div className="pointer-events-none absolute inset-0" aria-hidden
-             style={{ background:`radial-gradient(ellipse 100% 67% at 4% -12%,${info.color}20,transparent 69%)` }} />
-        <div className="pointer-events-none absolute left-7 right-7 top-0 h-px opacity-75" aria-hidden
-             style={{background:`linear-gradient(90deg,transparent,${info.color},transparent)`}} />
-        <CardBody className="relative flex h-full min-h-[440px] flex-col gap-5 !p-6 sm:!p-7">
-          <div className="flex items-center justify-between gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border"
-                  style={{borderColor:`${info.color}65`, backgroundColor:info.soft,color:info.color}}>
-              <svg viewBox="0 0 28 28" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
-                {lane==="GENESIS"?(
-                  <><path d="M14 2 24 14 14 26 4 14Z"/><path d="M14 8 19 14 14 20 9 14Z"/><path d="M14 2v6m0 12v6"/></>
-                ):lane==="STRICT"?(
-                  <><path d="M14 2 24 6v8c0 7-4 10-10 12C8 24 4 21 4 14V6Z"/><path d="m9 14 3 3 7-7"/></>
-                ):(
-                  <><path d="M23 12a9 9 0 1 0 .5 5"/><path d="m19 8 4 4 3-4"/><path d="m9 17 4-5 3 2 4-5"/></>
-                )}
-              </svg>
-            </span>
-            <span className="rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em]"
-                  style={{borderColor:`${info.color}50`,color:info.color,backgroundColor:info.soft}}>
-              LANE PREVIEW
-            </span>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-display text-[22px] font-semibold tracking-tight text-silver sm:text-[24px]">
-              ALPHA <span style={{color:info.color}}>{lane}</span> ALERTS
-            </h3>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{color:info.color}}>
-              {info.tagline}
-            </p>
-            <p className="text-[13px] leading-relaxed text-muted">{info.summary}</p>
-          </div>
-          <div className="h-px w-full opacity-60" style={{background:`linear-gradient(90deg,${info.color}80,transparent)`}} aria-hidden />
-          <div className="space-y-1">
-            <div className="font-display text-[24px] font-semibold tracking-tight text-silver">PRICING TBA</div>
-            <p className="text-[11px] leading-relaxed text-muted">Separate subscription pricing has not been announced.</p>
-          </div>
-          <ul className="space-y-3 text-[12px] leading-relaxed text-muted" aria-label={`Alpha ${lane} capabilities`}>
-            {info.highlights.map(item => (
-              <li className="flex items-start gap-3" key={item}>
-                <svg viewBox="0 0 20 20" className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke={info.color} strokeWidth="2" strokeLinecap="round" aria-hidden>
-                  <path d="m4 10 4 4 8-9" />
-                </svg>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-auto pt-3">
-            <div className="flex min-h-11 items-center justify-center rounded-[7px] border bg-[#161a20] px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-silver/75"
-                 style={{borderColor:`${info.color}47`}} aria-label={`Alpha ${lane} not available for purchase`}>
-              Not available yet
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-    </div>
-  );
-}
 
 function Check({ tone }: { tone: PlanTone }) {
   const colorClass =
@@ -359,25 +255,6 @@ export default function PricingPage() {
       </>
     );
 
-  // We want the cadence to be EARLY -> TREND -> RUNNER always
-  const cadenceMap: Record<string, 1 | 2 | 3> = {
-    "alpha-early-alerts": 1,
-    "alpha-trend-alerts": 2,
-    "alpha-runner-alerts": 3,
-  };
-
-  const orderedPlans = useMemo(() => {
-    const planOrder: Record<string, number> = {
-      "alpha-trend-alerts": 0,
-      "alpha-runner-alerts": 1,
-      "alpha-early-alerts": 2,
-    };
-
-    return [...PLANS].sort(
-      (a, b) => (planOrder[a.slug] ?? 99) - (planOrder[b.slug] ?? 99)
-    );
-  }, []);
-
   useEffect(() => {
     track("pricing_view");
     return () => {
@@ -396,20 +273,18 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-5 sm:py-12">
+    <div className="mx-auto max-w-6xl py-7 sm:py-9">
       <div className="text-center">
-        <h1 className="font-display text-[50px] font-semibold tracking-tight text-silver leading-[0.95] sm:text-[78px] sm:leading-none md:text-[104px]">
+        <h1 className="font-display text-[45px] font-semibold tracking-tight text-silver leading-none sm:text-[62px] md:text-[72px]">
           PRICING
         </h1>
         <p className="mx-auto mt-3 text-[11px] text-muted sm:text-[12px] md:text-[13px]">
-          Six specialized signal lanes. Existing subscriptions remain unchanged; additional lane offerings are not yet separately priced.
+          Six signal lanes. Published prices are informational; availability varies by lane.
         </p>
-        <p className="mx-auto mt-3 text-[10px] text-muted sm:text-[11px] md:text-[12px]">
-          Prices are displayed for reference. Checkout is enabled only after verified payment and channel-access configuration.
-        </p>
+        
       </div>
 
-      <div className="mt-8 flex justify-center sm:mt-9">
+      <div className="mt-5 flex justify-center sm:mt-6">
         <div
           className="relative flex w-[220px] items-center rounded-pill border border-stroke/70 bg-surface/70 p-1"
           role="group"
@@ -448,162 +323,16 @@ export default function PricingPage() {
         </div>
       </div>
 
-      <section className="mt-12 scroll-mt-24" aria-labelledby="lanes-heading">
+      <section className="mt-7 scroll-mt-24" aria-labelledby="lanes-heading">
         <div className="mx-auto max-w-2xl space-y-2 text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-gold/80">Alpha Signals / Six Specialized Lanes</p>
           <h2 id="lanes-heading" className="font-display text-[25px] font-semibold tracking-tight text-silver sm:text-[33px]">THE ALPHA SIGNAL STACK</h2>
-          <p className="text-sm leading-relaxed text-muted">Distinct signals, shared intelligence. Three existing subscription tiers plus three emerging lane classifications, each with its own identity.</p>
+          <p className="text-sm leading-relaxed text-muted">Distinct signals, shared intelligence. Review each lane and its availability.</p>
         </div>
       </section>
 
-      {/* Existing published plans — no invented prices for new lane classifications. */}
-      <div
-        id="plans"
-        className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3 scroll-mt-24 md:scroll-mt-32"
-      >
-        {LANE_CARD_ORDER.map((lane) => {
-          const p = orderedPlans.find(plan => plan.titleEmphasis === lane);
-          if (!p) return <UpcomingLaneCard key={lane} lane={lane as UpcomingLaneName} />;
-          const isEarlyComingSoon = p.slug === "alpha-early-alerts";
-          const isRunnerPlan = p.slug === "alpha-runner-alerts";
-          return (
-            <Card
-              key={p.slug}
-              className={`group relative transition-all duration-200 will-change-transform ${cardGlowClass(
-                p.tone
-              )} ${
-                isEarlyComingSoon
-                  ? "overflow-hidden coming-soon-plan-card hover:!translate-y-0 hover:!shadow-soft"
-                  : ""
-              } ${isRunnerPlan ? "runner-featured-card" : ""}`}
-            >
-            {/* tone-matched aura */}
-            <div
-              aria-hidden
-              className={`pointer-events-none absolute inset-0 -z-10 rounded-card opacity-80 ${auraClass(
-                p.tone
-              )}`}
-            />
-            {isEarlyComingSoon ? (
-              <div className="coming-soon-ribbon" aria-hidden>
-                <span className="coming-soon-ribbon-back coming-soon-ribbon-back-left" />
-                <span className="coming-soon-ribbon-back coming-soon-ribbon-back-right" />
-                <span className="coming-soon-ribbon-tail coming-soon-ribbon-tail-left" />
-                <span className="coming-soon-ribbon-tail coming-soon-ribbon-tail-right" />
-                <span className="coming-soon-ribbon-pattern">
-                  <Image
-                    width={24}
-                    height={24}
-                    unoptimized
-                    className="coming-soon-ribbon-icon coming-soon-ribbon-icon-top-left"
-                    src="/alpha-lane-v4-logo.png"
-                    alt=""
-                    aria-hidden
-                  />
-                  <Image
-                    width={24}
-                    height={24}
-                    unoptimized
-                    className="coming-soon-ribbon-icon coming-soon-ribbon-icon-bottom-right"
-                    src="/alpha-lane-v4-logo.png"
-                    alt=""
-                    aria-hidden
-                  />
-                </span>
-                <span className="coming-soon-ribbon-text">COMING SOON</span>
-              </div>
-            ) : null}
-
-            <CardBody
-              className={`space-y-6 sm:space-y-5 ${isEarlyComingSoon ? "coming-soon-plan-body" : ""}`}
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className={[
-                    "grid h-8 w-8 place-items-center rounded-full border border-stroke/60 bg-surface/70",
-                    isEarlyComingSoon ? "coming-soon-plan-accent" : "",
-                  ].join(" ")}
-                >
-                  <span className="text-[18px]">{p.emoji}</span>
-                </div>
-
-                <div className={isEarlyComingSoon ? "coming-soon-plan-title" : ""}>
-                  <PlanTitle
-                    left={p.titleLeft}
-                    emphasis={p.titleEmphasis}
-                    right={p.titleRight}
-                    tone={p.tone}
-                    cadenceIndex={cadenceMap[p.slug] ?? 1}
-                  />
-                </div>
-              </div>
-
-              <div className={`space-y-1 ${isEarlyComingSoon ? "coming-soon-plan-copy" : ""}`}>
-                <div className="flex items-baseline gap-3">
-                  <div
-                    className={`font-display text-[32px] font-semibold leading-none ${
-                      isEarlyComingSoon ? "coming-soon-plan-price" : ""
-                    }`}
-                  >
-                    ${billing === "annual" ? p.priceAnnual : p.priceMonthly}
-                  </div>
-                  <div
-                    className={`text-muted text-sm ${isEarlyComingSoon ? "coming-soon-plan-copy" : ""}`}
-                  >
-                    / {billing === "annual" ? "year" : "month"}
-                  </div>
-                </div>
-                <div
-                  className={`text-muted/80 text-sm ${isEarlyComingSoon ? "coming-soon-plan-copy" : ""}`}
-                >
-                  {billing === "annual"
-                    ? `Billed annually • ${p.priceAnnual} / year`
-                    : `Or ${p.priceAnnual} / year`}
-                </div>
-              </div>
-
-              <ul
-                className={`space-y-3 text-small text-muted sm:space-y-2.5 ${
-                  isEarlyComingSoon ? "coming-soon-plan-list" : ""
-                }`}
-              >
-                {p.bullets.map((b: string, i: number) => (
-                  <li key={i} className="flex gap-2.5">
-                    <Check tone={p.tone} />
-                    <span className={isEarlyComingSoon ? "coming-soon-plan-copy" : ""}>
-                      {renderBullet(b)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="pt-2">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  full
-                  className={[
-                    tonePrimaryButtonClass(p.tone),
-                    "!h-11 sm:!h-10",
-                    isEarlyComingSoon
-                      ? "pointer-events-none coming-soon-plan-accent coming-soon-plan-button-dim"
-                      : "brightness-100 saturate-100",
-                  ].join(" ")}
-                  href={isEarlyComingSoon ? undefined : "/contact"}
-                  disabled={isEarlyComingSoon}
-                  onClick={
-                    isEarlyComingSoon
-                      ? undefined
-                      : () => track("plan_interest", { plan: p.slug, period: billing })
-                  }
-                >
-                  {isEarlyComingSoon ? "COMING SOON" : "REQUEST ACCESS"}
-                </Button>
-              </div>
-            </CardBody>
-          </Card>
-          );
-        })}
+      <div id="plans" className="mt-7 grid grid-cols-1 items-stretch gap-4 scroll-mt-24 md:grid-cols-2 lg:grid-cols-3">
+        {ALPHA_LANES.map(lane=><AlphaLanePriceCard key={lane.slug} lane={lane} billing={billing}/>)}
 
         <div className="md:col-span-2 lg:col-span-3">
           <PricingDivider />
@@ -695,12 +424,32 @@ export default function PricingPage() {
         </div>
       </div>
 
+      <section className="mt-8 rounded-[13px] border border-[#3d3a33] bg-[#121418] p-6 sm:p-7" aria-labelledby="alpha-complete-plan">
+        <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] font-bold uppercase tracking-[.22em] text-[#e7bc67]">SIX-LANE BUNDLE · FUTURE OFFERING</p><span className="rounded-full border border-[#5c503d] px-3 py-1 text-[10px] font-semibold text-[#d9c49d]">PLANNED · NOT YET AVAILABLE</span></div>
+        <h3 id="alpha-complete-plan" className="mt-3 font-display text-[27px] font-semibold text-[#eeeef0]">ALPHA COMPLETE</h3>
+        <p className="mt-2 text-[13px] text-[#b7bac1]">All six Alpha Lanes. This planned bundle cannot be purchased or activated.</p>
+        <div className="mt-5 flex flex-wrap items-baseline gap-5 text-[#f1d8a5]"><strong className="font-display text-[26px] tabular-nums">{"$"}{billing==="monthly"?ALPHA_COMPLETE.priceMonthly.toLocaleString("en-US"):ALPHA_COMPLETE.priceAnnual.toLocaleString("en-US")}</strong><span className="text-sm text-[#b7bac1]">/ {billing==="monthly"?"month":"year"}</span></div>
+        <div className="mt-4 flex flex-wrap gap-2">{ALPHA_LANES.map(lane=><span key={lane.slug} className="rounded-[7px] border border-[#34363b] bg-[#191b1e] px-2.5 py-1.5 text-[11px] text-[#d0d2d6]">{lane.emoji} {lane.key}</span>)}</div>
+      </section>
+
       <section className="mt-14" aria-labelledby="alpha-systems-heading">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.31em] text-gold/80">The Next Frontier</p>
           <h2 id="alpha-systems-heading" className="mt-2 font-display text-[26px] font-semibold tracking-tight text-silver sm:text-[34px]">ALPHA SYSTEMS</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted">Beyond signal alerts. Purpose-built research and future systems, presented without premature launch or profit claims.</p>
         </div>
+        <article className="relative mt-7 overflow-hidden rounded-[16px] border border-[#8d764b]/55 bg-[linear-gradient(140deg,#191b1e,#101115_60%,#151515)] p-6 shadow-[inset_0_1px_0_rgba(250,219,169,.10)] sm:p-9">
+          <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#e7bc67]/70 to-transparent" aria-hidden="true"/>
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)]">
+            <div><div className="flex flex-wrap items-center gap-3"><span className="text-[10px] font-semibold uppercase tracking-[.23em] text-[#e8c58c]">FLAGSHIP · ALPHA SYSTEMS</span><span className="rounded-full border border-[#6d614a] px-3 py-1 text-[10px] font-bold tracking-[.11em] text-[#ddcba7]">DEVELOPED · PRIVATE ACCESS CLOSED</span></div>
+              <h3 className="mt-5 font-display text-[clamp(38px,5vw,66px)] font-semibold tracking-[-.05em] leading-none text-[#f4f0e7]">ALPHA<span className="text-[#e7bc67]">-X</span></h3>
+              <p className="mt-5 max-w-xl text-[14px] leading-[1.85] text-[#bcc0c5]">Private execution-system research and development. Alpha-X is developed, but customer access is closed. No public trading service or release date is offered.</p>
+              <div className="mt-6 flex flex-wrap gap-2">{["Execution research","Risk controls","Paper validation"].map(label=><span key={label} className="rounded-[7px] border border-[#41403b] bg-[#1f2022] px-3 py-2 text-[11px] font-semibold text-[#dad6cb]">{label}</span>)}</div>
+              <a href="/waitlist" className="mt-7 inline-flex min-h-11 items-center justify-center rounded-[9px] border border-[#a58653] px-5 text-[12px] font-semibold tracking-[.11em] text-[#f0cc94] hover:bg-[#e7bc67]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e7bc67]">EXPRESS INTEREST</a>
+            </div>
+            <div aria-hidden="true" className="flex min-h-[185px] items-center justify-center rounded-[12px] border border-[#494137] bg-[#0a0c0f] p-5 sm:min-h-[240px]"><svg viewBox="0 0 460 200" fill="none" className="w-full max-w-[460px]"><defs><linearGradient id="ax-trace" x1="0" y1="0" x2="460" y2="0"><stop stopColor="#776342"/><stop offset=".5" stopColor="#e7bc67"/><stop offset="1" stopColor="#a98a57"/></linearGradient></defs><path d="M18 165H444M18 115H444M18 65H444M70 22V180M170 22V180M270 22V180M370 22V180" stroke="#3b3730" strokeWidth=".8"/><path d="M16 152L74 150L110 106L150 125L192 70L238 94L274 55L321 74L366 31L407 47L445 15" stroke="url(#ax-trace)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/><circle cx="366" cy="31" r="5" fill="#e7bc67"/><circle cx="366" cy="31" r="13" stroke="#e7bc67" strokeOpacity=".25"/></svg></div>
+          </div><p className="mt-4 text-[10px] leading-5 text-[#8f969d]">Illustrative technical trace · not live execution data or performance reporting</p>
+        </article>
         {/* Alpha Pulse is market intelligence, not a seventh trading-alert lane. */}
         <div className="mt-7 overflow-hidden rounded-[16px] border border-[#89cff0]/30 bg-[#10151a] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
           <div className="grid gap-6 p-6 sm:p-8 md:grid-cols-[minmax(0,1.25fr)_minmax(230px,.75fr)] md:items-center md:gap-10">
@@ -847,60 +596,7 @@ export default function PricingPage() {
         <PricingDivider />
       </div>
 
-      {/* --- ALPHA-X promo --------------------------------------------------- */}
-      <div className="relative mt-10">
-        <div
-          aria-hidden
-          className="alpha-x-glow pointer-events-none absolute inset-0 -z-10 rounded-card"
-        />
 
-        <Card className="border-gold/25 bg-[linear-gradient(180deg,rgb(var(--surface2)_/_0.95)_0%,rgb(var(--surface)_/_0.98)_100%)] shadow-[0_0_0_1px_rgb(var(--gold)/0.2)] hover:shadow-[0_0_0_1px_rgb(var(--gold)/0.25),0_20px_60px_rgb(var(--gold)/0.3)]">
-          <CardBody className="px-6 pt-18 pb-18 text-center sm:px-12 sm:pt-22 sm:pb-24">
-            <svg
-              className="mx-auto mb-6 h-9 w-9 text-gold animate-bolt"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M13 2L3 14h7l-2 8 10-12h-7l2-8z" />
-            </svg>
-
-            <h3 className="font-display text-[42px] font-semibold leading-tight tracking-[0.14em] text-silver sm:text-[72px]">
-              ALPHA-X
-            </h3>
-            <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.5em] text-muted/70">
-              Coming Soon
-            </div>
-
-            <p className="mx-auto mt-5 max-w-3xl text-balance text-body leading-relaxed text-muted">
-              Alpha-X is the future auto layer. It only goes live after enough data, testing, and risk rules.
-            </p>
-
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-5 text-small text-muted/85">
-              <span className="after:ml-4 after:text-muted/50 after:content-['/']">
-                Auto entries + SL/TP
-              </span>
-              <span className="after:ml-4 after:text-muted/50 after:content-['/']">
-                Strict EMA / RSI / Volume / Trend
-              </span>
-              <span>Breakeven & Trailing Stops</span>
-              <span className="hidden sm:inline after:ml-4 after:text-muted/50 after:content-['/']"></span>
-              <span className="sm:ml-0">24/7 Telegram alerts</span>
-            </div>
-
-            <Button
-              href="/waitlist"
-              size="lg"
-              className="mx-auto mt-8 w-full px-9 font-bold uppercase tracking-[0.28em] shadow-[0_10px_36px_rgb(var(--gold)/0.5)] hover:shadow-[0_12px_42px_rgb(var(--gold)/0.6)] sm:w-auto"
-            >
-              JOIN WAITLIST
-            </Button>
-          </CardBody>
-        </Card>
-      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import {useEffect,useState} from "react";
 import {useSupabase} from "@/components/SupabaseProvider";
 type Day={date:string;alerts:number;first_mints:number};
@@ -21,7 +22,14 @@ export default function SubscriberDashboard(){
  const max=Math.max(1,...(data.daily??[]).map(x=>x.alerts));
  return <main className="mx-auto max-w-6xl space-y-6 px-3 py-5 text-[#f2f3f5] sm:px-5">
   <header className="rounded-2xl border border-[#47413a] bg-[radial-gradient(ellipse_at_top_left,#27241e_0%,#15171d_62%)] p-6 sm:p-9">
-   <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] font-bold uppercase tracking-[.24em] text-[#e3bf7c]">ALPHA ALERTS / MEMBER INTELLIGENCE</p><span className="rounded-full border border-[#89704c]/65 px-3 py-1.5 text-[10px] font-bold text-[#ecc990]">HISTORICAL · 24H+ DELAY</span></div>
+   <div className="flex flex-wrap items-center justify-between gap-3">
+    <Link href="/" aria-label="Alpha Alerts homepage" className="inline-flex min-w-0 items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e7bc67]">
+     <Image src="/alpha-lane-v4-logo.png" alt="" width={38} height={40} className="h-[39px] w-[38px] shrink-0 object-contain" unoptimized priority />
+     <span className="font-display whitespace-nowrap text-[15px] font-bold tracking-[.15em] text-[#e1e3e6] sm:text-[17px]">ALPHA <span className="text-[#e7bc67]">ALERTS</span></span>
+    </Link>
+    <span className="rounded-full border border-[#89704c]/65 px-3 py-1.5 text-[10px] font-bold text-[#ecc990]">HISTORICAL · 24H+ DELAY</span>
+   </div>
+   <p className="mt-4 text-[10px] font-semibold tracking-[.20em] text-[#b8b9bf]">MEMBER INTELLIGENCE</p>
    <h1 className="mt-5 font-display text-[clamp(1.8rem,4vw,3.3rem)] font-semibold tracking-[-.035em]">Your edge. <span className="text-[#dfb978]">In perspective.</span></h1>
    <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[#bcc0c7]">A historical view of Alpha lane activity and market research. Near-live scanning, detailed token research and owner diagnostics are not included in this membership dashboard.</p>
   </header>

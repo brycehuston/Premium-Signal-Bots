@@ -1,0 +1,39 @@
+# ALPHA COMMAND — candidate implementation
+Account shell is available to any signed-in Supabase user even during /me outage.
+Owner/subscriber intelligence routes require server authorization and still
+use the existing private API gateway/Edge v4. Preview is separately scoped
+and fails closed if not configured. Existing owner component/CSS unchanged.
+
+## Account acceptance contract (browser synthetic, not real production accounts)
+- Anonymous users see sign-in gating; signed-in users always reach Alpha
+  Command even if paid membership or intelligence services are offline.
+- Free accounts see accurate membership state and may activate a one-use
+  10-minute preview; aggregate-only history is available while active.
+  Reloading must not trigger a second activation; access outside the
+  preview must remain restricted.
+- Paid subscribers display only verified lane entitlements and may open the
+  separately authorized intelligence route. A paid label alone is not an
+  authorization grant.
+- Inactive subscriptions never claim a paid entitlement.
+- Backend outages fail closed and disclose unavailable status rather
+  than guessing payment or private access.
+- Expired previews have no reactivation button and no aggregate read.
+- CI covers these states at phone and desktop widths using synthetic
+  Supabase and /me fixtures. This does not replace real account QA,
+  staged database migration, or production acceptance.
+
+## Verified paid-member UX distinction
+- Verified owner/subscriber Alpha Command bypasses the free-preview status
+  service, does not show misleading expired-trial messaging, and links to the
+  separately authorized member intelligence route. The preview service
+  remains independently available to signed-in free/inactive accounts.
+- Browser QA asserts a subscriber does not make preview-status requests;
+  this is synthetic verification, not a substitute for real membership QA.
+
+## Original-design-only motion refinement — November 13, 2026
+- Preserve existing homepage brand, colors, typography, layout, panels and all data sources.
+- KPI count-up, cards rise/fade, volume columns grow, allocation/composition fills
+  animate left-to-right, and the existing segmented Lane Share ring reveals.
+- Animation changes do not fabricate values; prefers-reduced-motion disables all
+  effects, and live updates interpolate from prior values without layout changes.
+- No changes to owner access, database, trading logic, checkout or production.

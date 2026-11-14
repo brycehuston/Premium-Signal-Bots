@@ -415,11 +415,10 @@ export default function Dashboard() {
 
   // entitlement/tier logic
   const entSet = new Set<SignalKey>(me.entitlements ?? []);
-  const computedTier = (me.tier ?? undefined) ?? entSet.size;
-  const planLabel = (me.plan || "Free").toUpperCase();
+  const planLabel = (me.plan || "PLAN NOT VERIFIED").replace(/-/g, " ").toUpperCase();
   const roleLabel = (me.role || "User").toUpperCase();
   const isActive = Boolean(me.is_active);
-  const accessLabel = isActive ? "ACTIVE" : "PENDING";
+  const accessLabel = isActive ? "ACTIVE" : "INACTIVE";
   const accessClass = isActive
     ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-200 shadow-[0_0_18px_rgba(52,211,153,0.18)]"
     : "border-amber-400/40 bg-amber-500/10 text-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.18)]";
@@ -453,8 +452,8 @@ export default function Dashboard() {
 
             <div className="flex items-center justify-between gap-3 md:px-6 md:border-r md:border-stroke/60">
               <div>
-                <div className="text-[10px] uppercase tracking-[0.28em] text-muted/70">Signal Tier</div>
-                <div className="mt-1 text-lg font-semibold text-silver">Tier {String(computedTier)}</div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-muted/70">Enabled lanes</div>
+                <div className="mt-1 text-lg font-semibold text-silver">{entSet.size} verified</div>
               </div>
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
                 {entSet.size} Active
@@ -541,7 +540,7 @@ export default function Dashboard() {
 
             <div className="mt-auto pt-1">
               <div className="rounded-control border border-stroke/70 bg-surface/70 px-3 py-2 text-center text-xs text-muted">
-                Unlock Tier 5 to access the full Alpha stack.
+                Access is based on your verified plan and individual lane entitlements.
               </div>
             </div>
           </CardBody>
@@ -602,25 +601,15 @@ export default function Dashboard() {
               <div className="text-eyebrow uppercase tracking-[0.35em] text-muted/70">
                 Alpha Bot
               </div>
-              <Badge tone="planned" className="text-silver">In Build</Badge>
+              <Badge tone="planned" className="text-silver">DEVELOPED · PRIVATE ACCESS CLOSED</Badge>
             </div>
             <div className="font-display text-3xl font-semibold tracking-[0.06em] text-silver">
               {BOT_LABELS.trend_rider}
             </div>
             <p className="text-sm text-muted">
-              ALPHA-X is in build. Controls and logs will unlock once the bot is live.
+              Alpha-X is developed and privately held. No customer controls or release date are available.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button disabled size="sm" onClick={() => start("trend_rider")}>
-                Start
-              </Button>
-              <Button disabled size="sm" variant="ghost" onClick={() => stop("trend_rider")}>
-                Stop
-              </Button>
-              <Button disabled size="sm" variant="outline">
-                Logs
-              </Button>
-            </div>
+
           </CardBody>
         </Card>
       </div>

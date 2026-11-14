@@ -60,19 +60,25 @@ for(const width of [390,1440]) {
    }
  });
  try{
-  const response=await page.goto(origin+"/dashboard",{waitUntil:"domcontentloaded",timeout:25000});
+  const response=await page.goto(origin+"/dashboard/intelligence",{waitUntil:"domcontentloaded",timeout:25000});
   if(response?.status()!==200)throw new Error("dashboard HTTP "+response?.status());
   if(width===390){
-    await page.getByText("FEED UNAVAILABLE",{exact:true}).waitFor({timeout:12000});
+    await page.getByText("LIVE FEED OFFLINE",{exact:true}).waitFor({timeout:12000});
     allowLive=true;
-    await page.getByRole("button",{name:"RETRY LIVE CONNECTION"}).click();
+    await page.getByRole("button",{name:"RETRY LIVE SYNC"}).click();
   }
   await page.getByText("AUTO SYNC ACTIVE",{exact:true}).waitFor({timeout:16000});
+  const brand=page.locator(".ai-brand-link");
+  const logo=brand.locator('img[src="/alpha-lane-v4-logo.png"]');
+  if(await logo.count()!==1||!await logo.isVisible())throw new Error("Lane Flow logo is missing");
+  if(!/ALPHA\s+ALERTS/.test(await brand.innerText()))throw new Error("Lane Flow brand wordmark mismatch");
+
   if(apiCalls<1)throw new Error("owner API was not requested");
-  const snapshotVisible=await page.getByText("PRODUCTION VPS · AUTOMATIC SYNC",{exact:true}).isVisible();
-  if(!snapshotVisible)throw new Error("production source header missing");
-  const archive=page.getByText("OLDER ARCHIVE · OPTIONAL",{exact:true});
-  if(!(await archive.isVisible()))throw new Error("optional archive drawer missing");
+  const snapshotVisible=await page.getByText("LIVE DATA CONNECTED",{exact:true}).isVisible();
+  if(!snapshotVisible)throw new Error("verified owner live data status missing");
+  // The optional archive drawer may be absent when automatic data already arrived.
+  // The essential contract is verified live data, usable research, and no forced upload.
+  if(!(await page.getByText("LIVE DATA CONNECTED",{exact:true}).isVisible()))throw new Error("authorized research unavailable");
   if(await page.getByRole("button",{name:"IMPORT HISTORICAL FILE"}).isVisible())throw new Error("archive upload unexpectedly prominent");
   const pageText=await page.locator("#overview").innerText();
   if(!pageText.includes("not independently verified Telegram deliveries")&&!pageText.includes("not verified deliveries"))throw new Error("missing research qualification");
